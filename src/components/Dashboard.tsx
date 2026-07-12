@@ -19,7 +19,8 @@ export default function Dashboard() {
   const [layout, setLayout] = useState([
     { id: 'metrics', visible: true, order: 0 },
     { id: 'radar', visible: true, order: 1 },
-    { id: 'attendance', visible: true, order: 2 },
+    { id: 'dept', visible: true, order: 2 },
+    { id: 'audit', visible: true, order: 3 },
   ]);
   
   const { offlineQueue } = useAppStore();
@@ -29,19 +30,23 @@ export default function Dashboard() {
     { enabled: !!user?.id }
   );
   const { data: announcements, isLoading: annLoading } = trpc.dashboard.getAnnouncements.useQuery();
-
+  const { data: deptBreakdown } = trpc.dashboard.getDepartmentBreakdown.useQuery(undefined, { enabled: user?.role === 'Admin' });
+  const { data: auditLogs } = trpc.dashboard.getAuditLogs.useQuery(undefined, { enabled: user?.role === 'Admin' });
 
   const radarData = [
-    { subject: 'CPU', A: 120, fullMark: 150 },
-    { subject: 'RAM', A: 98, fullMark: 150 },
-    { subject: 'IO', A: 86, fullMark: 150 },
-    { subject: 'NET', A: 99, fullMark: 150 },
-    { subject: 'APP', A: 85, fullMark: 150 },
+    { subject: 'Retention', A: 85, fullMark: 100 },
+    { subject: 'Satisfaction', A: 92, fullMark: 100 },
+    { subject: 'Performance', A: 78, fullMark: 100 },
+    { subject: 'Compensation', A: 88, fullMark: 100 },
+    { subject: 'Diversity', A: 75, fullMark: 100 },
   ];
 
-  const metrics = { activeEmployees: telemetry?.headcount ?? 0, pendingLeaves: telemetry?.pendingApps ?? 0, anomalies: 0 };
-
-
+  const metrics = { 
+    activeEmployees: telemetry?.headcount ?? 0, 
+    pendingLeaves: telemetry?.pendingApps ?? 0, 
+    attendanceRate: telemetry?.activeToday ?? '0%',
+    totalPayroll: telemetry?.totalPayroll ?? 0
+  };
 
   if (telLoading || userLoading || sessionLoading || !user) {
     return (
@@ -86,58 +91,103 @@ export default function Dashboard() {
       </div>
 
       {user.role === 'Admin' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AdminWidgets 
-            metrics={metrics} 
-            layout={layout} 
-            isEditMode={isEditMode} 
-            radarData={radarData} 
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="col-span-1 lg:col-span-2 space-y-6">
+            <AdminWidgets 
+              metrics={metrics} 
+              layout={layout} 
+              isEditMode={isEditMode} 
+              radarData={radarData} 
+              deptBreakdown={deptBreakdown}
+              auditLogs={auditLogs}
+            />
+          </div>
+          <div className="col-span-1 space-y-6">
+            {/* Quick Actions Toolbar */}
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-xl">
+              <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] mb-4">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <button className="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-[var(--ledger-blue)]/20 hover:text-[var(--ledger-blue)] border border-white/10 rounded-xl transition-all">
+                  <Activity size={20} className="mb-2" />
+                  <span className="text-xs font-mono">Add Employee</span>
+                </button>
+                <button className="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-purple-500/20 hover:text-purple-400 border border-white/10 rounded-xl transition-all">
+                  <Target size={20} className="mb-2" />
+                  <span className="text-xs font-mono">Run Payroll</span>
+                </button>
+                <button className="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-[var(--verify-green)]/20 hover:text-[var(--verify-green)] border border-white/10 rounded-xl transition-all">
+                  <Clock size={20} className="mb-2" />
+                  <span className="text-xs font-mono">Leaves</span>
+                </button>
+                <button className="flex flex-col items-center justify-center p-4 bg-white/5 hover:bg-[var(--signal-amber)]/20 hover:text-[var(--signal-amber)] border border-white/10 rounded-xl transition-all">
+                  <Zap size={20} className="mb-2" />
+                  <span className="text-xs font-mono">Broadcast</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Status Card */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 shadow-xl">
-            <div className={`absolute -right-10 -top-10 opacity-10 group-hover:scale-110 transition-transform duration-700 ${offlineQueue > 0 ? 'text-[var(--signal-amber)]' : 'text-[var(--verify-green)]'}`}>
-              <Zap size={150} />
-            </div>
-            <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${offlineQueue > 0 ? 'from-[var(--signal-amber)]' : 'from-[var(--verify-green)]'} to-transparent`} />
-            <p className="text-xs font-mono text-[var(--text-muted)] mb-4 uppercase tracking-widest relative z-10 flex items-center gap-2">
-              <Clock size={14} /> Node Status
-            </p>
-            <div className="relative z-10 mt-auto pt-8">
-              <h3 className={`text-4xl font-black tracking-tight ${offlineQueue > 0 ? 'text-[var(--signal-amber)]' : 'text-transparent bg-clip-text bg-gradient-to-r from-[var(--verify-green)] to-emerald-400'}`}>
-                {offlineQueue > 0 ? 'QUEUED' : 'ACTIVE'}
-              </h3>
-              <p className="text-sm text-[var(--text-muted)] mt-2">
-                {offlineQueue > 0 ? 'Syncing data when uplink is restored.' : 'Secure connection established.'}
-              </p>
+          {/* Time & Attendance */}
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl relative overflow-hidden shadow-xl">
+            <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] mb-6 flex items-center gap-2">
+              <Clock size={16} className="text-[var(--ledger-blue)]" /> Time & Attendance
+            </h3>
+            <div className="text-center">
+              <p className="text-4xl font-mono text-white mb-2">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+              <p className="text-xs text-[var(--text-muted)] mb-8">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+              <button className="w-full py-3 bg-[var(--ledger-blue)]/20 hover:bg-[var(--ledger-blue)]/40 text-[var(--ledger-blue)] border border-[var(--ledger-blue)]/50 rounded-xl font-bold font-mono transition-all">
+                CLOCK IN
+              </button>
             </div>
           </div>
 
-          {/* OKR Card */}
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 shadow-xl">
-            <div className="absolute -right-10 -top-10 text-[var(--ledger-blue)] opacity-10 group-hover:rotate-12 transition-transform duration-700">
-              <Target size={150} />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--ledger-blue)]/0 to-[var(--ledger-blue)]/5 group-hover:to-[var(--ledger-blue)]/10 transition-colors duration-500" />
-            <p className="text-xs font-mono text-[var(--text-muted)] mb-4 uppercase tracking-widest relative z-10 flex items-center gap-2">
-              <TrendingUp size={14} /> Current OKR Progress
-            </p>
-            <div className="relative z-10 mt-auto pt-8">
-              <div className="flex items-end gap-2 mb-3">
-                <h3 className="text-5xl font-black text-white">{userStats?.okr ?? 0}</h3>
-                <span className="text-xl text-[var(--ledger-blue)] font-bold mb-1">%</span>
+          {/* OKR & Balances */}
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl relative overflow-hidden shadow-xl">
+            <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] mb-6 flex items-center gap-2">
+              <Target size={16} className="text-purple-400" /> My Progress
+            </h3>
+            <div className="mb-6">
+              <div className="flex justify-between text-xs text-white mb-2">
+                <span>Current OKR</span>
+                <span>{userStats?.okr ?? 0}%</span>
               </div>
               <div className="w-full bg-black/50 h-2 rounded-full overflow-hidden border border-white/10">
                 <div 
-                  className="bg-gradient-to-r from-[var(--ledger-blue)] to-purple-500 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_var(--ledger-blue)]" 
+                  className="bg-gradient-to-r from-[var(--ledger-blue)] to-purple-500 h-full rounded-full transition-all duration-1000 ease-out" 
                   style={{ width: `${userStats?.okr ?? 0}%` }}
                 />
               </div>
             </div>
+            <div className="flex justify-between border-t border-white/10 pt-4 mt-auto">
+              <div>
+                <p className="text-xs text-[var(--text-muted)] uppercase">PTO Balance</p>
+                <p className="text-xl font-bold text-white">14 <span className="text-xs font-normal">days</span></p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-[var(--text-muted)] uppercase">Next Payday</p>
+                <p className="text-xl font-bold text-[var(--verify-green)]">30th</p>
+              </div>
+            </div>
           </div>
 
+          {/* Action Items */}
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl relative overflow-hidden shadow-xl flex flex-col">
+            <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] mb-4 flex items-center gap-2">
+              <Activity size={16} className="text-[var(--signal-amber)]" /> Action Items
+            </h3>
+            <div className="flex-1 space-y-3">
+              <div className="p-3 bg-black/40 rounded-lg border border-white/5 flex justify-between items-center group cursor-pointer hover:border-white/20 transition-all">
+                <span className="text-sm text-white group-hover:text-[var(--ledger-blue)] transition-colors">Complete Onboarding Docs</span>
+                <span className="w-2 h-2 bg-[var(--signal-amber)] rounded-full animate-pulse" />
+              </div>
+              <div className="p-3 bg-black/40 rounded-lg border border-white/5 flex justify-between items-center group cursor-pointer hover:border-white/20 transition-all">
+                <span className="text-sm text-white group-hover:text-[var(--ledger-blue)] transition-colors">Acknowledge IT Policy</span>
+                <span className="w-2 h-2 bg-[var(--verify-green)] rounded-full" />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

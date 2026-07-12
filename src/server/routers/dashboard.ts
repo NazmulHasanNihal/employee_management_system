@@ -17,12 +17,53 @@ export const dashboardRouter = router({
       where: { status: { contains: 'Pending' } }
     });
 
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+    const payrolls = await prisma.payroll.aggregate({
+      where: { month: currentMonth },
+      _sum: { net: true }
+    });
+
     return {
       headcount,
       activeToday: `${activePercentage}%`,
       pendingApps,
+      totalPayroll: payrolls._sum.net || 0,
       sysHealth: '100%',
     };
+  }),
+
+  getDepartmentBreakdown: publicProcedure.query(async () => {
+    const users = await prisma.user.findMany({
+      select: { department: true }
+    });
+
+    const breakdown: Record<string, number> = {};
+    for (const u of users) {
+      if (u.department) {
+        breakdown[u.department] = (breakdown[u.department] || 0) + 1;
+      }
+    }
+
+    return Object.entries(breakdown).map(([name, value]) => ({ name, value }));
+  }),
+
+  getAuditLogs: publicProcedure.query(async () => {
+    const logs = await prisma.auditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    });
+    
+    // Fetch users manually
+    const userIds = [...new Set(logs.map(l => l.actor))];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, image: true, email: true }
+    });
+    
+    return logs.map(log => ({
+      ...log,
+      user: users.find(u => u.id === log.actor) || null
+    }));
   }),
 
   getUserStats: publicProcedure
@@ -32,8 +73,8 @@ export const dashboardRouter = router({
         where: { id: input.userId }
       });
       return {
-        okr: 78, // Mocked for now
-        pulse: null,
+        okr: user?.rpgLevel ? user.rpgLevel * 10 : 0, 
+        pulse: user?.pulse || null,
         offlineQueue: 0
       };
     }),
