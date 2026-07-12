@@ -1,0 +1,12 @@
+Manager Access (Musrat):
+
+Email: musrat@example.com
+Password: password123
+Standard Employee Access (Gungun):
+
+Email: gungun@example.com
+Password: password123
+Admin / HR Manager Access (Nazmul / Sarah):
+
+Email: nazmulhas36@gmail.com
+Password: 122001

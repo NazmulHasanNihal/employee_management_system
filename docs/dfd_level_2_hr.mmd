@@ -1,0 +1,39 @@
+flowchart TD
+    %% Level 2 Data Flow Diagram for 2.0 HR & Time Tracking
+    
+    E_EMP[Employee]
+    E_HR[HR Manager]
+    E_SYS[System Timer]
+
+    %% Sub-Processes
+    P2_1((2.1 Record Attendance))
+    P2_2((2.2 Manage Leave Requests))
+    P2_3((2.3 Assign Shifts))
+
+    %% Data Stores
+    D1[(D1: User DB)]
+    D2_A[(D2a: Attendance DB)]
+    D2_L[(D2b: Leave DB)]
+    D2_S[(D2c: Shift DB)]
+
+    %% 2.1 Record Attendance
+    E_EMP -->|Biometric/Web Clock In| P2_1
+    E_SYS -->|Auto-Checkout trigger| P2_1
+    P2_1 -->|Validate ID| D1
+    P2_1 -->|Store Clock Event| D2_A
+    P2_1 -->|Anomaly Alert| E_HR
+
+    %% 2.2 Manage Leave
+    E_EMP -->|Leave Application| P2_2
+    P2_2 -->|Pending Request| D2_L
+    D2_L -->|Fetch Pending| P2_2
+    P2_2 -->|Notify Manager| E_HR
+    E_HR -->|Approve/Reject| P2_2
+    P2_2 -->|Update Status| D2_L
+    P2_2 -->|Approval Notice| E_EMP
+
+    %% 2.3 Assign Shifts
+    E_HR -->|Create Shift Plan| P2_3
+    P2_3 -->|Store Shift| D2_S
+    D2_S -->|Fetch Schedule| P2_1
+    P2_3 -->|Shift Roster Notice| E_EMP

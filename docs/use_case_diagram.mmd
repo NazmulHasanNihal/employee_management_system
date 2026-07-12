@@ -1,0 +1,47 @@
+flowchart TD
+    %% Use Case Diagram for Employee Management System
+
+    %% Actors
+    EMP([Employee])
+    HR([HR Manager])
+    ADMIN([System Admin])
+
+    %% System Boundary
+    subgraph EMS [Employee Management System]
+        direction TB
+        UC1(Clock In / Out)
+        UC2(Apply for Leave)
+        UC3(View Payslips)
+        UC4(Participate in 360 Reviews)
+        
+        UC5(Approve / Reject Leave)
+        UC6(Generate Shift Schedules)
+        UC7(Run Monthly Payroll)
+        UC8(Assign OKRs)
+        
+        UC9(Configure Tenants)
+        UC10(Manage Integrations)
+        UC11(Audit System Logs)
+    end
+
+    %% Employee Associations
+    EMP --> UC1
+    EMP --> UC2
+    EMP --> UC3
+    EMP --> UC4
+
+    %% HR Manager Associations
+    HR --> UC4
+    HR --> UC5
+    HR --> UC6
+    HR --> UC7
+    HR --> UC8
+
+    %% Admin Associations
+    ADMIN --> UC9
+    ADMIN --> UC10
+    ADMIN --> UC11
+
+    %% Optional: Extend/Include Relationships (Demonstration)
+    UC7 -.->|«include»| UC_Tax(Calculate Taxes)
+    UC1 -.->|«extend»| UC_Alert(Flag Anomaly)

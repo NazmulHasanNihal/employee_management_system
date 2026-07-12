@@ -1,0 +1,31 @@
+erDiagram
+    User ||--o{ FeedbackReview : "subject/reviewer"
+    User ||--o{ PerformanceReview : "reviews"
+    User ||--o{ Objective : "objectives"
+
+    User {
+        String id PK
+        String name
+    }
+
+    FeedbackReview {
+        String id PK
+        String type
+        Float score
+        String competencies
+        String feedback
+    }
+
+    PerformanceReview {
+        String id PK
+        Float score
+        String feedback
+        String period
+    }
+
+    Objective {
+        String id PK
+        String title
+        String status
+        Float progress
+    }

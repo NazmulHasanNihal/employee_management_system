@@ -1,0 +1,37 @@
+erDiagram
+    User ||--o{ Ticket : "tickets"
+    User ||--o{ TicketReply : "ticketReplies"
+    User ||--o{ DirectMessage : "sentMessages/recvMessages"
+
+    User {
+        String id PK
+        String name
+    }
+
+    Ticket ||--o{ TicketReply : "replies"
+    Ticket {
+        String id PK
+        String subject
+        String status
+        String priority
+    }
+    
+    TicketReply {
+        String id PK
+        String message
+    }
+
+    DirectMessage {
+        String id PK
+        String content
+        Boolean read
+        Boolean isBurner
+    }
+    
+    Announcement {
+        String id PK
+        String title
+        String content
+        String priority
+        String author
+    }

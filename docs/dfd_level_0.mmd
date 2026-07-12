@@ -1,0 +1,26 @@
+flowchart TD
+    %% Level 0 Data Flow Diagram (Context Diagram)
+    %% External Entities
+    E_EMP[Employee]
+    E_HR[HR Manager]
+    E_ADMIN[System Admin]
+    E_BANK[Bank / Payment Gateway]
+
+    %% Main Process
+    P_EMS((0.0 Employee Management System))
+
+    %% Data Flows - Employee
+    E_EMP -->|Time Logs, Leave Requests, Profile Updates| P_EMS
+    P_EMS -->|Payslips, Approvals, Notifications| E_EMP
+
+    %% Data Flows - HR Manager
+    E_HR -->|Policies, Payroll Config, Approvals| P_EMS
+    P_EMS -->|Reports, Analytics, Alerts| E_HR
+
+    %% Data Flows - Admin
+    E_ADMIN -->|Tenant Setup, Role Config, Integrations| P_EMS
+    P_EMS -->|System Logs, Audit Trails| E_ADMIN
+
+    %% Data Flows - Bank
+    P_EMS -->|Salary Disbursement Data| E_BANK
+    E_BANK -->|Payment Status| P_EMS

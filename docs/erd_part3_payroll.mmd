@@ -1,0 +1,57 @@
+erDiagram
+    User ||--o| TaxProfile : "taxProfile"
+    User ||--o| PayrollStructure : "payrollStructure"
+    User ||--o{ Payroll : "payrolls"
+
+    User {
+        String id PK
+        Float salary
+        Float hourlyRate
+    }
+
+    Payroll {
+        String id PK
+        String month
+        Float baseSalary
+        Float net
+        String currency
+        String status
+        String breakdown
+    }
+
+    PayrollStructure ||--o{ PayrollStructureHead : "heads"
+    PayrollStructure {
+        String id PK
+        String name
+        Float baseSalary
+    }
+
+    PayrollHead ||--o{ PayrollStructureHead : "structures"
+    PayrollHead {
+        String id PK
+        String name
+        String type
+    }
+
+    PayrollStructureHead {
+        String id PK
+        String amountType
+        String value
+    }
+
+    TaxProfile {
+        String id PK
+        String state
+        Float federalRate
+        Float stateRate
+        Float overtimeCap
+    }
+
+    EventStore {
+        String id PK
+        String aggregateId
+        String type
+        String payload
+        DateTime timestamp
+        String actorId
+    }

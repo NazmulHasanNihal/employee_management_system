@@ -1,0 +1,51 @@
+erDiagram
+    Tenant ||--o{ User : "users"
+    Tenant ||--o{ Department : "departments"
+    Tenant ||--o{ AppIntegration : "integrations"
+    Tenant {
+        String id PK
+        String name
+        String domain
+        String plan
+        String stripeId
+    }
+
+    User ||--o| Department : "departmentRef"
+    User ||--o| User : "manager"
+    User ||--o| User : "proxy"
+    User ||--o{ AppProvision : "provisions"
+    
+    User {
+        String id PK
+        String email UK
+        String name
+        String role
+        String department
+        String designation
+        String employmentType
+        String status
+        Int xp
+        Int rpgLevel
+    }
+
+    Department ||--o{ User : "users"
+    Department ||--o| User : "head"
+    Department {
+        String id PK
+        String name UK
+        Float budget
+    }
+
+    AppIntegration ||--o{ AppProvision : "provisions"
+    AppIntegration {
+        String id PK
+        String appName
+        Boolean isActive
+    }
+
+    AppProvision }|--|| User : "user"
+    AppProvision {
+        String id PK
+        String status
+        String externalId
+    }

@@ -1,0 +1,631 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime
+  updatedAt     DateTime
+  sessions      Session[]
+  accounts      Account[]
+
+  tenantId      String?
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
+
+  // EMS Specific Fields
+  role               String? // Admin, HR Manager, Manager, Employee
+  department         String? // Executive, Engineering, etc.
+  designation        String? // CEO, CTO, etc.
+  employmentType     String? // Permanent, Contract, Intern, Part-Time
+  level              String? // Junior, Mid-Level, Senior, Lead, Executive
+  status             String      @default("Active") // Active, Inactive, Terminated
+  managerId          String?
+  manager            User?       @relation("ManagerToSubordinates", fields: [managerId], references: [id])
+  departmentRefId    String?
+  departmentRef      Department? @relation("DepartmentMembers", fields: [departmentRefId], references: [id])
+  subordinates       User[]      @relation("ManagerToSubordinates")
+  xp                 Int         @default(0)
+  rpgLevel           Int         @default(1)
+  joined             DateTime?
+  salary             Float?
+  pulse              String? // Manageable, Heavy, Overwhelmed
+  permissions        String? // JSON array string of granular RBAC permissions
+  currency           String      @default("USD")
+  payrollStructureId String?
+  hourlyRate         Float?
+
+  proxyId            String?
+  proxy              User?       @relation("UserProxy", fields: [proxyId], references: [id])
+  proxiedUsers       User[]      @relation("UserProxy")
+  proxyValidUntil    DateTime?
+
+  // Relations
+  attendances       Attendance[]
+  applications      Application[]
+  payrolls          Payroll[]
+  payrollStructure  PayrollStructure?      @relation(fields: [payrollStructureId], references: [id])
+  assets            Asset[]
+  documents         Document[]
+  leaveRequests     LeaveRequest[]
+  notifications     Notification[]
+  sentMessages      DirectMessage[]        @relation("SentMessages")
+  recvMessages      DirectMessage[]        @relation("ReceivedMessages")
+  expenses          Expense[]
+  shifts            ShiftAssignment[]
+  headedDepartments Department[]           @relation("DepartmentHead")
+  reviews           PerformanceReview[]
+  objectives        Objective[]
+  tickets           Ticket[]
+  ticketReplies     TicketReply[]
+  employeeBenefits  EmployeeBenefit[]
+  equityGrants      EquityGrant[]
+  feedbacks         Feedback[]
+  kudosReceived     Kudo[]                 @relation("KudosReceived")
+  kudosSent         Kudo[]                 @relation("KudosSent")
+  onboardingTasks   OnboardingTask[]
+  policyAcks        PolicyAcknowledgment[]
+  certifications    Certification[]
+  skills            UserSkill[]
+  provisions        AppProvision[]
+  taxProfile        TaxProfile?
+  feedbackReceived  FeedbackReview[]       @relation("ReviewSubject")
+  feedbackGiven     FeedbackReview[]       @relation("Reviewer")
+}
+
+
+
+// --- EMS Custom Models ---
+
+model Attendance {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  clockIn   DateTime?
+  clockOut  DateTime?
+  shift     String?
+  status    String // Present, Late, Absent, Pending
+  anomaly   String?
+  lat       Float?
+  lng       Float?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId, date])
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // Leave Request, Hardware Request, Expense Claim
+  details   String
+  status    String // Pending Manager, Pending HR, Approved, Rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payroll {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month         String
+  baseSalary    Float
+  net           Float
+  currency      String   @default("USD")
+  status        String // Disbursed, Pending
+  breakdown     String? // JSON representation of calculated heads
+  totalHours    Float?
+  overtimeHours Float?
+  lateDays      Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PayrollStructure {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  baseSalary  Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+  heads PayrollStructureHead[]
+}
+
+model PayrollHead {
+  id        String   @id @default(cuid())
+  name      String // e.g., "House Rent Allowance", "Tax", "Overtime"
+  type      String // EARNING, DEDUCTION
+  createdAt DateTime @default(now())
+
+  structures PayrollStructureHead[]
+}
+
+model PayrollStructureHead {
+  id          String           @id @default(cuid())
+  structureId String
+  structure   PayrollStructure @relation(fields: [structureId], references: [id], onDelete: Cascade)
+  headId      String
+  head        PayrollHead      @relation(fields: [headId], references: [id], onDelete: Cascade)
+  amountType  String // FIXED, PERCENTAGE, FORMULA
+  value       String // e.g. "5000", "0.2" (20%), or "(OvertimeHours * HourlyRate * 1.5)"
+  createdAt   DateTime         @default(now())
+
+  @@unique([structureId, headId])
+}
+
+model Asset {
+  id                String    @id @default(cuid())
+  name              String
+  status            String // Good, Repair Needed, Active
+  purchasePrice     Float?
+  purchaseDate      DateTime?
+  depreciationYears Int       @default(3)
+  userId            String?
+  user              User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Announcement {
+  id           String   @id @default(cuid())
+  title        String
+  content      String
+  priority     String // Low, Medium, High
+  author       String
+  readReceipts Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
+model Document {
+  id                String    @id @default(cuid())
+  name              String
+  color             String    @default("text-[var(--text-main)]")
+  url               String? // Path to file
+  requiresSignature Boolean   @default(false)
+  isSigned          Boolean   @default(false)
+  signedAt          DateTime?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String
+  action    String
+  target    String
+  prevHash  String
+  hash      String
+  createdAt DateTime @default(now())
+}
+
+model LeaveRequest {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate DateTime
+  endDate   DateTime
+  type      String // Sick, Vacation, Personal, Maternity
+  status    String   @default("Pending") // Pending, Approved, Rejected
+  reason    String
+  tenantId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // Leave, Announcement, System, DM
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model DirectMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean  @default(false)
+  isBurner   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Float
+  category    String // TRAVEL, MEALS, EQUIPMENT
+  description String
+  receiptUrl  String?
+  isMileage   Boolean  @default(false)
+  distance    Float?
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Shift {
+  id          String            @id @default(cuid())
+  name        String // MORNING, EVENING, NIGHT
+  startTime   String // e.g., "09:00"
+  endTime     String // e.g., "17:00"
+  assignments ShiftAssignment[]
+  createdAt   DateTime          @default(now())
+}
+
+model ShiftAssignment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shiftId   String
+  shift     Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  date      DateTime
+  createdAt DateTime @default(now())
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  budget    Float    @default(0)
+  headId    String?
+  head      User?    @relation("DepartmentHead", fields: [headId], references: [id])
+  users     User[]   @relation("DepartmentMembers")
+  tenantId  String?
+  createdAt DateTime @default(now())
+}
+
+// --- Restored Modules ---
+
+model PerformanceReview {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Float
+  feedback  String
+  period    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Objective {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  status    String   @default("In Progress")
+  progress  Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  status    String        @default("Open") // Open, In Progress, Resolved, Closed
+  priority  String        @default("Low")
+  replies   TicketReply[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model TicketReply {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Benefit {
+  id               String            @id @default(cuid())
+  name             String
+  description      String?
+  cost             Float             @default(0)
+  provider         String?
+  employeeBenefits EmployeeBenefit[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model EmployeeBenefit {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  benefitId String
+  benefit   Benefit  @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, benefitId])
+}
+
+model EquityGrant {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shares       Int
+  vestingYears Int
+  grantedDate  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// --- Enterprise Upgrade Modules ---
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  type        String   @default("General") // Holiday, Meeting, Payroll, Social
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String? // Optional to allow true anonymity, though we might still track it internally but not expose it
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  category  String
+  type      String   @default("General") // General, Whistleblower
+  message   String
+  status    String   @default("New") // New, Reviewed, Actioned
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Kudo {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("KudosSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("KudosReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  message    String
+  createdAt  DateTime @default(now())
+}
+
+model OnboardingTask {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task        String
+  description String?
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model JobPosting {
+  id             String      @id @default(cuid())
+  title          String
+  department     String
+  location       String
+  type           String      @default("Full-Time")
+  description    String
+  requiredSkills String?     // JSON array of strings
+  status         String      @default("Open") // Open, Closed, Draft
+  tenantId       String?
+  candidates     Candidate[]
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Candidate {
+  id           String     @id @default(cuid())
+  jobPostingId String
+  jobPosting   JobPosting @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
+  name         String
+  email        String
+  resumeUrl    String?
+  status       String     @default("New") // New, Interviewing, Hired, Rejected
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model CompanyPolicy {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  url        String?
+  isRequired Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  acknowledgments PolicyAcknowledgment[]
+}
+
+model PolicyAcknowledgment {
+  id       String        @id @default(cuid())
+  userId   String
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyId String
+  policy   CompanyPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  signedAt DateTime      @default(now())
+
+  @@unique([userId, policyId])
+}
+
+model Certification {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  issuedDate  DateTime?
+  expiryDate  DateTime?
+  documentUrl String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model EnrollmentPeriod {
+  id        String   @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  status    String   @default("Active") // Active, Closed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill     String
+  level     Int      @default(1) // 1-5
+  createdAt DateTime @default(now())
+
+  @@unique([userId, skill])
+}
+
+// --- 10/10 Masterpiece Models ---
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  domain    String?  @unique
+  plan      String   @default("Pro") // Free, Pro, Enterprise
+  stripeId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+}
+
+model AutomationRule {
+  id           String   @id @default(cuid())
+  tenantId     String?
+  name         String
+  triggerEvent String   // e.g. 'absence', 'expense'
+  condition    String   // e.g. '> 3' or JSON
+  action       String   // e.g. 'send_warning', 'lock_account'
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
+model AppIntegration {
+  id        String   @id @default(cuid())
+  tenantId  String?
+  appName   String   // Slack, GitHub, GoogleWorkspace
+  apiKey    String?  // Mock key
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  provisions AppProvision[]
+}
+
+model AppProvision {
+  id             String         @id @default(cuid())
+  integrationId  String
+  integration    AppIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         String         @default("Pending") // Pending, Provisioned, Revoked
+  externalId     String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model TaxProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  state           String   // CA, TX, NY, etc.
+  federalRate     Float    @default(0.15)
+  stateRate       Float    @default(0.0)
+  overtimeCap     Float    @default(40) // Weekly hours before OT
+  dailyOtCap      Float?   // Daily OT cap (e.g. 8 for CA)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FeedbackReview {
+  id           String   @id @default(cuid())
+  subjectId    String
+  subject      User     @relation("ReviewSubject", fields: [subjectId], references: [id], onDelete: Cascade)
+  reviewerId   String
+  reviewer     User     @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  type         String   // Self, Peer, Manager
+  score        Float
+  competencies String?  // JSON { leadership: 4, technical: 5 }
+  feedback     String?
+  createdAt    DateTime @default(now())
+}
+
+// --- Event Sourcing Engine ---
+
+model EventStore {
+  id          String   @id @default(uuid())
+  aggregateId String   // ID of the entity (e.g. Payroll ID, Attendance ID)
+  type        String   // e.g. "PayrollCalculated", "AttendanceClockIn"
+  payload     String   // JSON payload of the state change
+  timestamp   DateTime @default(now())
+  actorId     String?  // Who made the change (if any)
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+}

@@ -1,0 +1,56 @@
+flowchart TD
+    %% Zero-Cost 10/10 Full Stack Architecture Diagram
+    
+    subgraph Client [Frontend UI / Client]
+        UI[Next.js 15 App Router]
+        STYLES[Tailwind CSS v4 + shadcn/ui]
+        MOTION[Framer Motion]
+        UI --- STYLES
+        UI --- MOTION
+    end
+
+    subgraph API [API & Transport Layer]
+        TRPC[tRPC v11 + TanStack Query]
+        ZOD[Zod Validation]
+        TRPC --- ZOD
+    end
+
+    subgraph Server [Backend Compute & Services]
+        NEXT_API[Next.js Server / API Routes]
+        GO_SRV[Go Microservice / PDF Generator]
+        BULLMQ[BullMQ Background Workers]
+    end
+
+    subgraph Database [Infrastructure & Data Layer]
+        SUPA_DB[(Supabase PostgreSQL)]
+        SUPA_AUTH{Supabase Auth & RLS}
+        UPSTASH[(Upstash Redis Cache/Queue)]
+        STORAGE[Supabase Storage / Assets]
+    end
+
+    subgraph Observability [Telemetry & DevOps]
+        SENTRY[Sentry Error Tracking]
+        POSTHOG[PostHog Product Analytics]
+        GITHUB[GitHub Actions CI/CD]
+    end
+
+    %% Client to API
+    Client <-->|Strict Type-Safe JSON| API
+    Client -->|Telemetry Events| Observability
+    
+    %% API to Server
+    API <-->|RPC Calls| NEXT_API
+    
+    %% Server to DB
+    NEXT_API <-->|Prisma Queries| SUPA_DB
+    NEXT_API -->|Verify Session| SUPA_AUTH
+    NEXT_API <-->|Asset Uploads| STORAGE
+    
+    %% Async Jobs & Microservices
+    NEXT_API -.->|Enqueue Tasks| BULLMQ
+    BULLMQ <-->|Queue Storage| UPSTASH
+    BULLMQ -.->|Trigger Generation| GO_SRV
+    GO_SRV <-->|Raw SQL via sqlc| SUPA_DB
+    
+    %% Deployment flow
+    GITHUB -.->|Automated Builds| Server

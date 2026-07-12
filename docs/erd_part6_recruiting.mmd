@@ -1,0 +1,40 @@
+erDiagram
+    Tenant ||--o{ AutomationRule : "rules"
+    
+    AutomationRule {
+        String id PK
+        String name
+        String triggerEvent
+        String condition
+        String action
+        Boolean isActive
+    }
+
+    JobPosting ||--o{ Candidate : "candidates"
+    JobPosting {
+        String id PK
+        String title
+        String department
+        String status
+    }
+
+    Candidate {
+        String id PK
+        String name
+        String email
+        String status
+    }
+
+    User ||--o{ PolicyAcknowledgment : "acknowledgments"
+    CompanyPolicy ||--o{ PolicyAcknowledgment : "acknowledgments"
+    
+    CompanyPolicy {
+        String id PK
+        String title
+        Boolean isRequired
+    }
+    
+    PolicyAcknowledgment {
+        String id PK
+        DateTime signedAt
+    }

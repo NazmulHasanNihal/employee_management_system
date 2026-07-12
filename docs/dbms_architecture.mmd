@@ -1,0 +1,38 @@
+flowchart TD
+    %% Database Management System (DBMS) Architecture Diagram
+    
+    subgraph Client [Client Tier]
+        UI[Next.js App Router UI]
+    end
+
+    subgraph AppServer [Application Server Tier]
+        API[tRPC / Next.js API Routes]
+        PRISMA[Prisma ORM Client]
+        QUEUE[BullMQ Worker]
+        GO_SRV[Go Microservice]
+    end
+
+    subgraph DBMSTier [DBMS Tier]
+        subgraph Supabase [Supabase Managed PostgreSQL]
+            POOL(PgBouncer Connection Pool)
+            DB[(PostgreSQL Database)]
+            RLS{Row Level Security}
+        end
+        subgraph Upstash [Upstash Managed Redis]
+            REDIS[(Redis In-Memory Cache/Queue)]
+        end
+    end
+
+    %% Flow of data
+    UI <-->|JSON over HTTP| API
+    
+    API <-->|Prisma Client Queries| PRISMA
+    PRISMA -->|Connection URL| POOL
+    POOL -->|TCP/IP| DB
+    DB --> RLS
+    
+    API -.->|Enqueue Job| QUEUE
+    QUEUE <-->|Job Data| REDIS
+    
+    GO_SRV <-->|Raw SQL via sqlc| DB
+    QUEUE -.->|Trigger PDF Generation| GO_SRV
