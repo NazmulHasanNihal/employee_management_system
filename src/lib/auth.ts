@@ -9,4 +9,5 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  trustedOrigins: ["https://employee-management-system-orcin.vercel.app", "http://localhost:3000"],
 });
