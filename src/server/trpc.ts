@@ -56,12 +56,12 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
 
 const auditMiddleware = t.middleware(async ({ ctx, type, path, next }) => {
   const result = await next();
-  // @ts-expect-error - injecting user in previous middleware
+  // @ts-expect-error - Prisma Client context issues - injecting user in previous middleware
   if (type === 'mutation' && ctx.user) {
     try {
       await prisma.auditLog.create({
         data: {
-          // @ts-expect-error
+          // @ts-expect-error - Prisma Client context issues
           actor: ctx.user.id,
           action: path,
           target: "Payload hidden",
@@ -79,7 +79,7 @@ const auditMiddleware = t.middleware(async ({ ctx, type, path, next }) => {
 export const protectedProcedure = t.procedure.use(isAuthed).use(auditMiddleware);
 
 const isAdmin = t.middleware(({ ctx, next }) => {
-  // @ts-expect-error
+  // @ts-expect-error - Prisma Client context issues
   if (!ctx.user || ctx.user.role !== 'Admin') {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
@@ -89,7 +89,7 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 export const adminProcedure = t.procedure.use(isAuthed).use(isAdmin);
 
 const isHR = t.middleware(({ ctx, next }) => {
-  // @ts-expect-error
+  // @ts-expect-error - Prisma Client context issues
   if (!ctx.user || (ctx.user.role !== 'Admin' && ctx.user.role !== 'HR Manager')) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
