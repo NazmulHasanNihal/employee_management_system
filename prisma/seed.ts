@@ -2,7 +2,7 @@ import { prisma } from "../src/lib/prisma";
 
 const INITIAL_EMPLOYEES = [
   { email: 'sarah@example.com', name: 'Sarah Jenkins', role: 'Admin', department: 'Executive', designation: 'CEO', type: 'Permanent', level: 'Executive', status: 'Active', password: 'password123', salary: 150000, pulse: 'Manageable' },
-  { email: 'nazmulhas36@gmail.com', name: 'Nazmul Admin', role: 'Admin', department: 'Engineering', designation: 'CTO', type: 'Permanent', level: 'Executive', status: 'Active', password: '122001', salary: 140000, pulse: 'Heavy' },
+  { email: 'nazmulhas36@gmail.com', name: 'Nazmul Admin', role: 'Admin', department: 'Engineering', designation: 'CTO', type: 'Permanent', level: 'Executive', status: 'Active', password: 'password123', salary: 140000, pulse: 'Heavy' },
   { email: 'musrat@example.com', name: 'Musrat', role: 'Manager', department: 'Product', designation: 'Product Manager', type: 'Contract', level: 'Mid-Level', status: 'Active', password: 'password123', salary: 90000, pulse: 'Overwhelmed' },
   { email: 'gungun@example.com', name: 'Gungun', role: 'Employee', department: 'Design', designation: 'UX Designer', type: 'Part-Time', level: 'Junior', status: 'Active', password: 'password123', salary: 45000, pulse: 'Manageable' },
 ];
