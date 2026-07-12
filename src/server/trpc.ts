@@ -1,10 +1,11 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { prisma } from '@/lib/prisma';
-import type { Session } from 'better-auth';
+import type { Session, User } from 'better-auth';
 
 export interface CustomUser {
   id: string;
+  name?: string | null;
   email?: string;
   role?: string | null;
   department?: string | null;
@@ -15,7 +16,8 @@ export interface CustomUser {
 }
 
 interface Context {
-  session: Session | null;
+  session: { session: Session; user: CustomUser } | null;
+  user?: CustomUser;
 }
 
 const t = initTRPC.context<Context>().create({
@@ -32,11 +34,12 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
   
   const dbUser = await prisma.user.findUnique({ 
     where: { id: ctx.session.user.id },
-    select: { role: true, department: true, designation: true, xp: true, rpgLevel: true, tenantId: true, email: true }
+    select: { name: true, role: true, department: true, designation: true, xp: true, rpgLevel: true, tenantId: true, email: true }
   });
 
   const customUser: CustomUser = {
     id: ctx.session.user.id,
+    name: dbUser?.name ?? ctx.session.user.name,
     email: dbUser?.email ?? ctx.session.user.email,
     role: dbUser?.role ?? 'Employee',
     department: dbUser?.department ?? '',
@@ -49,6 +52,10 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
+      session: {
+        ...ctx.session,
+        user: customUser
+      },
       user: customUser
     },
   });
@@ -56,12 +63,10 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
 
 const auditMiddleware = t.middleware(async ({ ctx, type, path, next }) => {
   const result = await next();
-  // @ts-expect-error - Prisma Client context issues - injecting user in previous middleware
   if (type === 'mutation' && ctx.user) {
     try {
       await prisma.auditLog.create({
         data: {
-          // @ts-expect-error - Prisma Client context issues
           actor: ctx.user.id,
           action: path,
           target: "Payload hidden",
@@ -79,7 +84,6 @@ const auditMiddleware = t.middleware(async ({ ctx, type, path, next }) => {
 export const protectedProcedure = t.procedure.use(isAuthed).use(auditMiddleware);
 
 const isAdmin = t.middleware(({ ctx, next }) => {
-  // @ts-expect-error - Prisma Client context issues
   if (!ctx.user || ctx.user.role !== 'Admin') {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }
@@ -89,7 +93,6 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 export const adminProcedure = t.procedure.use(isAuthed).use(isAdmin);
 
 const isHR = t.middleware(({ ctx, next }) => {
-  // @ts-expect-error - Prisma Client context issues
   if (!ctx.user || (ctx.user.role !== 'Admin' && ctx.user.role !== 'HR Manager')) {
     throw new TRPCError({ code: 'FORBIDDEN' });
   }

@@ -11,7 +11,7 @@ const handler = (req: Request) =>
       const session = await auth.api.getSession({
         headers: req.headers
       });
-      return { session };
+      return { session: session as any };
     },
   });
 

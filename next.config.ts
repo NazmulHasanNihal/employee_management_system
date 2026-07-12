@@ -19,7 +19,8 @@ export default withSentryConfig(
     project: "mock-project",
     silent: !process.env.CI,
     widenClientFileUpload: true,
-    hideSourceMaps: true,
-    disableLogger: true,
+    sourcemaps: {
+      disable: true,
+    },
   }
 );

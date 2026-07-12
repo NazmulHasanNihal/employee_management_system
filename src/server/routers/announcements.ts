@@ -25,7 +25,7 @@ export const announcementsRouter = router({
           title: input.title,
           content: input.content,
           priority: input.priority,
-          author: ctx.session.user.name
+          author: ctx.user.name || "Unknown"
         }
       });
 
