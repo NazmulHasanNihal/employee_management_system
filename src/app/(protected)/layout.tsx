@@ -23,13 +23,23 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     redirect("/login");
   }
 
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { id: authUser.id }
   });
 
   if (!dbUser) {
-    await supabase.auth.signOut();
-    redirect("/login");
+    // Auto-provision the user in the database if they exist in Supabase Auth but not Prisma
+    dbUser = await prisma.user.create({
+      data: {
+        id: authUser.id,
+        email: authUser.email!,
+        name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Authorized User',
+        role: 'Admin', // Give them Admin access so they can manage the system
+        department: 'Executive',
+        designation: 'System Admin',
+        status: 'active'
+      }
+    });
   }
 
   const layoutUser = getLayoutUser(dbUser);
