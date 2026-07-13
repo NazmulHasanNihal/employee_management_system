@@ -34,9 +34,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         id: authUser.id,
         email: authUser.email!,
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Authorized User',
-        role: 'Admin', // Give them Admin access so they can manage the system
-        department: 'Executive',
-        designation: 'System Admin',
+        role: authUser.user_metadata?.role || 'Employee',
+        department: authUser.user_metadata?.department || 'Operations',
+        designation: authUser.user_metadata?.designation || 'Staff',
         status: 'active'
       }
     });

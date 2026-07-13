@@ -17,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -27,7 +27,21 @@ export default function LoginPage() {
         errorMessage = "Invalid login credentials. Please try again.";
       }
       setError(errorMessage);
-    } else {
+    } else if (data?.user) {
+      const role = data.user.user_metadata?.role || 'Employee';
+      
+      if (loginType === 'admin' && role !== 'Admin') {
+        await supabase.auth.signOut();
+        setError("Access denied. You do not have Administrator privileges.");
+        return;
+      }
+      
+      if (loginType === 'employee' && role === 'Admin') {
+        await supabase.auth.signOut();
+        setError("Please use the Administrator portal to log in.");
+        return;
+      }
+
       window.location.href = "/";
     }
   };
