@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getUserRoleByEmail } from "@/app/actions/admin";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -28,7 +29,13 @@ export default function LoginPage() {
       }
       setError(errorMessage);
     } else if (data?.user) {
-      const role = data.user.user_metadata?.role || 'Employee';
+      let role = data.user.user_metadata?.role || 'Employee';
+      
+      // If metadata says Employee, fallback to checking actual Prisma DB to ensure no sync issues
+      if (role !== 'Admin') {
+        const dbRole = await getUserRoleByEmail(email);
+        if (dbRole === 'Admin') role = 'Admin';
+      }
       
       if (loginType === 'admin' && role !== 'Admin') {
         await supabase.auth.signOut();

@@ -5,6 +5,15 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+export async function getUserRoleByEmail(email: string) {
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    return user?.role || 'Employee';
+  } catch (error) {
+    return 'Employee';
+  }
+}
+
 export async function provisionEmployeeAccount(data: any) {
   try {
     // Note: In a real production app, we would verify the caller's session here
