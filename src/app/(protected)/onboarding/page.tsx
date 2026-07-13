@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Rocket, CheckSquare, ShieldOff, AlertTriangle, AlertCircle } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
+import posthog from 'posthog-js';
 
 export default function OnboardingPage() {
   const { data: session } = authClient.useSession();
@@ -34,6 +35,7 @@ export default function OnboardingPage() {
 
   const triggerOffboarding = trpc.workflows.triggerOffboarding.useMutation({
     onSuccess: () => {
+      posthog.capture('employee_offboarding_triggered');
       alert("Offboarding triggered. Employee terminated and IT ticket created.");
       setOffboardUserId("");
     }

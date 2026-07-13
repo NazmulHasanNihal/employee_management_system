@@ -32,6 +32,7 @@
     "next": "15.5.20",
     "partykit": "^0.0.115",
     "posthog-js": "^1.399.2",
+    "posthog-node": "^5.41.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "reactflow": "^11.11.4",

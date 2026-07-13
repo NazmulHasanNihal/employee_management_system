@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ArrowUpRight } from "lucide-react";
 import { authClient } from "@/lib/auth-client"; // We need to create this!
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,13 +15,24 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const { error } = await authClient.signIn.email({
+    const result = await authClient.signIn.email({
       email,
       password,
     });
-    if (error) {
-      setError(error.message || "Login failed");
+    if (result.error) {
+      setError(result.error.message || "Login failed");
     } else {
+      const user = result.data?.user;
+      if (user) {
+        posthog.identify(user.id, {
+          name: user.name,
+          email: user.email,
+          role: (user as any).role,
+        });
+        posthog.capture('user_logged_in', {
+          role: (user as any).role,
+        });
+      }
       router.push("/");
     }
   };

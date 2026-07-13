@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 import { Receipt, Check, X, FileText } from 'lucide-react';
+import posthog from 'posthog-js';
 
 export default function ExpensesPage() {
   const { data: session } = authClient.useSession();
@@ -15,15 +16,26 @@ export default function ExpensesPage() {
   const { data: myExpenses, isLoading: myLoading } = trpc.expenses.getMyExpenses.useQuery(undefined, { enabled: !isAdmin });
   
   const submitExpense = trpc.expenses.submit.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       utils.expenses.getMyExpenses.invalidate();
+      posthog.capture('expense_submitted', {
+        category: variables.category,
+        is_mileage: variables.isMileage,
+      });
       setNewExpense({ amount: 0, category: 'TRAVEL', description: '', isMileage: false, distance: 0 });
       setShowForm(false);
     }
   });
 
   const updateStatus = trpc.expenses.updateStatus.useMutation({
-    onSuccess: () => utils.expenses.getAll.invalidate()
+    onSuccess: (_, variables) => {
+      utils.expenses.getAll.invalidate();
+      if (variables.status === 'APPROVED') {
+        posthog.capture('expense_approved');
+      } else if (variables.status === 'REJECTED') {
+        posthog.capture('expense_rejected');
+      }
+    }
   });
 
   const [showForm, setShowForm] = useState(false);

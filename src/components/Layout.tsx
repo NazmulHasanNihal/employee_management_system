@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { useAppStore } from '@/lib/store';
+import posthog from 'posthog-js';
 import { trpc } from '@/lib/trpc/client';
 import usePartySocket from '@/lib/usePartySocket';
 import CommandPalette from './CommandPalette';
@@ -48,6 +49,8 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
   });
 
   const handleLogout = async () => {
+    posthog.capture('user_logged_out');
+    posthog.reset();
     await authClient.signOut();
     router.push('/login');
   };

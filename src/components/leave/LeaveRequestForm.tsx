@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import usePartySocket from '@/lib/usePartySocket';
+import posthog from 'posthog-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +29,9 @@ export function LeaveRequestForm() {
       utils.leave.getRequests.invalidate();
       socket.send(JSON.stringify({ type: 'leave_update' }));
       socket.send(JSON.stringify({ type: 'notification_update' }));
+      posthog.capture('leave_request_submitted', {
+        leave_type: type,
+      });
     }
   });
 
