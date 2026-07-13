@@ -50,7 +50,8 @@ async function main() {
         console.log('Found existing auth user. Updating password...');
         await supabaseAdmin.auth.admin.updateUserById(authUserId, {
           password: password,
-          email_confirm: true
+          email_confirm: true,
+          user_metadata: { name: name, role: 'Admin' }
         });
       } else {
         throw new Error('User exists but could not find ID.');
