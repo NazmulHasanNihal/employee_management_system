@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Cpu } from 'lucide-react';
+import posthog from 'posthog-js';
 
 interface RunPayrollFormProps {
   onSuccess: () => void;
@@ -17,6 +18,10 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
 
   const runAutomatedPayroll = trpc.payroll.runAutomatedPayroll.useMutation({
     onSuccess: (data) => {
+      posthog.capture('payroll_executed', {
+        billing_cycle: month,
+        payslips_generated: data.count,
+      });
       alert(`Successfully generated payslips for ${data.count} employees based on their attendance and formulas!`);
       onSuccess();
     }

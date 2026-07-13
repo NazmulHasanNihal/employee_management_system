@@ -5,6 +5,7 @@ import { MapPin, Fingerprint, LogOut, ShieldAlert } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import posthog from 'posthog-js';
 
 export function ClockInWidget() {
   const utils = trpc.useUtils();
@@ -30,6 +31,9 @@ export function ClockInWidget() {
     onSuccess: () => {
       utils.attendance.getActiveSession.invalidate();
       utils.attendance.getLogs.invalidate();
+      posthog.capture('employee_clock_in', {
+        has_location: !!location,
+      });
     }
   });
 
@@ -37,6 +41,7 @@ export function ClockInWidget() {
     onSuccess: () => {
       utils.attendance.getActiveSession.invalidate();
       utils.attendance.getLogs.invalidate();
+      posthog.capture('employee_clock_out');
     }
   });
 

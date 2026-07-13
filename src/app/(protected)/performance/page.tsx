@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Target, TrendingUp, Star, Plus } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
+import posthog from 'posthog-js';
 
 export default function PerformancePage() {
   const { data: session } = authClient.useSession();
@@ -19,7 +20,10 @@ export default function PerformancePage() {
 
   const utils = trpc.useUtils();
   const createObj = trpc.performance.createObjective.useMutation({
-    onSuccess: () => utils.performance.getObjectives.invalidate()
+    onSuccess: () => {
+      utils.performance.getObjectives.invalidate();
+      posthog.capture('performance_objective_created');
+    }
   });
 
   const updateObj = trpc.performance.updateObjectiveProgress.useMutation({

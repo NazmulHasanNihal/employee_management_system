@@ -5,6 +5,7 @@ import { Briefcase, UserPlus, Users, MapPin, Plus, Building } from 'lucide-react
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 import { InternalMatches } from '@/components/recruitment/InternalMatches';
+import posthog from 'posthog-js';
 
 export default function RecruitmentPage() {
   const { data: session } = authClient.useSession();
@@ -31,8 +32,13 @@ export default function RecruitmentPage() {
   const { data: jobs, isLoading } = trpc.recruitment.getJobs.useQuery(undefined, { enabled: isAdmin });
 
   const createJob = trpc.recruitment.createJob.useMutation({
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       utils.recruitment.getJobs.invalidate();
+      posthog.capture('job_posted', {
+        department: variables.department,
+        location: variables.location,
+        job_type: variables.type,
+      });
       setShowAddJob(false);
       setJobTitle("");
       setJobDesc("");
@@ -43,6 +49,7 @@ export default function RecruitmentPage() {
   const addCandidate = trpc.recruitment.addCandidate.useMutation({
     onSuccess: () => {
       utils.recruitment.getJobs.invalidate();
+      posthog.capture('candidate_added');
       setShowAddCandidate(null);
       setCandName("");
       setCandEmail("");
@@ -51,7 +58,12 @@ export default function RecruitmentPage() {
   });
 
   const updateCandidate = trpc.recruitment.updateCandidateStatus.useMutation({
-    onSuccess: () => utils.recruitment.getJobs.invalidate()
+    onSuccess: (_, variables) => {
+      utils.recruitment.getJobs.invalidate();
+      posthog.capture('candidate_status_updated', {
+        new_status: variables.status,
+      });
+    }
   });
 
   if (!isAdmin) {
