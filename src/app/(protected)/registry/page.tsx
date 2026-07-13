@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings } from 'lucide-react';
+import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
+import { provisionEmployeeAccount } from '@/app/actions/admin';
 
 const PERMISSIONS_LIST = [
   { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Hardware inventory & software licenses' },
@@ -19,6 +20,11 @@ export default function RegistryPage() {
   
   const [filter, setFilter] = useState('');
   const [editingPermsFor, setEditingPermsFor] = useState<any>(null);
+  
+  // Provisioning State
+  const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
+  const [provisionForm, setProvisionForm] = useState({ email: '', password: '', name: '', department: '', role: 'Employee', designation: '' });
+  const [provisionStatus, setProvisionStatus] = useState({ loading: false, error: null as string | null, success: false });
 
   const utils = trpc.useUtils();
   const { data: employees, isLoading } = trpc.registry.searchEmployees.useQuery({
@@ -62,6 +68,28 @@ export default function RegistryPage() {
     setEditingPermsFor(null);
   };
 
+  const handleProvisionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProvisionStatus({ loading: true, error: null, success: false });
+    
+    try {
+      const res = await provisionEmployeeAccount(provisionForm);
+      if (res.success) {
+        setProvisionStatus({ loading: false, error: null, success: true });
+        utils.registry.searchEmployees.invalidate();
+        setTimeout(() => {
+          setIsProvisionModalOpen(false);
+          setProvisionStatus({ loading: false, error: null, success: false });
+          setProvisionForm({ email: '', password: '', name: '', department: '', role: 'Employee', designation: '' });
+        }, 1500);
+      } else {
+        setProvisionStatus({ loading: false, error: res.error, success: false });
+      }
+    } catch(err: any) {
+      setProvisionStatus({ loading: false, error: err.message, success: false });
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
       
@@ -92,6 +120,14 @@ export default function RegistryPage() {
           <button className="w-full md:w-auto bg-black/50 border border-white/10 text-white px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:border-teal-500 transition-all flex items-center justify-center gap-2">
             <Download size={14} /> Export
           </button>
+          {isAdmin && (
+            <button 
+              onClick={() => setIsProvisionModalOpen(true)}
+              className="w-full md:w-auto bg-teal-500 text-black px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:brightness-110 shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all flex items-center justify-center gap-2"
+            >
+              <UserPlus size={14} /> Provision
+            </button>
+          )}
         </div>
       </div>
 
@@ -215,7 +251,92 @@ export default function RegistryPage() {
                 {updatePermsMutation.isPending ? 'Committing...' : 'Commit Changes'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
 
+      {/* Provision New User Modal */}
+      {showModal(isProvisionModalOpen) && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-[#0a0a0a] border border-teal-500/30 rounded-3xl w-full max-w-xl shadow-[0_0_50px_rgba(20,184,166,0.15)] animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div className="bg-teal-500/10 p-6 border-b border-teal-500/20 flex justify-between items-center relative shrink-0">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+              <div className="relative z-10">
+                <h3 className="font-mono text-lg font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                  <UserPlus className="text-teal-400" size={20} /> Provision New User
+                </h3>
+                <p className="text-[10px] font-mono text-[var(--text-muted)] mt-1 uppercase tracking-widest">
+                  Secure Identity Creation
+                </p>
+              </div>
+              <button onClick={() => setIsProvisionModalOpen(false)} className="relative z-10 text-[var(--text-muted)] hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleProvisionSubmit} className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+              
+              {provisionStatus.error && (
+                <div className="bg-[var(--alert-red)]/10 border border-[var(--alert-red)]/30 text-[var(--alert-red)] p-3 rounded-xl text-xs font-mono mb-4">
+                  ERROR: {provisionStatus.error}
+                </div>
+              )}
+              {provisionStatus.success && (
+                <div className="bg-teal-500/10 border border-teal-500/30 text-teal-400 p-3 rounded-xl text-xs font-mono mb-4 flex items-center gap-2">
+                  <Check size={14} /> Provisioning Successful!
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Full Name</label>
+                  <input required type="text" value={provisionForm.name} onChange={e => setProvisionForm({...provisionForm, name: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-white focus:outline-none focus:border-teal-500 transition-colors" placeholder="John Doe" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Email Address</label>
+                  <input required type="email" value={provisionForm.email} onChange={e => setProvisionForm({...provisionForm, email: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-white focus:outline-none focus:border-teal-500 transition-colors" placeholder="john@company.com" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Department</label>
+                  <input required type="text" value={provisionForm.department} onChange={e => setProvisionForm({...provisionForm, department: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-white focus:outline-none focus:border-teal-500 transition-colors" placeholder="Engineering" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Designation</label>
+                  <input required type="text" value={provisionForm.designation} onChange={e => setProvisionForm({...provisionForm, designation: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-white focus:outline-none focus:border-teal-500 transition-colors" placeholder="Software Engineer" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">System Role</label>
+                  <select value={provisionForm.role} onChange={e => setProvisionForm({...provisionForm, role: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-white focus:outline-none focus:border-teal-500 transition-colors">
+                    <option value="Employee">Employee</option>
+                    <option value="Manager">Manager</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Initial Password</label>
+                  <input type="password" value={provisionForm.password} onChange={e => setProvisionForm({...provisionForm, password: e.target.value})} className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-2.5 text-sm font-sans text-white focus:outline-none focus:border-teal-500 transition-colors" placeholder="(Auto-generated if empty)" />
+                </div>
+              </div>
+
+              <div className="pt-6 mt-4 border-t border-white/10 flex gap-4">
+                <button 
+                  type="button"
+                  onClick={() => setIsProvisionModalOpen(false)} 
+                  className="flex-1 bg-white/5 text-white py-3 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all border border-white/10"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={provisionStatus.loading || provisionStatus.success}
+                  className="flex-1 bg-teal-500 text-black py-3 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:brightness-110 shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {provisionStatus.loading ? 'Provisioning...' : 'Provision Identity'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

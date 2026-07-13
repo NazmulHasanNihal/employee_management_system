@@ -110,7 +110,7 @@ export default function Dashboard() {
         </div>
         <div className="col-span-1 md:col-span-2 row-span-2 h-full">
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl h-full flex flex-col hover:border-white/20 transition-all duration-500">
-             <Broadcasts />
+             <Broadcasts announcements={[]} isLoading={false} />
           </div>
         </div>
 
