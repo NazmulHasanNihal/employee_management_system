@@ -1,4 +1,5 @@
 import { AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function SetupPage() {
   return (
@@ -40,12 +41,12 @@ export default function SetupPage() {
           <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] px-2 text-[10px] font-mono ledger-muted uppercase">
             Awaiting Configuration
           </span>
-          <button 
-            onClick={() => window.location.href = '/'}
-            className="btn-primary px-8 py-2 mt-4"
+          <Link 
+            href="/"
+            className="btn-primary px-8 py-2 mt-4 inline-block"
           >
             Retry Connection
-          </button>
+          </Link>
         </div>
       </div>
     </div>
