@@ -10,8 +10,14 @@ export async function middleware(request: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+    // If variables are missing, redirect to the setup page instead of crashing
     if (!supabaseUrl || !supabaseKey) {
-      throw new Error("Missing Supabase environment variables in Edge Middleware");
+      if (!request.nextUrl.pathname.startsWith('/setup')) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/setup'
+        return NextResponse.redirect(url)
+      }
+      return supabaseResponse;
     }
 
     const supabase = createServerClient(
@@ -41,7 +47,8 @@ export async function middleware(request: NextRequest) {
 
     if (
       !user &&
-      !request.nextUrl.pathname.startsWith('/login')
+      !request.nextUrl.pathname.startsWith('/login') &&
+      !request.nextUrl.pathname.startsWith('/setup')
     ) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
