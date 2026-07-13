@@ -122,15 +122,18 @@ export function QuickActionsWidget() {
       </h3>
       
       <div className="grid grid-cols-2 gap-3 flex-1">
-        {actions.map((action, i) => (
+        {actions.map((action, i) => {
+          const ActionIcon = action.icon;
+          return (
           <button 
             key={i} 
             className={`flex flex-col items-center justify-center p-4 bg-black/40 border border-white/5 rounded-2xl transition-all duration-300 group ${action.bg} ${action.border}`}
           >
-            <action.icon size={24} className={`${action.color} mb-3 group-hover:scale-110 transition-transform`} />
+            <ActionIcon size={24} className={`${action.color} mb-3 group-hover:scale-110 transition-transform`} />
             <span className="text-xs font-mono font-bold text-white/70 group-hover:text-white">{action.name}</span>
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -154,11 +157,13 @@ export function EngagementWidget() {
       </div>
 
       <div className="space-y-4 flex-1">
-        {events.map((event, i) => (
+        {events.map((event, i) => {
+          const EventIcon = event.icon;
+          return (
           <div key={i} className="flex items-center justify-between p-3 bg-black/20 rounded-xl hover:bg-black/40 transition-colors border border-transparent hover:border-white/5">
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg bg-white/5 ${event.color}`}>
-                <event.icon size={16} />
+                <EventIcon size={16} />
               </div>
               <div>
                 <p className="text-sm font-bold text-white">{event.name}</p>
@@ -167,7 +172,8 @@ export function EngagementWidget() {
             </div>
             <span className="text-xs font-mono text-white/50">{event.date}</span>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

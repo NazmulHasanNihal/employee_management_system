@@ -1,103 +1,93 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
+import { Network } from 'lucide-react';
+import { ReactFlow, Background, Controls, MiniMap, Node, Edge, Position, Handle } from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import { trpc } from '@/lib/trpc/client';
-import { Network, UserCircle, Briefcase, ChevronDown, ChevronUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
-// Recursive Org Node Component
-const OrgNode = ({ node, level = 0 }: { node: any, level?: number }) => {
-  const [expanded, setExpanded] = useState(true);
-  const hasChildren = node.children && node.children.length > 0;
-
+const CustomNode = ({ data }: any) => {
   return (
-    <div className="flex flex-col items-center relative">
-      <motion.div 
-        initial={{ opacity: 0, y: -20, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, delay: level * 0.1 }}
-        className="relative z-10 flex flex-col items-center"
-      >
-        <div className={`w-64 bg-black/60 backdrop-blur-xl border border-cyan-500/30 rounded-2xl shadow-[0_0_20px_rgba(0,255,255,0.1)] overflow-hidden group hover:border-cyan-400 transition-all ${expanded ? 'ring-2 ring-cyan-500/20 ring-offset-2 ring-offset-black' : ''}`}>
-          
-          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-
-          <div className="bg-cyan-500/10 p-4 border-b border-cyan-500/20 flex items-center gap-4 relative z-10">
-            <div className="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center border border-cyan-500/40 text-cyan-300 font-bold font-mono text-lg shrink-0">
-              {node.avatar || <UserCircle size={24} />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-white text-sm font-mono truncate">{node.name}</h3>
-              <p className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest mt-0.5 truncate">{node.designation}</p>
-            </div>
-          </div>
-
-          <div className="p-3 flex items-center justify-between bg-black/40 relative z-10">
-            <div className="flex items-center gap-2 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest truncate">
-              <Briefcase size={12} className="shrink-0" /> {node.department}
-            </div>
-            {hasChildren && (
-              <button 
-                onClick={() => setExpanded(!expanded)}
-                className="w-6 h-6 rounded bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-              </button>
-            )}
-          </div>
-        </div>
-      </motion.div>
-
-      {hasChildren && (
-        <AnimatePresence>
-          {expanded && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="flex flex-col items-center relative overflow-hidden"
-            >
-              {/* Vertical line down from parent */}
-              <div className="w-px h-8 bg-cyan-500/30 shadow-[0_0_8px_rgba(0,255,255,0.5)]"></div>
-              
-              <div className="flex relative pt-4">
-                {/* Horizontal line connecting siblings (only show if multiple children) */}
-                {node.children.length > 1 && (
-                  <div className="absolute top-0 left-[50%] -translate-x-[50%] w-[calc(100%-256px)] h-px bg-cyan-500/30 shadow-[0_0_8px_rgba(0,255,255,0.5)]"></div>
-                )}
-                
-                <div className="flex gap-4 md:gap-8 justify-center">
-                  {node.children.map((child: any, idx: number) => (
-                    <div key={child.id} className="relative pt-4 flex flex-col items-center">
-                      {/* Vertical line down to child */}
-                      <div className="absolute top-0 left-1/2 -ml-px w-px h-4 bg-cyan-500/30 shadow-[0_0_8px_rgba(0,255,255,0.5)]"></div>
-                      <OrgNode node={child} level={level + 1} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      )}
+    <div className="bg-black/80 backdrop-blur-md border border-cyan-500/50 rounded-xl p-4 shadow-[0_0_15px_rgba(0,255,255,0.2)] w-48 text-center text-white">
+      <Handle type="target" position={Position.Top} className="!bg-cyan-500" />
+      <div className="font-mono font-bold text-sm truncate">{data.name}</div>
+      <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest mt-1 truncate">{data.designation}</div>
+      <div className="text-[10px] text-gray-400 mt-2 truncate">{data.department}</div>
+      <Handle type="source" position={Position.Bottom} className="!bg-cyan-500" />
     </div>
   );
 };
 
+const nodeTypes = {
+  custom: CustomNode,
+};
+
+// Flatten tree to nodes and edges (BFS)
+const getNodesAndEdges = (treeNode: any, x = 0, y = 0, level = 0, siblingIndex = 0) => {
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+  
+  if (!treeNode) return { nodes, edges };
+
+  // Generate node
+  const nodeId = treeNode.id || `node-${Math.random()}`;
+  nodes.push({
+    id: nodeId,
+    type: 'custom',
+    position: { x, y },
+    data: { 
+      name: treeNode.name, 
+      designation: treeNode.designation, 
+      department: treeNode.department 
+    }
+  });
+
+  if (treeNode.children && treeNode.children.length > 0) {
+    const childY = y + 150;
+    const totalChildren = treeNode.children.length;
+    const startX = x - ((totalChildren - 1) * 200) / 2;
+
+    treeNode.children.forEach((child: any, i: number) => {
+      const childX = startX + (i * 200);
+      const childData = getNodesAndEdges(child, childX, childY, level + 1, i);
+      
+      const childNodeId = childData.nodes[0]?.id;
+      
+      if (childNodeId) {
+        edges.push({
+          id: `e-${nodeId}-${childNodeId}`,
+          source: nodeId,
+          target: childNodeId,
+          type: 'smoothstep',
+          animated: true,
+          style: { stroke: 'rgba(0,255,255,0.5)', strokeWidth: 2 }
+        });
+      }
+
+      nodes.push(...childData.nodes);
+      edges.push(...childData.edges);
+    });
+  }
+
+  return { nodes, edges };
+};
+
 export default function OrgChartPage() {
-  const { data, isLoading } = trpc.team.getOrgChart.useQuery();
+  const { data: orgTree, isLoading } = trpc.team.getOrgChart.useQuery();
+
+  const { nodes, edges } = useMemo(() => {
+    if (!orgTree) return { nodes: [], edges: [] };
+    // Start at center x=250
+    return getNodesAndEdges(orgTree, 250, 50);
+  }, [orgTree]);
 
   if (isLoading) {
     return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Mapping Network Topology...</div>;
   }
 
-  // Use the nested tree structure from our API
-  const orgTree = data;
-
   return (
     <div className="h-full flex flex-col animate-in fade-in duration-700 pb-20 md:pb-0 max-w-[100vw] overflow-hidden">
       
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 shrink-0 relative px-2">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-cyan-500/10 to-transparent blur-3xl -z-10 pointer-events-none" />
         <div>
@@ -111,17 +101,22 @@ export default function OrgChartPage() {
         </div>
       </div>
 
-      <div className="flex-1 mt-6 border border-white/10 rounded-3xl overflow-auto shadow-2xl relative bg-[#050505] custom-scrollbar">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.03)_0%,transparent_70%)] pointer-events-none" />
-        
-        {/* CSS Grid/Flexbox approach for the tree */}
-        <div className="min-w-max min-h-full p-12 flex justify-center items-start">
-          {orgTree ? (
-            <OrgNode node={orgTree} />
-          ) : (
-            <div className="text-center text-[var(--text-muted)] font-mono uppercase tracking-widest mt-20">No Org Data Found</div>
-          )}
-        </div>
+      <div className="flex-1 mt-6 border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative bg-[#050505]">
+        {orgTree ? (
+          <ReactFlow 
+            nodes={nodes} 
+            edges={edges} 
+            nodeTypes={nodeTypes}
+            fitView
+            className="bg-[var(--bg-void)]"
+            minZoom={0.2}
+          >
+            <Background color="#00ffff" gap={20} size={1} opacity={0.1} />
+            <Controls className="!bg-black/50 !border-white/10 !fill-white" />
+          </ReactFlow>
+        ) : (
+          <div className="text-center text-[var(--text-muted)] font-mono uppercase tracking-widest mt-20">No Org Data Found</div>
+        )}
       </div>
     </div>
   );

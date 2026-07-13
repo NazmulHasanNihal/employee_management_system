@@ -37,6 +37,14 @@ export default function AnnouncementsPage() {
     createMutation.mutate({ title, content, priority });
   };
 
+  const markReadMutation = trpc.announcements.markRead.useMutation();
+  const [readMemos, setReadMemos] = useState<Set<string>>(new Set());
+
+  const handleMarkRead = (id: string) => {
+    setReadMemos(prev => new Set(prev).add(id));
+    markReadMutation.mutate({ id });
+  };
+
   const isAdmin = viewRole === 'Admin';
 
   if (!user || isLoading) {
@@ -112,10 +120,25 @@ export default function AnnouncementsPage() {
               </p>
               
               <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center text-[10px] font-mono text-[var(--text-muted)] uppercase relative z-10">
-                <span className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/5">
-                  <div className="w-4 h-4 rounded-full bg-[var(--ledger-blue)]/20 text-[var(--ledger-blue)] flex items-center justify-center font-bold">{ann.author.charAt(0)}</div>
-                  {ann.author}
-                </span>
+                <div className="flex gap-4 items-center">
+                  <span className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/5">
+                    <div className="w-4 h-4 rounded-full bg-[var(--ledger-blue)]/20 text-[var(--ledger-blue)] flex items-center justify-center font-bold">{ann.author.charAt(0)}</div>
+                    {ann.author}
+                  </span>
+                  {!isAdmin && !readMemos.has(ann.id) && (
+                    <button 
+                      onClick={() => handleMarkRead(ann.id)}
+                      className="flex items-center gap-1 text-[var(--ledger-blue)] hover:text-white transition-colors"
+                    >
+                      <Check size={12} /> Mark as Read
+                    </button>
+                  )}
+                  {!isAdmin && readMemos.has(ann.id) && (
+                    <span className="flex items-center gap-1 text-[var(--verify-green)]">
+                      <Check size={12} /> Read
+                    </span>
+                  )}
+                </div>
                 <span>{new Date(ann.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
               </div>
             </div>

@@ -5,6 +5,16 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const getLayoutUser = (dbUser: any) => ({
+  id: dbUser.id,
+  name: dbUser.name,
+  email: dbUser.email,
+  role: dbUser.role,
+  department: dbUser.department,
+  designation: dbUser.designation,
+  avatarUrl: dbUser.avatarUrl
+});
+
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
@@ -22,15 +32,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     redirect("/login");
   }
 
-  const layoutUser = {
-    id: dbUser.id,
-    name: dbUser.name,
-    email: dbUser.email,
-    role: dbUser.role,
-    department: dbUser.department,
-    designation: dbUser.designation,
-    avatarUrl: dbUser.avatarUrl
-  };
+  const layoutUser = getLayoutUser(dbUser);
 
   return (
     <AppLayout user={layoutUser as any}>

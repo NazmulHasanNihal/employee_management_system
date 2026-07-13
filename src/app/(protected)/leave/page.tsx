@@ -17,13 +17,30 @@ export default function LeavePage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
+  
+  const [balances, setBalances] = useState({ Vacation: 14, Sick: 5, Personal: 2 });
 
   const { data: requests, isLoading } = trpc.leave.getRequests.useQuery(undefined, { enabled: !!user });
   const utils = trpc.useUtils();
   
   const submitRequest = trpc.leave.submitRequest.useMutation({
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       utils.leave.getRequests.invalidate();
+      
+      // Calculate days
+      const start = new Date(variables.startDate);
+      const end = new Date(variables.endDate);
+      const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      
+      // Deduct from balance
+      setBalances(prev => {
+        const cat = variables.type as keyof typeof prev;
+        if (prev[cat] !== undefined) {
+          return { ...prev, [cat]: Math.max(0, prev[cat] - days) };
+        }
+        return prev;
+      });
+
       setStartDate('');
       setEndDate('');
       setReason('');
@@ -69,11 +86,11 @@ export default function LeavePage() {
             <Umbrella size={14} className="text-[var(--ledger-blue)]" /> Vacation Days
           </h4>
           <div className="flex items-end gap-3 mt-4">
-            <span className="text-4xl font-mono font-black text-white">14</span>
+            <span className="text-4xl font-mono font-black text-white">{balances.Vacation.toString().padStart(2, '0')}</span>
             <span className="text-sm font-mono text-[var(--text-muted)] uppercase mb-1">Available</span>
           </div>
           <div className="w-full bg-black/50 h-1 mt-4 rounded-full overflow-hidden">
-            <div className="bg-[var(--ledger-blue)] h-full w-[70%]" />
+            <div className="bg-[var(--ledger-blue)] h-full transition-all duration-1000" style={{ width: `${(balances.Vacation / 14) * 100}%` }} />
           </div>
         </div>
 
@@ -83,11 +100,11 @@ export default function LeavePage() {
             <Syringe size={14} className="text-[var(--signal-amber)]" /> Sick Leave
           </h4>
           <div className="flex items-end gap-3 mt-4">
-            <span className="text-4xl font-mono font-black text-white">05</span>
+            <span className="text-4xl font-mono font-black text-white">{balances.Sick.toString().padStart(2, '0')}</span>
             <span className="text-sm font-mono text-[var(--text-muted)] uppercase mb-1">Available</span>
           </div>
           <div className="w-full bg-black/50 h-1 mt-4 rounded-full overflow-hidden">
-            <div className="bg-[var(--signal-amber)] h-full w-[40%]" />
+            <div className="bg-[var(--signal-amber)] h-full transition-all duration-1000" style={{ width: `${(balances.Sick / 5) * 100}%` }} />
           </div>
         </div>
 
@@ -97,11 +114,11 @@ export default function LeavePage() {
             <UserCircle2 size={14} className="text-purple-400" /> Personal Days
           </h4>
           <div className="flex items-end gap-3 mt-4">
-            <span className="text-4xl font-mono font-black text-white">02</span>
+            <span className="text-4xl font-mono font-black text-white">{balances.Personal.toString().padStart(2, '0')}</span>
             <span className="text-sm font-mono text-[var(--text-muted)] uppercase mb-1">Available</span>
           </div>
           <div className="w-full bg-black/50 h-1 mt-4 rounded-full overflow-hidden">
-            <div className="bg-purple-500 h-full w-[20%]" />
+            <div className="bg-purple-500 h-full transition-all duration-1000" style={{ width: `${(balances.Personal / 2) * 100}%` }} />
           </div>
         </div>
       </div>

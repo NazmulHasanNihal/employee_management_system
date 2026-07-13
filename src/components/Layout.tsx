@@ -26,6 +26,24 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
   const { isOffline, setOffline, offlineQueue } = useAppStore();
   const [showNotifications, setShowNotifications] = React.useState(false);
 
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const handleOnline = () => setOffline(false);
+      const handleOffline = () => setOffline(true);
+      
+      // Initial state
+      setOffline(!navigator.onLine);
+
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, [setOffline]);
+
   const [notifications, setNotifications] = React.useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const markRead = async (id: string) => {
@@ -249,7 +267,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col max-h-screen overflow-hidden bg-[var(--bg-void)] relative">
+      <main className="flex-1 flex flex-col max-h-[calc(100vh-4rem)] md:max-h-screen overflow-hidden bg-[var(--bg-void)] relative">
         {isOffline && (
           <div className="bg-[var(--alert-red)] text-white p-2 text-xs font-mono flex items-center justify-between z-50 shadow-[0_0_10px_var(--alert-red)] relative">
             <div className="flex items-center gap-2">
@@ -284,14 +302,9 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
         )}
         <header className="h-14 border-b ledger-border flex items-center justify-between px-4 md:px-8 bg-[var(--bg-panel)] shrink-0 z-10">
           <div className="flex items-center gap-4">
-            <div className="md:hidden flex items-center gap-4">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="text-[var(--text-main)]">
-                <Menu size={20} />
-              </button>
-              <div className="flex items-center gap-2">
-                <LinkIcon size={16} className="text-[var(--text-main)]" />
-                <span className="font-mono font-bold text-sm uppercase tracking-widest ledger-text">EMS.Core</span>
-              </div>
+            <div className="md:hidden flex items-center gap-2">
+              <LinkIcon size={16} className="text-[var(--text-main)]" />
+              <span className="font-mono font-bold text-sm uppercase tracking-widest ledger-text">EMS.Core</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -397,6 +410,27 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
           )}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation (Nav Inversion) */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-[var(--bg-panel)] border-t ledger-border z-40 flex items-center justify-around px-2">
+        <button onClick={() => router.push('/')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
+          <Home size={20} />
+          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Home</span>
+        </button>
+        <button onClick={() => router.push('/messages')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/messages' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
+          <MessageSquare size={20} />
+          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Chat</span>
+        </button>
+        <button onClick={() => router.push('/attendance')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/attendance' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
+          <Clock size={20} />
+          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Time</span>
+        </button>
+        <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center justify-center w-16 h-full text-[var(--text-muted)] hover:text-white transition-colors">
+          <Menu size={20} />
+          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Menu</span>
+        </button>
+      </div>
+
       <CommandPalette />
     </div>
   );

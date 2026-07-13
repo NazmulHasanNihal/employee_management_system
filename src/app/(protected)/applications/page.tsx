@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Download, FileText, Check, X, Plus, Send, Network, Server, Fingerprint } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { StatusPill, StatusType } from '@/components/ui/status-pill';
 
 export default function ApplicationsPage() {
   const { data: session } = authClient.useSession();
@@ -13,10 +15,16 @@ export default function ApplicationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [newApp, setNewApp] = useState({ type: 'Leave Request', details: '' });
 
+  const [localApps, setLocalApps] = useState<any[]>([]);
+
   const { data: apps, isLoading, refetch } = trpc.applications.list.useQuery(
     { userId: isAdmin ? undefined : user?.id },
     { enabled: !!user }
   );
+
+  React.useEffect(() => {
+    if (apps) setLocalApps(apps);
+  }, [apps]);
 
   const submitMutation = trpc.applications.submit.useMutation({
     onSuccess: () => {
@@ -27,18 +35,27 @@ export default function ApplicationsPage() {
   });
 
   const updateMutation = trpc.applications.updateStatus.useMutation({
-    onSuccess: () => refetch()
+    onSuccess: () => refetch(),
+    onError: () => {
+      if (apps) setLocalApps(apps);
+    }
   });
 
   if (isLoading || !user) {
-    return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Accessing Operations Hub...</div>;
+    return (
+      <div className="space-y-8 animate-in fade-in max-w-7xl mx-auto pb-10 p-4 md:p-8">
+        <Skeleton className="h-16 w-1/3 bg-white/5" />
+        <Skeleton className="h-96 w-full bg-white/5 rounded-3xl" />
+      </div>
+    );
   }
 
   const handleUpdate = (id: string, status: string) => {
+    setLocalApps(prev => prev.map(a => a.id === id ? { ...a, status } : a));
     updateMutation.mutate({ id, status });
   };
 
-  const applicationsList = apps || [];
+  const applicationsList = localApps || [];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
@@ -101,13 +118,14 @@ export default function ApplicationsPage() {
                   {isAdmin && <td className="py-4 px-6 text-xs text-white font-mono">{app.user?.name}</td>}
                   <td className="py-4 px-6 text-xs text-[var(--text-muted)] font-sans italic truncate max-w-[300px]">"{app.details}"</td>
                   <td className="py-4 px-6 text-center">
-                    <span className={`inline-block text-[9px] font-mono font-bold uppercase tracking-widest px-3 py-1 rounded-full border ${
-                      app.status.includes('Approved') ? 'bg-[var(--verify-green)]/10 text-[var(--verify-green)] border-[var(--verify-green)]/30 shadow-[0_0_10px_rgba(0,255,100,0.1)]' : 
-                      app.status.includes('Rejected') ? 'bg-[var(--alert-red)]/10 text-[var(--alert-red)] border-[var(--alert-red)]/30 shadow-[0_0_10px_rgba(255,0,0,0.1)]' : 
-                      'bg-[var(--signal-amber)]/10 text-[var(--signal-amber)] border-[var(--signal-amber)]/30 shadow-[0_0_10px_var(--signal-amber)] animate-pulse'
-                    }`}>
-                      {app.status}
-                    </span>
+                    <StatusPill 
+                      status={
+                        app.status.includes('Approved') ? 'success' : 
+                        app.status.includes('Rejected') ? 'error' : 
+                        'pending'
+                      } 
+                      label={app.status} 
+                    />
                   </td>
                   {isAdmin && (
                     <td className="py-4 px-6 text-right">

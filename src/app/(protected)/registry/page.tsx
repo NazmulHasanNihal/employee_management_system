@@ -43,6 +43,25 @@ export default function RegistryPage() {
 
   const list = employees || [];
 
+  const handleExportCsv = () => {
+    if (list.length === 0) return;
+    const headers = ['Name', 'Email', 'Role', 'Department', 'Designation', 'Phone'];
+    const csvContent = [
+      headers.join(','),
+      ...list.map((emp: any) => 
+        [emp.name, emp.email, emp.role, emp.department || '', emp.designation || '', emp.phone || '']
+          .map(v => `"${v}"`)
+          .join(',')
+      )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `registry_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   const handleTogglePerm = (permId: string) => {
     if (!editingPermsFor) return;
     
@@ -117,7 +136,7 @@ export default function RegistryPage() {
               className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-teal-500 transition-colors shadow-inner"
             />
           </div>
-          <button className="w-full md:w-auto bg-black/50 border border-white/10 text-white px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:border-teal-500 transition-all flex items-center justify-center gap-2">
+          <button onClick={handleExportCsv} className="w-full md:w-auto bg-black/50 border border-white/10 text-white px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:border-teal-500 transition-all flex items-center justify-center gap-2">
             <Download size={14} /> Export
           </button>
           {isAdmin && (

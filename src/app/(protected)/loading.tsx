@@ -1,17 +1,33 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
 
+import { Skeleton } from '@/components/ui/skeleton';
+
 export default function Loading() {
   return (
-    <div className="flex h-[80vh] items-center justify-center animate-in fade-in duration-500">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative flex items-center justify-center w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-4 border-[var(--ledger-blue)] border-t-transparent animate-spin shadow-[0_0_20px_var(--ledger-blue)]" />
-          <Activity className="text-[var(--ledger-blue)] animate-pulse" size={24} />
+    <div className="p-8 space-y-6 animate-in fade-in duration-500 w-full max-w-7xl mx-auto">
+      {/* Header Skeleton */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10">
+        <div>
+          <Skeleton className="h-12 w-64 mb-4 bg-white/5" />
+          <Skeleton className="h-4 w-96 bg-white/5" />
         </div>
-        <p className="font-mono text-sm uppercase tracking-widest text-[var(--ledger-blue)] animate-pulse">
-          Establishing Connection...
-        </p>
+        <Skeleton className="h-10 w-32 mt-6 md:mt-0 bg-white/5 rounded-xl" />
+      </div>
+
+      {/* Grid Skeletons */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Skeleton className="h-48 w-full bg-white/5 rounded-3xl" />
+        <Skeleton className="h-48 w-full bg-white/5 rounded-3xl" />
+        <Skeleton className="h-48 w-full bg-white/5 rounded-3xl" />
+      </div>
+      
+      {/* Content Block Skeleton */}
+      <div className="space-y-4 pt-6">
+        <Skeleton className="h-6 w-48 bg-white/5" />
+        <Skeleton className="h-16 w-full bg-white/5 rounded-xl" />
+        <Skeleton className="h-16 w-full bg-white/5 rounded-xl" />
+        <Skeleton className="h-16 w-full bg-white/5 rounded-xl" />
       </div>
     </div>
   );

@@ -84,7 +84,8 @@ export default function AuditLogPage() {
                 <th className="p-4 whitespace-nowrap">Severity</th>
                 <th className="p-4 whitespace-nowrap">Action Type</th>
                 <th className="p-4 whitespace-nowrap">Target Resource</th>
-                <th className="p-4 pr-6 whitespace-nowrap">Actor / IP</th>
+                <th className="p-4 whitespace-nowrap">Actor / IP</th>
+                <th className="p-4 pr-6 whitespace-nowrap text-right">Cryptographic Verification</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 relative z-10 text-sm">
@@ -119,8 +120,22 @@ export default function AuditLogPage() {
                     <td className="p-4 text-orange-400 whitespace-nowrap">
                       {log.target}
                     </td>
-                    <td className="p-4 pr-6 text-[var(--text-muted)] whitespace-nowrap text-xs flex items-center gap-2">
+                    <td className="p-4 text-[var(--text-muted)] whitespace-nowrap text-xs flex items-center gap-2">
                       <ShieldCheck size={14} className="opacity-50" /> {log.user}
+                    </td>
+                    <td className="p-4 pr-6 text-right whitespace-nowrap">
+                      {log.hash ? (
+                        <div className="flex flex-col items-end gap-1">
+                          <span className="text-[8px] font-mono text-[var(--verify-green)] bg-[var(--verify-green)]/10 px-2 py-0.5 rounded border border-[var(--verify-green)]/30 flex items-center gap-1">
+                            <FileDigit size={10} /> SHA-256
+                          </span>
+                          <span className="text-[10px] text-white/50 font-mono tracking-tighter truncate max-w-[120px]" title={`Current: ${log.hash}\nPrevious: ${log.previousHash || 'GENESIS'}`}>
+                            {log.hash.slice(0, 16)}...
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-[var(--alert-red)] font-mono bg-[var(--alert-red)]/10 px-2 py-1 rounded border border-[var(--alert-red)]/30">UNVERIFIED</span>
+                      )}
                     </td>
                   </tr>
                 ))

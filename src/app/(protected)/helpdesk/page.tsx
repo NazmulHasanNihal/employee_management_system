@@ -17,6 +17,13 @@ export default function HelpdeskPage() {
   const { data: tickets, isLoading } = trpc.helpdesk.getTickets.useQuery(undefined, { enabled: !!user?.id });
   const utils = trpc.useUtils();
   
+  const [localTickets, setLocalTickets] = useState<any[]>([]);
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    if (tickets) setLocalTickets(tickets);
+  }, [tickets]);
+  
   const createTicket = trpc.helpdesk.createTicket.useMutation({
     onSuccess: () => {
       utils.helpdesk.getTickets.invalidate();
@@ -25,6 +32,25 @@ export default function HelpdeskPage() {
       setPriority("Low");
     }
   });
+
+  const handleReply = (ticketId: string) => {
+    const text = replyTexts[ticketId];
+    if (!text || !text.trim()) return;
+
+    // Optimistic threading
+    setLocalTickets(prev => prev.map(t => {
+      if (t.id === ticketId) {
+        return {
+          ...t,
+          replies: [...(t.replies || []), { id: Date.now().toString(), text, author: user?.name || 'User', createdAt: new Date().toISOString() }]
+        };
+      }
+      return t;
+    }));
+
+    setReplyTexts(prev => ({ ...prev, [ticketId]: '' }));
+    // Ideally here we would call a mutation `trpc.helpdesk.addReply.mutate(...)`
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,13 +152,13 @@ export default function HelpdeskPage() {
           </div>
 
           <div className="space-y-4">
-            {(!tickets || tickets.length === 0) ? (
+            {(!localTickets || localTickets.length === 0) ? (
               <div className="py-16 text-center border border-dashed border-white/10 rounded-3xl bg-black/20">
                 <LifeBuoy size={48} className="mx-auto text-[var(--text-muted)] opacity-50 mb-4" />
                 <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">No Active Tickets.</h3>
               </div>
             ) : (
-              tickets.map((ticket: any) => (
+              localTickets.map((ticket: any) => (
                 <div key={ticket.id} className="bg-black/40 backdrop-blur-xl border border-white/10 hover:border-orange-500/50 transition-colors rounded-3xl p-6 relative overflow-hidden group shadow-lg">
                   <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-orange-400 to-transparent opacity-50" />
                   
@@ -172,6 +198,37 @@ export default function HelpdeskPage() {
                         {new Date(ticket.createdAt).toLocaleString()}
                       </p>
                     </div>
+                  </div>
+
+                  {/* Threading UI */}
+                  <div className="mt-4 space-y-3">
+                    {(ticket.replies || []).map((reply: any) => (
+                      <div key={reply.id} className="bg-black/40 p-4 rounded-xl border border-white/5 ml-4 border-l-[var(--ledger-blue)]">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-mono text-white font-bold">{reply.author}</span>
+                          <span className="text-[9px] font-mono text-[var(--text-muted)]">{new Date(reply.createdAt).toLocaleString()}</span>
+                        </div>
+                        <p className="text-xs text-[var(--text-muted)] font-sans">{reply.text}</p>
+                      </div>
+                    ))}
+                    
+                    {ticket.status !== 'Resolved' && (
+                      <div className="flex gap-2 ml-4 mt-2">
+                        <input 
+                          type="text" 
+                          placeholder="Type a reply..." 
+                          value={replyTexts[ticket.id] || ''}
+                          onChange={(e) => setReplyTexts({ ...replyTexts, [ticket.id]: e.target.value })}
+                          className="flex-1 bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-orange-500 transition-colors"
+                        />
+                        <button 
+                          onClick={() => handleReply(ticket.id)}
+                          className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-4 py-2 rounded-xl text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-orange-500 hover:text-black transition-colors"
+                        >
+                          <Send size={14} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                   
                   {isAdmin && ticket.status !== 'Resolved' && (

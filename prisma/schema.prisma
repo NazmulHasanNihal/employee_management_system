@@ -121,4 +121,15 @@ model AuditLog {
   user      String
   severity  String   @default("INFO")
   timestamp DateTime @default(now())
+  previousHash String? // For crypto auditing
+  hash      String?  // Current hash
+}
+
+model EventSnapshot {
+  id        String   @id @default(cuid())
+  entityId  String   // e.g. User ID
+  entityType String  // e.g. "User", "LeaveBalance"
+  stateData Json     // Snapshot of the current state
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
 }

@@ -15,10 +15,16 @@ export default function OnboardingPage() {
   const [offboardUserId, setOffboardUserId] = useState("");
 
   const { data: users } = trpc.registry.searchEmployees.useQuery({ query: "" }, { enabled: isAdmin });
-  const { data: tasks, isLoading } = trpc.workflows.getOnboardingTasks.useQuery(
+  const { data: serverTasks, isLoading } = trpc.workflows.getOnboardingTasks.useQuery(
     { userId: targetUserId }, 
     { enabled: !!targetUserId }
   );
+
+  const [localTasks, setLocalTasks] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (serverTasks) setLocalTasks(serverTasks);
+  }, [serverTasks]);
 
   const utils = trpc.useUtils();
   const createTask = trpc.workflows.createTask.useMutation({
@@ -29,8 +35,17 @@ export default function OnboardingPage() {
   });
 
   const toggleTask = trpc.workflows.toggleTask.useMutation({
-    onSuccess: () => utils.workflows.getOnboardingTasks.invalidate()
+    onSuccess: () => utils.workflows.getOnboardingTasks.invalidate(),
+    onError: () => {
+      // Revert on error
+      if (serverTasks) setLocalTasks(serverTasks);
+    }
   });
+
+  const handleToggleTask = (id: string, isCompleted: boolean) => {
+    setLocalTasks(prev => prev.map(t => t.id === id ? { ...t, isCompleted } : t));
+    toggleTask.mutate({ id, isCompleted });
+  };
 
   const triggerOffboarding = trpc.workflows.triggerOffboarding.useMutation({
     onSuccess: () => {
@@ -124,12 +139,12 @@ export default function OnboardingPage() {
               <div className="text-center text-[var(--text-muted)] py-4 font-mono text-sm animate-pulse">Loading tasks...</div>
             ) : (
               <>
-                {tasks?.map(task => (
+                {localTasks.map(task => (
                   <div key={task.id} className={`p-4 rounded-xl border flex items-center gap-4 transition-colors ${task.isCompleted ? 'bg-blue-500/10 border-blue-500/30' : 'bg-black/40 border-white/10 hover:border-white/30'}`}>
                     <input 
                       type="checkbox" 
                       checked={task.isCompleted} 
-                      onChange={(e) => toggleTask.mutate({ id: task.id, isCompleted: e.target.checked })}
+                      onChange={(e) => handleToggleTask(task.id, e.target.checked)}
                       className="w-5 h-5 rounded border-white/20 text-blue-500 focus:ring-blue-500 bg-black/50"
                     />
                     <span className={`text-sm font-bold ${task.isCompleted ? 'text-blue-200 line-through' : 'text-white'}`}>
@@ -149,7 +164,7 @@ export default function OnboardingPage() {
                   </form>
                 )}
                 
-                {tasks?.length === 0 && !isAdmin && (
+                {localTasks.length === 0 && !isAdmin && (
                   <div className="text-center text-[var(--text-muted)] py-8 font-mono text-sm border border-dashed border-white/10 rounded-xl">
                     No onboarding tasks assigned.
                   </div>

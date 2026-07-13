@@ -20,6 +20,45 @@ export default function RecruitmentPage() {
 
   const utils = trpc.useUtils();
   const { data: jobs, isLoading } = trpc.recruitment.getJobs.useQuery(undefined, { enabled: isAdmin });
+  
+  const [localJobs, setLocalJobs] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (jobs) setLocalJobs(jobs);
+  }, [jobs]);
+
+  const updateCandidateStatus = trpc.recruitment.updateCandidateStatus.useMutation({
+    onSuccess: () => utils.recruitment.getJobs.invalidate(),
+    onError: () => { if (jobs) setLocalJobs(jobs); }
+  });
+
+  const handleDragStart = (e: React.DragEvent, candidateId: string, jobId: string) => {
+    e.dataTransfer.setData('candidateId', candidateId);
+    e.dataTransfer.setData('jobId', jobId);
+  };
+
+  const handleDrop = (e: React.DragEvent, jobId: string, newStatus: string) => {
+    e.preventDefault();
+    const candidateId = e.dataTransfer.getData('candidateId');
+    const sourceJobId = e.dataTransfer.getData('jobId');
+    if (sourceJobId !== jobId || !candidateId) return;
+
+    // Optimistic UI Update
+    setLocalJobs(prev => prev.map(job => {
+      if (job.id === jobId) {
+        return {
+          ...job,
+          candidates: (job.candidates || []).map((cand: any) => 
+            cand.id === candidateId ? { ...cand, status: newStatus } : cand
+          )
+        };
+      }
+      return job;
+    }));
+
+    // Trigger Mutation
+    updateCandidateStatus.mutate({ candidateId, status: newStatus });
+  };
 
   const createJob = trpc.recruitment.createJob.useMutation({
     onSuccess: () => {
@@ -59,7 +98,7 @@ export default function RecruitmentPage() {
     return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Loading ATS Pipelines...</div>;
   }
 
-  const jobList = jobs || [];
+  const jobList = localJobs || [];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
@@ -200,35 +239,31 @@ export default function RecruitmentPage() {
                     </span>
                   </div>
                   
-                  <div className="space-y-3">
-                    {(!job.candidates || job.candidates.length === 0) ? (
-                      <div className="py-8 text-center text-[10px] font-mono text-[var(--text-muted)] border border-dashed border-white/10 rounded-xl bg-black/20 uppercase tracking-widest">
-                        Pipeline Empty.
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {['Applied', 'Interviewing', 'Offered'].map(statusColumn => (
+                      <div 
+                        key={statusColumn} 
+                        className="bg-black/20 border border-white/5 rounded-xl p-3 min-h-[150px] flex flex-col gap-2"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDrop(e, job.id, statusColumn)}
+                      >
+                        <h5 className="text-[10px] font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] border-b border-white/5 pb-2 mb-2">
+                          {statusColumn}
+                        </h5>
+                        
+                        {(job.candidates || []).filter((c: any) => c.status === statusColumn || (statusColumn === 'Offered' && c.status === 'Hired')).map((cand: any) => (
+                          <div 
+                            key={cand.id} 
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, cand.id, job.id)}
+                            className="bg-black/60 border border-white/10 hover:border-emerald-500/30 transition-colors p-3 rounded-lg cursor-grab active:cursor-grabbing group"
+                          >
+                            <h5 className="font-bold text-white text-xs font-mono">{cand.name}</h5>
+                            <p className="text-[9px] text-[var(--text-muted)] font-mono mt-1 truncate">{cand.email}</p>
+                          </div>
+                        ))}
                       </div>
-                    ) : (
-                      job.candidates.map((cand: any) => (
-                        <div key={cand.id} className="bg-black/60 border border-white/5 hover:border-emerald-500/30 transition-colors p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group">
-                          <div>
-                            <h5 className="font-bold text-white text-sm font-mono">{cand.name}</h5>
-                            <p className="text-[10px] text-[var(--text-muted)] font-mono mt-1 truncate max-w-[200px]">{cand.email}</p>
-                          </div>
-                          
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg text-[9px] font-mono font-bold uppercase tracking-widest">
-                              <span className={`w-1.5 h-1.5 rounded-full ${
-                                cand.status === 'Applied' ? 'bg-[var(--ledger-blue)]' : 
-                                cand.status === 'Interviewing' ? 'bg-[var(--signal-amber)] animate-pulse' : 
-                                'bg-[var(--verify-green)]'
-                              }`}/>
-                              {cand.status}
-                            </div>
-                            <button className="text-[var(--text-muted)] hover:text-white opacity-0 group-hover:opacity-100 transition-all p-1">
-                              <ArrowRight size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                    ))}
                   </div>
                 </div>
 

@@ -9,6 +9,17 @@ export default function SettingsPage() {
   const { data: session } = authClient.useSession();
   const user = session?.user as any;
 
+  const [flags, setFlags] = React.useState({
+    maintenanceMode: false,
+    debugLogging: true,
+    strictAuth: true,
+    autoProvision: false
+  });
+
+  const handleToggle = (key: keyof typeof flags) => {
+    setFlags(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   if (!user) return null;
 
   // Protect route
@@ -107,17 +118,29 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          </div>
+
           <div className="bg-[#050505] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
             <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
-              <Lock className="text-[var(--signal-amber)]" size={16} /> Security
+              <Activity className="text-[var(--ledger-blue)]" size={16} /> System Flags
             </h3>
             <div className="space-y-4">
-              <div className="bg-black/60 p-4 rounded-xl border border-[var(--signal-amber)]/30 flex justify-between items-center cursor-pointer hover:bg-[var(--signal-amber)]/5 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Key size={16} className="text-[var(--signal-amber)]" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-white">Rotate API Keys</span>
+              {[
+                { key: 'maintenanceMode', label: 'Maintenance Mode', color: 'var(--alert-red)' },
+                { key: 'debugLogging', label: 'Verbose Debug Logging', color: 'var(--ledger-blue)' },
+                { key: 'strictAuth', label: 'Strict 2FA Enforced', color: 'var(--verify-green)' },
+                { key: 'autoProvision', label: 'Auto-Provision Accounts', color: 'var(--signal-amber)' }
+              ].map(flag => (
+                <div key={flag.key} className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white">{flag.label}</span>
+                  <button 
+                    onClick={() => handleToggle(flag.key as any)}
+                    className={`w-10 h-5 rounded-full relative transition-colors ${flags[flag.key as keyof typeof flags] ? 'bg-white/20' : 'bg-black'} border border-white/20`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full transition-all ${flags[flag.key as keyof typeof flags] ? 'left-5' : 'left-0.5'} bg-white`} style={{ backgroundColor: flags[flag.key as keyof typeof flags] ? `var(--ledger-blue)` : '#666' }} />
+                  </button>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 

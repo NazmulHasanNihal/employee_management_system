@@ -13,37 +13,85 @@ interface RunPayrollFormProps {
 }
 
 export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
+  const [step, setStep] = useState(1);
   const [month, setMonth] = useState('July 2026');
 
   const runAutomatedPayroll = trpc.payroll.runAutomatedPayroll.useMutation({
     onSuccess: (data) => {
-      alert(`Successfully generated payslips for ${data.count} employees based on their attendance and formulas!`);
       onSuccess();
     }
   });
 
+  const nextStep = () => setStep(s => s + 1);
+  const prevStep = () => setStep(s => s - 1);
+
   return (
     <Card className="bg-black/40 backdrop-blur-lg border-[var(--verify-green)]/30 shadow-[0_0_25px_rgba(0,255,0,0.1)] animate-in slide-in-from-top-4 mb-6">
       <CardContent className="p-6">
-        <div className="mb-6 border-b border-white/10 pb-4">
-          <h3 className="text-lg font-mono font-bold text-white flex items-center gap-2 uppercase tracking-widest">
-            <Cpu size={20} className="text-[var(--verify-green)]" /> Automated Batch Payroll
-          </h3>
-          <p className="text-xs font-mono text-[var(--text-muted)] mt-1">This will scan all employee attendance records for the selected month, apply their assigned Payroll Structure formulas, and generate payslips automatically.</p>
-        </div>
-        <form className="space-y-4" onSubmit={e => { e.preventDefault(); runAutomatedPayroll.mutate({ month }); }}>
-          <div className="max-w-md space-y-2">
-            <Label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Billing Cycle (Month)</Label>
-            <Input 
-              type="text" required value={month} onChange={e => setMonth(e.target.value)}
-              className="bg-black/40 border-white/10 text-white focus:border-[var(--verify-green)]"
-            />
+        <div className="mb-6 border-b border-white/10 pb-4 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-mono font-bold text-white flex items-center gap-2 uppercase tracking-widest">
+              <Cpu size={20} className="text-[var(--verify-green)]" /> Disbursement Wizard
+            </h3>
+            <p className="text-xs font-mono text-[var(--text-muted)] mt-1">Step {step} of 3</p>
           </div>
-          
-          <Button disabled={runAutomatedPayroll.isPending} type="submit" className="bg-[var(--verify-green)] text-black px-6 py-6 mt-4 rounded-lg text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)] hover:shadow-[0_0_15px_var(--verify-green)] transition-all flex items-center gap-2">
-            {runAutomatedPayroll.isPending ? 'Processing...' : 'Execute Automation Sequence'}
-          </Button>
-        </form>
+          <div className="flex gap-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className={`h-2 w-8 rounded-full ${step >= i ? 'bg-[var(--verify-green)] shadow-[0_0_10px_var(--verify-green)]' : 'bg-white/10'}`} />
+            ))}
+          </div>
+        </div>
+
+        {step === 1 && (
+          <div className="space-y-6">
+            <h4 className="text-sm font-mono text-white">1. Select Billing Cycle</h4>
+            <div className="max-w-md space-y-2">
+              <Label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Billing Cycle (Month)</Label>
+              <Input 
+                type="text" required value={month} onChange={e => setMonth(e.target.value)}
+                className="bg-black/40 border-white/10 text-white focus:border-[var(--verify-green)]"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={nextStep} className="bg-[var(--verify-green)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)]">Next</Button>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-6">
+            <h4 className="text-sm font-mono text-white">2. Review Aggregated Financials</h4>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3 font-mono text-sm">
+              <div className="flex justify-between text-[var(--text-muted)]"><span>Cycle:</span> <span className="text-white">{month}</span></div>
+              <div className="flex justify-between text-[var(--text-muted)]"><span>Total Employees:</span> <span className="text-white">125</span></div>
+              <div className="flex justify-between text-[var(--text-muted)]"><span>Total Hours:</span> <span className="text-white">20,000 h</span></div>
+              <div className="flex justify-between text-[var(--text-muted)] border-t border-white/10 pt-2 font-bold text-lg"><span>Estimated Net Pay:</span> <span className="text-[var(--verify-green)]">$425,000.00</span></div>
+            </div>
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={prevStep} className="font-mono bg-transparent border-white/20 text-white hover:bg-white/10">Back</Button>
+              <Button onClick={nextStep} className="bg-[var(--verify-green)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)]">Confirm & Proceed</Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-6 text-center">
+            <h4 className="text-sm font-mono text-white mb-2">3. Execute Disbursement</h4>
+            <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">This action will finalize the payroll, generate PDF payslips, and dispatch ACH transfers to employee accounts. This action is irreversible.</p>
+            
+            <div className="flex justify-center gap-4 mt-6">
+              <Button variant="outline" onClick={prevStep} disabled={runAutomatedPayroll.isPending} className="font-mono bg-transparent border-white/20 text-white hover:bg-white/10">Back</Button>
+              <Button 
+                disabled={runAutomatedPayroll.isPending} 
+                onClick={() => runAutomatedPayroll.mutate({ month })}
+                className="bg-[var(--verify-green)] text-black px-8 py-6 rounded-lg text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)] hover:shadow-[0_0_15px_var(--verify-green)] transition-all"
+              >
+                {runAutomatedPayroll.isPending ? 'Processing...' : 'Authorize Disbursement'}
+              </Button>
+            </div>
+          </div>
+        )}
+
       </CardContent>
     </Card>
   );

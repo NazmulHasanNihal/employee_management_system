@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package ems.v1;
+
+option go_package = "ems/v1;emsv1";
+
+service PayrollService {
+  rpc CalculatePayroll(CalculatePayrollRequest) returns (CalculatePayrollResponse) {}
+}
+
+message CalculatePayrollRequest {
+  string employee_id = 1;
+  string month = 2; // e.g., "2026-07"
+}
+
+message CalculatePayrollResponse {
+  string employee_id = 1;
+  double base_salary = 2;
+  double deductions = 3;
+  double net_pay = 4;
+  string status = 5;
+}
+
+service TelemetryService {
+  rpc GetDashboardStats(GetDashboardStatsRequest) returns (GetDashboardStatsResponse) {}
+}
+
+message GetDashboardStatsRequest {}
+
+message GetDashboardStatsResponse {
+  int32 headcount = 1;
+  int32 pending_apps = 2;
+  string active_today = 3;
+  double total_payroll = 4;
+}
