@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
-import { CalendarRange, Plus, Trash2, CalendarDays, Zap } from 'lucide-react';
+import { 
+  CalendarRange, Plus, Trash2, CalendarDays, Zap, 
+  Clock, MapPin, Search, ChevronRight, UserCircle2, BrainCircuit
+} from 'lucide-react';
 
 export default function ShiftsPage() {
   const { data: session } = authClient.useSession();
@@ -22,6 +25,7 @@ export default function ShiftsPage() {
     onSuccess: () => {
       utils.shifts.getAssignments.invalidate();
       setShowAssignForm(false);
+      setNewAssign({ userId: '', shiftId: '' });
     }
   });
 
@@ -32,113 +36,188 @@ export default function ShiftsPage() {
   const autoGenerate = trpc.shifts.autoGenerateRoster.useMutation({
     onSuccess: (data) => {
       utils.shifts.getAssignments.invalidate();
-      alert(`Successfully auto-generated ${data.count} shift assignments!`);
     }
   });
 
   const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: isAdmin && showAssignForm });
 
-  if (shiftsLoading) return <div className="p-8 text-center ledger-muted animate-pulse">Loading Roster...</div>;
+  if (shiftsLoading || assignLoading) {
+    return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Loading AI Roster...</div>;
+  }
+
+  // Group assignments by Shift for rendering the grid
+  const groupedAssignments: Record<string, any[]> = {};
+  shifts?.forEach((s: any) => {
+    groupedAssignments[s.id] = assignments?.filter((a: any) => a.shiftId === s.id) || [];
+  });
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 h-full flex flex-col pb-20 md:pb-0">
-      <div className="flex justify-between items-end pb-4 border-b ledger-border shrink-0">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-orange-500/10 to-[var(--ledger-blue)]/10 blur-3xl -z-10" />
         <div>
-          <h2 className="text-2xl font-mono font-bold uppercase tracking-tight ledger-text flex items-center gap-2">
-            <CalendarRange size={24} className="text-[var(--ledger-blue)]" /> Shift Roster
+          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <CalendarRange className="text-orange-400" size={36} />
+            Shift Roster
           </h2>
-          <p className="text-[10px] font-mono ledger-muted mt-2 uppercase tracking-widest">
-            Workforce Scheduling & Assignments
+          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
+            Intelligent Workforce Scheduling & Assignment.
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <input 
-            type="date" 
-            value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-            className="bg-[var(--bg-void)] border ledger-border p-2 text-sm font-mono focus:border-[var(--ledger-blue)]"
-          />
+
+        <div className="flex items-center gap-4 mt-6 md:mt-0">
+          <div className="relative group">
+            <input 
+              type="date" 
+              value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+              className="bg-black/50 border border-white/10 p-3 rounded-xl text-sm font-mono text-white focus:border-orange-500 outline-none transition-colors"
+            />
+          </div>
+          
           {isAdmin && (
             <div className="flex gap-2">
-              <button onClick={() => autoGenerate.mutate({ startDate: selectedDate })} disabled={autoGenerate.isPending} className="bg-[#9b59b6] text-white px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center gap-2">
-                <Zap size={14} /> {autoGenerate.isPending ? 'Calculating...' : 'Auto-Fill Roster'}
+              <button 
+                onClick={() => autoGenerate.mutate({ startDate: selectedDate })} 
+                disabled={autoGenerate.isPending} 
+                className="bg-gradient-to-r from-[#9b59b6] to-purple-600 text-white px-5 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(155,89,182,0.4)] transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                {autoGenerate.isPending ? <BrainCircuit size={16} className="animate-pulse" /> : <Zap size={16} />}
+                {autoGenerate.isPending ? 'AI Computing...' : 'Auto-Fill Roster'}
               </button>
-              <button onClick={() => setShowAssignForm(!showAssignForm)} className="bg-[var(--ledger-blue)] text-black px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2">
-                <Plus size={14} /> Assign Shift
+              <button 
+                onClick={() => setShowAssignForm(!showAssignForm)} 
+                className="bg-white/10 border border-white/20 text-white px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+              >
+                <Plus size={16} /> Assign
               </button>
             </div>
           )}
         </div>
       </div>
 
+      {/* Manual Assignment Modal (Admin) */}
       {showAssignForm && isAdmin && (
-        <div className="ledger-panel p-4 bg-[var(--bg-panel)] mb-6">
-          <form className="flex flex-col md:flex-row gap-4" onSubmit={e => { e.preventDefault(); assignShift.mutate({ ...newAssign, date: selectedDate }); }}>
-            <select 
-              required value={newAssign.userId} onChange={e => setNewAssign({...newAssign, userId: e.target.value})}
-              className="flex-1 bg-[var(--bg-void)] border ledger-border p-2 text-sm font-mono focus:border-[var(--ledger-blue)]"
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative shadow-xl animate-in slide-in-from-top-4 z-20">
+          <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+            <UserCircle2 size={14} className="text-orange-400" /> Manual Shift Override
+          </h4>
+          <form className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end" onSubmit={e => { e.preventDefault(); assignShift.mutate({ ...newAssign, date: selectedDate }); }}>
+            <div>
+              <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Select Personnel</label>
+              <select 
+                required value={newAssign.userId} onChange={e => setNewAssign({...newAssign, userId: e.target.value})}
+                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none transition-colors appearance-none"
+              >
+                <option value="">-- Browse Directory --</option>
+                {users?.map((u: any) => (
+                  <option key={u.id} value={u.id}>{u.name} - {u.designation}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Target Shift</label>
+              <select 
+                required value={newAssign.shiftId} onChange={e => setNewAssign({...newAssign, shiftId: e.target.value})}
+                className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-orange-500 outline-none transition-colors appearance-none"
+              >
+                <option value="">-- Select Block --</option>
+                {shifts?.map((s: any) => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.startTime} - {s.endTime})</option>
+                ))}
+              </select>
+            </div>
+            <button 
+              disabled={assignShift.isPending || !newAssign.userId || !newAssign.shiftId} 
+              type="submit" 
+              className="bg-orange-500 text-black px-6 py-3 rounded-xl text-xs font-mono font-bold uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-all disabled:opacity-50"
             >
-              <option value="">Select Employee...</option>
-              {users?.map((u: any) => (
-                <option key={u.id} value={u.id}>{u.name} ({u.department})</option>
-              ))}
-            </select>
-            <select 
-              required value={newAssign.shiftId} onChange={e => setNewAssign({...newAssign, shiftId: e.target.value})}
-              className="flex-1 bg-[var(--bg-void)] border ledger-border p-2 text-sm font-mono focus:border-[var(--ledger-blue)]"
-            >
-              <option value="">Select Shift...</option>
-              {shifts?.map((s: any) => (
-                <option key={s.id} value={s.id}>{s.name} ({s.startTime} - {s.endTime})</option>
-              ))}
-            </select>
-            <button disabled={assignShift.isPending} type="submit" className="bg-[var(--ledger-blue)] text-black px-6 py-2 text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-white transition-colors">
-              Confirm Assignment
+              Confirm Override
             </button>
           </form>
         </div>
       )}
 
-      <div className="flex-1 overflow-auto custom-scrollbar">
-        {assignLoading ? (
-          <div className="p-8 text-center ledger-muted animate-pulse">Fetching Assignments...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {shifts?.map((shift: any) => {
-              const shiftAssignments = assignments?.filter((a: any) => a.shiftId === shift.id) || [];
-              return (
-                <div key={shift.id} className="ledger-panel p-0 overflow-hidden flex flex-col">
-                  <div className="p-3 border-b ledger-border bg-[var(--bg-void)] flex justify-between items-center">
-                    <h3 className="font-mono font-bold uppercase text-[var(--ledger-blue)] flex items-center gap-2">
-                      <CalendarDays size={16} /> {shift.name}
-                    </h3>
-                    <span className="text-[10px] font-mono bg-white/10 px-2 py-1 rounded">
-                      {shift.startTime} - {shift.endTime}
-                    </span>
+      {/* Roster Grid View */}
+      <div className="space-y-8">
+        {shifts?.map((shift: any) => {
+          const shiftAssignments = groupedAssignments[shift.id] || [];
+          
+          return (
+            <div key={shift.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl group">
+              
+              {/* Shift Header */}
+              <div className="bg-black/40 border-b border-white/10 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400">
+                    <Clock size={24} />
                   </div>
-                  <div className="p-4 flex-1 space-y-2 bg-[var(--bg-panel)]">
-                    {shiftAssignments.length === 0 && (
-                      <p className="text-[10px] font-mono text-[var(--text-muted)] text-center py-4">No employees assigned</p>
-                    )}
-                    {shiftAssignments.map((a: any) => (
-                      <div key={a.id} className="flex justify-between items-center p-2 border ledger-border bg-[var(--bg-void)]">
-                        <div>
-                          <p className="text-xs font-mono font-bold uppercase">{a.user.name}</p>
-                          <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase">{a.user.department}</p>
+                  <div>
+                    <h3 className="text-xl font-bold text-white">{shift.name}</h3>
+                    <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mt-1">
+                      {shift.startTime} - {shift.endTime} • HQ Building
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-lg flex flex-col items-center">
+                    <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Headcount</span>
+                    <span className="text-lg font-bold text-white font-mono">{shiftAssignments.length}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Assignments Grid */}
+              <div className="p-6">
+                {shiftAssignments.length === 0 ? (
+                  <div className="p-8 text-center text-[var(--text-muted)] font-mono text-[10px] uppercase tracking-widest border border-dashed border-white/10 rounded-2xl bg-black/20">
+                    No personnel assigned to this block.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {shiftAssignments.map((assignment: any) => (
+                      <div key={assignment.id} className="bg-black/40 border border-white/5 rounded-2xl p-4 flex items-center justify-between group/card hover:border-[var(--ledger-blue)]/50 transition-colors">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          {assignment.userAvatar ? (
+                            <img src={assignment.userAvatar} className="w-10 h-10 rounded-full border border-white/10 object-cover" alt="avatar" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-[var(--ledger-blue)]/20 border border-[var(--ledger-blue)]/30 text-[var(--ledger-blue)] flex items-center justify-center font-bold text-sm">
+                              {assignment.userName.charAt(0)}
+                            </div>
+                          )}
+                          <div className="truncate">
+                            <p className="font-bold text-sm text-white truncate">{assignment.userName}</p>
+                            <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest truncate">{assignment.userRole || 'Staff'}</p>
+                          </div>
                         </div>
+                        
                         {isAdmin && (
-                          <button onClick={() => removeAssignment.mutate({ assignmentId: a.id })} className="text-[var(--text-muted)] hover:text-[var(--alert-red)] transition-colors">
-                            <Trash2 size={14} />
+                          <button 
+                            onClick={() => removeAssignment.mutate({ id: assignment.id })}
+                            className="text-[var(--text-muted)] hover:text-red-500 opacity-0 group-hover/card:opacity-100 transition-all p-2 rounded-lg hover:bg-red-500/10"
+                            title="Remove Assignment"
+                          >
+                            <Trash2 size={16} />
                           </button>
                         )}
                       </div>
                     ))}
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        
+        {(!shifts || shifts.length === 0) && (
+           <div className="p-12 text-center text-[var(--text-muted)] font-mono text-[10px] uppercase tracking-widest border border-dashed border-white/10 rounded-3xl bg-black/20">
+             No shifts configured in the system.
+           </div>
         )}
       </div>
+
     </div>
   );
 }

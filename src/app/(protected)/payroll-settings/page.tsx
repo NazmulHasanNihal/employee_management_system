@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Settings, Plus, Save, ServerCrash, Bitcoin, AlertTriangle, Layers, Percent } from 'lucide-react';
+import { Settings, Plus, Save, Bitcoin, AlertTriangle, Layers, Percent, Box, ShieldAlert, X } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 
@@ -28,76 +28,143 @@ export default function PayrollSettingsPage() {
     }
   });
 
-  // New Head State
   const [newHeadName, setNewHeadName] = useState('');
   const [newHeadType, setNewHeadType] = useState<'EARNING' | 'DEDUCTION'>('EARNING');
 
-  // New Structure State
   const [structureForm, setStructureForm] = useState(false);
   const [sName, setSName] = useState('');
   const [sBase, setSBase] = useState(5000);
-  const [sHeads, setSHeads] = useState<{headId: string, amountType: 'FIXED' | 'PERCENTAGE' | 'FORMULA', value: string}[]>([]);
 
-  if (!isAdmin) return <div className="p-8 text-center text-[var(--alert-red)] font-mono uppercase tracking-widest animate-pulse">Unauthorized Access. Security Breach Logged.</div>;
+  if (!isAdmin) {
+    return (
+      <div className="flex-1 flex items-center justify-center h-full">
+        <div className="text-center space-y-4">
+          <ShieldAlert size={64} className="mx-auto text-[var(--alert-red)]/50" />
+          <h2 className="text-xl font-mono text-white uppercase tracking-widest">Access Denied</h2>
+          <p className="text-[var(--text-muted)] text-sm font-mono">Compensation Engines require Level 5 (Admin) Clearance.</p>
+        </div>
+      </div>
+    );
+  }
 
-  const handleCreateHead = () => {
+  const handleCreateHead = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!newHeadName) return;
     createHeadMutation.mutate({ name: newHeadName, type: newHeadType });
   };
 
-  const handleCreateStructure = () => {
+  const handleCreateStructure = (e: React.FormEvent) => {
+    e.preventDefault();
     createStructureMutation.mutate({
       name: sName,
       baseSalary: sBase,
-      heads: sHeads
+      heads: []
     });
   };
 
+  if (loadingHeads || loadingStructs) {
+    return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Booting Compensation Engine...</div>;
+  }
+
+  const headList = heads || [];
+  const structList = structures || [];
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-20 md:pb-0 relative h-full flex flex-col">
-      <div className="flex justify-between items-end pb-4 border-b border-white/10 shrink-0 relative">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[var(--signal-amber)]/10 to-transparent blur-3xl -z-10" />
         <div>
-          <h2 className="text-3xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
-            <Settings className="text-[var(--signal-amber)]" size={28} /> Payroll Engine
+          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <Settings className="text-[var(--signal-amber)]" size={36} />
+            Compensation Engine
           </h2>
-          <p className="text-[10px] font-mono text-[var(--text-muted)] mt-2 uppercase tracking-widest">Global Compensation Architecture</p>
+          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
+            Configure Global Salary Structures & Variables.
+          </p>
         </div>
+        <button 
+          onClick={() => setStructureForm(!structureForm)}
+          className="mt-6 md:mt-0 bg-[var(--signal-amber)] text-black px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(255,170,0,0.3)] transition-all flex items-center gap-2"
+        >
+          {structureForm ? 'Cancel Creation' : <><Plus size={16} /> New Structure Matrix</>}
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+      {structureForm && (
+        <div className="bg-[#0a0a0a] border border-[var(--signal-amber)]/30 rounded-3xl p-8 shadow-[0_0_50px_rgba(255,170,0,0.15)] animate-in slide-in-from-top-4 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--signal-amber)]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
+          
+          <h3 className="font-mono text-xl font-black text-white uppercase tracking-widest flex items-center gap-2 border-b border-white/10 pb-4 mb-6 relative z-10">
+            <Layers className="text-[var(--signal-amber)]" size={24} /> Salary Structure Matrix
+          </h3>
+
+          <form className="space-y-6 relative z-10" onSubmit={handleCreateStructure}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2">Matrix Designation</label>
+                <input 
+                  type="text" required placeholder="e.g. Executive Package"
+                  value={sName} onChange={e => setSName(e.target.value)}
+                  className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:border-[var(--signal-amber)] outline-none transition-colors shadow-inner"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2">Baseline Anchor ($)</label>
+                <input 
+                  type="number" required min="0" step="1000"
+                  value={sBase} onChange={e => setSBase(parseInt(e.target.value))}
+                  className="w-full bg-black/60 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:border-[var(--signal-amber)] outline-none transition-colors shadow-inner"
+                />
+              </div>
+            </div>
+            <button 
+              disabled={createStructureMutation.isPending || !sName} type="submit" 
+              className="w-full bg-[var(--signal-amber)] text-black px-6 py-4 rounded-xl font-black font-mono text-sm uppercase tracking-widest hover:brightness-110 shadow-[0_0_30px_rgba(255,170,0,0.3)] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+            >
+              <Save size={18} /> Compile Matrix
+            </button>
+          </form>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Heads */}
-        <div className="md:col-span-1 space-y-4">
-          <div className="bg-black/40 border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-            <h3 className="text-lg font-bold font-mono text-white mb-4 uppercase tracking-widest flex items-center gap-2">
-              <Bitcoin size={16} className="text-[var(--signal-amber)]"/> Payroll Heads
+        {/* Heads Manager */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-[#050505] border border-[var(--signal-amber)]/20 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col h-full">
+            <h3 className="text-sm font-bold font-mono text-white mb-6 uppercase tracking-widest flex items-center gap-2 border-b border-white/10 pb-4">
+              <Bitcoin size={16} className="text-[var(--signal-amber)]"/> Global Heads
             </h3>
             
-            <div className="flex gap-2 mb-4">
+            <form onSubmit={handleCreateHead} className="space-y-4 mb-6 relative z-10">
               <input 
-                type="text" 
-                placeholder="Name (e.g. Tax)" 
-                value={newHeadName} 
-                onChange={e => setNewHeadName(e.target.value)}
-                className="flex-1 bg-black/60 border border-white/10 p-2 text-xs font-mono text-white rounded"
+                type="text" required placeholder="New Head (e.g. Tax)" 
+                value={newHeadName} onChange={e => setNewHeadName(e.target.value)}
+                className="w-full bg-black/60 border border-white/10 p-3 text-sm font-mono text-white rounded-xl focus:border-[var(--signal-amber)] outline-none transition-colors"
               />
-              <select 
-                value={newHeadType} 
-                onChange={e => setNewHeadType(e.target.value as any)}
-                className="bg-black/60 border border-white/10 p-2 text-xs font-mono text-white rounded"
-              >
-                <option value="EARNING">Earning</option>
-                <option value="DEDUCTION">Deduction</option>
-              </select>
-              <button onClick={handleCreateHead} className="bg-[var(--signal-amber)]/20 text-[var(--signal-amber)] px-3 rounded hover:bg-[var(--signal-amber)] hover:text-black transition-colors"><Plus size={16}/></button>
-            </div>
+              <div className="flex gap-4">
+                <select 
+                  value={newHeadType} onChange={e => setNewHeadType(e.target.value as any)}
+                  className="flex-1 bg-black/60 border border-white/10 p-3 text-[10px] uppercase tracking-widest font-mono text-white rounded-xl focus:border-[var(--signal-amber)] outline-none transition-colors appearance-none"
+                >
+                  <option value="EARNING">Earning</option>
+                  <option value="DEDUCTION">Deduction</option>
+                </select>
+                <button type="submit" disabled={!newHeadName} className="bg-white/10 hover:bg-white/20 text-white p-3 rounded-xl transition-colors border border-white/5">
+                  <Plus size={20} />
+                </button>
+              </div>
+            </form>
 
-            <div className="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
-              {loadingHeads ? <p className="text-white/50 text-xs">Loading...</p> : heads?.map(h => (
-                <div key={h.id} className="flex justify-between items-center p-3 bg-white/5 border border-white/5 rounded">
+            <div className="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-2 relative z-10">
+              {headList.map((h: any) => (
+                <div key={h.id} className="bg-black/40 border border-white/5 p-3 rounded-xl flex justify-between items-center group hover:border-white/20 transition-colors">
                   <span className="font-mono text-xs text-white">{h.name}</span>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded ${h.type === 'EARNING' ? 'bg-[var(--verify-green)]/20 text-[var(--verify-green)]' : 'bg-[var(--alert-red)]/20 text-[var(--alert-red)]'}`}>
+                  <span className={`text-[8px] font-mono font-bold uppercase tracking-widest px-2 py-1 rounded border ${
+                    h.type === 'EARNING' ? 'bg-[var(--verify-green)]/10 text-[var(--verify-green)] border-[var(--verify-green)]/30' : 'bg-[var(--alert-red)]/10 text-[var(--alert-red)] border-[var(--alert-red)]/30'
+                  }`}>
                     {h.type}
                   </span>
                 </div>
@@ -106,131 +173,54 @@ export default function PayrollSettingsPage() {
           </div>
         </div>
 
-        {/* Right Column: Structures */}
-        <div className="md:col-span-2 space-y-4">
-          <div className="bg-black/40 border border-white/10 rounded-2xl p-6 shadow-xl min-h-[500px]">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold font-mono text-white uppercase tracking-widest flex items-center gap-2">
-                <Layers size={16} className="text-[var(--ledger-blue)]"/> Compensation Structures
-              </h3>
-              {!structureForm && (
-                <button 
-                  onClick={() => setStructureForm(true)}
-                  className="bg-[var(--ledger-blue)]/20 text-[var(--ledger-blue)] border border-[var(--ledger-blue)]/50 px-4 py-2 rounded text-xs font-mono font-bold hover:bg-[var(--ledger-blue)] hover:text-black transition-colors"
-                >
-                  New Structure
-                </button>
-              )}
+        {/* Structures Matrix Display */}
+        <div className="lg:col-span-2">
+          {structList.length === 0 ? (
+            <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-black/20 h-full flex flex-col items-center justify-center">
+              <Layers size={64} className="text-[var(--text-muted)] opacity-50 mb-4" />
+              <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">No Active Matrices.</h3>
             </div>
-
-            {structureForm ? (
-              <div className="space-y-4 animate-in fade-in zoom-in-95 duration-200">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-1">Structure Name</label>
-                    <input type="text" value={sName} onChange={e => setSName(e.target.value)} className="w-full bg-black border border-white/10 p-2 text-sm text-white rounded font-mono" placeholder="e.g. Executive Plan" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-1">Default Base Salary</label>
-                    <input type="number" value={sBase} onChange={e => setSBase(Number(e.target.value))} className="w-full bg-black border border-white/10 p-2 text-sm text-white rounded font-mono" />
-                  </div>
-                </div>
-
-                <div className="border border-white/10 rounded-xl p-4 bg-white/5 space-y-4">
-                  <h4 className="text-xs font-mono font-bold text-white uppercase tracking-widest mb-2 border-b border-white/10 pb-2">Configured Heads</h4>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {structList.map((s: any) => (
+                <div key={s.id} className="bg-[#050505] border border-white/10 hover:border-[var(--signal-amber)]/30 transition-colors rounded-3xl p-6 relative overflow-hidden group shadow-lg">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--signal-amber)]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
                   
-                  {sHeads.map((sh, idx) => {
-                    const headObj = heads?.find(h => h.id === sh.headId);
-                    return (
-                      <div key={idx} className="flex gap-2 items-center bg-black/40 p-2 rounded border border-white/5">
-                        <span className="text-xs text-white font-mono flex-1">{headObj?.name}</span>
-                        <select 
-                          value={sh.amountType} 
-                          onChange={(e) => {
-                            const newHeads = [...sHeads];
-                            newHeads[idx].amountType = e.target.value as any;
-                            setSHeads(newHeads);
-                          }}
-                          className="bg-black/60 border border-white/10 p-1.5 text-[10px] font-mono text-white rounded w-28"
-                        >
-                          <option value="FIXED">Fixed</option>
-                          <option value="PERCENTAGE">% of Base</option>
-                          <option value="FORMULA">Formula</option>
-                        </select>
-                        <input 
-                          type="text" 
-                          value={sh.value}
-                          onChange={(e) => {
-                            const newHeads = [...sHeads];
-                            newHeads[idx].value = e.target.value;
-                            setSHeads(newHeads);
-                          }}
-                          placeholder={sh.amountType === 'FORMULA' ? '(OvertimeHours * 10)' : 'Amount'}
-                          className="w-48 bg-black/60 border border-white/10 p-1.5 text-xs font-mono text-white rounded"
-                        />
-                        <button onClick={() => setSHeads(sHeads.filter((_, i) => i !== idx))} className="text-red-500 hover:bg-red-500/20 p-1 rounded"><ServerCrash size={14}/></button>
-                      </div>
-                    );
-                  })}
-
-                  <div className="flex gap-2 pt-2">
-                    <select id="headSelect" className="flex-1 bg-black/60 border border-[var(--ledger-blue)]/50 p-2 text-xs font-mono text-white rounded">
-                      <option value="">-- Add Head --</option>
-                      {heads?.filter(h => !sHeads.find(sh => sh.headId === h.id)).map(h => (
-                        <option key={h.id} value={h.id}>{h.name} ({h.type})</option>
-                      ))}
-                    </select>
-                    <button 
-                      onClick={() => {
-                        const select = document.getElementById('headSelect') as HTMLSelectElement;
-                        if (select.value) {
-                          setSHeads([...sHeads, { headId: select.value, amountType: 'FIXED', value: '0' }]);
-                          select.value = '';
-                        }
-                      }}
-                      className="bg-white/10 px-4 text-xs font-mono text-white rounded hover:bg-white/20"
-                    >
-                      Add
-                    </button>
-                  </div>
-                  
-                  <div className="mt-4 p-3 border border-[var(--signal-amber)]/30 bg-[var(--signal-amber)]/5 rounded text-[10px] text-[var(--signal-amber)] font-mono flex items-start gap-2">
-                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                    <p>Formulas support variables: <code>BaseSalary</code>, <code>TotalHours</code>, <code>OvertimeHours</code>, <code>LateDays</code>, <code>HourlyRate</code>. Example: <code>(OvertimeHours * HourlyRate * 1.5)</code></p>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button onClick={() => setStructureForm(false)} className="px-4 py-2 text-xs font-mono text-white/50 hover:text-white">Cancel</button>
-                  <button onClick={handleCreateStructure} className="bg-[var(--ledger-blue)] text-black px-6 py-2 rounded font-mono text-xs font-bold uppercase tracking-widest hover:shadow-[0_0_15px_var(--ledger-blue)] flex items-center gap-2">
-                    <Save size={14} /> Deploy Structure
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {loadingStructs ? <div className="text-white/50">Loading...</div> : structures?.map(s => (
-                  <div key={s.id} className="border border-white/10 rounded-xl p-4 bg-white/5 hover:border-white/30 transition-colors cursor-pointer group">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h4 className="font-bold text-white group-hover:text-[var(--ledger-blue)] transition-colors">{s.name}</h4>
-                        <p className="text-xs font-mono text-white/50 mt-1">Base: ${s.baseSalary?.toLocaleString()}</p>
-                      </div>
+                  <div className="flex items-start justify-between mb-6 relative z-10">
+                    <div>
+                      <h3 className="text-xl font-black text-white font-mono mb-1">{s.name}</h3>
+                      <p className="text-[9px] font-mono text-[var(--signal-amber)] uppercase tracking-widest flex items-center gap-1">
+                        <Box size={10} /> Matrix ID: {s.id.slice(0, 8)}
+                      </p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {s.heads.map(sh => (
-                        <div key={sh.id} className="bg-black/60 border border-white/10 px-2 py-1 rounded flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${sh.head.type === 'EARNING' ? 'bg-[var(--verify-green)]' : 'bg-[var(--alert-red)]'}`} />
-                          <span className="text-[10px] font-mono text-white/80">{sh.head.name}</span>
-                          <span className="text-[10px] font-mono text-white/40">[{sh.amountType}]</span>
+                  </div>
+
+                  <div className="space-y-3 relative z-10">
+                    <div className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Anchor Base</span>
+                      <span className="text-sm font-mono font-bold text-white">${s.baseSalary.toLocaleString()}</span>
+                    </div>
+
+                    <div className="pt-4 mt-4 border-t border-white/10">
+                      <p className="text-[9px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-3">Linked Variables</p>
+                      {s.heads.length === 0 ? (
+                        <p className="text-[10px] font-mono text-white/30 italic">No variables attached.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {s.heads.map((sh: any) => (
+                            <div key={sh.id} className="flex justify-between items-center text-[10px] font-mono">
+                              <span className="text-white/70">{sh.head.name}</span>
+                              <span className="text-[var(--text-muted)]">{sh.amountType === 'PERCENTAGE' ? `${sh.value}%` : `$${sh.value}`}</span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

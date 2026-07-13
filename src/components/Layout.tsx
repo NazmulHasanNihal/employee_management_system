@@ -13,9 +13,9 @@ import {
   BrainCircuit, Handshake, Calculator, Flame, Scale, Brain, Target, Map, Lightbulb,
   MessageCircle, Award, CheckSquare
 } from 'lucide-react';
-import { authClient } from '@/lib/auth-client';
+
 import { useAppStore } from '@/lib/store';
-import { trpc } from '@/lib/trpc/client';
+import { createClient } from '@/lib/client';
 import usePartySocket from '@/lib/usePartySocket';
 import CommandPalette from './CommandPalette';
 
@@ -25,16 +25,12 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
   const { isOffline, setOffline, offlineQueue } = useAppStore();
   const [showNotifications, setShowNotifications] = React.useState(false);
 
-  const utils = trpc.useUtils();
-  const { data: notifications } = trpc.notifications.getNotifications.useQuery();
-  const markRead = trpc.notifications.markAsRead.useMutation({
-    onSuccess: () => utils.notifications.getNotifications.invalidate()
-  });
-  const markAllRead = trpc.notifications.markAllAsRead.useMutation({
-    onSuccess: () => utils.notifications.getNotifications.invalidate()
-  });
-
-  const unreadCount = notifications?.filter(n => !n.read).length || 0;
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+  const markRead = async (id: string) => {
+    setNotifications(notifications.filter(n => n.id !== id));
+  };
+  const unreadCount = notifications.filter(n => !n.read).length;
+  const mandatoryPolicies: any[] = [];
 
   const socket = usePartySocket({
     host: 'localhost:1999',
@@ -42,7 +38,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
     onMessage(e) {
       const data = JSON.parse(e.data);
       if (data.type === 'notification_update' || data.type === 'dm_update') {
-        utils.notifications.getNotifications.invalidate();
+        // notification update logic would go here
       }
     }
   });
@@ -52,14 +48,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
     router.push('/login');
   };
 
-  const { data: session } = authClient.useSession();
-  const sessionUser = session?.user as any;
-  const isContractor = sessionUser?.employmentType === 'Contract';
-
-  const { data: mandatoryPolicies, isLoading: policiesLoading } = trpc.compliance.getMandatoryPolicies.useQuery();
-  const acknowledgePolicy = trpc.compliance.acknowledgePolicy.useMutation({
-    onSuccess: () => utils.compliance.getMandatoryPolicies.invalidate()
-  });
+  const isContractor = user?.employmentType === 'Contract';
 
   const [openCategories, setOpenCategories] = React.useState<Record<string, boolean>>({
     'Core System': true,
@@ -124,8 +113,8 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
       items: [
         { label: 'Registry', icon: Users, path: '/registry' },
         { label: 'Recruitment', icon: Briefcase, path: '/recruitment', adminOnly: true },
-        { label: 'Org Chart', icon: GitBranch, path: '/hierarchy' },
-        { label: 'Restructure Sandbox', icon: Network, path: '/orgchart' },
+        { label: 'Org Chart', icon: GitBranch, path: '/org-chart' },
+        { label: 'Restructure Sandbox', icon: Network, path: '/hierarchy' },
         { label: 'DEI Auditor', icon: Scale, path: '/dei', adminOnly: true },
       ]
     },
@@ -141,9 +130,9 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
   const flatNavItems = navCategories.flatMap(c => c.items);
 
   return (
-    <div className={`min-h-screen flex flex-col md:flex-row transition-colors duration-300`}>
+    <div className={`h-screen w-screen overflow-hidden flex flex-col md:flex-row transition-colors duration-300`}>
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex flex-col w-64 border-r ledger-border bg-[var(--bg-panel)] z-20">
+      <aside className="hidden md:flex flex-col w-64 border-r ledger-border bg-[var(--bg-panel)] z-20 h-full">
         <div className="p-6 border-b ledger-border flex items-center gap-3">
           <div className="w-8 h-8 bg-[var(--bg-void)] border ledger-border flex items-center justify-center">
             <LinkIcon size={16} className="text-[var(--text-main)]" />

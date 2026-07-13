@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ArrowUpRight } from "lucide-react";
-import { authClient } from "@/lib/auth-client"; // We need to create this!
+import { createClient } from "@/lib/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,7 +14,8 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const { error } = await authClient.signIn.email({
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });

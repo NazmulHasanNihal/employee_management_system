@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Megaphone, Activity } from 'lucide-react';
+import { Megaphone, AlertTriangle, Info, BellRing, Edit3, Send, Check } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { trpc } from '@/lib/trpc/client';
-import usePartySocket from '@/lib/usePartySocket';
 
 export default function AnnouncementsPage() {
   const { data: session } = authClient.useSession();
@@ -14,43 +13,67 @@ export default function AnnouncementsPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [priority, setPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
+  
+  // Role Simulator Toggle (For Testing Only)
+  const [viewRole, setViewRole] = useState<'Admin' | 'Employee'>('Admin');
 
   const { data: announcements, isLoading } = trpc.announcements.getAll.useQuery(undefined, { enabled: !!user });
   
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const createMutation = trpc.announcements.create.useMutation({
     onSuccess: () => {
       setTitle('');
       setContent('');
       setPriority('Medium');
+      setIsSubmitting(false);
       utils.announcements.getAll.invalidate();
-      socket.send(JSON.stringify({ type: 'announcement_update' }));
-      socket.send(JSON.stringify({ type: 'notification_update' })); // Global ping
     }
   });
 
-  const socket = usePartySocket({
-    host: 'localhost:1999',
-    room: 'ems-global',
-    onMessage(e) {
-      const data = JSON.parse(e.data);
-      if (data.type === 'announcement_update') {
-        utils.announcements.getAll.invalidate();
-      }
-    }
-  });
+  const handlePost = () => {
+    if (!title || !content) return;
+    setIsSubmitting(true);
+    createMutation.mutate({ title, content, priority });
+  };
 
-  const canPost = user?.role === 'Admin' || user?.role === 'HR Manager';
+  const isAdmin = viewRole === 'Admin';
 
   if (!user || isLoading) {
-    return <div className="p-8 text-center ledger-muted animate-pulse font-mono text-[10px]">Loading announcements...</div>;
+    return <div className="p-8 text-center text-[var(--text-muted)] font-mono animate-pulse uppercase tracking-widest">Loading Comms Hub...</div>;
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-20 md:pb-0">
-      <div className="flex justify-between items-end pb-4 border-b ledger-border">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+      
+      {/* Role Simulator Toggle */}
+      <div className="flex items-center justify-end gap-2 p-2 bg-black/40 rounded-xl border border-white/5 w-max ml-auto">
+        <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase mr-2">Simulate Role:</span>
+        <button 
+          onClick={() => setViewRole('Admin')}
+          className={`px-3 py-1 rounded text-xs font-mono uppercase tracking-wider transition-colors ${viewRole === 'Admin' ? 'bg-[var(--ledger-blue)] text-black font-bold' : 'text-white hover:bg-white/10'}`}
+        >
+          Admin
+        </button>
+        <button 
+          onClick={() => setViewRole('Employee')}
+          className={`px-3 py-1 rounded text-xs font-mono uppercase tracking-wider transition-colors ${viewRole === 'Employee' ? 'bg-[var(--signal-amber)] text-black font-bold' : 'text-white hover:bg-white/10'}`}
+        >
+          Employee
+        </button>
+      </div>
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[var(--ledger-blue)]/10 to-purple-500/10 blur-3xl -z-10" />
         <div>
-          <h2 className="text-2xl font-mono font-bold uppercase tracking-tight ledger-text">Announcements</h2>
-          <p className="text-[10px] font-mono ledger-muted mt-2 uppercase tracking-widest">Company-Wide Broadcasts</p>
+          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <Megaphone className="text-[var(--ledger-blue)]" size={36} />
+            Comms Hub
+          </h2>
+          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
+            Company-wide broadcasts and critical alerts.
+          </p>
         </div>
       </div>
 
@@ -59,77 +82,123 @@ export default function AnnouncementsPage() {
         {/* Feed */}
         <div className="lg:col-span-2 space-y-4">
           {announcements?.map(ann => (
-            <div key={ann.id} className="ledger-panel p-6 border-l-4 border-l-transparent transition-colors group" 
-                 style={{ borderLeftColor: ann.priority === 'High' ? 'var(--alert-red)' : ann.priority === 'Medium' ? 'var(--signal-amber)' : 'var(--ledger-blue)' }}>
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-bold ledger-text text-lg">{ann.title}</h3>
-                <span className={`text-[10px] font-mono uppercase px-2 py-1 border ${
-                  ann.priority === 'High' ? 'border-[var(--alert-red)] text-[var(--alert-red)]' : 
-                  ann.priority === 'Medium' ? 'border-[var(--signal-amber)] text-[var(--signal-amber)]' : 
-                  'border-[var(--ledger-blue)] text-[var(--ledger-blue)]'
+            <div key={ann.id} className={`bg-white/5 backdrop-blur-xl border-l-4 rounded-r-2xl rounded-l-sm p-6 relative overflow-hidden transition-all duration-300 ${
+              ann.priority === 'High' 
+                ? 'border-l-red-500 shadow-[0_0_30px_rgba(255,0,0,0.1)] hover:shadow-[0_0_40px_rgba(255,0,0,0.2)]' 
+                : ann.priority === 'Medium'
+                  ? 'border-l-[var(--signal-amber)] hover:bg-white/10 border-y border-r border-white/5'
+                  : 'border-l-[var(--ledger-blue)] hover:bg-white/10 border-y border-r border-white/5'
+            }`}>
+              
+              {ann.priority === 'High' && (
+                <div className="absolute inset-0 bg-red-500/5 animate-pulse pointer-events-none" />
+              )}
+
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <h3 className="font-bold text-white text-xl">{ann.title}</h3>
+                
+                <span className={`text-[10px] font-mono uppercase px-3 py-1 rounded-full flex items-center gap-1 font-bold ${
+                  ann.priority === 'High' ? 'bg-red-500/20 text-red-400 border border-red-500/50' : 
+                  ann.priority === 'Medium' ? 'bg-[var(--signal-amber)]/20 text-[var(--signal-amber)] border border-[var(--signal-amber)]/50' : 
+                  'bg-[var(--ledger-blue)]/20 text-[var(--ledger-blue)] border border-[var(--ledger-blue)]/50'
                 }`}>
-                  {ann.priority} Priority
+                  {ann.priority === 'High' ? <AlertTriangle size={12}/> : ann.priority === 'Medium' ? <BellRing size={12}/> : <Info size={12}/>}
+                  {ann.priority}
                 </span>
               </div>
-              <p className="text-sm ledger-muted leading-relaxed whitespace-pre-wrap">{ann.content}</p>
-              <div className="mt-4 pt-4 border-t ledger-border flex justify-between items-center text-[10px] font-mono ledger-muted uppercase">
-                <span className="flex items-center gap-1"><Megaphone size={12}/> {ann.author}</span>
-                <span>{new Date(ann.createdAt).toLocaleString()}</span>
+              
+              <p className="text-sm text-[var(--text-muted)] leading-relaxed whitespace-pre-wrap relative z-10">
+                {ann.content}
+              </p>
+              
+              <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center text-[10px] font-mono text-[var(--text-muted)] uppercase relative z-10">
+                <span className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-full border border-white/5">
+                  <div className="w-4 h-4 rounded-full bg-[var(--ledger-blue)]/20 text-[var(--ledger-blue)] flex items-center justify-center font-bold">{ann.author.charAt(0)}</div>
+                  {ann.author}
+                </span>
+                <span>{new Date(ann.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
               </div>
             </div>
           ))}
+          
           {(!announcements || announcements.length === 0) && (
-            <div className="p-12 text-center border border-dashed ledger-border">
-              <h3 className="font-mono text-sm font-bold ledger-text uppercase tracking-widest">No Broadcasts</h3>
+            <div className="p-12 text-center border border-dashed border-white/10 rounded-3xl bg-black/20">
+              <Megaphone size={32} className="mx-auto text-[var(--text-muted)] opacity-50 mb-4" />
+              <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">No Broadcasts</h3>
             </div>
           )}
         </div>
 
-        {/* Composer */}
-        {canPost && (
-          <div className="ledger-panel p-6 h-fit sticky top-6">
-            <h3 className="font-mono text-xs font-bold text-[var(--text-main)] uppercase tracking-widest mb-4">Compose Broadcast</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">Title</label>
-                <input 
-                  type="text" 
-                  value={title} 
-                  onChange={e => setTitle(e.target.value)} 
-                  className="w-full ledger-input px-3 py-2 text-sm"
-                  placeholder="Subject..."
-                />
+        {/* Composer (Admin Only) */}
+        {isAdmin && (
+          <div className="lg:col-span-1">
+            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sticky top-6 shadow-2xl">
+              <div className="flex items-center gap-2 mb-6 text-white border-b border-white/10 pb-4">
+                <Edit3 size={18} className="text-[var(--ledger-blue)]" />
+                <h3 className="font-mono text-sm font-bold uppercase tracking-widest">Composer</h3>
               </div>
-              <div>
-                <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">Priority</label>
-                <select 
-                  value={priority} 
-                  onChange={e => setPriority(e.target.value as any)} 
-                  className="w-full ledger-input px-3 py-2 text-sm"
+              
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Subject</label>
+                  <input 
+                    type="text" 
+                    value={title} 
+                    onChange={e => setTitle(e.target.value)} 
+                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--ledger-blue)] outline-none font-sans transition-colors"
+                    placeholder="Enter broadcast subject..."
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Priority Level</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button 
+                      onClick={() => setPriority('Low')}
+                      className={`py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-colors border ${priority === 'Low' ? 'bg-[var(--ledger-blue)]/20 text-[var(--ledger-blue)] border-[var(--ledger-blue)]/50' : 'bg-black/50 text-[var(--text-muted)] border-white/5 hover:bg-white/5'}`}
+                    >
+                      Low
+                    </button>
+                    <button 
+                      onClick={() => setPriority('Medium')}
+                      className={`py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-colors border ${priority === 'Medium' ? 'bg-[var(--signal-amber)]/20 text-[var(--signal-amber)] border-[var(--signal-amber)]/50' : 'bg-black/50 text-[var(--text-muted)] border-white/5 hover:bg-white/5'}`}
+                    >
+                      Medium
+                    </button>
+                    <button 
+                      onClick={() => setPriority('High')}
+                      className={`py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-colors border ${priority === 'High' ? 'bg-red-500/20 text-red-500 border-red-500/50 shadow-[0_0_15px_rgba(255,0,0,0.2)]' : 'bg-black/50 text-[var(--text-muted)] border-white/5 hover:bg-white/5'}`}
+                    >
+                      High
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Message Body</label>
+                  <textarea 
+                    value={content} 
+                    onChange={e => setContent(e.target.value)} 
+                    className="w-full h-32 bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--ledger-blue)] outline-none font-sans resize-none transition-colors custom-scrollbar"
+                    placeholder="Type the broadcast message here..."
+                  />
+                </div>
+                
+                <button 
+                  onClick={handlePost}
+                  disabled={!title || !content || isSubmitting}
+                  className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 font-mono text-sm uppercase tracking-widest font-bold transition-all duration-300 ${
+                    !title || !content 
+                      ? 'bg-white/5 text-[var(--text-muted)] cursor-not-allowed' 
+                      : isSubmitting 
+                        ? 'bg-[var(--ledger-blue)]/50 text-black'
+                        : 'bg-[var(--ledger-blue)] text-black hover:brightness-110 shadow-[0_0_20px_rgba(0,195,255,0.3)]'
+                  }`}
                 >
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
+                  {isSubmitting ? <Check size={18} className="animate-pulse" /> : <Send size={18} />}
+                  {isSubmitting ? 'Transmitting...' : 'Transmit Broadcast'}
+                </button>
               </div>
-              <div>
-                <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">Content</label>
-                <textarea 
-                  value={content} 
-                  onChange={e => setContent(e.target.value)} 
-                  rows={6}
-                  className="w-full ledger-input px-3 py-2 text-sm custom-scrollbar"
-                  placeholder="Transmit message..."
-                />
-              </div>
-              <button 
-                disabled={createMutation.isPending || !title || !content}
-                onClick={() => createMutation.mutate({ title, content, priority })}
-                className="w-full btn-primary py-3 flex items-center justify-center gap-2"
-              >
-                {createMutation.isPending ? <Activity size={16} className="animate-spin" /> : <Megaphone size={16} />}
-                {createMutation.isPending ? 'BROADCASTING...' : 'BROADCAST'}
-              </button>
             </div>
           </div>
         )}

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Terminal, X, Search, Activity, User, Briefcase, Command } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { trpc } from "@/lib/trpc/client";
+
 
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
@@ -11,7 +11,7 @@ export default function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   
-  const utils = trpc.useUtils();
+
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Award, Zap, Heart, Star, Send } from 'lucide-react';
+import { Award, Zap, Heart, Star, Send, Trophy, Flame } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 
@@ -32,17 +32,23 @@ export default function RecognitionPage() {
 
   const colleagues = users?.filter((u: any) => u.id !== user?.id) || [];
 
+  if (isLoading) {
+    return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Loading Hall of Fame...</div>;
+  }
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-5xl mx-auto">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+      
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-yellow-500/10 to-transparent blur-3xl -z-10" />
         <div>
-          <h2 className="text-4xl font-mono font-black uppercase tracking-tight bg-gradient-to-r from-yellow-400 to-amber-200 text-transparent bg-clip-text flex items-center gap-3">
-            <Award className="text-yellow-400" size={32} />
-            Kudos Board
+          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <Trophy className="text-yellow-400" size={36} />
+            Hall of Fame
           </h2>
-          <p className="font-sans text-sm mt-2 text-[var(--text-muted)] flex items-center gap-2">
-            Publicly recognize and celebrate your colleagues' hard work.
+          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
+            Publicly recognize and celebrate your colleagues.
           </p>
         </div>
       </div>
@@ -51,83 +57,93 @@ export default function RecognitionPage() {
         
         {/* Send Kudo Form */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="ledger-panel p-6 border border-white/10 bg-white/5 rounded-2xl relative overflow-hidden group hover:border-yellow-500/50 transition-colors">
-            <div className="absolute -right-10 -top-10 text-yellow-500/10 group-hover:rotate-12 transition-transform duration-700">
-              <Zap size={150} />
-            </div>
+          <div className="bg-white/5 backdrop-blur-xl border border-yellow-500/30 rounded-3xl p-6 relative overflow-hidden shadow-2xl group transition-all">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/10 rounded-full blur-3xl group-hover:bg-yellow-500/20 transition-colors -translate-y-1/2 translate-x-1/4" />
             
-            <h3 className="text-lg font-bold font-mono uppercase tracking-widest text-white mb-6 relative z-10 flex items-center gap-2">
-              <Star className="text-yellow-400" size={20} /> Give a Shoutout
+            <h3 className="text-sm font-bold font-mono uppercase tracking-widest text-white mb-6 relative z-10 flex items-center gap-2 border-b border-white/10 pb-4">
+              <Zap className="text-yellow-400" size={16} /> Give a Shoutout
             </h3>
 
-            <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
               <div>
-                <label className="block text-xs font-mono text-[var(--text-muted)] uppercase mb-1">To Colleague</label>
+                <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Recipient Colleague</label>
                 <select 
                   required value={receiverId} onChange={(e) => setReceiverId(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-yellow-500 focus:outline-none appearance-none"
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:border-yellow-500 outline-none appearance-none transition-colors"
                 >
-                  <option value="">Select someone...</option>
+                  <option value="">Select a champion...</option>
                   {colleagues.map((c: any) => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.department})</option>
+                    <option key={c.id} value={c.id}>{c.name} ({c.designation || 'Staff'})</option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label className="block text-xs font-mono text-[var(--text-muted)] uppercase mb-1">Message</label>
+                <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Message of Praise</label>
                 <textarea 
-                  required rows={3} value={message} onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Thank you for helping me with..."
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-yellow-500 focus:outline-none resize-none"
+                  required rows={4} value={message} onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Thank you for being awesome because..."
+                  className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-500 outline-none resize-none transition-colors custom-scrollbar"
                 />
               </div>
 
               <button 
-                type="submit" disabled={sendKudo.isPending}
-                className="w-full bg-yellow-500 text-black py-3 rounded-lg font-bold font-mono uppercase tracking-widest flex items-center justify-center gap-2 hover:brightness-110 transition-all disabled:opacity-50"
+                type="submit" disabled={sendKudo.isPending || !receiverId || !message.trim()}
+                className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-black py-4 rounded-xl font-bold font-mono text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:brightness-110 shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-all disabled:opacity-50"
               >
-                <Send size={18} /> Send Kudo
+                <Flame size={18} /> Ignite Recognition
               </button>
             </form>
           </div>
         </div>
 
         {/* Kudos Feed */}
-        <div className="lg:col-span-2">
-          {isLoading ? (
-            <div className="text-center text-[var(--text-muted)] py-8 font-mono text-sm animate-pulse">Loading kudos...</div>
-          ) : (
-            <div className="space-y-4">
-              {kudos?.map((kudo: any) => (
-                <div key={kudo.id} className="ledger-panel p-5 border border-white/10 bg-white/5 rounded-2xl relative group hover:border-yellow-500/30 transition-colors">
-                  <div className="absolute top-4 right-4 text-yellow-500/20 group-hover:text-yellow-500/80 transition-colors">
-                    <Heart size={24} fill="currentColor" />
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest flex items-center gap-2">
+              <Award size={16} className="text-[var(--text-muted)]" /> Recent Accolades
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(!kudos || kudos.length === 0) ? (
+              <div className="col-span-full py-16 text-center border border-dashed border-white/10 rounded-3xl bg-black/20">
+                <Heart size={48} className="mx-auto text-[var(--text-muted)] opacity-50 mb-4" />
+                <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">No shoutouts yet. Be the first!</h3>
+              </div>
+            ) : (
+              kudos.map((kudo: any) => (
+                <div key={kudo.id} className="bg-black/40 backdrop-blur-xl border border-white/10 hover:border-yellow-500/50 transition-colors rounded-3xl p-6 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-2 h-full bg-gradient-to-b from-yellow-400 to-transparent opacity-50" />
+                  
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">To</p>
+                      <p className="font-bold text-white font-mono text-lg">{kudo.receiverName}</p>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 border border-yellow-500/30">
+                      <Star size={20} className="fill-yellow-400/50" />
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="font-bold text-white text-lg">{kudo.receiver.name}</span>
-                    <span className="text-xs text-[var(--text-muted)] font-mono uppercase">received a kudo from</span>
-                    <span className="font-mono text-sm text-yellow-400">{kudo.sender.name}</span>
+                  <div className="bg-white/5 rounded-2xl p-4 mb-4 border border-white/5 relative">
+                    <Heart size={16} className="absolute top-4 right-4 text-pink-500/30" />
+                    <p className="text-sm text-white/90 font-sans italic leading-relaxed pr-8">"{kudo.message}"</p>
                   </div>
                   
-                  <p className="text-white/80 leading-relaxed italic border-l-2 border-yellow-500/50 pl-3">
-                    "{kudo.message}"
-                  </p>
-                  
-                  <div className="mt-4 text-[10px] font-mono text-white/30 uppercase tracking-widest">
-                    {new Date(kudo.createdAt).toLocaleString()}
+                  <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-auto">
+                    <div>
+                      <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-0.5">From</p>
+                      <p className="text-xs font-mono text-[var(--ledger-blue)] font-bold">{kudo.senderName}</p>
+                    </div>
+                    <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
+                      {new Date(kudo.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-              ))}
-              
-              {kudos?.length === 0 && (
-                <div className="text-center text-[var(--text-muted)] py-12 font-mono text-sm border border-dashed border-white/10 rounded-2xl bg-white/5">
-                  No kudos sent yet. Be the first!
-                </div>
-              )}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
 
       </div>

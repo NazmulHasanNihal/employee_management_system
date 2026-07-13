@@ -12,9 +12,8 @@ export default function usePartySocket({ room, onMessage }: PartySocketOptions) 
   useEffect(() => {
     console.warn("Real-time sockets are mocked since migrating away from Supabase.");
     // Return a dummy object with send method
-    setSocket({ send: () => {} });
-    return () => {};
-  }, [room, onMessage]);
+    setSocket((prev: any) => prev ? prev : { send: () => {} });
+  }, []);
 
   return socket;
 }

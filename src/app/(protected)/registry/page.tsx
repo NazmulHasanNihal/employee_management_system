@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Users, Search, Download, Trash2, Mail, ShieldAlert, X, Activity } from 'lucide-react';
+import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 
 const PERMISSIONS_LIST = [
-  { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Can add, assign, and update hardware inventory' },
-  { id: 'MANAGE_TRAINING', label: 'Manage LMS', desc: 'Can create training modules and track compliance' },
-  { id: 'VIEW_ALL_TIMESHEETS', label: 'View All Timesheets', desc: 'Can view and delete any employee timesheet' },
-  { id: 'MANAGE_PROJECTS', label: 'Manage Projects', desc: 'Can create and manage client billable projects' }
+  { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Hardware inventory & software licenses' },
+  { id: 'MANAGE_TRAINING', label: 'Manage LMS', desc: 'Training modules & compliance tracking' },
+  { id: 'VIEW_ALL_TIMESHEETS', label: 'View All Timesheets', desc: 'Full visibility over payroll hours' },
+  { id: 'MANAGE_PROJECTS', label: 'Manage Projects', desc: 'Client billables & strategic initiatives' }
 ];
 
 export default function RegistryPage() {
@@ -31,22 +31,8 @@ export default function RegistryPage() {
     }
   });
 
-  const updateCurrencyMutation = trpc.registry.updateCurrency.useMutation({
-    onSuccess: () => {
-      utils.registry.searchEmployees.invalidate();
-    }
-  });
-
-  const updateStructureMutation = trpc.registry.updatePayrollStructure.useMutation({
-    onSuccess: () => {
-      utils.registry.searchEmployees.invalidate();
-    }
-  });
-
-  const { data: structures } = trpc.payroll.getStructures.useQuery(undefined, { enabled: isAdmin });
-
   if (isLoading || !user) {
-    return <div className="p-8 text-center text-white/50 animate-pulse font-mono">Loading Registry...</div>;
+    return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Querying Master Registry...</div>;
   }
 
   const list = employees || [];
@@ -73,186 +59,171 @@ export default function RegistryPage() {
     try { perms = JSON.parse(editingPermsFor.permissions || '[]'); } catch(e) {}
     
     await updatePermsMutation.mutateAsync({ userId: editingPermsFor.id, permissions: perms });
-    await updateCurrencyMutation.mutateAsync({ userId: editingPermsFor.id, currency: editingPermsFor.currency || 'USD' });
-    if (editingPermsFor.payrollStructureId !== undefined) {
-      await updateStructureMutation.mutateAsync({ userId: editingPermsFor.id, structureId: editingPermsFor.payrollStructureId });
-    }
     setEditingPermsFor(null);
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-20 md:pb-0 relative h-full flex flex-col">
-      <div className="flex justify-between items-end pb-4 border-b border-white/10 shrink-0 relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[var(--ledger-blue)]/10 to-transparent blur-3xl -z-10" />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-teal-500/10 to-transparent blur-3xl -z-10" />
         <div>
-          <h2 className="text-3xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
-            <Users className="text-[var(--ledger-blue)]" size={28} /> Organization Registry
+          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <Users className="text-teal-400" size={36} />
+            Master Registry
           </h2>
-          <p className="text-[10px] font-mono text-[var(--text-muted)] mt-2 uppercase tracking-widest">Master Record</p>
+          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
+            Centralized employee database and access control.
+          </p>
         </div>
-        <div className="flex gap-4">
-          <button className="bg-white/5 border border-white/10 text-white px-4 py-2 text-xs font-mono font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2 rounded-lg">
-            <Download size={14} /> Export CSV
+        
+        <div className="flex flex-col md:flex-row gap-4 mt-6 md:mt-0 items-center">
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search Personnel..." 
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm font-mono text-white focus:outline-none focus:border-teal-500 transition-colors shadow-inner"
+            />
+          </div>
+          <button className="w-full md:w-auto bg-black/50 border border-white/10 text-white px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:border-teal-500 transition-all flex items-center justify-center gap-2">
+            <Download size={14} /> Export
           </button>
         </div>
       </div>
 
-      <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-xl flex-1 flex flex-col">
-        <div className="px-4 py-3 border-b border-white/5 bg-white/5 flex gap-4 shrink-0">
-          <div className="relative flex-1 max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
-            <input 
-              type="text" 
-              value={filter} 
-              onChange={e => setFilter(e.target.value)} 
-              placeholder="Search directory..." 
-              className="w-full pl-9 pr-4 py-2 bg-black/40 border border-white/10 rounded-lg text-xs font-sans text-white focus:border-[var(--ledger-blue)]" 
-            />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {list.length === 0 ? (
+          <div className="col-span-full py-16 text-center border border-dashed border-white/10 rounded-3xl bg-black/20">
+            <Users size={48} className="mx-auto text-[var(--text-muted)] opacity-50 mb-4" />
+            <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">No Personnel Found.</h3>
           </div>
-        </div>
-        
-        <div className="overflow-x-auto flex-1 custom-scrollbar">
-          <table className="w-full text-left border-collapse whitespace-nowrap">
-            <thead>
-              <tr className="bg-black/60 border-b border-white/10">
-                <th className="py-3 px-4 font-mono text-[10px] font-bold text-white/50 uppercase tracking-widest">Entity</th>
-                <th className="py-3 px-4 font-mono text-[10px] font-bold text-white/50 uppercase tracking-widest">Contact</th>
-                <th className="py-3 px-4 font-mono text-[10px] font-bold text-white/50 uppercase tracking-widest">Dept & Role</th>
-                {isAdmin && <th className="py-3 px-4 font-mono text-[10px] font-bold text-white/50 uppercase tracking-widest text-right">Access</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 text-sm">
-              {list.map((emp: any) => (
-                <tr key={emp.id} className="hover:bg-white/5 transition-colors group">
-                  <td className="py-3 px-4 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--ledger-blue)]/20 to-transparent border border-white/10 flex items-center justify-center font-mono font-bold text-xs text-white">
-                      {emp.name.charAt(0)}
-                    </div>
-                    <div>
-                      <span className="font-bold text-white block group-hover:text-[var(--ledger-blue)] transition-colors">{emp.name}</span>
-                      <span className="text-[10px] font-mono text-white/50">{emp.id}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="flex items-center gap-2 text-white/80 font-sans"><Mail size={12} className="text-white/30" /> {emp.email}</span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="block text-white font-bold">{emp.designation || 'Employee'}</span>
-                    <span className="text-[10px] font-mono text-white/50 uppercase">{emp.department || 'Unassigned'} • {emp.role}</span>
-                  </td>
-                  {isAdmin && (
-                    <td className="py-3 px-4 text-right">
-                      <button 
-                        onClick={() => setEditingPermsFor(emp)}
-                        className="bg-[var(--ledger-blue)]/10 text-[var(--ledger-blue)] border border-[var(--ledger-blue)]/30 px-3 py-1 rounded text-[10px] font-mono uppercase tracking-widest hover:bg-[var(--ledger-blue)] hover:text-black transition-colors"
-                      >
-                        Manage
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {list.length === 0 && (
-            <div className="p-16 text-center">
-              <Users size={48} className="text-white/10 mx-auto mb-4" />
-              <p className="font-mono text-sm text-[var(--text-muted)] uppercase tracking-widest">No matching employees.</p>
+        ) : (
+          list.map((emp: any) => (
+            <div key={emp.id} className="bg-white/5 backdrop-blur-xl border border-white/10 hover:border-teal-500/30 transition-colors rounded-3xl p-6 relative overflow-hidden group shadow-lg flex flex-col h-full">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/5 rounded-full blur-2xl group-hover:bg-teal-500/10 transition-colors -translate-y-1/2 translate-x-1/2" />
+              
+              <div className="flex items-start justify-between mb-4 relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 border border-teal-500/30">
+                    <UserCircle size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-lg font-mono truncate max-w-[150px]">{emp.name}</h4>
+                    <p className="text-[10px] font-mono text-teal-400 uppercase tracking-widest">{emp.designation || 'Staff'}</p>
+                  </div>
+                </div>
+                <span className={`text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-1 rounded-md border ${
+                  emp.role === 'Admin' ? 'bg-[var(--alert-red)]/10 text-[var(--alert-red)] border-[var(--alert-red)]/30' :
+                  emp.role === 'HR Manager' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' :
+                  'bg-white/5 text-[var(--text-muted)] border-white/10'
+                }`}>
+                  {emp.role}
+                </span>
+              </div>
+              
+              <div className="space-y-3 mb-6 flex-1 relative z-10">
+                <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
+                  <Briefcase size={14} className="text-white/30" />
+                  <span className="font-sans truncate">{emp.department || 'No Department Assigned'}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
+                  <Mail size={14} className="text-white/30" />
+                  <span className="font-mono text-xs truncate">{emp.email}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
+                  <Phone size={14} className="text-white/30" />
+                  <span className="font-mono text-xs">{emp.phone || '+1 (555) 000-0000'}</span>
+                </div>
+              </div>
+
+              {isAdmin && (
+                <div className="pt-4 border-t border-white/10 relative z-10">
+                  <button 
+                    onClick={() => setEditingPermsFor(emp)}
+                    className="w-full bg-black/50 text-white/70 py-2.5 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-teal-500/20 hover:text-teal-400 border border-white/10 hover:border-teal-500/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Settings size={14} /> Configure Access
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          ))
+        )}
       </div>
 
-      {/* RBAC Modal */}
-      {editingPermsFor && isAdmin && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#111] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-black/40">
-              <h3 className="font-mono text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                <ShieldAlert size={16} className="text-[var(--alert-red)]" /> Employee Settings
-              </h3>
-              <button onClick={() => setEditingPermsFor(null)} className="text-white/50 hover:text-white p-1 rounded hover:bg-white/10"><X size={16}/></button>
-            </div>
+      {/* Permissions Modal */}
+      {showModal(editingPermsFor !== null) && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+          <div className="bg-[#0a0a0a] border border-teal-500/30 rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(20,184,166,0.15)] animate-in zoom-in-95 duration-200 overflow-hidden flex flex-col max-h-[90vh]">
             
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-lg text-white">
-                  {editingPermsFor.name.charAt(0)}
-                </div>
-                <div>
-                  <h4 className="text-lg font-bold text-white leading-tight">{editingPermsFor.name}</h4>
-                  <p className="text-xs font-mono text-[var(--text-muted)]">Base Role: {editingPermsFor.role}</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {PERMISSIONS_LIST.map(perm => {
-                  let currentPerms = [];
-                  try { currentPerms = JSON.parse(editingPermsFor.permissions || '[]'); } catch(e) {}
-                  const hasPerm = currentPerms.includes(perm.id);
-
-                  return (
-                    <label key={perm.id} className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${hasPerm ? 'bg-[var(--ledger-blue)]/10 border-[var(--ledger-blue)]/50' : 'bg-black/40 border-white/10 hover:border-white/30'}`}>
-                      <input 
-                        type="checkbox" className="mt-1"
-                        checked={hasPerm}
-                        onChange={() => handleTogglePerm(perm.id)}
-                      />
-                      <div>
-                        <p className={`font-mono text-xs font-bold uppercase tracking-widest ${hasPerm ? 'text-[var(--ledger-blue)]' : 'text-white'}`}>{perm.label}</p>
-                        <p className="text-xs text-[var(--text-muted)] mt-1">{perm.desc}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-
-              <div className="pt-4 border-t border-white/10 mt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Base Currency</label>
-                  <select 
-                    value={editingPermsFor.currency || 'USD'} 
-                    onChange={(e) => setEditingPermsFor({ ...editingPermsFor, currency: e.target.value })}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm font-mono text-white focus:border-[var(--ledger-blue)] appearance-none"
-                  >
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="AUD">AUD ($)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-2">Payroll Structure</label>
-                  <select 
-                    value={editingPermsFor.payrollStructureId || ''} 
-                    onChange={(e) => setEditingPermsFor({ ...editingPermsFor, payrollStructureId: e.target.value || null })}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm font-mono text-white focus:border-[var(--ledger-blue)] appearance-none"
-                  >
-                    <option value="">-- No Structure --</option>
-                    {structures?.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
-                    ))}
-                  </select>
-                </div>
+            <div className="bg-teal-500/10 p-6 border-b border-teal-500/20 flex justify-between items-center relative shrink-0">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+              <div className="relative z-10">
+                <h3 className="font-mono text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                  <ShieldAlert className="text-teal-400" size={18} /> Access Control Configuration
+                </h3>
+                <p className="text-[10px] font-mono text-[var(--text-muted)] mt-1 uppercase tracking-widest">
+                  Target: <span className="text-teal-400">{editingPermsFor.name}</span>
+                </p>
               </div>
             </div>
 
-            <div className="p-4 border-t border-white/10 bg-black/40 flex justify-end gap-3">
-              <button onClick={() => setEditingPermsFor(null)} className="px-4 py-2 text-xs font-mono font-bold text-white hover:bg-white/5 rounded-lg uppercase tracking-widest transition-colors">
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+              <p className="text-xs font-mono text-white/50 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-white/5 pb-2">
+                <Key size={14} /> Security Clearances
+              </p>
+              
+              {PERMISSIONS_LIST.map(perm => {
+                let currentPerms = [];
+                try { if (editingPermsFor.permissions) currentPerms = JSON.parse(editingPermsFor.permissions); } catch(e) {}
+                const isGranted = currentPerms.includes(perm.id);
+                
+                return (
+                  <div key={perm.id} className="bg-black/40 border border-white/5 p-4 rounded-xl flex items-start gap-4">
+                    <input 
+                      type="checkbox" 
+                      id={`perm-${perm.id}`}
+                      checked={isGranted}
+                      onChange={() => handleTogglePerm(perm.id)}
+                      className="mt-1 w-5 h-5 rounded border-white/20 bg-black/50 accent-teal-500"
+                    />
+                    <div>
+                      <label htmlFor={`perm-${perm.id}`} className="font-bold text-sm text-white font-mono cursor-pointer">{perm.label}</label>
+                      <p className="text-xs text-[var(--text-muted)] font-sans mt-0.5">{perm.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-6 border-t border-white/10 flex gap-4 shrink-0 bg-black/40">
+              <button 
+                onClick={() => setEditingPermsFor(null)} 
+                className="flex-1 bg-white/5 text-white py-3 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all border border-white/10"
+              >
                 Cancel
               </button>
               <button 
-                disabled={updatePermsMutation.isPending || updateCurrencyMutation.isPending}
-                onClick={savePermissions}
-                className="bg-[var(--alert-red)] text-white px-6 py-2 rounded-lg text-xs font-mono font-bold uppercase tracking-widest hover:shadow-[0_0_15px_var(--alert-red)] transition-all flex items-center gap-2"
+                onClick={savePermissions} 
+                disabled={updatePermsMutation.isPending}
+                className="flex-1 bg-teal-500 text-black py-3 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:brightness-110 shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all disabled:opacity-50"
               >
-                {(updatePermsMutation.isPending || updateCurrencyMutation.isPending) ? <Activity size={14} className="animate-spin" /> : 'Apply Policy'}
+                {updatePermsMutation.isPending ? 'Committing...' : 'Commit Changes'}
               </button>
             </div>
+
           </div>
         </div>
       )}
     </div>
   );
+}
+
+// Helper to prevent reference error
+function showModal(condition: boolean) {
+  return condition;
 }

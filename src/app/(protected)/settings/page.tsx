@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { ShieldCheck, CreditCard } from 'lucide-react';
+import { ShieldCheck, ServerCrash, Cpu, Activity, Database, Lock, Key } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { redirect } from 'next/navigation';
 
@@ -17,70 +17,112 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300 pb-20 md:pb-0">
-      <div className="flex justify-between items-end pb-4 border-b ledger-border">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+      
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[var(--ledger-blue)]/10 to-transparent blur-3xl -z-10" />
         <div>
-          <h2 className="text-2xl font-mono font-bold uppercase tracking-tight ledger-text">System Configuration</h2>
-          <p className="text-[10px] font-mono ledger-muted mt-2 uppercase tracking-widest">tRPC Policies & Pay Structures</p>
+          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <Cpu className="text-[var(--ledger-blue)]" size={36} />
+            System Configuration
+          </h2>
+          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
+            Global tRPC Policies & System Variables.
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="ledger-panel p-6 flex flex-col">
-          <h3 className="font-mono text-xs font-bold text-[var(--signal-amber)] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <ShieldCheck size={16} /> tRPC Permission Matrix
-          </h3>
-          <div className="overflow-x-auto border ledger-border">
-            <table className="w-full text-left border-collapse font-mono text-[9px]">
-              <thead className="bg-[var(--bg-void)] border-b ledger-border ledger-muted uppercase tracking-widest">
-                <tr>
-                  <th className="p-2">Resource</th>
-                  <th className="p-2 text-center">L4 Admin</th>
-                  <th className="p-2 text-center">L3 HR</th>
-                  <th className="p-2 text-center">L1 Emp</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y ledger-border ledger-text">
-                {[
-                  { m: 'PAYROLL', a: 'R/W/D', hr: 'R/W', e: 'R (Self)' },
-                  { m: 'ATTENDANCE', a: 'R/W/D', hr: 'R/W', e: 'R/W (Self)' },
-                  { m: 'LEAVE', a: 'R/W', hr: 'R/W', e: 'None' },
-                  { m: 'AUDIT', a: 'R (Immutable)', hr: 'None', e: 'None' }
-                ].map((row, i) => (
-                  <tr key={i} className="table-row">
-                    <td className="p-2 font-bold">{row.m}</td>
-                    <td className="p-2 text-center text-[var(--alert-red)]">{row.a}</td>
-                    <td className="p-2 text-center text-[var(--signal-amber)]">{row.hr}</td>
-                    <td className="p-2 text-center text-[var(--verify-green)]">{row.e}</td>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
+        {/* Main Matrix Panel */}
+        <div className="xl:col-span-2 space-y-6">
+          <div className="bg-[#050505] border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden group hover:border-[var(--ledger-blue)]/30 transition-colors">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--ledger-blue)]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
+            
+            <h3 className="text-xl font-black font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-3 relative z-10 border-b border-white/10 pb-4">
+              <ShieldCheck className="text-[var(--ledger-blue)]" size={24} /> tRPC Permission Matrix
+            </h3>
+            
+            <div className="overflow-x-auto relative z-10">
+              <table className="w-full text-left border-collapse font-mono">
+                <thead className="bg-white/5 border border-white/10 text-[9px] text-[var(--text-muted)] uppercase tracking-widest">
+                  <tr>
+                    <th className="p-4 pl-6 rounded-tl-xl whitespace-nowrap">Resource Endpoint</th>
+                    <th className="p-4 text-center whitespace-nowrap">L4 Admin</th>
+                    <th className="p-4 text-center whitespace-nowrap">L3 HR</th>
+                    <th className="p-4 pr-6 text-center rounded-tr-xl whitespace-nowrap">L1 Employee</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-white/5 border-x border-b border-white/10 rounded-b-xl text-sm bg-black/40">
+                  {[
+                    { m: 'PAYROLL (Read/Write)', a: 'R/W/D', hr: 'R/W', e: 'R (Self)' },
+                    { m: 'ATTENDANCE (Clock)', a: 'R/W/D', hr: 'R/W', e: 'R/W (Self)' },
+                    { m: 'LEAVE (Approvals)', a: 'R/W', hr: 'R/W', e: 'None' },
+                    { m: 'AUDIT (Immutable)', a: 'R (Immutable)', hr: 'None', e: 'None' },
+                    { m: 'DEI (Intelligence)', a: 'R', hr: 'R', e: 'None' },
+                    { m: 'RECRUITMENT (ATS)', a: 'R/W', hr: 'R/W', e: 'None' },
+                  ].map((row, i) => (
+                    <tr key={i} className="hover:bg-white/5 transition-colors">
+                      <td className="p-4 pl-6 font-bold text-white whitespace-nowrap">{row.m}</td>
+                      <td className="p-4 text-center text-[var(--alert-red)] whitespace-nowrap">
+                        <span className="bg-[var(--alert-red)]/10 px-2 py-1 rounded border border-[var(--alert-red)]/30 text-[10px] tracking-widest">{row.a}</span>
+                      </td>
+                      <td className="p-4 text-center text-[var(--signal-amber)] whitespace-nowrap">
+                        <span className="bg-[var(--signal-amber)]/10 px-2 py-1 rounded border border-[var(--signal-amber)]/30 text-[10px] tracking-widest">{row.hr}</span>
+                      </td>
+                      <td className="p-4 pr-6 text-center text-[var(--verify-green)] whitespace-nowrap">
+                        <span className="bg-[var(--verify-green)]/10 px-2 py-1 rounded border border-[var(--verify-green)]/30 text-[10px] tracking-widest">{row.e}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <div className="ledger-panel p-6">
-           <h3 className="font-mono text-xs font-bold text-[var(--ledger-blue)] uppercase tracking-widest mb-4 flex items-center gap-2">
-             <CreditCard size={16} /> Salary Structure Builder
-           </h3>
-           <div className="space-y-2 font-mono text-xs">
-             <div className="flex justify-between items-center p-2 bg-[var(--bg-void)] border ledger-border">
-               <span>Basic Salary</span>
-               <span className="ledger-muted">60% of Gross</span>
-             </div>
-             <div className="flex justify-between items-center p-2 bg-[var(--bg-void)] border ledger-border">
-               <span>House Rent</span>
-               <span className="ledger-muted">20% of Gross</span>
-             </div>
-             <div className="flex justify-between items-center p-2 bg-[var(--bg-void)] border ledger-border">
-               <span>Provident Fund</span>
-               <span className="text-[var(--alert-red)]">-10% of Basic</span>
-             </div>
-             <button className="text-[var(--signal-amber)] w-full text-center p-2 border border-dashed border-[var(--signal-amber)]/30 hover:bg-[var(--signal-amber)]/10 transition-colors">
-               + Add Component
-             </button>
-           </div>
+        {/* Side Metrics Panel */}
+        <div className="xl:col-span-1 space-y-6">
+          
+          <div className="bg-[#050505] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+            <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
+              <Activity className="text-purple-400" size={16} /> System Health
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <Database size={16} className="text-emerald-400" />
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Database Status</span>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold px-2 py-1 bg-emerald-400/10 rounded border border-emerald-400/30">ONLINE</span>
+              </div>
+              <div className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <ServerCrash size={16} className="text-[var(--ledger-blue)]" />
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">tRPC Uptime</span>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--ledger-blue)] font-bold">99.999%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-[#050505] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+            <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
+              <Lock className="text-[var(--signal-amber)]" size={16} /> Security
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-black/60 p-4 rounded-xl border border-[var(--signal-amber)]/30 flex justify-between items-center cursor-pointer hover:bg-[var(--signal-amber)]/5 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Key size={16} className="text-[var(--signal-amber)]" />
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white">Rotate API Keys</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
+
       </div>
     </div>
   );
