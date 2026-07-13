@@ -21,7 +21,11 @@ export default function LoginPage() {
       password,
     });
     if (error) {
-      setError(error.message || "Login failed");
+      let errorMessage = error.message;
+      if (errorMessage === "{}" || !errorMessage) {
+        errorMessage = "Invalid login credentials. Please try again.";
+      }
+      setError(errorMessage);
     } else {
       router.push("/");
     }
