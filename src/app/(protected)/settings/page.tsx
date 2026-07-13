@@ -117,9 +117,6 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-
-          </div>
-
           <div className="bg-[#050505] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
             <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
               <Activity className="text-[var(--ledger-blue)]" size={16} /> System Flags
