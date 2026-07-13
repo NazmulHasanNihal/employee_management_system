@@ -20,6 +20,12 @@ func main() {
 	app := fiber.New()
 
 	app.Post("/api/payroll/generate-payslip", func(c *fiber.Ctx) error {
+		// Basic Auth Check
+		authHeader := c.Get("Authorization")
+		if authHeader != "Bearer shared_secret_token_123" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
+		}
+
 		req := new(PayrollRequest)
 		if err := c.BodyParser(req); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid JSON"})

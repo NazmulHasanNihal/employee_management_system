@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { 
   User as UserIcon, CalendarDays, HardDrive, 
   MapPin, Clock, PhoneCall, Mail, MessageSquare, 
-  ShieldCheck, Banknote, Briefcase, FileText, ChevronRight, Hash, Building2, Terminal
+  ShieldCheck, Banknote, Briefcase, FileText, ChevronRight, Hash, Building2, Terminal, Shield
 } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { trpc } from '@/lib/trpc/client';

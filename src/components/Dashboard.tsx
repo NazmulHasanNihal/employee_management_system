@@ -4,6 +4,7 @@ import React from 'react';
 import { Activity, Sparkles, Users, Clock, Calendar, DollarSign } from 'lucide-react';
 import { StatCard, LiveClockWidget, RadarWidget, QuickActionsWidget, EngagementWidget } from './dashboard/BentoWidgets';
 import { Broadcasts } from './dashboard/Broadcasts';
+import { trpc } from '@/lib/trpc/client';
 
 export default function Dashboard() {
   // Bypassing auth for local dev
@@ -16,8 +17,8 @@ export default function Dashboard() {
     designation: "CEO"
   };
   
-  // Mocked Supabase data while we migrate
-  const telemetry = { headcount: 100, pendingApps: 12, activeToday: '94%', totalPayroll: 245000 };
+  const { data: stats } = trpc.dashboard.getStats.useQuery();
+  const telemetry = stats || { headcount: 0, pendingApps: 0, activeToday: '0%', totalPayroll: 0 };
   
   const radarData = [
     { subject: 'Retention', A: 85, fullMark: 100 },

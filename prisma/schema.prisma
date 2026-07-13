@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String       @id // Supabase Auth ID
+  email       String       @unique
+  name        String
+  role        String       @default("Employee") // Admin, Manager, Employee, Director
+  department  String?
+  designation String?
+  avatarUrl   String?
+  status      String       @default("active")
+  managerId   String?
+  manager     User?        @relation("ManagerToEmployee", fields: [managerId], references: [id])
+  reports     User[]       @relation("ManagerToEmployee")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  expenses      Expense[]
+  assets        Asset[]
+  leaveRequests LeaveRequest[]
+  payrolls      Payroll[]
+  tickets       Ticket[]
+  messagesSent  Message[] @relation("MessageSender")
+  messagesRecv  Message[] @relation("MessageReceiver")
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  budget    Float    @default(0)
+  headId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  amount      Float
+  category    String
+  description String
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  isMileage   Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model Asset {
+  id            String   @id @default(cuid())
+  name          String
+  status        String   @default("Active") // Active, Maintenance, Retired
+  purchasePrice Float
+  purchaseDate  DateTime
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+}
+
+model LeaveRequest {
+  id        String   @id @default(cuid())
+  type      String
+  details   String?
+  status    String   @default("Pending") // Pending, Approved, Rejected
+  startDate DateTime
+  endDate   DateTime
+  days      Int
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Payroll {
+  id          String   @id @default(cuid())
+  month       String
+  year        Int
+  status      String   @default("DRAFT") // DRAFT, PROCESSED
+  totalAmount Float
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
+
+model SalaryHead {
+  id   String @id @default(cuid())
+  name String @unique
+  type String // EARNING, DEDUCTION
+}
+
+model Ticket {
+  id        String   @id @default(cuid())
+  subject   String
+  priority  String   @default("Medium") // Low, Medium, High, Critical
+  status    String   @default("Open") // Open, In Progress, Resolved
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  content    String
+  senderId   String
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  target    String?
+  user      String
+  severity  String   @default("INFO")
+  timestamp DateTime @default(now())
+}

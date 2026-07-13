@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Calendar as CalendarIcon, Plus, Clock, Users, 
   CalendarDays, Wallet, Hash, Filter, X,
-  Download, RefreshCw, CalendarCheck2
+  Download, RefreshCw, CalendarCheck2, Check
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';

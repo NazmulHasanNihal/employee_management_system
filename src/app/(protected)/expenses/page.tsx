@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
-import { Receipt, CheckCircle2, XCircle, FileText, Plus, Landmark, HandCoins, Activity } from 'lucide-react';
+import { Receipt, CheckCircle2, XCircle, FileText, Plus, Landmark, HandCoins, Activity, DollarSign } from 'lucide-react';
 
 export default function ExpensesPage() {
   const { data: session } = authClient.useSession();

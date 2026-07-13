@@ -81,7 +81,7 @@ export default function AnnouncementsPage() {
         
         {/* Feed */}
         <div className="lg:col-span-2 space-y-4">
-          {announcements?.map(ann => (
+          {announcements?.map((ann: any) => (
             <div key={ann.id} className={`bg-white/5 backdrop-blur-xl border-l-4 rounded-r-2xl rounded-l-sm p-6 relative overflow-hidden transition-all duration-300 ${
               ann.priority === 'High' 
                 ? 'border-l-red-500 shadow-[0_0_30px_rgba(255,0,0,0.1)] hover:shadow-[0_0_40px_rgba(255,0,0,0.2)]' 
