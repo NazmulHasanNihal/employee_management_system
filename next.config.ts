@@ -22,7 +22,8 @@ export default withSentryConfig(
   {
     org: "mock-org",
     project: "mock-project",
-    silent: !process.env.CI,
+    silent: true,
+    authToken: process.env.SENTRY_AUTH_TOKEN || "dummy_token_to_suppress_warning",
     widenClientFileUpload: true,
     sourcemaps: {
       disable: true,
