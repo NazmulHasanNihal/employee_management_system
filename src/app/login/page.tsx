@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Mail, ArrowUpRight, Eye, EyeOff } from "lucide-react";
-import { createClient } from "@/lib/client";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

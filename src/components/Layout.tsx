@@ -16,10 +16,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useAppStore } from '@/lib/store';
-import { createClient } from '@/lib/client';
 import usePartySocket from '@/lib/usePartySocket';
 import CommandPalette from './CommandPalette';
-import { authClient } from '@/lib/auth-client';
+import { createClient } from '@/lib/supabase/client';
 
 export default function AppLayout({ children, user }: { children: React.ReactNode, user: { name: string, role: string } }) {
   const router = useRouter();
@@ -50,7 +49,8 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
   });
 
   const handleLogout = async () => {
-    await authClient.signOut();
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.push('/login');
   };
 
