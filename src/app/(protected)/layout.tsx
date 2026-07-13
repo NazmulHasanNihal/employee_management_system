@@ -18,6 +18,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   });
 
   if (!dbUser) {
+    await supabase.auth.signOut();
     redirect("/login");
   }
 
