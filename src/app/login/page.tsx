@@ -27,7 +27,7 @@ export default function LoginPage() {
       }
       setError(errorMessage);
     } else {
-      router.push("/");
+      window.location.href = "/";
     }
   };
 
