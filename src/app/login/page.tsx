@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loginType, setLoginType] = useState<'employee' | 'admin'>('employee');
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -36,14 +37,31 @@ export default function LoginPage() {
       <div className="w-full max-w-md ledger-panel p-8 shadow-[var(--shadow-offset)] shadow-[var(--shadow-color)]">
         <div className="text-center mb-8 border-b ledger-border pb-6">
           <div className="inline-flex items-center justify-center w-12 h-12 bg-[var(--bg-void)] border ledger-border mb-4">
-            <Lock size={20} className="text-[var(--signal-amber)]" />
+            <Lock size={20} className={loginType === 'admin' ? 'text-[var(--signal-amber)]' : 'text-[var(--ledger-blue)]'} />
           </div>
           <h1 className="text-2xl font-mono font-bold uppercase tracking-widest ledger-text">
-            System Login
+            {loginType === 'admin' ? 'Admin Portal' : 'Employee Portal'}
           </h1>
           <p className="text-[10px] font-mono ledger-muted mt-2 uppercase tracking-widest">
-            Identity Verification Required
+            {loginType === 'admin' ? 'Elevated Access Required' : 'Identity Verification Required'}
           </p>
+        </div>
+
+        <div className="flex w-full mb-6 border border-white/10 p-1 rounded-xl bg-black/40">
+          <button 
+            type="button"
+            onClick={() => setLoginType('employee')}
+            className={`flex-1 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-all ${loginType === 'employee' ? 'bg-[var(--ledger-blue)] text-black font-bold shadow-[0_0_15px_rgba(0,255,255,0.2)]' : 'text-[var(--text-muted)] hover:text-white'}`}
+          >
+            Employee
+          </button>
+          <button 
+            type="button"
+            onClick={() => setLoginType('admin')}
+            className={`flex-1 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-all ${loginType === 'admin' ? 'bg-[var(--signal-amber)] text-black font-bold shadow-[0_0_15px_rgba(255,170,0,0.2)]' : 'text-[var(--text-muted)] hover:text-white'}`}
+          >
+            Administrator
+          </button>
         </div>
 
         {error && (
@@ -91,7 +109,14 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-          <button type="submit" className="btn-primary w-full py-3 flex items-center justify-center gap-2">
+          <button 
+            type="submit" 
+            className={`btn-primary w-full py-3 flex items-center justify-center gap-2 transition-all ${
+              loginType === 'admin' 
+                ? 'bg-[var(--signal-amber)] text-black hover:brightness-110 shadow-[0_0_20px_rgba(255,170,0,0.2)]' 
+                : 'bg-[var(--ledger-blue)] text-black hover:brightness-110 shadow-[0_0_20px_rgba(0,255,255,0.2)]'
+            }`}
+          >
             Authenticate <ArrowUpRight size={16} />
           </button>
         </form>
