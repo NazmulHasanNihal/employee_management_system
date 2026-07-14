@@ -1,64 +1,151 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Users, Clock, Target, Calendar, PhoneCall, 
   MessageSquare, UserCircle, CheckCircle2, Check,
-  UserPlus, X, Shield, ShieldAlert, CalendarClock
+  UserPlus, X, Shield, ShieldAlert, CalendarClock,
+  Layers, Filter, Eye, AlertTriangle
 } from 'lucide-react';
-import { trpc } from '@/lib/trpc/client';
+import { authClient } from '@/lib/auth-client';
+import { 
+  ReactFlow, 
+  Controls, 
+  Background, 
+  applyNodeChanges, 
+  applyEdgeChanges,
+  Node,
+  Edge
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+
+const CustomNode = ({ data }: any) => {
+  return (
+    <div className="px-4 py-2 shadow-xl rounded-lg bg-[#111] border border-white/20 min-w-[150px] font-mono text-center">
+      <div className="text-white font-bold text-sm">{data.label}</div>
+      <div className="text-[var(--text-muted)] text-[10px] mt-1 uppercase tracking-widest">{data.role}</div>
+      <div className="text-[var(--ledger-blue)] text-[9px] mt-1">{data.department}</div>
+    </div>
+  );
+};
+
+const nodeTypes = {
+  custom: CustomNode,
+};
 
 export default function TeamDashboardPage() {
-  const { data: teamData, isLoading } = trpc.team.getMyTeam.useQuery();
+  const { data: session } = authClient.useSession();
+  const user = session?.user as any;
+  const isAdmin = user?.role === 'Admin' || user?.role === 'HR Manager' || user?.role === 'Super Admin';
 
-  // Role Simulator Toggle
-  const [viewRole, setViewRole] = useState<'Admin' | 'Employee'>('Admin');
-
-  // Modal States
-  const [selectedLeave, setSelectedLeave] = useState<any>(null);
-  const [showProvisionModal, setShowProvisionModal] = useState(false);
-
-  const directReports = teamData?.directReports || [];
+  const [hierarchyData, setHierarchyData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  if (isLoading) {
-    return <div className="text-center p-8 text-white font-mono animate-pulse">Loading Team Data...</div>;
+  const [impersonateId, setImpersonateId] = useState('');
+  const [viewMode, setViewMode] = useState<'department' | 'squad'>('department');
+  const [showOrgChart, setShowOrgChart] = useState(false);
+  const [selectedLeaves, setSelectedLeaves] = useState<string[]>([]);
+  
+  // React Flow state
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  const fetchHierarchy = async () => {
+    setLoading(true);
+    let url = '/api/hierarchy?viewMode=' + viewMode;
+    if (impersonateId) url += '&impersonateId=' + impersonateId;
+    
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.users) {
+        setHierarchyData(data.users);
+        
+        // Generate simple nodes and edges
+        const newNodes: Node[] = data.users.map((u: any, i: number) => ({
+          id: u.id,
+          type: 'custom',
+          data: { label: u.name, role: u.designation, department: u.department },
+          position: { x: (i % 3) * 200, y: Math.floor(i / 3) * 100 },
+        }));
+
+        const newEdges: Edge[] = data.users
+          .filter((u: any) => u.managerId && data.users.find((p: any) => p.id === u.managerId))
+          .map((u: any) => ({
+            id: `e-${u.managerId}-${u.id}`,
+            source: u.managerId,
+            target: u.id,
+            animated: true,
+            style: { stroke: '#00C3FF' }
+          }));
+
+        setNodes(newNodes);
+        setEdges(newEdges);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHierarchy();
+  }, [impersonateId, viewMode]);
+
+  const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
+  const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
+
+  const handleApproveSelected = () => {
+    alert(`Batch Approved ${selectedLeaves.length} requests!`);
+    setSelectedLeaves([]);
+  };
+
+  if (loading && hierarchyData.length === 0) {
+    return <div className="text-center p-8 text-white font-mono animate-pulse">Loading Hierarchy...</div>;
   }
 
-  // Calculate high-level team metrics
-  const totalReports = directReports.length;
-  const attendanceRate = totalReports > 0 
-    ? Math.round(directReports.filter((e: any) => e.attendances && e.attendances[0]?.status === 'Present').length / totalReports * 100)
-    : 0;
-  
-  const pendingLeaves = directReports.reduce((acc: number, e: any) => acc + (e.leaveRequests?.length || 0), 0);
-  
-  const avgTeamOkr = totalReports > 0
-    ? Math.round(directReports.reduce((acc: number, e: any) => {
-        const avgOkr = e.objectives?.length 
-          ? e.objectives.reduce((sum: number, o: any) => sum + o.progress, 0) / e.objectives.length
-          : 0;
-        return acc + avgOkr;
-      }, 0) / totalReports)
-    : 0;
+  // Mock pending requests
+  const pendingRequests = [
+    { id: '1', name: 'John Doe', type: 'Sick Leave', days: 2 },
+    { id: '2', name: 'Alice Smith', type: 'Overtime', days: 0 },
+  ];
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
       
-      {/* Role Simulator Toggle (For Testing Only) */}
-      <div className="flex items-center justify-end gap-2 p-2 bg-black/40 rounded-xl border border-white/5 w-max ml-auto">
-        <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase mr-2">Simulate Role:</span>
-        <button 
-          onClick={() => setViewRole('Admin')}
-          className={`px-3 py-1 rounded text-xs font-mono uppercase tracking-wider transition-colors ${viewRole === 'Admin' ? 'bg-[var(--ledger-blue)] text-black font-bold' : 'text-white hover:bg-white/10'}`}
-        >
-          Admin/Manager
-        </button>
-        <button 
-          onClick={() => setViewRole('Employee')}
-          className={`px-3 py-1 rounded text-xs font-mono uppercase tracking-wider transition-colors ${viewRole === 'Employee' ? 'bg-[var(--signal-amber)] text-black font-bold' : 'text-white hover:bg-white/10'}`}
-        >
-          Employee
-        </button>
+      {/* Impersonation & View Modes */}
+      <div className="flex flex-col md:flex-row justify-between gap-4 p-4 bg-black/40 rounded-xl border border-white/5">
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setViewMode('department')}
+            className={`px-4 py-2 rounded text-xs font-mono uppercase tracking-wider transition-colors ${viewMode === 'department' ? 'bg-[var(--ledger-blue)] text-black font-bold' : 'text-white hover:bg-white/10 border border-white/10'}`}
+          >
+            <Layers size={14} className="inline mr-2" /> Department View
+          </button>
+          <button 
+            onClick={() => setViewMode('squad')}
+            className={`px-4 py-2 rounded text-xs font-mono uppercase tracking-wider transition-colors ${viewMode === 'squad' ? 'bg-purple-500 text-black font-bold' : 'text-white hover:bg-white/10 border border-white/10'}`}
+          >
+            <Filter size={14} className="inline mr-2" /> Squad View
+          </button>
+        </div>
+
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider">Impersonate:</span>
+            <input 
+              type="text"
+              placeholder="Enter User ID..."
+              value={impersonateId}
+              onChange={e => setImpersonateId(e.target.value)}
+              className="bg-black border border-white/20 rounded px-2 py-1 text-xs font-mono text-white outline-none focus:border-[var(--ledger-blue)]"
+            />
+            <button className="px-2 py-1 bg-white/10 rounded hover:bg-white/20 text-white">
+              <Eye size={14} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Header Section */}
@@ -67,290 +154,126 @@ export default function TeamDashboardPage() {
         <div>
           <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight bg-gradient-to-r from-[var(--ledger-blue)] to-cyan-300 text-transparent bg-clip-text flex items-center gap-3">
             <Users className="text-[var(--ledger-blue)]" size={36} />
-            {viewRole === 'Admin' ? 'My Team' : 'My Peers'}
+            Team Hierarchy
           </h2>
           <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
-            {viewRole === 'Admin' 
-              ? 'Command center for your direct reports and organizational structure.'
-              : 'Collaborate and connect with your team members.'}
+            Command center for your organization.
           </p>
         </div>
         
-        {viewRole === 'Admin' && (
-          <button 
-            onClick={() => setShowProvisionModal(true)}
-            className="mt-4 md:mt-0 flex items-center gap-2 px-4 py-2 bg-white text-black hover:bg-[var(--ledger-blue)] rounded-xl font-mono text-xs uppercase tracking-widest font-bold transition-colors"
-          >
-            <UserPlus size={16} />
-            Provision Member
-          </button>
-        )}
+        <button 
+          onClick={() => setShowOrgChart(!showOrgChart)}
+          className="mt-4 md:mt-0 flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 text-white hover:bg-white/20 rounded-xl font-mono text-xs uppercase tracking-widest transition-colors"
+        >
+          {showOrgChart ? 'List View' : 'Visual Org Chart'}
+        </button>
       </div>
 
-      {/* Team Analytics Header (Admin Only) */}
-      {viewRole === 'Admin' && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-2">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-[var(--ledger-blue)]/50 transition-colors">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--ledger-blue)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2 flex items-center gap-2 relative z-10">
-              <Users size={12} className="text-[var(--ledger-blue)]" /> Headcount
-            </p>
-            <p className="text-3xl font-mono font-black text-white relative z-10">{totalReports}</p>
+      {/* Manager's Action Hub */}
+      {hierarchyData.length > 1 && (
+        <div className="bg-white/5 border border-[var(--signal-amber)]/30 rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--signal-amber)] to-transparent" />
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-mono font-bold uppercase tracking-widest text-white flex items-center gap-2">
+              <CheckCircle2 className="text-[var(--signal-amber)]" /> Manager's Action Hub
+            </h3>
+            <button 
+              onClick={handleApproveSelected}
+              disabled={selectedLeaves.length === 0}
+              className="px-4 py-2 bg-[var(--verify-green)] text-black font-bold font-mono text-xs uppercase tracking-widest rounded disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-110"
+            >
+              Approve Selected ({selectedLeaves.length})
+            </button>
           </div>
-
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-[var(--verify-green)]/50 transition-colors">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--verify-green)]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2 flex items-center gap-2 relative z-10">
-              <CheckCircle2 size={12} className="text-[var(--verify-green)]" /> Today's Attendance
-            </p>
-            <p className="text-3xl font-mono font-black text-white relative z-10">{attendanceRate}%</p>
-          </div>
-
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden group hover:border-purple-500/50 transition-colors">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2 flex items-center gap-2 relative z-10">
-              <Target size={12} className="text-purple-400" /> Avg OKR Progress
-            </p>
-            <p className="text-3xl font-mono font-black text-white relative z-10">{avgTeamOkr}%</p>
-          </div>
-
-          <div className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 relative overflow-hidden group ${pendingLeaves > 0 ? 'hover:border-[var(--signal-amber)]/50' : 'hover:border-white/20'} transition-colors`}>
-            <div className={`absolute inset-0 bg-gradient-to-br ${pendingLeaves > 0 ? 'from-[var(--signal-amber)]/10' : 'from-white/5'} to-transparent opacity-0 group-hover:opacity-100 transition-opacity`} />
-            <p className={`text-[10px] font-mono uppercase tracking-widest ${pendingLeaves > 0 ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'} mb-2 flex items-center gap-2 relative z-10`}>
-              <Calendar size={12} /> Pending Approvals
-            </p>
-            <p className="text-3xl font-mono font-black text-white relative z-10">{pendingLeaves}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pendingRequests.map(req => (
+              <div key={req.id} className="flex items-center gap-3 p-3 bg-black/40 rounded-xl border border-white/5 hover:border-white/20 cursor-pointer" onClick={() => setSelectedLeaves(prev => prev.includes(req.id) ? prev.filter(id => id !== req.id) : [...prev, req.id])}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedLeaves.includes(req.id)} 
+                  readOnly 
+                  className="w-4 h-4 accent-[var(--verify-green)]" 
+                />
+                <div>
+                  <p className="text-white font-bold text-sm">{req.name}</p>
+                  <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wider">{req.type} {req.days > 0 ? `(${req.days} days)` : ''}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* Grid of Team/Peers */}
-      {directReports.length === 0 ? (
-        <div className="text-center text-[var(--text-muted)] py-12 font-mono border border-dashed border-white/10 rounded-2xl max-w-4xl mx-auto mt-8">
-          You do not have any {viewRole === 'Admin' ? 'direct reports' : 'peers in your team'}.
+      {/* Visual Org Chart or List View */}
+      {showOrgChart ? (
+        <div className="h-[600px] bg-black/50 border border-white/10 rounded-2xl overflow-hidden relative">
+          <ReactFlow 
+            nodes={nodes} 
+            edges={edges} 
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            fitView
+            className="bg-[#050505]"
+          >
+            <Background color="#222" gap={16} />
+            <Controls className="bg-black/80 border border-white/20 text-white fill-white" />
+          </ReactFlow>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {directReports.map((emp: any) => {
-            const avgProgress = emp.objectives?.length 
-              ? Math.round(emp.objectives.reduce((acc: number, obj: any) => acc + obj.progress, 0) / emp.objectives.length)
-              : 0;
-
-            const isOnline = emp.liveStatus === 'Online';
-            const statusColor = isOnline ? 'bg-[var(--verify-green)]' : emp.liveStatus === 'In Meeting' ? 'bg-purple-500' : 'bg-[var(--text-muted)]';
+          {hierarchyData.map((emp: any) => {
+            const hasBurnout = Math.random() > 0.8; // Simulating burnout logic
 
             return (
               <div key={emp.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-500 hover:border-white/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] flex flex-col group">
                 
-                {/* Employee Header */}
-                <div className="p-6 border-b border-white/5 relative">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="w-14 h-14 rounded-full bg-[var(--ledger-blue)]/20 flex items-center justify-center text-[var(--ledger-blue)] font-bold font-mono border border-[var(--ledger-blue)]/30 text-lg">
-                          {emp.name.charAt(0)}
-                        </div>
-                        <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-black ${statusColor}`} title={emp.liveStatus} />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-white text-lg">{emp.name}</h3>
-                        <p className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">{emp.designation}</p>
-                        <p className="text-[10px] text-[var(--ledger-blue)] font-mono uppercase mt-1">{emp.department}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Metrics (Admin Only) */}
-                {viewRole === 'Admin' && (
-                  <div className="p-6 space-y-5 flex-1">
-                    {/* OKRs */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2"><Target size={12}/> Performance</span>
-                        <span className="text-xs font-mono text-purple-400">{avgProgress}% avg</span>
-                      </div>
-                      <div className="w-full bg-black/50 h-1.5 rounded overflow-hidden">
-                        <div className="h-full bg-purple-400" style={{ width: `${avgProgress}%` }} />
-                      </div>
-                    </div>
-
-                    {/* Attendance */}
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2"><Clock size={12}/> 5-Day Attendance</span>
-                      </div>
-                      <div className="flex gap-1.5">
-                        {emp.attendances?.slice(0, 5).map((att: any, i: number) => (
-                          <div 
-                            key={i} 
-                            title={new Date(att.date).toLocaleDateString() + ' - ' + att.status}
-                            className={`flex-1 h-2 rounded ${
-                              att.status === 'Present' ? 'bg-[var(--verify-green)]' :
-                              att.status === 'Late' ? 'bg-[var(--signal-amber)]' :
-                              'bg-[var(--alert-red)]'
-                            }`}
-                          />
-                        ))}
-                        {!emp.attendances?.length && <span className="text-xs text-[var(--text-muted)] italic">No records</span>}
-                      </div>
-                    </div>
+                {hasBurnout && (
+                  <div className="absolute top-2 right-2 flex h-3 w-3" title="High Burnout Risk">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--signal-amber)] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--signal-amber)]"></span>
                   </div>
                 )}
 
-                {/* Quick Actions Footer */}
-                <div className={`p-4 bg-black/40 border-t border-white/5 grid gap-2 ${viewRole === 'Admin' ? 'grid-cols-3' : 'grid-cols-2 mt-auto'}`}>
-                  {viewRole === 'Admin' ? (
-                    <button className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white/5 hover:bg-[var(--ledger-blue)]/20 text-[var(--text-muted)] hover:text-[var(--ledger-blue)] transition-colors group/btn">
-                      <PhoneCall size={14} className="group-hover/btn:scale-110 transition-transform" />
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden lg:block">1:1</span>
-                    </button>
-                  ) : (
-                    <button className="flex items-center justify-center gap-2 p-2 rounded-xl bg-[var(--ledger-blue)]/20 hover:bg-[var(--ledger-blue)]/40 text-[var(--ledger-blue)] transition-colors group/btn">
-                      <MessageSquare size={14} className="group-hover/btn:scale-110 transition-transform" />
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden lg:block">Message</span>
-                    </button>
-                  )}
-                  
-                  <button className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-[var(--text-muted)] hover:text-white transition-colors group/btn">
-                    <UserCircle size={14} className="group-hover/btn:scale-110 transition-transform" />
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden lg:block">Profile</span>
-                  </button>
-                  
-                  {viewRole === 'Admin' && (
-                    emp.leaveRequests?.length > 0 ? (
-                      <button 
-                        onClick={() => setSelectedLeave({ empName: emp.name, leave: emp.leaveRequests[0] })}
-                        className="flex items-center justify-center gap-2 p-2 rounded-xl bg-[var(--signal-amber)]/20 hover:bg-[var(--signal-amber)] text-[var(--signal-amber)] hover:text-black transition-colors group/btn relative"
-                      >
-                        <Check size={14} className="group-hover/btn:scale-110 transition-transform" />
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden lg:block">Approve</span>
-                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--signal-amber)] opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--signal-amber)]"></span>
-                        </span>
-                      </button>
-                    ) : (
-                      <button className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white/5 text-[var(--text-muted)] opacity-50 cursor-not-allowed">
-                        <Check size={14} />
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest hidden lg:block">Approve</span>
-                      </button>
-                    )
+                <div className="p-6 border-b border-white/5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-[var(--ledger-blue)]/20 flex items-center justify-center text-[var(--ledger-blue)] font-bold font-mono border border-[var(--ledger-blue)]/30 text-lg">
+                      {emp.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-white text-lg">{emp.name}</h3>
+                      <p className="text-xs font-mono text-[var(--text-muted)] uppercase tracking-wider">{emp.designation}</p>
+                      <p className="text-[10px] text-[var(--ledger-blue)] font-mono uppercase mt-1">{emp.department}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Heatmap / Burnout Radar */}
+                <div className="p-6">
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2 flex items-center gap-2">
+                    <CalendarClock size={12}/> Burnout Radar & Heatmap
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {Array.from({length: 21}).map((_, i) => (
+                      <div 
+                        key={i} 
+                        className={`w-3 h-3 rounded-sm ${Math.random() > 0.3 ? 'bg-[var(--verify-green)]' : hasBurnout && i > 15 ? 'bg-[var(--signal-amber)]' : 'bg-black/50 border border-white/10'}`} 
+                        title={`Day ${i+1}`}
+                      />
+                    ))}
+                  </div>
+                  {hasBurnout && (
+                    <p className="text-[10px] font-mono text-[var(--signal-amber)] mt-2 flex items-center gap-1">
+                      <AlertTriangle size={12} /> High Overtime Detected
+                    </p>
                   )}
                 </div>
+
               </div>
             );
           })}
         </div>
       )}
-
-      {/* --- Leave Approval Modal --- */}
-      {selectedLeave && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex items-center gap-3 text-[var(--signal-amber)]">
-                <CalendarClock size={24} />
-                <h3 className="font-mono font-bold text-xl uppercase tracking-widest text-white">Leave Request</h3>
-              </div>
-              <button onClick={() => setSelectedLeave(null)} className="text-[var(--text-muted)] hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="space-y-4 mb-8">
-              <div className="bg-black/50 p-4 rounded-xl border border-white/5">
-                <p className="text-xs font-mono text-[var(--text-muted)] uppercase mb-1">Employee</p>
-                <p className="text-lg font-bold text-white">{selectedLeave.empName}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-black/50 p-4 rounded-xl border border-white/5">
-                  <p className="text-xs font-mono text-[var(--text-muted)] uppercase mb-1">Type</p>
-                  <p className="text-white font-bold">{selectedLeave.leave.type}</p>
-                </div>
-                <div className="bg-black/50 p-4 rounded-xl border border-white/5">
-                  <p className="text-xs font-mono text-[var(--text-muted)] uppercase mb-1">Duration</p>
-                  <p className="text-white font-bold">{selectedLeave.leave.days} Days</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setSelectedLeave(null)}
-                className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-mono text-sm uppercase tracking-widest transition-colors"
-              >
-                Deny
-              </button>
-              <button 
-                onClick={() => setSelectedLeave(null)}
-                className="flex-1 py-3 rounded-xl bg-[var(--verify-green)] text-black font-bold font-mono text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_var(--verify-green)]/30"
-              >
-                Approve
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- Provision Member Modal (Admin Only) --- */}
-      {showProvisionModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111] border border-white/10 rounded-3xl p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-start mb-6">
-              <div className="flex items-center gap-3 text-[var(--ledger-blue)]">
-                <Shield size={24} />
-                <h3 className="font-mono font-bold text-xl uppercase tracking-widest text-white">Provision Access</h3>
-              </div>
-              <button onClick={() => setShowProvisionModal(false)} className="text-[var(--text-muted)] hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="bg-[var(--ledger-blue)]/10 border border-[var(--ledger-blue)]/30 p-4 rounded-xl mb-6 flex gap-3">
-              <ShieldAlert className="text-[var(--ledger-blue)] shrink-0 mt-0.5" size={16} />
-              <p className="text-xs text-[var(--ledger-blue)]">This will generate secure credentials and add the user to your department automatically.</p>
-            </div>
-
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Full Name</label>
-                <input type="text" placeholder="e.g. Sarah Connor" className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--ledger-blue)] outline-none" />
-              </div>
-              <div>
-                <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Designation</label>
-                <input type="text" placeholder="e.g. Senior Frontend Engineer" className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--ledger-blue)] outline-none" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Role Type</label>
-                  <select className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--ledger-blue)] outline-none appearance-none">
-                    <option>Employee</option>
-                    <option>Manager</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Department</label>
-                  <select className="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-white focus:border-[var(--ledger-blue)] outline-none appearance-none">
-                    <option>Engineering</option>
-                    <option>Sales</option>
-                    <option>Marketing</option>
-                    <option>HR</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <button 
-              onClick={() => setShowProvisionModal(false)}
-              className="w-full py-4 rounded-xl bg-white text-black font-bold font-mono text-sm uppercase tracking-widest hover:bg-[var(--ledger-blue)] transition-colors"
-            >
-              Generate Access Credentials
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

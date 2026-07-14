@@ -2,6 +2,7 @@ import AppLayout from "@/components/Layout";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PrismaClient } from "@prisma/client";
+import OnboardingFlow from "@/components/OnboardingFlow";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +13,8 @@ const getLayoutUser = (dbUser: any) => ({
   role: dbUser.role,
   department: dbUser.department,
   designation: dbUser.designation,
-  avatarUrl: dbUser.avatarUrl
+  avatarUrl: dbUser.avatarUrl,
+  isOnboarded: dbUser.isOnboarded
 });
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +30,6 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   });
 
   if (!dbUser) {
-    // Auto-provision the user in the database if they exist in Supabase Auth but not Prisma
     dbUser = await prisma.user.create({
       data: {
         id: authUser.id,
@@ -37,12 +38,17 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         role: authUser.user_metadata?.role || 'Employee',
         department: authUser.user_metadata?.department || 'Operations',
         designation: authUser.user_metadata?.designation || 'Staff',
-        status: 'active'
+        status: 'active',
+        isOnboarded: false
       }
     });
   }
 
   const layoutUser = getLayoutUser(dbUser);
+
+  if (!dbUser.isOnboarded) {
+    return <OnboardingFlow user={layoutUser} />;
+  }
 
   return (
     <AppLayout user={layoutUser as any}>

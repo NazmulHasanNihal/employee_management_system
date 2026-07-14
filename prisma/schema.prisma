@@ -17,6 +17,8 @@ model User {
   designation String?
   avatarUrl   String?
   status      String       @default("active")
+  isOnboarded Boolean      @default(false)
+  pushSub     Json?        // Push subscription object
   managerId   String?
   manager     User?        @relation("ManagerToEmployee", fields: [managerId], references: [id])
   reports     User[]       @relation("ManagerToEmployee")
@@ -132,4 +134,14 @@ model EventSnapshot {
   stateData Json     // Snapshot of the current state
   version   Int      @default(1)
   createdAt DateTime @default(now())
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  action    String
+  actorId   String
+  targetId  String?
+  details   Json?
+  timestamp DateTime @default(now())
+  hash      String?
 }

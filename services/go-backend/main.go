@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-pdf/fpdf"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 type PayrollRequest struct {
@@ -18,6 +19,11 @@ type PayrollRequest struct {
 
 func main() {
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+	}))
 
 	app.Post("/api/payroll/generate-payslip", func(c *fiber.Ctx) error {
 		// Basic Auth Check
@@ -57,6 +63,47 @@ func main() {
 			return c.Status(500).SendString("Failed to generate PDF")
 		}
 
+		return nil
+	})
+
+	app.Get("/api/reports/attendance-pdf", func(c *fiber.Ctx) error {
+		pdf := fpdf.New("P", "mm", "A4", "")
+		pdf.AddPage()
+		
+		pdf.SetFont("Arial", "B", 18)
+		pdf.CellFormat(0, 10, "Corporate Attendance Report", "", 1, "C", false, 0, "")
+		pdf.Ln(10)
+		
+		pdf.SetFont("Arial", "B", 12)
+		pdf.CellFormat(40, 10, "Date", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(60, 10, "Employee Name", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(40, 10, "Status", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(50, 10, "Clock In", "1", 1, "C", false, 0, "")
+		
+		pdf.SetFont("Arial", "", 11)
+		
+		// Mock data for now, ideally fetch from DB
+		mockData := [][]string{
+			{"2026-07-14", "Sarah Connor", "Present", "08:55 AM"},
+			{"2026-07-14", "John Doe", "Late", "09:30 AM"},
+			{"2026-07-13", "Alice Smith", "Present", "09:00 AM"},
+			{"2026-07-13", "Bob Wilson", "Present", "08:45 AM"},
+		}
+
+		for _, row := range mockData {
+			pdf.CellFormat(40, 10, row[0], "1", 0, "C", false, 0, "")
+			pdf.CellFormat(60, 10, row[1], "1", 0, "L", false, 0, "")
+			pdf.CellFormat(40, 10, row[2], "1", 0, "C", false, 0, "")
+			pdf.CellFormat(50, 10, row[3], "1", 1, "C", false, 0, "")
+		}
+
+		c.Set("Content-Type", "application/pdf")
+		c.Set("Content-Disposition", "attachment; filename=attendance_report.pdf")
+
+		err := pdf.Output(c.Response().BodyWriter())
+		if err != nil {
+			return c.Status(500).SendString("Failed to generate PDF")
+		}
 		return nil
 	})
 

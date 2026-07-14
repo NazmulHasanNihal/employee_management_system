@@ -111,7 +111,7 @@ export default function OrgChartPage() {
             className="bg-[var(--bg-void)]"
             minZoom={0.2}
           >
-            <Background color="#00ffff" gap={20} size={1} opacity={0.1} />
+            <Background color="#00ffff" gap={20} size={1} />
             <Controls className="!bg-black/50 !border-white/10 !fill-white" />
           </ReactFlow>
         ) : (

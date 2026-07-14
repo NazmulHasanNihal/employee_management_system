@@ -40,6 +40,30 @@ export default function AttendancePage() {
     }, 2000);
   };
 
+  const handleDownloadPDF = async () => {
+    try {
+      // Direct call to Go backend (assuming it's on localhost:8080)
+      const res = await fetch('http://localhost:8080/api/reports/attendance-pdf', {
+        method: 'GET',
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `attendance_report_${new Date().getTime()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        console.error('Failed to generate PDF report');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loadingLogs) return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Initializing Terminal...</div>;
 
   return (
@@ -57,6 +81,14 @@ export default function AttendancePage() {
             Biometric Authorization and Geo-Location Terminal.
           </p>
         </div>
+        {isAdmin && (
+          <button 
+            onClick={handleDownloadPDF}
+            className="mt-6 md:mt-0 bg-white/10 text-white border border-white/20 px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+          >
+            Generate PDF Report
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

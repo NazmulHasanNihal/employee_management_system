@@ -18,6 +18,37 @@ export default function PayrollPage() {
 
   if (isLoading || !user) return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono text-xs uppercase tracking-widest">Processing Financials...</div>;
 
+  const downloadCSV = () => {
+    if (!payrolls || payrolls.length === 0) return;
+    
+    // Headers
+    let csvStr = "ID,Month,Year,Status,Total Amount,Employee Name,Employee Email\n";
+    
+    // Rows
+    payrolls.forEach((pay: any) => {
+      const row = [
+        pay.id,
+        pay.month,
+        pay.year,
+        pay.status,
+        pay.totalAmount,
+        pay.user?.name || "N/A",
+        pay.user?.email || "N/A"
+      ].map(val => `"${val}"`).join(",");
+      csvStr += row + "\n";
+    });
+
+    const blob = new Blob([csvStr], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `payroll_export_${new Date().getTime()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
       
@@ -34,13 +65,22 @@ export default function PayrollPage() {
           </p>
         </div>
         {isAdmin && (
-          <button 
-            onClick={() => setShowGenerate(!showGenerate)}
-            className="mt-6 md:mt-0 bg-[var(--verify-green)] text-black px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(0,255,100,0.3)] transition-all flex items-center gap-2"
-          >
-            {showGenerate ? <ChevronRight size={16} /> : <Calculator size={16} />}
-            {showGenerate ? 'Cancel Operation' : 'Run Payroll'}
-          </button>
+          <div className="flex gap-4 mt-6 md:mt-0">
+            <button 
+              onClick={downloadCSV}
+              className="bg-white/10 text-white border border-white/20 px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:bg-white/20 transition-all flex items-center gap-2"
+            >
+              <Download size={16} />
+              Export CSV
+            </button>
+            <button 
+              onClick={() => setShowGenerate(!showGenerate)}
+              className="bg-[var(--verify-green)] text-black px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(0,255,100,0.3)] transition-all flex items-center gap-2"
+            >
+              {showGenerate ? <ChevronRight size={16} /> : <Calculator size={16} />}
+              {showGenerate ? 'Cancel Operation' : 'Run Payroll'}
+            </button>
+          </div>
         )}
       </div>
 
