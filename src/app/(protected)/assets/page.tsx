@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Laptop, Activity, Plus, Check, X, ShieldAlert, Monitor, Cpu, Keyboard, TrendingDown, Clock, Search } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
+import { EmptyState } from '@/components/EmptyState';
 
 export default function AssetsPage() {
   const { data: session } = authClient.useSession();
@@ -61,7 +62,7 @@ export default function AssetsPage() {
   const currentFleetValue = assets?.reduce((acc: number, curr: any) => acc + parseFloat(calculateDepreciation(curr).current as any), 0) || 0;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -187,9 +188,13 @@ export default function AssetsPage() {
       {/* Assets Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {(!filteredAssets || filteredAssets.length === 0) ? (
-          <div className="col-span-full py-16 text-center border border-dashed border-white/10 rounded-3xl bg-black/20">
-             <Cpu size={48} className="mx-auto text-[var(--text-muted)] opacity-50 mb-4" />
-             <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">No matching hardware found.</h3>
+          <div className="col-span-full">
+            <EmptyState 
+              title="No Hardware Assets Found" 
+              description="There are no active hardware assignments or inventory items in this registry." 
+              actionText={isAdmin ? "Provision Asset" : undefined}
+              onAction={isAdmin ? () => setShowCreate(true) : undefined}
+            />
           </div>
         ) : (
           filteredAssets.map((asset: any) => {

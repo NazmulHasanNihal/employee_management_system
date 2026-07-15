@@ -50,7 +50,7 @@ export default function TeamDashboardPage() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
-  const fetchHierarchy = async () => {
+  const fetchHierarchy = useCallback(async () => {
     setLoading(true);
     let url = '/api/hierarchy?viewMode=' + viewMode;
     if (impersonateId) url += '&impersonateId=' + impersonateId;
@@ -87,11 +87,11 @@ export default function TeamDashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [impersonateId, viewMode]);
 
   useEffect(() => {
     fetchHierarchy();
-  }, [impersonateId, viewMode]);
+  }, [fetchHierarchy]);
 
   const onNodesChange = useCallback((changes: any) => setNodes((nds) => applyNodeChanges(changes, nds)), []);
   const onEdgesChange = useCallback((changes: any) => setEdges((eds) => applyEdgeChanges(changes, eds)), []);
@@ -112,7 +112,7 @@ export default function TeamDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Impersonation & View Modes */}
       <div className="flex flex-col md:flex-row justify-between gap-4 p-4 bg-black/40 rounded-xl border border-white/5">

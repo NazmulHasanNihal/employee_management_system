@@ -2,9 +2,10 @@
 
 import React from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { 
   LayoutDashboard, Users, Clock, FileText, Landmark, 
-  Settings, ShieldCheck, MessageSquare, Bell, Megaphone, Calendar, 
+  Settings, ShieldCheck, Bell, Megaphone, Calendar, 
   Network, ShieldAlert, Bitcoin, FileDigit, Radar, Lock,
   LogOut, Link as LinkIcon, GitBranch, LifeBuoy, UserCircle, Ghost,
   Menu, Search, ArrowRight, Home, Activity, Command, X, Hash, HardDriveDownload,
@@ -19,24 +20,34 @@ import { useAppStore } from '@/lib/store';
 import usePartySocket from '@/lib/usePartySocket';
 import CommandPalette from './CommandPalette';
 import { createClient } from '@/lib/supabase/client';
+import { trpc } from '@/lib/trpc/client';
+import { useTranslation } from '@/lib/translations';
 
-export default function AppLayout({ children, user }: { children: React.ReactNode, user: { name: string, role: string } }) {
+interface LayoutUser {
+  id: string;
+  name: string;
+  role: string;
+  email?: string;
+  department?: string;
+  designation?: string;
+  avatarUrl?: string | null;
+}
+
+export default function AppLayout({ children, user }: { children: React.ReactNode, user: LayoutUser }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isOffline, setOffline, offlineQueue } = useAppStore();
+  const { isOffline, setOffline, offlineQueue, language, setLanguage } = useAppStore();
   const [showNotifications, setShowNotifications] = React.useState(false);
+  const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const t = useTranslation(language);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const handleOnline = () => setOffline(false);
       const handleOffline = () => setOffline(true);
-      
-      // Initial state
       setOffline(!navigator.onLine);
-
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
-
       return () => {
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
@@ -44,24 +55,30 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
     }
   }, [setOffline]);
 
-  const [notifications, setNotifications] = React.useState<any[]>([]);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  // Real notifications from DB
+  const { data: notificationsData } = trpc.notifications.getAll.useQuery(undefined);
+  const notifications = notificationsData || [];
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
+
+  const markReadMutation = trpc.notifications.markRead.useMutation();
+  const markAllReadMutation = trpc.notifications.markAllRead.useMutation();
+
   const markRead = async (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+    markReadMutation.mutate({ id });
   };
-  const markAllRead = () => setNotifications([]);
-  const acknowledgePolicy = { isPending: false, mutate: (data: any) => {} };
-  
-  const unreadCount = notifications.filter(n => !n.read).length;
-  const mandatoryPolicies: any[] = [];
+  const markAllRead = () => {
+    markAllReadMutation.mutate({});
+  };
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const socket = usePartySocket({
     host: 'localhost:1999',
     room: 'ems-global',
     onMessage(e) {
       const data = JSON.parse(e.data);
-      if (data.type === 'notification_update' || data.type === 'dm_update') {
-        // notification update logic would go here
+      if (data.type === 'notification_update') {
+        // Could refresh notifications
       }
     }
   });
@@ -90,9 +107,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
       items: [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
         { label: 'My Team', icon: Users, path: '/team' },
-        { label: 'Profile', icon: UserCircle, path: '/profile' },
-        { label: 'Messages', icon: MessageSquare, path: '/messages' },
-        { label: 'Broadcasts', icon: Megaphone, path: '/announcements' },
+        { label: 'Company News', icon: Megaphone, path: '/announcements' },
         { label: 'Company Calendar', icon: Calendar, path: '/calendar' },
       ]
     },
@@ -101,7 +116,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
       items: [
         { label: 'Attendance', icon: Clock, path: '/attendance' },
         { label: 'Leave', icon: Calendar, path: '/leave' },
-        { label: 'Shift Roster', icon: CalendarRange, path: '/shifts' },
+        { label: 'Shift Schedule', icon: CalendarRange, path: '/shifts' },
       ]
     },
     {
@@ -125,20 +140,20 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
     {
       title: 'Operations',
       items: [
-        { label: 'Document Center', icon: FileText, path: '/documents' },
-        { label: 'Applications', icon: FileText, path: '/applications' },
+        { label: 'Document Vault', icon: FileText, path: '/documents' },
+        { label: 'Requests & Approvals', icon: FileText, path: '/applications' },
         { label: 'Compliance', icon: ShieldCheck, path: '/compliance' },
         { label: 'HR Helpdesk', icon: LifeBuoy, path: '/helpdesk' },
         { label: 'Workflows', icon: CheckSquare, path: '/onboarding', adminOnly: true },
       ]
     },
     {
-      title: 'Admin Intelligence',
+      title: 'Administration',
       items: [
-        { label: 'Registry', icon: Users, path: '/registry' },
+        { label: 'Employee Directory', icon: Users, path: '/registry' },
         { label: 'Recruitment', icon: Briefcase, path: '/recruitment', adminOnly: true },
         { label: 'Org Chart', icon: GitBranch, path: '/org-chart' },
-        { label: 'Restructure Sandbox', icon: Network, path: '/hierarchy' },
+        { label: 'Organizational Structure', icon: Network, path: '/hierarchy' },
         { label: 'DEI Auditor', icon: Scale, path: '/dei', adminOnly: true },
       ]
     },
@@ -150,8 +165,6 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
       ]
     }
   ];
-
-  const flatNavItems = navCategories.flatMap(c => c.items);
 
   return (
     <div className={`h-screen w-screen overflow-hidden flex flex-col md:flex-row transition-colors duration-300`}>
@@ -168,7 +181,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
         )}
       </AnimatePresence>
 
-      {/* Sidebar - Desktop & Mobile Drawer */}
+      {/* Sidebar */}
       <motion.aside 
         className={`fixed md:relative flex flex-col w-64 border-r ledger-border bg-[var(--bg-panel)] z-50 h-full transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
@@ -204,7 +217,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
                   onClick={() => toggleCategory(category.title)}
                   className="w-full px-4 mb-2 flex items-center justify-between text-left group"
                 >
-                  <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest group-hover:text-[var(--text-main)] transition-colors">{category.title}</span>
+                  <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest group-hover:text-[var(--text-main)] transition-colors">{t(category.title)}</span>
                   <motion.div
                     initial={false}
                     animate={{ rotate: isOpen ? 180 : 0 }}
@@ -235,7 +248,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
                             }`}
                           >
                             <Icon size={16} className={active ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'} />
-                            <span className="font-mono text-xs uppercase tracking-wider font-semibold truncate">{item.label}</span>
+                            <span className="font-mono text-xs uppercase tracking-wider font-semibold truncate">{t(item.label)}</span>
                           </button>
                         )
                       })}
@@ -247,23 +260,7 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
           })}
         </nav>
 
-        <div className="p-4 border-t ledger-border">
-          <div className="ledger-panel p-3 mb-4 group hover:border-[var(--signal-amber)] transition-colors cursor-pointer" onClick={() => router.push('/profile')}>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[var(--bg-void)] border ledger-border flex items-center justify-center font-mono font-bold text-xs group-hover:text-[var(--signal-amber)] transition-colors">
-                {user.name.charAt(0)}
-              </div>
-              <div className="overflow-hidden">
-                <p className="font-bold text-xs truncate ledger-text group-hover:text-white transition-colors">{user.name}</p>
-                <p className="text-[9px] font-mono ledger-muted uppercase tracking-widest truncate">{user.role}</p>
-              </div>
-            </div>
-          </div>
-          <button onClick={handleLogout} className="w-full flex items-center justify-center space-x-2 p-2 btn-secondary border-transparent hover:border-[var(--alert-red)] hover:text-[var(--alert-red)] transition-all">
-            <LogOut size={14} />
-            <span className="uppercase text-[10px] tracking-widest font-bold">Terminate Session</span>
-          </button>
-        </div>
+
       </motion.aside>
 
       {/* Main Content */}
@@ -277,53 +274,44 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
                 {offlineQueue} operations queued locally
               </span>
             </div>
-            <div className="flex items-center gap-4">
-              {offlineQueue > 0 && (
-                <button 
-                  onClick={() => {
-                    const data = JSON.stringify(offlineQueue, null, 2);
-                    const blob = new Blob([data], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `offline-ledger-backup-${Date.now()}.json`;
-                    a.click();
-                  }}
-                  className="hidden md:flex items-center gap-1 hover:text-black hover:bg-white transition-colors bg-black/20 px-2 py-1 uppercase tracking-widest font-bold"
-                  title="Export Offline Ledger to Disk"
-                >
-                  <HardDriveDownload size={12} />
-                  <span>Export Ledger</span>
-                </button>
-              )}
-              <span className="opacity-80 uppercase tracking-widest hidden sm:inline">Awaiting Uplink...</span>
-            </div>
+            <span className="opacity-80 uppercase tracking-widest hidden sm:inline">Awaiting Uplink...</span>
           </div>
         )}
         <header className="h-14 border-b ledger-border flex items-center justify-between px-4 md:px-8 bg-[var(--bg-panel)] shrink-0 z-10">
           <div className="flex items-center gap-4">
             <div className="md:hidden flex items-center gap-2">
+              <button onClick={() => setIsMobileMenuOpen(true)} className="text-[var(--text-muted)] hover:text-white">
+                <Menu size={20} />
+              </button>
               <LinkIcon size={16} className="text-[var(--text-main)]" />
               <span className="font-mono font-bold text-sm uppercase tracking-widest ledger-text">EMS.Core</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* Language Toggle */}
+            <button 
+              onClick={() => setLanguage(language === 'en' ? 'bn' : 'en')}
+              className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded font-mono text-[10px] uppercase tracking-widest text-white transition-colors"
+            >
+              {language === 'en' ? 'ENG' : 'বাংলা'}
+            </button>
+
             {/* Notification Bell */}
             <div className="relative">
               <button 
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
                 className="relative p-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-[var(--alert-red)] rounded-full"></span>
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-[var(--alert-red)] rounded-full text-[8px] font-bold flex items-center justify-center text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>
                 )}
               </button>
               
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-panel)] border ledger-border shadow-xl z-50">
+                <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-panel)] border ledger-border shadow-xl z-50 rounded-xl overflow-hidden">
                   <div className="p-3 border-b ledger-border flex justify-between items-center bg-[var(--bg-void)]">
-                    <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest">Alerts</span>
+                    <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest">Alerts ({unreadCount})</span>
                     <button 
                       onClick={() => markAllRead()}
                       className="text-[10px] text-[var(--ledger-blue)] hover:underline"
@@ -332,25 +320,21 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
                     </button>
                   </div>
                   <div className="max-h-64 overflow-y-auto custom-scrollbar">
-                    {notifications?.length === 0 ? (
+                    {notifications.length === 0 ? (
                       <div className="p-4 text-center text-[10px] font-mono ledger-muted">No notifications</div>
                     ) : (
-                      notifications?.map(n => (
+                      notifications.map((n: any) => (
                         <div 
                           key={n.id} 
-                          className={`p-3 border-b ledger-border text-sm flex justify-between items-start gap-2 ${!n.read ? 'bg-[var(--ledger-blue)]/5 border-l-2 border-l-[var(--ledger-blue)]' : ''}`}
+                          onClick={() => { if (n.link) router.push(n.link); if (!n.read) markRead(n.id); setShowNotifications(false); }}
+                          className={`p-3 border-b ledger-border text-sm flex justify-between items-start gap-2 cursor-pointer hover:bg-white/5 ${!n.read ? 'bg-[var(--ledger-blue)]/5 border-l-2 border-l-[var(--ledger-blue)]' : ''}`}
                         >
                           <div className="flex-1">
-                            <p className="ledger-text">{n.message}</p>
-                            <p className="text-[9px] font-mono ledger-muted mt-1">{new Date(n.createdAt).toLocaleTimeString()}</p>
+                            <p className="ledger-text text-xs">{n.message}</p>
+                            <p className="text-[9px] font-mono ledger-muted mt-1">{new Date(n.createdAt).toLocaleString()}</p>
                           </div>
                           {!n.read && (
-                            <button 
-                              onClick={() => markRead(n.id)}
-                              className="text-[10px] font-mono text-[var(--verify-green)] shrink-0 hover:underline"
-                            >
-                              Dismiss
-                            </button>
+                            <span className="w-2 h-2 rounded-full bg-[var(--ledger-blue)] shrink-0 mt-1"></span>
                           )}
                         </div>
                       ))
@@ -360,70 +344,68 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
               )}
             </div>
 
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest group-hover:text-[var(--text-main)] transition-colors">Net.Status</span>
+            {/* Profile Avatar & Dropdown */}
+            <div className="relative">
               <button 
-                onClick={() => setOffline(!isOffline)}
-                className={`w-8 h-4 rounded-full relative transition-colors ${isOffline ? 'bg-[var(--alert-red)]' : 'bg-[var(--verify-green)]'}`}
+                onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
+                className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-white/5 transition-colors"
               >
-                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-[var(--bg-panel)] transition-transform ${isOffline ? 'left-0.5' : 'left-4'}`} />
+                <div className="hidden md:block text-right">
+                  <p className="text-xs font-bold ledger-text leading-none">{user.name}</p>
+                  <p className="text-[9px] font-mono ledger-muted uppercase tracking-widest">{user.role}</p>
+                </div>
+                {user.avatarUrl ? (
+                  <Image src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-white/10" width={32} height={32} />
+                ) : (
+                  <div className="w-8 h-8 bg-[var(--ledger-blue)]/20 border border-[var(--ledger-blue)]/30 rounded-full flex items-center justify-center font-mono font-bold text-xs text-[var(--ledger-blue)]">
+                    {user.name.charAt(0)}
+                  </div>
+                )}
               </button>
-            </label>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-panel)] border ledger-border shadow-xl z-50 rounded-xl overflow-hidden">
+                  <div className="p-4 border-b ledger-border bg-[var(--bg-void)]">
+                    <p className="font-bold text-sm text-white">{user.name}</p>
+                    <p className="text-[10px] font-mono ledger-muted">{user.email}</p>
+                    <p className="text-[9px] font-mono text-[var(--ledger-blue)] uppercase tracking-widest mt-1">{user.department} • {user.designation}</p>
+                  </div>
+                  <div className="py-1">
+                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="w-full px-4 py-2.5 text-left text-xs font-mono ledger-text hover:bg-white/5 transition-colors flex items-center gap-2">
+                      <UserCircle size={14} /> {t('My Profile')}
+                    </button>
+                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="w-full px-4 py-2.5 text-left text-xs font-mono ledger-text hover:bg-white/5 transition-colors flex items-center gap-2">
+                      <Settings size={14} /> {t('Settings')}
+                    </button>
+                    <div className="border-t ledger-border my-1" />
+                    <button onClick={handleLogout} className="w-full px-4 py-2.5 text-left text-xs font-mono text-[var(--alert-red)] hover:bg-[var(--alert-red)]/10 transition-colors flex items-center gap-2">
+                      <LogOut size={14} /> {t('Sign Out')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
         
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-          {mandatoryPolicies && mandatoryPolicies.length > 0 ? (
-            <div className="absolute inset-0 bg-[var(--bg-void)] z-50 flex flex-col items-center justify-center p-4">
-              <div className="ledger-panel p-8 max-w-2xl w-full bg-[var(--bg-panel)] border-[var(--alert-red)]/50 space-y-6">
-                <div className="flex items-center gap-4 text-[var(--alert-red)] border-b border-[var(--alert-red)]/20 pb-4">
-                  <ShieldAlert size={32} />
-                  <div>
-                    <h2 className="text-xl font-mono font-bold uppercase tracking-widest">Mandatory Policy Acknowledgment</h2>
-                    <p className="text-xs font-mono opacity-80 mt-1">Access restricted until all pending policies are reviewed.</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  {mandatoryPolicies.map((policy: any) => (
-                    <div key={policy.id} className="p-4 bg-black/40 border border-white/10 rounded-lg">
-                      <h3 className="font-bold text-white mb-2 flex items-center justify-between">
-                        {policy.title}
-                        <button 
-                          disabled={acknowledgePolicy.isPending}
-                          onClick={() => acknowledgePolicy.mutate({ policyId: policy.id })}
-                          className="bg-[var(--ledger-blue)] text-black px-4 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest hover:bg-white transition-colors disabled:opacity-50"
-                        >
-                          I Acknowledge & Agree
-                        </button>
-                      </h3>
-                      <div className="text-xs text-[var(--text-muted)] max-h-40 overflow-y-auto custom-scrollbar pr-2 whitespace-pre-wrap">
-                        {policy.content}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ) : (
-            children
-          )}
+        <div className="flex-1 overflow-y-auto p-4 pb-24 md:p-8 custom-scrollbar">
+          {children}
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation (Nav Inversion) */}
+      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-[var(--bg-panel)] border-t ledger-border z-40 flex items-center justify-around px-2">
         <button onClick={() => router.push('/')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
           <Home size={20} />
           <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Home</span>
         </button>
-        <button onClick={() => router.push('/messages')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/messages' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
-          <MessageSquare size={20} />
-          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Chat</span>
-        </button>
         <button onClick={() => router.push('/attendance')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/attendance' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
           <Clock size={20} />
           <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Time</span>
+        </button>
+        <button onClick={() => router.push('/leave')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/leave' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
+          <Calendar size={20} />
+          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Leave</span>
         </button>
         <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center justify-center w-16 h-full text-[var(--text-muted)] hover:text-white transition-colors">
           <Menu size={20} />

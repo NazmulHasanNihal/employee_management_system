@@ -9,15 +9,17 @@ import {
   ResponsiveContainer, RadarChart, PolarGrid, 
   PolarAngleAxis, Radar, Tooltip 
 } from 'recharts';
+import { useRouter } from 'next/navigation';
+import { trpc } from '@/lib/trpc/client';
 
-const BENTO_CLASSES = "bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative transition-all duration-500 hover:border-white/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]";
+const BENTO_CLASSES = "bg-white/5 border border-white/10 rounded-3xl overflow-hidden shadow-xl relative transition-all duration-300 hover:border-white/20 hover:shadow-[0_8px_24px_rgb(0,0,0,0.18)]";
 
 // --- 1. STAT CARD ---
 export function StatCard({ title, value, icon: Icon, colorClass, gradientFrom }: any) {
   return (
     <div className={`${BENTO_CLASSES} flex flex-col justify-between p-6 group h-full`}>
       <div className={`absolute inset-0 bg-gradient-to-br ${gradientFrom} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-0`} />
-      
+
       <div className="flex justify-between items-start z-10">
         <div className={`p-3 rounded-2xl bg-black/40 border border-white/5 ${colorClass}`}>
           <Icon size={20} />
@@ -26,14 +28,18 @@ export function StatCard({ title, value, icon: Icon, colorClass, gradientFrom }:
           <MoreHorizontal size={16} />
         </button>
       </div>
-      
+
       <div className="z-10 mt-6">
-        <h4 className="text-[var(--text-muted)] text-xs font-mono uppercase tracking-widest mb-2">{title}</h4>
-        <p className="text-3xl lg:text-4xl font-mono font-black text-white">{value}</p>
+        {/* Title and icon/label in one line, value directly under */}
+        <div className="flex items-center gap-2">
+          <h4 className="text-[var(--text-muted)] text-xs font-mono uppercase tracking-widest">{title}</h4>
+        </div>
+        <p className="text-3xl lg:text-4xl font-mono font-black text-white mt-2 leading-none">{value}</p>
       </div>
     </div>
   );
 }
+
 
 // --- 2. LIVE CLOCK & SHIFT ---
 export function LiveClockWidget() {
@@ -53,7 +59,7 @@ export function LiveClockWidget() {
 
   return (
     <div className={`${BENTO_CLASSES} h-full p-8 flex flex-col justify-center relative overflow-hidden group`}>
-      <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[var(--ledger-blue)]/10 to-transparent blur-3xl rounded-full -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-1000" />
+<div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[var(--ledger-blue)]/10 to-transparent blur-2xl rounded-full -mr-20 -mt-20 group-hover:scale-105 transition-transform duration-700" />
       
       <div className="flex justify-between items-end relative z-10">
         <div>
@@ -108,11 +114,13 @@ export function RadarWidget({ data }: { data: any[] }) {
 
 // --- 4. QUICK ACTIONS COMMAND CENTER ---
 export function QuickActionsWidget() {
+  const router = useRouter();
+  
   const actions = [
-    { name: 'Add Member', icon: UserPlus, color: 'text-[var(--verify-green)]', bg: 'hover:bg-[var(--verify-green)]/10', border: 'hover:border-[var(--verify-green)]/30' },
-    { name: 'Run Payroll', icon: Target, color: 'text-purple-400', bg: 'hover:bg-purple-500/10', border: 'hover:border-purple-500/30' },
-    { name: 'Approve Leaves', icon: Calendar, color: 'text-[var(--signal-amber)]', bg: 'hover:bg-[var(--signal-amber)]/10', border: 'hover:border-[var(--signal-amber)]/30' },
-    { name: 'Broadcast', icon: Zap, color: 'text-[var(--ledger-blue)]', bg: 'hover:bg-[var(--ledger-blue)]/10', border: 'hover:border-[var(--ledger-blue)]/30' },
+    { name: 'Add Member', icon: UserPlus, color: 'text-[var(--verify-green)]', bg: 'hover:bg-[var(--verify-green)]/10', border: 'hover:border-[var(--verify-green)]/30', path: '/registry' },
+    { name: 'Run Payroll', icon: Target, color: 'text-purple-400', bg: 'hover:bg-purple-500/10', border: 'hover:border-purple-500/30', path: '/payroll' },
+    { name: 'Approve Leaves', icon: Calendar, color: 'text-[var(--signal-amber)]', bg: 'hover:bg-[var(--signal-amber)]/10', border: 'hover:border-[var(--signal-amber)]/30', path: '/leave' },
+    { name: 'Broadcast', icon: Zap, color: 'text-[var(--ledger-blue)]', bg: 'hover:bg-[var(--ledger-blue)]/10', border: 'hover:border-[var(--ledger-blue)]/30', path: '/announcements' },
   ];
 
   return (
@@ -121,12 +129,13 @@ export function QuickActionsWidget() {
         <Activity size={16} className="text-orange-400" /> Command Center
       </h3>
       
-      <div className="grid grid-cols-2 gap-3 flex-1">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 flex-1">
         {actions.map((action, i) => {
           const ActionIcon = action.icon;
           return (
           <button 
             key={i} 
+            onClick={() => router.push(action.path)}
             className={`flex flex-col items-center justify-center p-4 bg-black/40 border border-white/5 rounded-2xl transition-all duration-300 group ${action.bg} ${action.border}`}
           >
             <ActionIcon size={24} className={`${action.color} mb-3 group-hover:scale-110 transition-transform`} />
@@ -139,41 +148,56 @@ export function QuickActionsWidget() {
   );
 }
 
-// --- 5. ENGAGEMENT / EVENTS ---
+// --- 5. ENGAGEMENT / EVENTS (from DB) ---
 export function EngagementWidget() {
-  const events = [
-    { name: 'Sarah Connor', type: 'Birthday', icon: Cake, color: 'text-pink-400', date: 'Today' },
-    { name: 'John Smith', type: '5 Yrs Anniversary', icon: Gift, color: 'text-yellow-400', date: 'Tomorrow' },
-    { name: 'Elena Rogers', type: 'New Hire', icon: UserPlus, color: 'text-[var(--verify-green)]', date: 'Oct 15' },
-  ];
+  const { data: recentEvents, isLoading } = trpc.engagement.getRecent.useQuery(undefined);
+
+  const iconMap: Record<string, any> = {
+    'Birthday': Cake,
+    'Anniversary': Gift,
+    'New Hire': UserPlus,
+  };
+  const colorMap: Record<string, string> = {
+    'Birthday': 'text-pink-400',
+    'Anniversary': 'text-yellow-400',
+    'New Hire': 'text-[var(--verify-green)]',
+  };
+
+  const events = recentEvents || [];
 
   return (
     <div className={`${BENTO_CLASSES} h-full p-6 flex flex-col`}>
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-mono text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-          <HeartPulse size={16} className="text-pink-500" /> Engagement
+          <HeartPulse size={16} className="text-pink-500" /> Recent Activity
         </h3>
-        <button className="text-xs font-mono text-[var(--ledger-blue)] hover:text-white transition-colors">View All</button>
       </div>
 
       <div className="space-y-4 flex-1">
-        {events.map((event, i) => {
-          const EventIcon = event.icon;
-          return (
-          <div key={i} className="flex items-center justify-between p-3 bg-black/20 rounded-xl hover:bg-black/40 transition-colors border border-transparent hover:border-white/5">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg bg-white/5 ${event.color}`}>
-                <EventIcon size={16} />
+        {isLoading ? (
+          <div className="text-center text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest animate-pulse py-4">Loading...</div>
+        ) : events.length === 0 ? (
+          <div className="text-center text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest py-4">No recent activity</div>
+        ) : (
+          events.map((event: any, i: number) => {
+            const EventIcon = iconMap[event.type] || UserPlus;
+            const color = colorMap[event.type] || 'text-[var(--verify-green)]';
+            return (
+              <div key={i} className="flex items-center justify-between p-3 bg-black/20 rounded-xl hover:bg-black/40 transition-colors border border-transparent hover:border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-lg bg-white/5 ${color}`}>
+                    <EventIcon size={16} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-white">{event.name}</p>
+                    <p className="text-xs font-mono text-[var(--text-muted)] uppercase">{event.type}</p>
+                  </div>
+                </div>
+                <span className="text-xs font-mono text-white/50">{new Date(event.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
               </div>
-              <div>
-                <p className="text-sm font-bold text-white">{event.name}</p>
-                <p className="text-xs font-mono text-[var(--text-muted)] uppercase">{event.type}</p>
-              </div>
-            </div>
-            <span className="text-xs font-mono text-white/50">{event.date}</span>
-          </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

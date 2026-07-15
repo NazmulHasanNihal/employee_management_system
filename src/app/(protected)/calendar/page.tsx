@@ -44,7 +44,7 @@ export default function CalendarPage() {
   };
 
   // Dynamic Calendar Logic
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
   const todayDate = now.getDate();
@@ -97,7 +97,7 @@ export default function CalendarPage() {
   if (isLoading) return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase">Syncing Calendar Data...</div>;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">

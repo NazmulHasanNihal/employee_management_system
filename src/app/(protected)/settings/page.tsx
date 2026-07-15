@@ -4,10 +4,14 @@ import React from 'react';
 import { ShieldCheck, ServerCrash, Cpu, Activity, Database, Lock, Key } from 'lucide-react';
 import { authClient } from '@/lib/auth-client';
 import { redirect } from 'next/navigation';
+import { useAppStore } from '@/lib/store';
+import { useTranslation } from '@/lib/translations';
 
 export default function SettingsPage() {
   const { data: session } = authClient.useSession();
   const user = session?.user as any;
+  const { language } = useAppStore();
+  const t = useTranslation(language);
 
   const [flags, setFlags] = React.useState({
     maintenanceMode: false,
@@ -28,7 +32,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -36,10 +40,10 @@ export default function SettingsPage() {
         <div>
           <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
             <Cpu className="text-[var(--ledger-blue)]" size={36} />
-            System Configuration
+            {t('System Configuration')}
           </h2>
           <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
-            Global tRPC Policies & System Variables.
+            {t('Global tRPC Policies & System Variables.')}
           </p>
         </div>
       </div>
@@ -52,17 +56,17 @@ export default function SettingsPage() {
             <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--ledger-blue)]/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/4" />
             
             <h3 className="text-xl font-black font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-3 relative z-10 border-b border-white/10 pb-4">
-              <ShieldCheck className="text-[var(--ledger-blue)]" size={24} /> tRPC Permission Matrix
+              <ShieldCheck className="text-[var(--ledger-blue)]" size={24} /> {t('tRPC Permission Matrix')}
             </h3>
             
             <div className="overflow-x-auto relative z-10">
-              <table className="w-full text-left border-collapse font-mono">
+              <table className="w-full min-w-max text-left border-collapse font-mono">
                 <thead className="bg-white/5 border border-white/10 text-[9px] text-[var(--text-muted)] uppercase tracking-widest">
                   <tr>
-                    <th className="p-4 pl-6 rounded-tl-xl whitespace-nowrap">Resource Endpoint</th>
-                    <th className="p-4 text-center whitespace-nowrap">L4 Admin</th>
-                    <th className="p-4 text-center whitespace-nowrap">L3 HR</th>
-                    <th className="p-4 pr-6 text-center rounded-tr-xl whitespace-nowrap">L1 Employee</th>
+                    <th className="p-4 pl-6 rounded-tl-xl whitespace-nowrap">{t('Resource Endpoint')}</th>
+                    <th className="p-4 text-center whitespace-nowrap">{t('L4 Admin')}</th>
+                    <th className="p-4 text-center whitespace-nowrap">{t('L3 HR')}</th>
+                    <th className="p-4 pr-6 text-center rounded-tr-xl whitespace-nowrap">{t('L1 Employee')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 border-x border-b border-white/10 rounded-b-xl text-sm bg-black/40">
@@ -98,20 +102,20 @@ export default function SettingsPage() {
           
           <div className="bg-[#050505] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
             <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
-              <Activity className="text-purple-400" size={16} /> System Health
+              <Activity className="text-purple-400" size={16} /> {t('System Health')}
             </h3>
             <div className="space-y-4">
               <div className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <Database size={16} className="text-emerald-400" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">Database Status</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">{t('Database Status')}</span>
                 </div>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold px-2 py-1 bg-emerald-400/10 rounded border border-emerald-400/30">ONLINE</span>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-bold px-2 py-1 bg-emerald-400/10 rounded border border-emerald-400/30">{t('ONLINE')}</span>
               </div>
               <div className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
                 <div className="flex items-center gap-3">
                   <ServerCrash size={16} className="text-[var(--ledger-blue)]" />
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">tRPC Uptime</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">{t('tRPC Uptime')}</span>
                 </div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--ledger-blue)] font-bold">99.999%</span>
               </div>
@@ -119,7 +123,7 @@ export default function SettingsPage() {
           </div>
           <div className="bg-[#050505] border border-white/10 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
             <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-white/10 pb-4">
-              <Activity className="text-[var(--ledger-blue)]" size={16} /> System Flags
+              <Activity className="text-[var(--ledger-blue)]" size={16} /> {t('System Flags')}
             </h3>
             <div className="space-y-4">
               {[
@@ -129,7 +133,7 @@ export default function SettingsPage() {
                 { key: 'autoProvision', label: 'Auto-Provision Accounts', color: 'var(--signal-amber)' }
               ].map(flag => (
                 <div key={flag.key} className="bg-black/60 p-4 rounded-xl border border-white/5 flex justify-between items-center">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-white">{flag.label}</span>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-white">{t(flag.label)}</span>
                   <button 
                     onClick={() => handleToggle(flag.key as any)}
                     className={`w-10 h-5 rounded-full relative transition-colors ${flags[flag.key as keyof typeof flags] ? 'bg-white/20' : 'bg-black'} border border-white/20`}

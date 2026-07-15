@@ -54,7 +54,7 @@ export default function LeavePage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!startDate || !endDate || !reason) return;
-    submitRequest.mutate({ type, startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString(), reason });
+    submitRequest.mutate({ type, startDate: new Date(startDate).toISOString(), endDate: new Date(endDate).toISOString(), reason, days: 0 });
   };
 
   if (!user || isLoading) {
@@ -62,7 +62,7 @@ export default function LeavePage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -178,7 +178,7 @@ export default function LeavePage() {
                 disabled={submitRequest.isPending || !startDate || !endDate || !reason}
                 className="w-full py-4 rounded-xl flex items-center justify-center gap-2 font-mono text-sm uppercase tracking-widest font-bold transition-all duration-300 bg-[var(--verify-green)] text-black hover:brightness-110 shadow-[0_0_20px_rgba(0,255,100,0.3)] disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed"
               >
-                {submitRequest.isPending ? 'Filing...' : 'Submit Request'}
+                {(submitRequest as any).isPending ? 'Filing...' : 'Submit Request'}
               </button>
             </form>
           </div>
@@ -230,9 +230,9 @@ export default function LeavePage() {
                         <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mt-2">
                           {new Date(req.startDate).toLocaleDateString()} - {new Date(req.endDate).toLocaleDateString()}
                         </p>
-                        <p className="text-xs text-[var(--text-muted)] mt-2 italic font-sans leading-relaxed">"{req.reason}"</p>
+                        <p className="text-xs text-[var(--text-muted)] mt-2 italic font-sans leading-relaxed">"{req.details}"</p>
                         {isAdmin && (
-                          <p className="text-[10px] font-mono text-[var(--ledger-blue)] uppercase mt-2">Requested By: {req.userName}</p>
+                          <p className="text-[10px] font-mono text-[var(--ledger-blue)] uppercase mt-2">Requested By: {req.user?.name || 'Unknown'}</p>
                         )}
                       </div>
                     </div>

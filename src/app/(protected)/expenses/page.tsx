@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 import { Receipt, CheckCircle2, XCircle, FileText, Plus, Landmark, HandCoins, Activity, DollarSign } from 'lucide-react';
+import { StatusBadge } from '@/components/StatusBadge';
+import { EmptyState } from '@/components/EmptyState';
 
 export default function ExpensesPage() {
   const { data: session } = authClient.useSession();
@@ -40,7 +42,7 @@ export default function ExpensesPage() {
   const totalApproved = data?.filter((d: any) => d.status === 'APPROVED').reduce((acc: number, curr: any) => acc + curr.amount, 0) || 0;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -162,8 +164,13 @@ export default function ExpensesPage() {
         
         <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
           {(!data || data.length === 0) ? (
-            <div className="p-12 text-center text-[var(--text-muted)] font-mono text-[10px] uppercase tracking-widest bg-black/20">
-              No expense records found.
+            <div className="p-6">
+              <EmptyState 
+                title="No Expense Records Found" 
+                description="There are no active reimbursement claims in this ledger." 
+                actionText={!isAdmin ? "New Claim" : undefined}
+                onAction={!isAdmin ? () => setShowForm(true) : undefined}
+              />
             </div>
           ) : (
             data.map((exp: any) => (
@@ -182,13 +189,7 @@ export default function ExpensesPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-3 mb-1">
                       <h4 className="text-lg font-bold text-white font-mono">${exp.amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</h4>
-                      <span className={`text-[9px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full border ${
-                        exp.status === 'APPROVED' ? 'bg-[var(--verify-green)]/10 text-[var(--verify-green)] border-[var(--verify-green)]/30 shadow-[0_0_10px_rgba(0,255,100,0.2)]' :
-                        exp.status === 'REJECTED' ? 'bg-red-500/10 text-red-500 border-red-500/30 shadow-[0_0_10px_rgba(255,0,0,0.2)]' :
-                        'bg-[var(--signal-amber)]/10 text-[var(--signal-amber)] border-[var(--signal-amber)]/30 shadow-[0_0_10px_var(--signal-amber)] animate-pulse'
-                      }`}>
-                        {exp.status}
-                      </span>
+                      <StatusBadge status={exp.status.toUpperCase() as any} />
                       <span className="text-[9px] font-mono uppercase tracking-widest bg-white/10 text-white px-2 py-0.5 rounded-full">
                         {exp.category}
                       </span>

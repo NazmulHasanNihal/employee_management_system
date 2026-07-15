@@ -66,7 +66,20 @@ func main() {
 		return nil
 	})
 
-	app.Get("/api/reports/attendance-pdf", func(c *fiber.Ctx) error {
+	type AttendanceRecord struct {
+		Date       string `json:"date"`
+		Employee   string `json:"employee"`
+		Status     string `json:"status"`
+		ClockIn    string `json:"clockIn"`
+		ClockOut   string `json:"clockOut"`
+	}
+
+	app.Post("/api/reports/attendance-pdf", func(c *fiber.Ctx) error {
+		var records []AttendanceRecord
+		if err := c.BodyParser(&records); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid JSON"})
+		}
+
 		pdf := fpdf.New("P", "mm", "A4", "")
 		pdf.AddPage()
 		
@@ -75,26 +88,20 @@ func main() {
 		pdf.Ln(10)
 		
 		pdf.SetFont("Arial", "B", 12)
-		pdf.CellFormat(40, 10, "Date", "1", 0, "C", false, 0, "")
-		pdf.CellFormat(60, 10, "Employee Name", "1", 0, "C", false, 0, "")
-		pdf.CellFormat(40, 10, "Status", "1", 0, "C", false, 0, "")
-		pdf.CellFormat(50, 10, "Clock In", "1", 1, "C", false, 0, "")
+		pdf.CellFormat(30, 10, "Date", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(55, 10, "Employee Name", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(25, 10, "Status", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(40, 10, "Clock In", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(40, 10, "Clock Out", "1", 1, "C", false, 0, "")
 		
 		pdf.SetFont("Arial", "", 11)
 		
-		// Mock data for now, ideally fetch from DB
-		mockData := [][]string{
-			{"2026-07-14", "Sarah Connor", "Present", "08:55 AM"},
-			{"2026-07-14", "John Doe", "Late", "09:30 AM"},
-			{"2026-07-13", "Alice Smith", "Present", "09:00 AM"},
-			{"2026-07-13", "Bob Wilson", "Present", "08:45 AM"},
-		}
-
-		for _, row := range mockData {
-			pdf.CellFormat(40, 10, row[0], "1", 0, "C", false, 0, "")
-			pdf.CellFormat(60, 10, row[1], "1", 0, "L", false, 0, "")
-			pdf.CellFormat(40, 10, row[2], "1", 0, "C", false, 0, "")
-			pdf.CellFormat(50, 10, row[3], "1", 1, "C", false, 0, "")
+		for _, row := range records {
+			pdf.CellFormat(30, 10, row.Date, "1", 0, "C", false, 0, "")
+			pdf.CellFormat(55, 10, row.Employee, "1", 0, "L", false, 0, "")
+			pdf.CellFormat(25, 10, row.Status, "1", 0, "C", false, 0, "")
+			pdf.CellFormat(40, 10, row.ClockIn, "1", 0, "C", false, 0, "")
+			pdf.CellFormat(40, 10, row.ClockOut, "1", 1, "C", false, 0, "")
 		}
 
 		c.Set("Content-Type", "application/pdf")

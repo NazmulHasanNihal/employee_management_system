@@ -38,7 +38,7 @@ export function DelegationSettings({ user, addToast }: { user: any, addToast: (m
         <Shield size={16} /> Delegation Settings
       </h3>
       
-      {user.proxyId ? (
+      {user?.proxyId ? (
         <div className="space-y-4">
           <div className="p-3 border border-[var(--verify-green)] bg-[var(--verify-green)]/10 text-xs font-mono flex justify-between items-center">
             <div>
@@ -56,7 +56,7 @@ export function DelegationSettings({ user, addToast }: { user: any, addToast: (m
         </div>
       ) : (
         <div className="space-y-4">
-          <div>
+          <div className="space-y-1">
             <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">Proxy User ID</label>
             <input 
               type="text" 
@@ -66,7 +66,7 @@ export function DelegationSettings({ user, addToast }: { user: any, addToast: (m
               placeholder="e.g. clabc123..."
             />
           </div>
-          <div>
+          <div className="space-y-1">
             <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">Valid Until (Optional)</label>
             <input 
               type="date" 

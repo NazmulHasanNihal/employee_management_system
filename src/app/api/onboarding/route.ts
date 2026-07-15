@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-
-const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
@@ -19,6 +17,7 @@ export async function POST(req: Request) {
       where: { id: authUser.id },
       data: {
         isOnboarded: true,
+        ...(body.avatarUrl && { avatarUrl: body.avatarUrl }),
       },
     });
 

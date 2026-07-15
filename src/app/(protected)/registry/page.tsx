@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X } from 'lucide-react';
+import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X, Trash2 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 import { provisionEmployeeAccount } from '@/app/actions/admin';
+import { canModifyUser } from '@/lib/hierarchy';
 
 const PERMISSIONS_LIST = [
   { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Hardware inventory & software licenses' },
@@ -36,6 +37,26 @@ export default function RegistryPage() {
       utils.registry.searchEmployees.invalidate();
     }
   });
+
+  const deleteMutation = trpc.registry.deleteEmployee.useMutation({
+    onSuccess: () => {
+      utils.registry.searchEmployees.invalidate();
+      setDeleteStatus({ loading: false, error: null });
+    }
+  });
+
+  const [deleteStatus, setDeleteStatus] = useState<{loading: boolean, error: string | null}>({ loading: false, error: null });
+
+  const handleDelete = async (targetId: string) => {
+    if (!confirm('Are you sure you want to completely terminate this personnel record?')) return;
+    setDeleteStatus({ loading: true, error: null });
+    try {
+      await deleteMutation.mutateAsync({ id: targetId });
+    } catch(err: any) {
+      setDeleteStatus({ loading: false, error: err.message });
+      alert(`Deletion Failed: ${err.message}`);
+    }
+  };
 
   if (isLoading || !user) {
     return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Querying Master Registry...</div>;
@@ -110,7 +131,7 @@ export default function RegistryPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -196,13 +217,22 @@ export default function RegistryPage() {
               </div>
 
               {isAdmin && (
-                <div className="pt-4 border-t border-white/10 relative z-10">
+                <div className="pt-4 border-t border-white/10 relative z-10 flex gap-2">
                   <button 
                     onClick={() => setEditingPermsFor(emp)}
-                    className="w-full bg-black/50 text-white/70 py-2.5 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-teal-500/20 hover:text-teal-400 border border-white/10 hover:border-teal-500/30 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 bg-black/50 text-white/70 py-2.5 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-teal-500/20 hover:text-teal-400 border border-white/10 hover:border-teal-500/30 transition-all flex items-center justify-center gap-2"
                   >
-                    <Settings size={14} /> Configure Access
+                    <Settings size={14} /> Access
                   </button>
+                  {canModifyUser(list.find((e: any) => e.id === user?.id) || user, emp) && (
+                    <button 
+                      onClick={() => handleDelete(emp.id)}
+                      disabled={deleteStatus.loading}
+                      className="flex-1 bg-black/50 text-[var(--alert-red)] py-2.5 rounded-xl font-bold font-mono text-[10px] uppercase tracking-widest hover:bg-[var(--alert-red)]/20 border border-white/10 hover:border-[var(--alert-red)]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <Trash2 size={14} /> Terminate
+                    </button>
+                  )}
                 </div>
               )}
             </div>

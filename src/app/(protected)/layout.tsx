@@ -6,17 +6,6 @@ import OnboardingFlow from "@/components/OnboardingFlow";
 
 const prisma = new PrismaClient();
 
-const getLayoutUser = (dbUser: any) => ({
-  id: dbUser.id,
-  name: dbUser.name,
-  email: dbUser.email,
-  role: dbUser.role,
-  department: dbUser.department,
-  designation: dbUser.designation,
-  avatarUrl: dbUser.avatarUrl,
-  isOnboarded: dbUser.isOnboarded
-});
-
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user: authUser }, error } = await supabase.auth.getUser();
@@ -44,14 +33,23 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     });
   }
 
-  const layoutUser = getLayoutUser(dbUser);
+  const layoutUser = {
+    id: dbUser.id,
+    name: dbUser.name,
+    email: dbUser.email,
+    role: dbUser.role,
+    department: dbUser.department || 'Unassigned',
+    designation: dbUser.designation || 'Staff',
+    avatarUrl: dbUser.avatarUrl,
+    isOnboarded: dbUser.isOnboarded
+  };
 
   if (!dbUser.isOnboarded) {
     return <OnboardingFlow user={layoutUser} />;
   }
 
   return (
-    <AppLayout user={layoutUser as any}>
+    <AppLayout user={layoutUser}>
       {children}
     </AppLayout>
   );

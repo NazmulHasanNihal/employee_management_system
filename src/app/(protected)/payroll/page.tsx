@@ -6,6 +6,38 @@ import { authClient } from '@/lib/auth-client';
 import { trpc } from '@/lib/trpc/client';
 import { RunPayrollForm } from '@/components/payroll/RunPayrollForm';
 
+function AdminPayrollStats() {
+  const { data: adminStats } = trpc.payroll.getAdminStats.useQuery(undefined);
+  const stats = adminStats || { totalYTD: 0, employeeCount: 0, lastRunMonth: 'Never', lastRunStatus: 'N/A' };
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="md:col-span-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--verify-green)]/5 to-transparent pointer-events-none" />
+        <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+          <DollarSign size={14} className="text-[var(--verify-green)]" /> Total Payroll YTD
+        </h4>
+        <div className="flex items-end gap-3 mt-4">
+          <span className="text-4xl font-mono font-black text-white">${stats.totalYTD.toLocaleString()}</span>
+        </div>
+        <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mt-2">Across {stats.employeeCount} Employees</p>
+      </div>
+      <div className="md:col-span-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-[var(--ledger-blue)]/5 to-transparent pointer-events-none" />
+        <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
+          <History size={14} className="text-[var(--ledger-blue)]" /> Last Run
+        </h4>
+        <div className="flex items-end gap-3 mt-4">
+          <span className="text-4xl font-mono font-black text-white">{stats.lastRunMonth}</span>
+        </div>
+        <p className="text-[10px] font-mono text-[var(--verify-green)] uppercase tracking-widest mt-2 flex items-center gap-1">
+          {stats.lastRunStatus === 'PROCESSED' ? <><CheckCircle2 size={12}/> Processed</> : stats.lastRunStatus}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function PayrollPage() {
   const { data: session } = authClient.useSession();
   const user = session?.user as any;
@@ -50,7 +82,7 @@ export default function PayrollPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -85,28 +117,7 @@ export default function PayrollPage() {
       </div>
 
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--verify-green)]/5 to-transparent pointer-events-none" />
-            <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-              <DollarSign size={14} className="text-[var(--verify-green)]" /> Total Payroll YTD
-            </h4>
-            <div className="flex items-end gap-3 mt-4">
-              <span className="text-4xl font-mono font-black text-white">$425,000</span>
-            </div>
-            <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mt-2">Across 125 Employees</p>
-          </div>
-          <div className="md:col-span-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--ledger-blue)]/5 to-transparent pointer-events-none" />
-            <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-2 flex items-center gap-2">
-              <History size={14} className="text-[var(--ledger-blue)]" /> Last Run
-            </h4>
-            <div className="flex items-end gap-3 mt-4">
-              <span className="text-4xl font-mono font-black text-white">July 2026</span>
-            </div>
-            <p className="text-[10px] font-mono text-[var(--verify-green)] uppercase tracking-widest mt-2 flex items-center gap-1"><CheckCircle2 size={12}/> Processed Successfully</p>
-          </div>
-        </div>
+        <AdminPayrollStats />
       )}
 
       {showGenerate && isAdmin && (

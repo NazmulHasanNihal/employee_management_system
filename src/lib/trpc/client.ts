@@ -10,10 +10,13 @@ const createDummyHook = (path: string[]) => {
       const [isLoading, setIsLoading] = useState(true);
       const [error, setError] = useState<any>(null);
 
+      const argsString = JSON.stringify(args);
+
       useEffect(() => {
         let isMounted = true;
         setIsLoading(true);
-        executeServerQuery(fullPath, args[0])
+        const parsedArgs = JSON.parse(argsString);
+        executeServerQuery(fullPath, parsedArgs[0])
           .then(res => {
             if (isMounted) {
               setData(res);
@@ -27,7 +30,7 @@ const createDummyHook = (path: string[]) => {
             }
           });
         return () => { isMounted = false; };
-      }, [fullPath, JSON.stringify(args)]);
+      }, [fullPath, argsString]);
 
       return { data, isLoading, error };
     },

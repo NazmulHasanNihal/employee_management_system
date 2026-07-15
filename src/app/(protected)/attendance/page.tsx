@@ -14,37 +14,91 @@ export default function AttendancePage() {
   const isAdmin = user?.role === 'Admin' || user?.role === 'HR Manager';
 
   const { data: logs, isLoading: loadingLogs } = trpc.attendance.getLogs.useQuery({});
+  const { data: adminStats } = trpc.attendance.getAdminStats.useQuery(undefined, { enabled: isAdmin });
+  const utils = trpc.useUtils();
+
+  const clockInMutation = trpc.attendance.clockIn.useMutation({
+    onSuccess: () => {
+      utils.attendance.getLogs.invalidate();
+      utils.attendance.getAdminStats.invalidate();
+      setClockedIn(true);
+      setScanComplete(true);
+      setTimeout(() => setScanComplete(false), 3000);
+    }
+  });
+
+  const clockOutMutation = trpc.attendance.clockOut.useMutation({
+    onSuccess: () => {
+      utils.attendance.getLogs.invalidate();
+      utils.attendance.getAdminStats.invalidate();
+      setClockedIn(false);
+    }
+  });
   
-  // Terminal Simulation State
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
   const [clockedIn, setClockedIn] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [location, setLocation] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
+  // Get location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setLocation(`${pos.coords.latitude.toFixed(4)}° N, ${pos.coords.longitude.toFixed(4)}° W`),
+        () => setLocation('Location unavailable')
+      );
+    }
+  }, []);
+
+  // Check if already clocked in today
+  useEffect(() => {
+    if (logs && logs.length > 0) {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const todayLog = logs.find((l: any) => {
+        const logDate = new Date(l.date); logDate.setHours(0, 0, 0, 0);
+        return logDate.getTime() === today.getTime() && !l.clockOut;
+      });
+      if (todayLog) setClockedIn(true);
+    }
+  }, [logs]);
+
   const handleClockIn = () => {
     if (clockedIn) {
-      setClockedIn(false);
+      setIsScanning(true);
+      setTimeout(() => {
+        clockOutMutation.mutate({});
+        setIsScanning(false);
+      }, 1500);
       return;
     }
     setIsScanning(true);
     setTimeout(() => {
+      clockInMutation.mutate({ location: location || undefined });
       setIsScanning(false);
-      setScanComplete(true);
-      setClockedIn(true);
-      setTimeout(() => setScanComplete(false), 3000);
     }, 2000);
   };
 
   const handleDownloadPDF = async () => {
     try {
-      // Direct call to Go backend (assuming it's on localhost:8080)
-      const res = await fetch('http://localhost:8080/api/reports/attendance-pdf', {
-        method: 'GET',
+      if (!logs) return;
+      const records = logs.map((log: any) => ({
+        date: new Date(log.date).toLocaleDateString(),
+        employee: log.userName || user.name,
+        status: log.status,
+        clockIn: log.clockIn ? new Date(log.clockIn).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--',
+        clockOut: log.clockOut ? new Date(log.clockOut).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--'
+      }));
+
+      const res = await fetch('http://localhost:8080/api/reports/attendance-pdf', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(records)
       });
       if (res.ok) {
         const blob = await res.blob();
@@ -56,8 +110,6 @@ export default function AttendancePage() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-      } else {
-        console.error('Failed to generate PDF report');
       }
     } catch (err) {
       console.error(err);
@@ -66,8 +118,11 @@ export default function AttendancePage() {
 
   if (loadingLogs) return <div className="p-8 text-center text-[var(--text-muted)] animate-pulse font-mono uppercase tracking-widest text-xs">Initializing Terminal...</div>;
 
+  const stats = adminStats || { onShift: 0, lateArrivals: 0, absent: 0, totalEmployees: 0 };
+  const onShiftPct = stats.totalEmployees > 0 ? Math.round((stats.onShift / stats.totalEmployees) * 100) : 0;
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -110,7 +165,7 @@ export default function AttendancePage() {
             <div className="text-center relative z-10 mb-8">
               <p className="font-mono text-sm text-[var(--text-muted)] uppercase tracking-widest mb-2">Local Server Time</p>
               <h3 className="text-4xl font-mono font-bold text-white tracking-widest">{currentTime.toLocaleTimeString([], {hour12: false})}</h3>
-              <p className="font-mono text-[10px] text-[var(--ledger-blue)] uppercase mt-2">SYS_SYNC_OK // UTC-OFFSET:-0800</p>
+              <p className="font-mono text-[10px] text-[var(--ledger-blue)] uppercase mt-2">SYS_SYNC_OK</p>
             </div>
 
             {/* Scan Area */}
@@ -145,16 +200,17 @@ export default function AttendancePage() {
               </button>
             </div>
 
-            {/* Geo-Location Mock */}
+            {/* Geo-Location */}
             <div className="bg-black/50 p-4 rounded-xl border border-white/5 relative z-10">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1">
                   <MapPin size={12} className="text-[var(--ledger-blue)]" /> Location Data
                 </span>
-                <span className="text-[9px] bg-[var(--verify-green)]/20 text-[var(--verify-green)] px-1.5 py-0.5 rounded uppercase font-bold">Secure</span>
+                <span className="text-[9px] bg-[var(--verify-green)]/20 text-[var(--verify-green)] px-1.5 py-0.5 rounded uppercase font-bold">
+                  {location ? 'Detected' : 'Pending'}
+                </span>
               </div>
-              <p className="text-xs font-mono text-white">37.7749° N, 122.4194° W</p>
-              <p className="text-[9px] font-mono text-[var(--text-muted)] mt-1">IP: 192.168.1.104 (San Francisco HQ)</p>
+              <p className="text-xs font-mono text-white">{location || 'Acquiring location...'}</p>
             </div>
           </div>
 
@@ -172,24 +228,24 @@ export default function AttendancePage() {
                     <div className="w-2 h-2 rounded-full bg-[var(--verify-green)] shadow-[0_0_8px_var(--verify-green)] animate-pulse" />
                     Currently On-Shift
                   </div>
-                  <span className="text-xl font-bold font-mono text-white">42</span>
+                  <span className="text-xl font-bold font-mono text-white">{stats.onShift}</span>
                 </div>
                 
                 <div className="w-full bg-black/50 border border-white/5 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-[var(--verify-green)] h-full transition-all w-[70%]"></div>
+                  <div className="bg-[var(--verify-green)] h-full transition-all" style={{ width: `${onShiftPct}%` }}></div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
                   <div>
                     <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Late Arrivals</p>
                     <p className="text-lg font-mono font-bold text-[var(--signal-amber)] flex items-center gap-2">
-                      3 <AlertTriangle size={12} />
+                      {stats.lateArrivals} <AlertTriangle size={12} />
                     </p>
                   </div>
                   <div>
                     <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Absent</p>
                     <p className="text-lg font-mono font-bold text-red-500 flex items-center gap-2">
-                      1 <XCircle size={12} />
+                      {stats.absent} <XCircle size={12} />
                     </p>
                   </div>
                 </div>
@@ -198,7 +254,7 @@ export default function AttendancePage() {
           )}
         </div>
 
-        {/* Right Column: Sleek Data Grid */}
+        {/* Right Column: Data Grid */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 relative shadow-2xl flex flex-col h-[650px]">
             <h4 className="font-mono text-xs font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -206,7 +262,7 @@ export default function AttendancePage() {
             </h4>
             
             <div className="flex-1 overflow-x-auto custom-scrollbar border border-white/10 rounded-2xl bg-black/40">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-max text-left border-collapse">
                 <thead className="bg-white/5 sticky top-0 z-10 backdrop-blur-md">
                   <tr>
                     <th className="p-4 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest font-normal border-b border-white/10">Date</th>
@@ -217,7 +273,7 @@ export default function AttendancePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {logs?.map((log) => (
+                  {logs?.map((log: any) => (
                     <tr key={log.id} className="hover:bg-white/5 transition-colors">
                       <td className="p-4 text-xs font-mono text-white whitespace-nowrap">
                         {new Date(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -247,7 +303,7 @@ export default function AttendancePage() {
                   {(!logs || logs.length === 0) && (
                     <tr>
                       <td colSpan={isAdmin ? 5 : 4} className="p-8 text-center text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
-                        No logs found in archive.
+                        No logs found in archive. Clock in to start recording.
                       </td>
                     </tr>
                   )}

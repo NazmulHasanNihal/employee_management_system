@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { trpc } from '@/lib/trpc/client';
 import { authClient } from '@/lib/auth-client';
 import { 
@@ -52,7 +53,7 @@ export default function ShiftsPage() {
   });
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
@@ -181,7 +182,7 @@ export default function ShiftsPage() {
                       <div key={assignment.id} className="bg-black/40 border border-white/5 rounded-2xl p-4 flex items-center justify-between group/card hover:border-[var(--ledger-blue)]/50 transition-colors">
                         <div className="flex items-center gap-3 overflow-hidden">
                           {assignment.userAvatar ? (
-                            <img src={assignment.userAvatar} className="w-10 h-10 rounded-full border border-white/10 object-cover" alt="avatar" />
+                            <Image src={assignment.userAvatar} className="w-10 h-10 rounded-full border border-white/10 object-cover" alt="avatar" width={40} height={40} />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-[var(--ledger-blue)]/20 border border-[var(--ledger-blue)]/30 text-[var(--ledger-blue)] flex items-center justify-center font-bold text-sm">
                               {assignment.userName.charAt(0)}

@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
 import { withSentryConfig } from "@sentry/nextjs";
 
 export default withSentryConfig(
-  withSerwist(nextConfig),
+  nextConfig,
   {
     org: "mock-org",
     project: "mock-project",

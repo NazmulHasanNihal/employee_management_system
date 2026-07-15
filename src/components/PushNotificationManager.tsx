@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { trpc } from '@/lib/trpc/client';
 
 export function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
@@ -26,11 +27,13 @@ export function PushNotificationManager() {
     }
   }
 
+  const saveSubMutation = trpc.notifications.savePushSub.useMutation();
+  const removeSubMutation = trpc.notifications.removePushSub.useMutation();
+
   async function subscribeToPush() {
     try {
       const registration = await navigator.serviceWorker.ready;
       
-      // Use the public key from env
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
@@ -38,16 +41,7 @@ export function PushNotificationManager() {
 
       setSubscription(sub);
 
-      // Save to Supabase User Profile
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await fetch('/api/notifications/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: sub }),
-        });
-      }
+      saveSubMutation.mutate({ subscription: sub });
       setMessage('Successfully subscribed!');
     } catch (err) {
       console.error('Failed to subscribe to push notifications:', err);
@@ -60,12 +54,7 @@ export function PushNotificationManager() {
       await subscription?.unsubscribe();
       setSubscription(null);
       
-      // Remove from backend
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await fetch('/api/notifications/unsubscribe', { method: 'POST' });
-      }
+      removeSubMutation.mutate({});
       setMessage('Successfully unsubscribed.');
     } catch (err) {
       console.error('Failed to unsubscribe:', err);

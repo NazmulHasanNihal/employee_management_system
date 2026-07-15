@@ -63,7 +63,7 @@ export function SkillsWallet({ user, addToast }: { user: any, addToast: (msg: st
         </div>
 
         {isLoading ? (
-          <div className="text-[10px] font-mono ledger-muted animate-pulse">Loading skills...</div>
+          <div className="text-[10px] font-mono ledger-muted">Loading skills...</div>
         ) : (
           <ul className="space-y-2">
             {skills?.length === 0 ? (

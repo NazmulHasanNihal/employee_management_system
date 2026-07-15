@@ -52,7 +52,7 @@ export default function AnnouncementsPage() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
       
       {/* Role Simulator Toggle */}
       <div className="flex items-center justify-end gap-2 p-2 bg-black/40 rounded-xl border border-white/5 w-max ml-auto">

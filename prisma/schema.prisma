@@ -32,6 +32,8 @@ model User {
   tickets       Ticket[]
   messagesSent  Message[] @relation("MessageSender")
   messagesRecv  Message[] @relation("MessageReceiver")
+  attendances   Attendance[]
+  notifications Notification[]
 }
 
 model Department {
@@ -144,4 +146,27 @@ model Event {
   details   Json?
   timestamp DateTime @default(now())
   hash      String?
+}
+
+model Attendance {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime  @default(now())
+  status    String    @default("Present") // Present, Late, Absent
+  clockIn   DateTime?
+  clockOut  DateTime?
+  location  String?
+  createdAt DateTime  @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  type      String   @default("info") // info, leave, payroll, system
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
 }

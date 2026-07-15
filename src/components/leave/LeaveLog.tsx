@@ -4,8 +4,9 @@ import React from 'react';
 import { Calendar, CalendarPlus, Check, Clock, X } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import usePartySocket from '@/lib/usePartySocket';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { StatusBadge } from '../StatusBadge';
+import { EmptyState } from '../EmptyState';
 
 interface LeaveLogProps {
   requests: any[];
@@ -105,13 +106,7 @@ export function LeaveLog({ requests, isAdmin, currentUser }: LeaveLogProps) {
                 <h4 className="font-bold text-white text-sm">
                   {req.type}
                 </h4>
-                <Badge variant="outline" className={`text-[9px] font-mono uppercase px-2 py-0.5 rounded-full ${
-                  req.status === 'Approved' ? 'text-[var(--verify-green)] border-[var(--verify-green)]/30 bg-[var(--verify-green)]/10' :
-                  req.status === 'Rejected' ? 'text-[var(--alert-red)] border-[var(--alert-red)]/30 bg-[var(--alert-red)]/10' :
-                  'text-[var(--signal-amber)] border-[var(--signal-amber)]/30 bg-[var(--signal-amber)]/10'
-                }`}>
-                  {req.status}
-                </Badge>
+                <StatusBadge status={req.status.toUpperCase() as any} />
               </div>
               {isAdmin && <p className="text-xs font-mono text-[var(--ledger-blue)] mb-1">{req.user?.name}</p>}
               <p className="text-[10px] font-mono text-[var(--text-muted)]">
@@ -144,9 +139,10 @@ export function LeaveLog({ requests, isAdmin, currentUser }: LeaveLogProps) {
           </div>
         ))}
         {(!requests || requests.length === 0) && (
-          <div className="p-12 text-center text-sm font-mono text-[var(--text-muted)] border border-dashed border-white/10 rounded-2xl">
-            No leave requests found.
-          </div>
+          <EmptyState 
+            title="No Leave Requests Found" 
+            description="You don't have any leave or PTO requests on file." 
+          />
         )}
       </div>
     </div>

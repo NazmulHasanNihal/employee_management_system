@@ -8,7 +8,7 @@ export function CombatStats({ user }: { user: any }) {
       <h4 className="font-mono text-[10px] font-bold text-[var(--ledger-blue)] uppercase tracking-widest mb-4 flex items-center gap-2">
         <Shield size={14}/> Combat Stats (Skills)
       </h4>
-      <div className="h-48 w-full -ml-4">
+      <div className="min-h-[180px] w-full md:min-h-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
             { subject: 'Leadership', A: Math.min(100, 40 + ((user.rpgLevel || 1) * 5)), fullMark: 100 },
@@ -19,7 +19,7 @@ export function CombatStats({ user }: { user: any }) {
           ]}>
             <PolarGrid stroke="var(--ledger-border)" />
             <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }} />
-            <Radar name="Stats" dataKey="A" stroke="var(--ledger-blue)" fill="var(--ledger-blue)" fillOpacity={0.3} />
+            <Radar name="Stats" dataKey="A" stroke="var(--ledger-blue)" fill="var(--ledger-blue)" fillOpacity={0.25} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
