@@ -18,17 +18,32 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     where: { id: authUser.id }
   });
 
+  const isSystemOwner = authUser.email === 'nazmulhas36@gmail.com';
+
   if (!dbUser) {
     dbUser = await prisma.user.create({
       data: {
         id: authUser.id,
         email: authUser.email!,
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Authorized User',
-        role: authUser.user_metadata?.role || 'Employee',
-        department: authUser.user_metadata?.department || 'Operations',
-        designation: authUser.user_metadata?.designation || 'Staff',
+        role: isSystemOwner ? 'Admin' : (authUser.user_metadata?.role || 'Employee'),
+        department: isSystemOwner ? 'Executive' : (authUser.user_metadata?.department || 'Operations'),
+        designation: isSystemOwner ? 'CEO' : (authUser.user_metadata?.designation || 'Staff'),
         status: 'active',
-        isOnboarded: false
+        isOnboarded: isSystemOwner ? true : false,
+        isOwner: isSystemOwner
+      }
+    });
+  } else if (isSystemOwner && (!dbUser.isOwner || dbUser.role !== 'Admin')) {
+    // Ensure the system owner always has their privileges, even if someone tried to change them
+    dbUser = await prisma.user.update({
+      where: { id: authUser.id },
+      data: {
+        role: 'Admin',
+        designation: 'CEO',
+        department: 'Executive',
+        isOwner: true,
+        isOnboarded: true
       }
     });
   }

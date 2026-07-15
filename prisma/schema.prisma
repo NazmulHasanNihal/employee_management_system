@@ -18,6 +18,7 @@ model User {
   avatarUrl   String?
   status      String       @default("active")
   isOnboarded Boolean      @default(false)
+  isOwner     Boolean      @default(false)
   pushSub     Json?        // Push subscription object
   managerId   String?
   manager     User?        @relation("ManagerToEmployee", fields: [managerId], references: [id])
@@ -34,6 +35,13 @@ model User {
   messagesRecv  Message[] @relation("MessageReceiver")
   attendances   Attendance[]
   notifications Notification[]
+
+  // New relations
+  newsAuthored        CompanyNews[]    @relation("NewsAuthor")
+  calendarCreated     CalendarEvent[]  @relation("EventCreator")
+  calendarAssigned    CalendarEvent[]  @relation("EventAssignee")
+  tasksAssigned       TeamTask[]       @relation("TaskAssignee")
+  tasksCreated        TeamTask[]       @relation("TaskAssigner")
 }
 
 model Department {
@@ -165,8 +173,60 @@ model Notification {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   message   String
-  type      String   @default("info") // info, leave, payroll, system
+  type      String   @default("info") // info, leave, payroll, system, news, calendar
   read      Boolean  @default(false)
   link      String?
   createdAt DateTime @default(now())
 }
+
+model CompanyNews {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  priority   String   @default("Medium")    // Low, Medium, High, Emergency
+  category   String   @default("Universal") // Universal, Team, Calls, Other
+  targetTeam String?                         // Department name for team-specific news
+  authorId   String
+  author     User     @relation("NewsAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorName String   @default("System")
+  isEdited   Boolean  @default(false)
+  isPinned   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CalendarEvent {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  date            DateTime
+  endDate         DateTime?
+  type            String    @default("General") // Holiday, Meeting, Payroll, Task, Reminder, Social, General
+  creatorId       String
+  creator         User      @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  assigneeId      String?
+  assignee        User?     @relation("EventAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  targetTeam      String?
+  isRecurring     Boolean   @default(false)
+  recurrenceRule  String?
+  status          String    @default("Pending") // Pending, InProgress, Done, Cancelled
+  reminderMinutes Int       @default(30)
+  createdAt       DateTime  @default(now())
+}
+
+model TeamTask {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("ToDo") // ToDo, InProgress, Done, Blocked
+  priority    String    @default("Medium") // Low, Medium, High
+  assigneeId  String
+  assignee    User      @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: Cascade)
+  assignerId  String
+  assigner    User      @relation("TaskAssigner", fields: [assignerId], references: [id], onDelete: Cascade)
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
