@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react';
 import { Camera, Loader2, Check } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { useUser } from '@/components/UserProvider';
-import { updateAvatarUrl } from '@/app/actions/profile';
+import { updateAvatarUrl, recordPhotoHistory } from '@/app/actions/profile';
 
 export function AvatarUpload({
   currentUrl,
@@ -36,6 +36,8 @@ export function AvatarUpload({
       const data = await res.json();
       if (data.success && data.url) {
         await updateAvatarUrl(data.url);
+        // Keep a timeline of past profile pictures.
+        try { await recordPhotoHistory(data.url); } catch { /* non-fatal */ }
         setPreview(data.url);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);

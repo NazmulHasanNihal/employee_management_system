@@ -36,9 +36,19 @@ type ProfileUser = {
   bloodGroup?: string | null;
   religion?: string | null;
   preferredLanguage?: string | null;
+  branchId?: string | null;
+  joinDate?: Date | string | null;
 };
 
 const EMPLOYMENT_TYPES = ['Full-Time', 'Part-Time', 'Contract', 'Intern'];
+const GENDERS = ['Male', 'Female', 'Non-Binary', 'Prefer Not to Say'];
+const STATUSES = ['active', 'On Leave', 'Suspended', 'Terminated'];
+// Curated country list. The live list from the DB (Country table) is merged in
+// by the parent if available.
+const DEFAULT_COUNTRIES = [
+  'Bangladesh', 'India', 'Pakistan', 'United States', 'United Kingdom',
+  'United Arab Emirates', 'Saudi Arabia', 'Canada', 'Australia', 'Singapore',
+];
 
 function FieldRow({
   label,
@@ -85,6 +95,81 @@ function FieldRow({
               placeholder={placeholder}
               autoFocus
             />
+            <Button size="icon-sm" variant="ghost" onClick={save} disabled={saving} aria-label="Save">
+              <Check size={14} />
+            </Button>
+            <Button size="icon-sm" variant="ghost" onClick={() => { setDraft(value ?? ''); setEditing(false); }} aria-label="Cancel">
+              <X size={14} />
+            </Button>
+          </>
+        ) : (
+          <>
+            <span className="truncate text-sm font-medium text-[var(--text-main)]">
+              {value ? value : <span className="text-[var(--text-muted)]">—</span>}
+            </span>
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]"
+              aria-label={`Edit ${label}`}
+            >
+              <Pencil size={13} />
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SelectRow({
+  label,
+  field,
+  value,
+  options,
+  placeholder = 'Select',
+}: {
+  label: string;
+  field: string;
+  value: string | null | undefined;
+  options: string[];
+  placeholder?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? '');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setDraft(value ?? '');
+  }, [value]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await updateProfileField(field, draft);
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between gap-3 py-2">
+      <Label className="text-[var(--text-muted)]">{label}</Label>
+      <div className="flex min-w-0 items-center gap-2">
+        {editing ? (
+          <>
+            <select
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
+              autoFocus
+            >
+              <option value="">{placeholder}</option>
+              {options.map((o) => (
+                <option key={o} value={o}>{o}</option>
+              ))}
+            </select>
             <Button size="icon-sm" variant="ghost" onClick={save} disabled={saving} aria-label="Save">
               <Check size={14} />
             </Button>
@@ -184,9 +269,17 @@ function TextAreaRow({
 }
 
 // ── Contact info ──
-export function ContactSection({ user }: { user: ProfileUser }) {
+export function ContactSection({
+  user,
+  countries,
+}: {
+  user: ProfileUser;
+  countries?: string[];
+}) {
+  const countryOptions = Array.from(new Set([...(countries ?? []), ...DEFAULT_COUNTRIES]));
   return (
     <div className="divide-y divide-[var(--border-hairline)]">
+      <FieldRow label="Full Name" field="name" value={user.name} placeholder="Your full name" />
       <FieldRow label="Phone" field="phone" value={user.phone} placeholder="+1…" />
       <div className="flex items-center justify-between gap-3 py-2">
         <Label className="text-[var(--text-muted)]">Email</Label>
@@ -196,8 +289,8 @@ export function ContactSection({ user }: { user: ProfileUser }) {
       </div>
       <FieldRow label="Address" field="address" value={user.address} placeholder="Street, number" />
       <FieldRow label="City" field="city" value={user.city} />
-      <FieldRow label="Country" field="country" value={user.country} />
-      <FieldRow label="Gender" field="gender" value={user.gender} />
+      <SelectRow label="Country" field="country" value={user.country} options={countryOptions} />
+      <SelectRow label="Gender" field="gender" value={user.gender} options={GENDERS} />
       <FieldRow label="Date of Birth" field="dateOfBirth" type="date" value={user.dateOfBirth ? String(user.dateOfBirth).slice(0, 10) : ''} />
     </div>
   );
@@ -324,16 +417,48 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
   );
 }
 
-// ── Employment details (admin editable) ──
-export function EmploymentSection({ user, managerName }: { user: ProfileUser; managerName?: string | null }) {
-  const { isAdmin } = useUser();
+// ── Employment details (editable by the user; admins get extra fields) ──
+export function EmploymentSection({
+  user,
+  managerName,
+  branchName,
+  branches = [],
+  managers = [],
+}: {
+  user: ProfileUser;
+  managerName?: string | null;
+  branchName?: string | null;
+  branches?: { id: string; name: string }[];
+  managers?: { id: string; name: string }[];
+}) {
+  const { isAdmin, isHR } = useUser();
+  // HR managers may edit employment details (incl. Designation/Position) but
+  // not the escalation-sensitive Status / Manager fields, which stay admin-only.
+  const canEditEmployment = isAdmin || isHR;
 
-  if (!isAdmin) {
+  // Everyone (incl. HR) can edit these safe employment fields.
+  const base = (
+    <>
+      <SelectRow label="Employment Type" field="employmentType" value={user.employmentType ?? 'Full-Time'} options={EMPLOYMENT_TYPES} />
+      <FieldRow label="Department" field="department" value={user.department} />
+      <FieldRow label="Designation" field="designation" value={user.designation} />
+      <FieldRow label="Base Salary" field="baseSalary" type="number" value={user.baseSalary != null ? String(user.baseSalary) : ''} placeholder="0" />
+      <FieldRow label="Join Date" field="joinDate" type="date" value={user.joinDate ? String(user.joinDate).slice(0, 10) : ''} />
+    </>
+  );
+
+  // Branch dropdown stores the branch id; Manager dropdown (admin) stores the id too.
+
+  if (!canEditEmployment) {
     return (
       <div className="divide-y divide-[var(--border-hairline)]">
-        <Row label="Employment Type" value={user.employmentType ?? 'Full-Time'} />
-        <Row label="Department" value={user.department ?? 'Unassigned'} />
-        <Row label="Designation" value={user.designation ?? 'Employee'} />
+        {base}
+        <BranchSelectRow
+          field="branchId"
+          value={user.branchId ?? ''}
+          options={branches}
+          currentName={branchName}
+        />
         <Row label="Manager" value={managerName ?? '—'} />
       </div>
     );
@@ -341,10 +466,16 @@ export function EmploymentSection({ user, managerName }: { user: ProfileUser; ma
 
   return (
     <div className="divide-y divide-[var(--border-hairline)]">
-      <AdminSelect label="Employment Type" field="employmentType" value={user.employmentType ?? 'Full-Time'} options={EMPLOYMENT_TYPES} />
-      <AdminField label="Department" field="department" value={user.department} />
-      <AdminField label="Designation" field="designation" value={user.designation} />
-      <Row label="Manager" value={managerName ?? '—'} />
+      {base}
+      <BranchSelectRow
+        field="branchId"
+        value={user.branchId ?? ''}
+        options={branches}
+        currentName={branchName}
+      />
+      {isAdmin && <SelectRow label="Status" field="status" value={user.status ?? 'active'} options={STATUSES} />}
+      {isAdmin && <ManagerSelectRow field="managerId" value={user.managerId ?? ''} options={managers} currentName={managerName} />}
+      {!isAdmin && <Row label="Manager" value={managerName ?? '—'} />}
     </div>
   );
 }
@@ -358,34 +489,59 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AdminField({ label, field, value }: { label: string; field: string; value?: string | null }) {
+// Manager is stored as an id but displayed as a name; the select carries the id
+// in its option values while showing names.
+// Branch is stored by id but displayed by name; option values carry the id.
+function BranchSelectRow({
+  field,
+  value,
+  options,
+  currentName,
+}: {
+  field: string;
+  value: string;
+  options: { id: string; name: string }[];
+  currentName?: string | null;
+}) {
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value ?? '');
+  const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
-  useEffect(() => setDraft(value ?? ''), [value]);
+  useEffect(() => setDraft(value), [value]);
+
   const save = async () => {
     setSaving(true);
     try {
-      await updateProfileField(field, draft);
+      await updateProfileField(field, draft || null);
       setEditing(false);
     } finally {
       setSaving(false);
     }
   };
+
   return (
     <div className="flex items-center justify-between gap-3 py-2">
-      <Label className="text-[var(--text-muted)]">{label}</Label>
+      <Label className="text-[var(--text-muted)]">Branch</Label>
       <div className="flex items-center gap-2">
         {editing ? (
           <>
-            <Input value={draft} onChange={(e) => setDraft(e.target.value)} className="h-8 w-44 text-right text-sm" autoFocus />
+            <select
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
+              autoFocus
+            >
+              <option value="">None</option>
+              {options.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
             <Button size="icon-sm" variant="ghost" onClick={save} disabled={saving} aria-label="Save"><Check size={14} /></Button>
-            <Button size="icon-sm" variant="ghost" onClick={() => { setDraft(value ?? ''); setEditing(false); }} aria-label="Cancel"><X size={14} /></Button>
+            <Button size="icon-sm" variant="ghost" onClick={() => { setDraft(value); setEditing(false); }} aria-label="Cancel"><X size={14} /></Button>
           </>
         ) : (
           <>
-            <span className="truncate text-sm font-medium text-[var(--text-main)]">{value ?? '—'}</span>
-            <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label={`Edit ${label}`}>
+            <span className="truncate text-sm font-medium text-[var(--text-main)]">{currentName ?? '—'}</span>
+            <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label="Edit Branch">
               <Pencil size={13} />
             </button>
           </>
@@ -395,29 +551,48 @@ function AdminField({ label, field, value }: { label: string; field: string; val
   );
 }
 
-function AdminSelect({ label, field, value, options }: { label: string; field: string; value: string; options: string[] }) {
+function ManagerSelectRow({
+  field,
+  value,
+  options,
+  currentName,
+}: {
+  field: string;
+  value: string;
+  options: { id: string; name: string }[];
+  currentName?: string | null;
+}) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
   useEffect(() => setDraft(value), [value]);
+
   const save = async () => {
     setSaving(true);
     try {
-      await updateProfileField(field, draft);
+      // Empty selection clears the manager.
+      await updateProfileField(field, draft || null);
       setEditing(false);
     } finally {
       setSaving(false);
     }
   };
+
   return (
     <div className="flex items-center justify-between gap-3 py-2">
-      <Label className="text-[var(--text-muted)]">{label}</Label>
+      <Label className="text-[var(--text-muted)]">Manager</Label>
       <div className="flex items-center gap-2">
         {editing ? (
           <>
-            <select value={draft} onChange={(e) => setDraft(e.target.value)} className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none">
-              {options.map((o) => (
-                <option key={o} value={o}>{o}</option>
+            <select
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
+              autoFocus
+            >
+              <option value="">None</option>
+              {options.map((m) => (
+                <option key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
             <Button size="icon-sm" variant="ghost" onClick={save} disabled={saving} aria-label="Save"><Check size={14} /></Button>
@@ -425,8 +600,8 @@ function AdminSelect({ label, field, value, options }: { label: string; field: s
           </>
         ) : (
           <>
-            <span className="truncate text-sm font-medium text-[var(--text-main)]">{value}</span>
-            <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label={`Edit ${label}`}>
+            <span className="truncate text-sm font-medium text-[var(--text-main)]">{currentName ?? '—'}</span>
+            <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label="Edit Manager">
               <Pencil size={13} />
             </button>
           </>

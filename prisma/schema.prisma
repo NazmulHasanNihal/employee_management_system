@@ -25,6 +25,7 @@ model User {
   reports     User[]       @relation("ManagerToEmployee")
   // Delegation: who acts on this user's behalf (proxy). Set via team.setProxy.
   proxyId     String?
+  proxyValidUntil DateTime? // optional expiry for the active delegation
   proxy       User?        @relation("ProxyToUser", fields: [proxyId], references: [id])
   proxiedUsers User[]      @relation("ProxyToUser")
   teamsLed    Team[]       @relation("TeamLead")
@@ -101,6 +102,7 @@ model User {
   kudosReceived        Kudo[]            @relation("KudoRecipient")
   documents            Document[]
   skills               Skill[]
+  profilePhotos        ProfilePhotoHistory[]
   trainingEnrollments  TrainingEnrollment[]
   statutoryCalcs       StatutoryCalc[]
   shiftAssignments     ShiftAssignment[]
@@ -702,6 +704,25 @@ model Skill {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill  String
   level  Int    @default(1) // 1-5
+}
+
+// ── Profile photo history (P11) ──
+// Keeps a timeline of every avatar a user has set, so they can review/restore
+// past profile pictures from the profile page.
+model ProfilePhotoHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ── Reference list of countries (drives the profile "Country" dropdown) ──
+model Country {
+  code String @id
+  name String
 }
 
 // ── Workflows (Onboarding / Offboarding / Probation) ──

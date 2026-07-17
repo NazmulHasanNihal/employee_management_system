@@ -19,6 +19,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { getServerT } from '@/lib/i18n-server';
 
 import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { EditableName } from '@/components/profile/EditableName';
 import {
   ContactSection,
   EmergencySection,
@@ -59,6 +60,23 @@ export default async function ProfilePage() {
     ? await prisma.user.findUnique({ where: { id: user.managerId }, select: { name: true } })
     : null;
 
+  // Lookups that power the new dropdowns (branch, manager). Countries come from
+  // a curated static list (see EditableSections DEFAULT_COUNTRIES) so the page
+  // never depends on the optional Country table being generated.
+  const [branches, managers] = await Promise.all([
+    prisma.branch.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
+    prisma.user.findMany({
+      where: { id: { not: caller.id }, status: { not: 'Terminated' } },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
+  ]);
+  const countries: string[] = [];
+
+  const branch = user.branchId
+    ? branches.find((b) => b.id === user.branchId) ?? null
+    : null;
+
   const [skills, documents, reviews, leaveBalance, activity] = await Promise.all([
     getSkills(caller),
     getDocuments(caller),
@@ -96,7 +114,7 @@ export default async function ProfilePage() {
             <div className="flex flex-col items-center gap-4 py-2">
               <AvatarUpload currentUrl={user.avatarUrl} size="xl" />
               <div>
-                <h2 className="text-xl font-semibold text-[var(--text-main)]">{user.name}</h2>
+                <EditableName name={user.name} />
                 <p className="text-sm text-[var(--text-muted)]">{user.designation || 'Employee'}</p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -112,6 +130,7 @@ export default async function ProfilePage() {
             <div className="mt-4 w-full space-y-2 border-t border-[var(--border-hairline)] pt-4 text-left">
               <InfoLine icon={<CalendarDays size={14} />} label="Joined" value={user.joinDate ? formatDate(user.joinDate, 'en') : '—'} />
               <InfoLine icon={<UserIcon size={14} />} label="Manager" value={manager?.name || '—'} />
+              <InfoLine icon={<Sparkles size={14} />} label="Branch" value={branch?.name || '—'} />
               <InfoLine icon={<Sparkles size={14} />} label="Employee ID" value={user.id.slice(0, 8)} />
             </div>
           </Card>
@@ -124,7 +143,7 @@ export default async function ProfilePage() {
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <ContactSection user={user as any} />
+              <ContactSection user={user as any} countries={countries.map((c: any) => c.name)} />
             </CardContent>
           </Card>
 
@@ -135,7 +154,7 @@ export default async function ProfilePage() {
             </Card>
             <Card>
               <CardHeader><CardTitle>Employment</CardTitle></CardHeader>
-              <CardContent><EmploymentSection user={user as any} managerName={manager?.name} /></CardContent>
+              <CardContent><EmploymentSection user={user as any} managerName={manager?.name} branchName={branch?.name ?? null} branches={branches} managers={managers} /></CardContent>
             </Card>
           </div>
 
@@ -249,7 +268,13 @@ export default async function ProfilePage() {
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <DelegationSettings user={user as any} />
+            <DelegationSettings
+              user={{
+                proxyId: user.proxyId,
+                proxyValidUntil: user.proxyValidUntil,
+                proxyName: manager?.name ?? null,
+              }}
+            />
           </CardContent>
         </Card>
         <Card>
