@@ -2,11 +2,31 @@
 
 import React, { useState } from 'react';
 import { trpc } from '@/lib/trpc/client';
+import { formatCurrency } from '@/lib/format';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Cpu } from 'lucide-react';
+
+function RunPreview({ month }: { month: string }) {
+  const { data, isLoading } = trpc.payroll.getRunPreview.useQuery({ month });
+  if (isLoading) {
+    return (
+      <div className="bg-white/5 border border-white/10 rounded-xl p-4 font-mono text-sm text-[var(--text-muted)]">
+        Calculating aggregates...
+      </div>
+    );
+  }
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3 font-mono text-sm">
+      <div className="flex justify-between text-[var(--text-muted)]"><span>Cycle:</span> <span className="text-white">{data?.month} {data?.year}</span></div>
+      <div className="flex justify-between text-[var(--text-muted)]"><span>Total Employees:</span> <span className="text-white">{data?.employeeCount ?? 0}</span></div>
+      <div className="flex justify-between text-[var(--text-muted)]"><span>Total Worked Hours:</span> <span className="text-white">{data?.totalHours ?? 0} h</span></div>
+      <div className="flex justify-between text-[var(--text-muted)] border-t border-white/10 pt-2 font-bold text-lg"><span>Estimated Net Pay:</span> <span className="text-[var(--verify-green)]">{formatCurrency(data?.estimatedNetTotal ?? 0, 'BDT', 'en')}</span></div>
+    </div>
+  );
+}
 
 interface RunPayrollFormProps {
   onSuccess: () => void;
@@ -61,12 +81,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
         {step === 2 && (
           <div className="space-y-6">
             <h4 className="text-sm font-mono text-white">2. Review Aggregated Financials</h4>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3 font-mono text-sm">
-              <div className="flex justify-between text-[var(--text-muted)]"><span>Cycle:</span> <span className="text-white">{month}</span></div>
-              <div className="flex justify-between text-[var(--text-muted)]"><span>Total Employees:</span> <span className="text-white">125</span></div>
-              <div className="flex justify-between text-[var(--text-muted)]"><span>Total Hours:</span> <span className="text-white">20,000 h</span></div>
-              <div className="flex justify-between text-[var(--text-muted)] border-t border-white/10 pt-2 font-bold text-lg"><span>Estimated Net Pay:</span> <span className="text-[var(--verify-green)]">$425,000.00</span></div>
-            </div>
+            <RunPreview month={month} />
             <div className="flex justify-between">
               <Button variant="outline" onClick={prevStep} className="font-mono bg-transparent border-white/20 text-white hover:bg-white/10">Back</Button>
               <Button onClick={nextStep} className="bg-[var(--verify-green)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)]">Confirm & Proceed</Button>

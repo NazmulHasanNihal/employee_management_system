@@ -23,5 +23,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "ledger_ems.tsx", "scratch"]
+  "exclude": ["node_modules", "ledger_ems.tsx", "scratch", "e2e", "playwright.config.ts", "src/**/*.test.ts", "src/**/*.test.tsx", "vitest.config.ts", "vitest.component.config.ts", "vitest.setup.ts"]
 }

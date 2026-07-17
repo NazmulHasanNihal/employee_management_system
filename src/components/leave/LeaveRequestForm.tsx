@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Activity } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
-import usePartySocket from '@/lib/usePartySocket';
+import useRealtimePresence from '@/lib/useRealtimePresence';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,8 +17,7 @@ export function LeaveRequestForm() {
   const [type, setType] = useState('Vacation');
   const [reason, setReason] = useState('');
 
-  const socket = usePartySocket({
-    host: 'localhost:1999',
+  const socket = useRealtimePresence({
     room: 'ems-global',
   });
 

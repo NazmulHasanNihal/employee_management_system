@@ -15,8 +15,9 @@ const supabase = createClient(
 );
 
 async function main() {
-  const email = 'admin@system.com';
-  const password = 'AdminPassword123!';
+  const email = process.env.ADMIN_EMAIL || 'admin@system.com';
+  // Read from env, or generate a random strong password (never hardcode).
+  const password = process.env.ADMIN_PASSWORD || (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + 'A1!');
 
   console.log('Provisioning Admin User...');
 
@@ -42,7 +43,7 @@ async function main() {
 
   // 2. Fetch or sync to Prisma DB
   const userId = authData?.user?.id;
-  
+
   if (userId) {
     await prisma.user.upsert({
       where: { email },
@@ -59,7 +60,10 @@ async function main() {
     });
     console.log('Admin user successfully provisioned in live database!');
     console.log(`Email: ${email}`);
-    console.log(`Password: ${password}`);
+    // SECURITY: never print the generated password to logs.
+    if (!process.env.ADMIN_PASSWORD) {
+      console.log('A random password was generated. Set ADMIN_PASSWORD env to use a known one.');
+    }
   }
 }
 

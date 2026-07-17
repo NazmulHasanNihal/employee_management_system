@@ -20,11 +20,14 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
     rules: {
-      "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "off",
+      // Type-safety: surface (not block) any-typed code so it can be tightened over time.
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "react/jsx-no-undef": "error",
       "react/no-unescaped-entities": "off",
-      "prefer-const": "off"
+      "prefer-const": "warn",
+      // Server code must use the structured logger, not raw console.
+      "no-console": ["warn", { allow: ["warn", "error"] }]
     }
   },
 ];

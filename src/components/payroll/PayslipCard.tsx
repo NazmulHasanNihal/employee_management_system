@@ -12,39 +12,32 @@ interface PayslipCardProps {
   currentUser: any;
 }
 
+interface BreakdownEntry {
+  head: string;
+  amount: number;
+}
+
 export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
-  const CURRENCY_SYMBOLS: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', INR: '₹', AUD: 'A$' };
-  const sym = CURRENCY_SYMBOLS[pay.currency || 'USD'] || '$';
+  const CURRENCY_SYMBOLS: Record<string, string> = { USD: '$', EUR: '€', GBP: '£', INR: '₹', AUD: 'A$', BDT: '৳' };
+  const sym = CURRENCY_SYMBOLS[pay.currency || 'BDT'] || '৳';
 
-  let breakdown: Record<string, {name: string, type: string, amount: number}> = {};
-  try {
-    if (pay.breakdown) {
-      breakdown = JSON.parse(pay.breakdown);
-    }
-  } catch(e) {}
+  const earnings: BreakdownEntry[] = Array.isArray(pay.earningsBreakdown) ? pay.earningsBreakdown : [];
+  const deductions: BreakdownEntry[] = Array.isArray(pay.deductionsBreakdown) ? pay.deductionsBreakdown : [];
 
-  const earnings = Object.values(breakdown).filter(b => b.type === 'EARNING');
-  const deductions = Object.values(breakdown).filter(b => b.type === 'DEDUCTION');
-
-  const totalEarnings = earnings.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalDeductions = deductions.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalEarnings = earnings.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  const totalDeductions = deductions.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+  const net = pay.netPay ?? pay.totalAmount ?? 0;
 
   const printPayslip = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
-    
-    let earningsHtml = earnings.map(e => `
-      <tr>
-        <td>${e.name}</td>
-        <td>${sym}${e.amount.toFixed(2)}</td>
-      </tr>
+
+    const earningsHtml = earnings.map(e => `
+      <tr><td>${e.head}</td><td>${sym}${(e.amount || 0).toFixed(2)}</td></tr>
     `).join('');
 
-    let deductionsHtml = deductions.map(d => `
-      <tr>
-        <td>${d.name}</td>
-        <td>${sym}${d.amount.toFixed(2)}</td>
-      </tr>
+    const deductionsHtml = deductions.map(d => `
+      <tr><td>${d.head}</td><td>${sym}${(d.amount || 0).toFixed(2)}</td></tr>
     `).join('');
 
     const html = `
@@ -67,22 +60,22 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
         </head>
         <body>
           <div class="header">
-            <h1>ANTIGRAVITY SYSTEMS</h1>
-            <p>PAYSLIP: ${pay.month}</p>
+            <h1>EMS PAYROLL</h1>
+            <p>PAYSLIP: ${pay.month} ${pay.year}</p>
           </div>
-          
+
           <div class="details">
             <div>
               <strong>EMPLOYEE DETAILS</strong><br><br>
-              Name: ${pay.user?.name || currentUser.name}<br>
-              Email: ${pay.user?.email || currentUser.email}<br>
-              Role: ${pay.user?.role || currentUser.role}
+              Name: ${pay.user?.name || currentUser?.name}<br>
+              Email: ${pay.user?.email || currentUser?.email}<br>
+              Role: ${pay.user?.role || currentUser?.role}
             </div>
             <div>
               <strong>PAYMENT DETAILS</strong><br><br>
               Date: ${new Date(pay.createdAt).toLocaleDateString()}<br>
               Status: ${pay.status.toUpperCase()}<br>
-              Reference: PAY-${pay.id.substring(0,8).toUpperCase()}<br>
+              Reference: PAY-${(pay.id || '').substring(0, 8).toUpperCase()}<br>
               Base Salary: ${sym}${(pay.baseSalary || 0).toFixed(2)}
             </div>
           </div>
@@ -91,11 +84,10 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             <div class="table-container" style="flex:1">
               <table>
                 <tr><th colspan="2">EARNINGS</th></tr>
-                ${earningsHtml || '<tr><td colspan="2">No additional earnings</td></tr>'}
+                ${earningsHtml || '<tr><td colspan="2">No earnings</td></tr>'}
                 <tr><th>Total Earnings</th><th>${sym}${totalEarnings.toFixed(2)}</th></tr>
               </table>
             </div>
-            
             <div class="table-container" style="flex:1">
               <table>
                 <tr><th colspan="2">DEDUCTIONS</th></tr>
@@ -108,16 +100,14 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           <div class="table-container" style="background: #f9f9f9; padding: 15px; border: 1px solid #ccc;">
             <strong>ATTENDANCE METRICS</strong>
             <p style="margin: 5px 0 0 0; font-size: 12px;">
-              Total Hours: ${pay.totalHours?.toFixed(1) || 0} | 
-              Overtime Hours: ${pay.overtimeHours?.toFixed(1) || 0} | 
+              Overtime Hours: ${pay.overtimeHours?.toFixed(1) || 0} |
+              Night Hours: ${pay.nightHours?.toFixed(1) || 0} |
               Late Days: ${pay.lateDays || 0}
             </p>
           </div>
 
-          <div class="total">
-            NET PAY: ${sym}${pay.net.toFixed(2)}
-          </div>
-          
+          <div class="total">NET PAY: ${sym}${net.toFixed(2)}</div>
+
           <div class="footer">
             This is a computer generated document. No signature is required.<br>
             Generated on ${new Date().toLocaleString()}
@@ -144,11 +134,9 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="text-xl font-black font-mono text-white uppercase tracking-widest">{pay.month}</h3>
-                {pay.status === 'Disbursed' ? (
-                  <Badge variant="outline" className="text-[var(--verify-green)] border-[var(--verify-green)] font-mono text-[10px] h-5 rounded uppercase tracking-widest">Disbursed</Badge>
-                ) : (
-                  <Badge variant="outline" className="text-[var(--signal-amber)] border-[var(--signal-amber)] font-mono text-[10px] h-5 rounded uppercase tracking-widest">Pending</Badge>
-                )}
+                <Badge variant="outline" className={`font-mono text-[10px] h-5 rounded uppercase tracking-widest ${pay.status === 'PROCESSED' || pay.status === 'Disbursed' ? 'text-[var(--verify-green)] border-[var(--verify-green)]' : 'text-[var(--signal-amber)] border-[var(--signal-amber)]'}`}>
+                  {pay.status}
+                </Badge>
               </div>
               <p className="text-sm font-mono text-[var(--text-muted)]">
                 Generated: {new Date(pay.createdAt).toLocaleDateString()}
@@ -162,7 +150,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             <div>
               <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Net Transfer</p>
               <p className="text-2xl font-bold font-mono text-[var(--verify-green)]">
-                {sym}{pay.net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {sym}{net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <Button onClick={printPayslip} variant="outline" size="sm" className="mt-4 border-white/10 text-white hover:bg-white/10 font-mono text-xs uppercase tracking-widest h-8 w-fit md:ml-auto">
@@ -170,12 +158,8 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             </Button>
           </div>
         </div>
-        
+
         <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Base Salary</p>
-            <p className="text-sm font-mono text-white">{sym}{(pay.baseSalary || 0).toLocaleString()}</p>
-          </div>
           <div>
             <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Earnings (+)</p>
             <p className="text-sm font-mono text-[var(--ledger-blue)]">{sym}{totalEarnings.toLocaleString()}</p>
@@ -187,6 +171,10 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           <div>
             <p className="text-[10px] font-mono text-[var(--signal-amber)]/70 uppercase tracking-widest mb-1">Overtime Hrs</p>
             <p className="text-sm font-mono text-[var(--signal-amber)]">{pay.overtimeHours?.toFixed(1) || 0}h</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Night Hrs</p>
+            <p className="text-sm font-mono text-white/70">{pay.nightHours?.toFixed(1) || 0}h</p>
           </div>
         </div>
       </CardContent>

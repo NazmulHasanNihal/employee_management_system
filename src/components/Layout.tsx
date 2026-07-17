@@ -1,27 +1,35 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { useLinkStatus } from 'next/link';
 import Image from 'next/image';
-import { 
-  LayoutDashboard, Users, Clock, FileText, Landmark, 
-  Settings, ShieldCheck, Bell, Megaphone, Calendar, 
+import { useTheme } from 'next-themes';
+import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import {
+  LayoutDashboard, Users, Clock, FileText, Landmark,
+  Settings, ShieldCheck, Bell, Megaphone, Calendar,
   Network, ShieldAlert, Bitcoin, FileDigit, Radar, Lock,
   LogOut, Link as LinkIcon, GitBranch, LifeBuoy, UserCircle, Ghost,
   Menu, Search, ArrowRight, Home, Activity, Command, X, Hash, HardDriveDownload,
-  Receipt, HeartPulse, UserPlus, CalendarRange,
+  Receipt, HeartPulse, UserPlus, CalendarRange, Gift,
   Laptop, BookOpen, Briefcase, TrendingUp, PieChart,
   BrainCircuit, Handshake, Calculator, Flame, Scale, Brain, Target, Map, Lightbulb,
-  MessageCircle, Award, CheckSquare, ChevronDown, ChevronRight
+  MessageCircle, Award, CheckSquare, ChevronDown, ChevronRight, Sun, Moon, PenLine
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { useAppStore } from '@/lib/store';
-import usePartySocket from '@/lib/usePartySocket';
 import CommandPalette from './CommandPalette';
+import { ToastContainer } from './Toast';
 import { createClient } from '@/lib/supabase/client';
-import { trpc } from '@/lib/trpc/client';
+import { useUser } from '@/components/UserProvider';
 import { useTranslation } from '@/lib/translations';
+import { BranchSwitcher } from '@/components/BranchSwitcher';
+import { Avatar } from '@/components/ui/avatar';
+import { trpc } from '@/lib/trpc/client';
+import { navCategories } from '@/components/nav-config';
 
 interface LayoutUser {
   id: string;
@@ -31,57 +39,112 @@ interface LayoutUser {
   department?: string;
   designation?: string;
   avatarUrl?: string | null;
+  branchId?: string | null;
 }
 
-export default function AppLayout({ children, user }: { children: React.ReactNode, user: LayoutUser }) {
+export { navCategories } from '@/components/nav-config';
+
+/** Prefetching nav link — loads the next section before the click. */
+function NavLink({ item, active, onClick }: { item: any; active: boolean; onClick?: () => void }) {
+  const Icon = item.icon;
+  const status = useLinkStatus();
+  return (
+    <Link
+      href={item.path}
+      prefetch
+      onMouseEnter={(e) => {
+        // next/link prefetches on hover automatically; keep for clarity
+        e.currentTarget.focus();
+      }}
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+      className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+        active
+          ? 'bg-[var(--brand-soft)] text-[var(--brand-strong)]'
+          : 'text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]'
+      }`}
+    >
+      {active && (
+        <motion.span
+          layoutId="nav-active"
+          className="absolute left-0 h-5 w-1 rounded-full bg-[var(--brand)]"
+        />
+      )}
+      <Icon size={17} className={active ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-main)]'} />
+      <span className="truncate">{item.label}</span>
+      {status.pending && <span className="ml-auto h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--brand)]" />}
+    </Link>
+  );
+}
+
+export default function AppLayout({ children, user, notifications = [] }: { children: React.ReactNode; user: LayoutUser; notifications?: any[] }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const { isOffline, setOffline, offlineQueue, language, setLanguage } = useAppStore();
+  const { user: ctxUser, isAdmin, isHR } = useUser();
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const t = useTranslation(language);
 
+  const notificationsRef = React.useRef<HTMLDivElement>(null);
+  const profileRef = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const handleOnline = () => setOffline(false);
-      const handleOffline = () => setOffline(true);
-      setOffline(!navigator.onLine);
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
-      return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-      };
-    }
+    if (!showNotifications && !showProfileMenu) return;
+    const handlePointer = (e: MouseEvent) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowNotifications(false);
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [showNotifications, showProfileMenu]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleOnline = () => setOffline(false);
+    const handleOffline = () => setOffline(true);
+    setOffline(!navigator.onLine);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [setOffline]);
 
-  // Real notifications from DB
-  const { data: notificationsData } = trpc.notifications.getAll.useQuery(undefined);
-  const notifications = notificationsData || [];
-  const unreadCount = notifications.filter((n: any) => !n.read).length;
+  React.useEffect(() => {
+    setShowNotifications(false);
+    setShowProfileMenu(false);
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
+  // Mark-read uses the existing trpc mutation for notifications (lightweight, infrequent).
   const markReadMutation = trpc.notifications.markRead.useMutation();
   const markAllReadMutation = trpc.notifications.markAllRead.useMutation();
-
-  const markRead = async (id: string) => {
-    markReadMutation.mutate({ id });
-  };
+  const unreadCount = notifications.filter((n: any) => !n.read).length;
+  const markRead = (id: string) => markReadMutation.mutate({ id });
   const markAllRead = () => {
-    markAllReadMutation.mutate({});
+    notifications.forEach((n: any) => { if (!n.read) markRead(n.id); });
   };
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-
-  const socket = usePartySocket({
-    host: 'localhost:1999',
-    room: 'ems-global',
-    onMessage(e) {
-      const data = JSON.parse(e.data);
-      if (data.type === 'notification_update') {
-        // Could refresh notifications
-      }
-    }
-  });
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -96,137 +159,71 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
     'Time & Attendance': true,
     'Talent & Culture': true,
   });
+  const toggleCategory = (cat: string) => setOpenCategories((prev) => ({ ...prev, [cat]: !prev[cat] }));
 
-  const toggleCategory = (cat: string) => {
-    setOpenCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
-  };
+  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
-  const navCategories = [
-    {
-      title: 'Core System',
-      items: [
-        { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
-        { label: 'My Team', icon: Users, path: '/team' },
-        { label: 'Company News', icon: Megaphone, path: '/announcements' },
-        { label: 'Company Calendar', icon: Calendar, path: '/calendar' },
-      ]
-    },
-    {
-      title: 'Time & Attendance',
-      items: [
-        { label: 'Attendance', icon: Clock, path: '/attendance' },
-        { label: 'Leave', icon: Calendar, path: '/leave' },
-        { label: 'Shift Schedule', icon: CalendarRange, path: '/shifts' },
-      ]
-    },
-    {
-      title: 'Finance & Assets',
-      items: [
-        { label: 'Payroll', icon: Bitcoin, path: '/payroll', hideForContractor: true },
-        { label: 'Payroll Config', icon: Settings, path: '/payroll-settings', adminOnly: true },
-        { label: 'Expenses', icon: Receipt, path: '/expenses' },
-        { label: 'IT Assets', icon: Laptop, path: '/assets' },
-      ]
-    },
-    {
-      title: 'Talent & Culture',
-      items: [
-        { label: 'Performance', icon: Target, path: '/performance' },
-        { label: 'Benefits', icon: Handshake, path: '/benefits', hideForContractor: true },
-        { label: 'Kudos Board', icon: Award, path: '/recognition' },
-        { label: 'Feedback Box', icon: MessageCircle, path: '/feedback' },
-      ]
-    },
-    {
-      title: 'Operations',
-      items: [
-        { label: 'Document Vault', icon: FileText, path: '/documents' },
-        { label: 'Requests & Approvals', icon: FileText, path: '/applications' },
-        { label: 'Compliance', icon: ShieldCheck, path: '/compliance' },
-        { label: 'HR Helpdesk', icon: LifeBuoy, path: '/helpdesk' },
-        { label: 'Workflows', icon: CheckSquare, path: '/onboarding', adminOnly: true },
-      ]
-    },
-    {
-      title: 'Administration',
-      items: [
-        { label: 'Employee Directory', icon: Users, path: '/registry' },
-        { label: 'Recruitment', icon: Briefcase, path: '/recruitment', adminOnly: true },
-        { label: 'Org Chart', icon: GitBranch, path: '/org-chart' },
-        { label: 'Organizational Structure', icon: Network, path: '/hierarchy' },
-        { label: 'DEI Auditor', icon: Scale, path: '/dei', adminOnly: true },
-      ]
-    },
-    {
-      title: 'System Security',
-      items: [
-        { label: 'Audit Log', icon: FileDigit, path: '/audit', adminOnly: true },
-        { label: 'Config', icon: Settings, path: '/settings', adminOnly: true },
-      ]
-    }
-  ];
+  const roleForNav = ctxUser?.role || user.role;
+  const canSee = (i: any) =>
+    !(i.adminOnly && roleForNav !== 'Admin' && roleForNav !== 'HR Manager') &&
+    !(i.hideForContractor && isContractor);
 
   return (
-    <div className={`h-screen w-screen overflow-hidden flex flex-col md:flex-row transition-colors duration-300`}>
-      {/* Mobile Menu Overlay */}
+    <div className="flex min-h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)] transition-colors duration-300 md:flex-row">
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileMenuOpen(false)}
-            className="md:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
-      <motion.aside 
-        className={`fixed md:relative flex flex-col w-64 border-r ledger-border bg-[var(--bg-panel)] z-50 h-full transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+      <motion.aside
+        className={`fixed z-50 flex h-full w-72 flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)] transition-transform duration-300 md:relative md:translate-x-0 ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
-        <div className="p-6 border-b ledger-border flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-[var(--border-hairline)] p-5">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[var(--bg-void)] border ledger-border flex items-center justify-center">
-              <LinkIcon size={16} className="text-[var(--text-main)]" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-sm">
+              <LinkIcon size={18} />
             </div>
             <div>
-              <h1 className="font-mono font-bold text-sm uppercase tracking-widest ledger-text">EMS.Core</h1>
-              <p className="text-[9px] font-mono ledger-muted uppercase tracking-widest mt-0.5">Distributed Node</p>
+              <h1 className="text-sm font-extrabold tracking-tight text-[var(--text-main)]">EMS</h1>
+              <p className="text-[10px] font-medium tracking-wide text-[var(--text-muted)]">Workspace</p>
             </div>
           </div>
-          <button className="md:hidden text-[var(--text-muted)] hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
+          <button aria-label="Close menu" className="text-[var(--text-muted)] hover:text-[var(--text-main)] md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
             <X size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 py-4 overflow-y-auto custom-scrollbar">
+        <nav aria-label="Primary" className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
           {navCategories.map((category) => {
-            const filteredItems = category.items.filter(i => {
-              if (i.adminOnly && user.role !== 'Admin' && user.role !== 'HR Manager') return false;
-              if (i.hideForContractor && isContractor) return false;
-              return true;
-            });
+            const filteredItems = category.items.filter(canSee);
             if (filteredItems.length === 0) return null;
-            
-            const isOpen = openCategories[category.title];
-            
+            const isOpen = openCategories[category.title] ?? false;
+            const categoryActive = filteredItems.some((i) => pathname === i.path);
+
             return (
-              <div key={category.title} className="mb-4">
-                <button 
+              <div key={category.title} className="mb-2">
+                <button
+                  aria-expanded={isOpen}
                   onClick={() => toggleCategory(category.title)}
-                  className="w-full px-4 mb-2 flex items-center justify-between text-left group"
+                  className="mb-1 flex w-full items-center justify-between px-3 text-left"
                 >
-                  <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest group-hover:text-[var(--text-main)] transition-colors">{t(category.title)}</span>
-                  <motion.div
-                    initial={false}
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <ChevronDown size={14} className="text-[var(--text-muted)] group-hover:text-[var(--text-main)] transition-colors" />
+                  <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${categoryActive ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)]'}`}>
+                    {t(category.title)}
+                  </span>
+                  <motion.div initial={false} animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown size={14} className="text-[var(--text-muted)]" />
                   </motion.div>
                 </button>
-                
+
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.div
@@ -234,24 +231,13 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2, ease: 'easeInOut' }}
-                      className="overflow-hidden space-y-0.5"
+                      className="overflow-hidden"
                     >
-                      {filteredItems.map((item) => {
-                        const Icon = item.icon;
-                        const active = pathname === item.path;
-                        return (
-                          <button 
-                            key={item.label}
-                            onClick={() => router.push(item.path)} 
-                            className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-none border-l-4 transition-all duration-150 ${
-                              active ? 'border-[var(--signal-amber)] bg-[var(--bg-hover)] text-[var(--signal-amber)]' : 'border-transparent text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)] hover:pl-5'
-                            }`}
-                          >
-                            <Icon size={16} className={active ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'} />
-                            <span className="font-mono text-xs uppercase tracking-wider font-semibold truncate">{t(item.label)}</span>
-                          </button>
-                        )
-                      })}
+                      <div className="mt-1 flex flex-col gap-0.5">
+                        {filteredItems.map((item) => (
+                          <NavLink key={item.label} item={item} active={pathname === item.path} onClick={() => setIsMobileMenuOpen(false)} />
+                        ))}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -260,82 +246,105 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
           })}
         </nav>
 
-
+        <div className="border-t border-[var(--border-hairline)] p-4">
+          <Link href="/profile" prefetch className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[var(--bg-hover)]">
+            <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[var(--text-main)]">{user.name}</p>
+              <p className="truncate text-xs text-[var(--text-muted)]">{user.designation || user.role}</p>
+            </div>
+          </Link>
+        </div>
       </motion.aside>
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col max-h-[calc(100vh-4rem)] md:max-h-screen overflow-hidden bg-[var(--bg-void)] relative">
+      <main className="relative flex max-h-[calc(100vh-4rem)] flex-1 flex-col overflow-hidden bg-[var(--bg-app)] md:max-h-screen">
         {isOffline && (
-          <div className="bg-[var(--alert-red)] text-white p-2 text-xs font-mono flex items-center justify-between z-50 shadow-[0_0_10px_var(--alert-red)] relative">
+          <div className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
             <div className="flex items-center gap-2">
               <Activity size={14} className="animate-pulse" />
-              <span className="uppercase font-bold tracking-widest">System Offline (Drop-Dead Mode)</span>
-              <span className="px-2 py-0.5 bg-black/30 rounded border border-white/20 hidden md:inline ml-2">
-                {offlineQueue} operations queued locally
-              </span>
+              <span>Offline — {offlineQueue} operations queued</span>
             </div>
-            <span className="opacity-80 uppercase tracking-widest hidden sm:inline">Awaiting Uplink...</span>
+            <span className="opacity-80">Awaiting connection…</span>
           </div>
         )}
-        <header className="h-14 border-b ledger-border flex items-center justify-between px-4 md:px-8 bg-[var(--bg-panel)] shrink-0 z-10">
+
+        <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 md:px-8">
           <div className="flex items-center gap-4">
-            <div className="md:hidden flex items-center gap-2">
-              <button onClick={() => setIsMobileMenuOpen(true)} className="text-[var(--text-muted)] hover:text-white">
+            <div className="flex items-center gap-2 md:hidden">
+              <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
                 <Menu size={20} />
               </button>
-              <LinkIcon size={16} className="text-[var(--text-main)]" />
-              <span className="font-mono font-bold text-sm uppercase tracking-widest ledger-text">EMS.Core</span>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            {/* Language Toggle */}
-            <button 
-              onClick={() => setLanguage(language === 'en' ? 'bn' : 'en')}
-              className="px-2 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded font-mono text-[10px] uppercase tracking-widest text-white transition-colors"
+
+          <div className="flex items-center gap-2 md:gap-3">
+            <button
+              aria-label="Open command palette"
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="hidden items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] sm:flex"
+            >
+              <Command size={13} /> <span>⌘K</span>
+            </button>
+
+            <button
+              aria-label="Toggle language"
+              onClick={() => {
+                const next = language === 'en' ? 'bn' : 'en';
+                setLanguage(next);
+                // Persist to a cookie so Server Components can localize too.
+                document.cookie = `ems_lang=${next}; path=/; max-age=31536000; samesite=lax`;
+                router.refresh();
+              }}
+              className="rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
             >
               {language === 'en' ? 'ENG' : 'বাংলা'}
             </button>
 
-            {/* Notification Bell */}
-            <div className="relative">
-              <button 
+            <BranchSwitcher lang={language} />
+
+            <button aria-label="Toggle theme" onClick={toggleTheme} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
+              {mounted && resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            <div className="relative" ref={notificationsRef}>
+              <button
+                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+                aria-expanded={showNotifications}
                 onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
-                className="relative p-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+                className="relative rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]"
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-[var(--alert-red)] rounded-full text-[8px] font-bold flex items-center justify-center text-white">{unreadCount > 9 ? '9+' : unreadCount}</span>
+                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--rose)] text-[8px] font-bold text-white">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
                 )}
               </button>
-              
+
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-panel)] border ledger-border shadow-xl z-50 rounded-xl overflow-hidden">
-                  <div className="p-3 border-b ledger-border flex justify-between items-center bg-[var(--bg-void)]">
-                    <span className="text-[10px] font-mono ledger-muted uppercase tracking-widest">Alerts ({unreadCount})</span>
-                    <button 
-                      onClick={() => markAllRead()}
-                      className="text-[10px] text-[var(--ledger-blue)] hover:underline"
-                    >
-                      Mark all read
-                    </button>
+                <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-lg">
+                  <div className="flex items-center justify-between border-b border-[var(--border-hairline)] px-4 py-3">
+                    <span className="text-xs font-semibold text-[var(--text-main)]">Alerts ({unreadCount})</span>
+                    <button onClick={markAllRead} className="text-xs font-medium text-[var(--brand)] hover:underline">Mark all read</button>
                   </div>
-                  <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                  <div className="custom-scrollbar max-h-72 overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <div className="p-4 text-center text-[10px] font-mono ledger-muted">No notifications</div>
+                      <div className="p-6 text-center text-sm text-[var(--text-muted)]">No notifications</div>
                     ) : (
                       notifications.map((n: any) => (
-                        <div 
-                          key={n.id} 
+                        <div
+                          key={n.id}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => { if (n.link) router.push(n.link); if (!n.read) markRead(n.id); setShowNotifications(false); }}
-                          className={`p-3 border-b ledger-border text-sm flex justify-between items-start gap-2 cursor-pointer hover:bg-white/5 ${!n.read ? 'bg-[var(--ledger-blue)]/5 border-l-2 border-l-[var(--ledger-blue)]' : ''}`}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { if (n.link) router.push(n.link); setShowNotifications(false); } }}
+                          className={`cursor-pointer border-b border-[var(--border-hairline)] px-4 py-3 text-sm transition-colors hover:bg-[var(--bg-hover)] ${!n.read ? 'border-l-2 border-l-[var(--brand)] bg-[var(--brand-soft)]' : ''}`}
                         >
-                          <div className="flex-1">
-                            <p className="ledger-text text-xs">{n.message}</p>
-                            <p className="text-[9px] font-mono ledger-muted mt-1">{new Date(n.createdAt).toLocaleString()}</p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-[var(--text-main)]">{n.message}</p>
+                            {!n.read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--brand)]" />}
                           </div>
-                          {!n.read && (
-                            <span className="w-2 h-2 rounded-full bg-[var(--ledger-blue)] shrink-0 mt-1"></span>
-                          )}
+                          <p className="mt-1 text-[11px] text-[var(--text-muted)]">{new Date(n.createdAt).toLocaleString()}</p>
                         </div>
                       ))
                     )}
@@ -344,42 +353,33 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
               )}
             </div>
 
-            {/* Profile Avatar & Dropdown */}
-            <div className="relative">
-              <button 
+            <div className="relative" ref={profileRef}>
+              <button
+                aria-label="Profile menu"
+                aria-expanded={showProfileMenu}
                 onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); }}
-                className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-white/5 transition-colors"
+                className="flex items-center gap-2 rounded-xl p-1.5 transition-colors hover:bg-[var(--bg-hover)]"
               >
-                <div className="hidden md:block text-right">
-                  <p className="text-xs font-bold ledger-text leading-none">{user.name}</p>
-                  <p className="text-[9px] font-mono ledger-muted uppercase tracking-widest">{user.role}</p>
-                </div>
-                {user.avatarUrl ? (
-                  <Image src={user.avatarUrl} alt={user.name} className="w-8 h-8 rounded-full object-cover border-2 border-white/10" width={32} height={32} />
-                ) : (
-                  <div className="w-8 h-8 bg-[var(--ledger-blue)]/20 border border-[var(--ledger-blue)]/30 rounded-full flex items-center justify-center font-mono font-bold text-xs text-[var(--ledger-blue)]">
-                    {user.name.charAt(0)}
-                  </div>
-                )}
+                <Avatar src={user.avatarUrl} name={user.name} size="sm" />
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-[var(--bg-panel)] border ledger-border shadow-xl z-50 rounded-xl overflow-hidden">
-                  <div className="p-4 border-b ledger-border bg-[var(--bg-void)]">
-                    <p className="font-bold text-sm text-white">{user.name}</p>
-                    <p className="text-[10px] font-mono ledger-muted">{user.email}</p>
-                    <p className="text-[9px] font-mono text-[var(--ledger-blue)] uppercase tracking-widest mt-1">{user.department} • {user.designation}</p>
+                <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-lg">
+                  <div className="border-b border-[var(--border-hairline)] px-4 py-3">
+                    <p className="text-sm font-semibold text-[var(--text-main)]">{user.name}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{user.email}</p>
+                    <p className="mt-1 text-[11px] font-medium text-[var(--brand)]">{user.department} • {user.designation}</p>
                   </div>
                   <div className="py-1">
-                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="w-full px-4 py-2.5 text-left text-xs font-mono ledger-text hover:bg-white/5 transition-colors flex items-center gap-2">
-                      <UserCircle size={14} /> {t('My Profile')}
+                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
+                      <UserCircle size={16} /> {t('My Profile')}
                     </button>
-                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="w-full px-4 py-2.5 text-left text-xs font-mono ledger-text hover:bg-white/5 transition-colors flex items-center gap-2">
-                      <Settings size={14} /> {t('Settings')}
+                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
+                      <Settings size={16} /> {t('Settings')}
                     </button>
-                    <div className="border-t ledger-border my-1" />
-                    <button onClick={handleLogout} className="w-full px-4 py-2.5 text-left text-xs font-mono text-[var(--alert-red)] hover:bg-[var(--alert-red)]/10 transition-colors flex items-center gap-2">
-                      <LogOut size={14} /> {t('Sign Out')}
+                    <div className="my-1 border-t border-[var(--border-hairline)]" />
+                    <button onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--rose)] transition-colors hover:bg-[var(--rose-soft)]">
+                      <LogOut size={16} /> {t('Sign Out')}
                     </button>
                   </div>
                 </div>
@@ -387,33 +387,38 @@ export default function AppLayout({ children, user }: { children: React.ReactNod
             </div>
           </div>
         </header>
-        
-        <div className="flex-1 overflow-y-auto p-4 pb-24 md:p-8 custom-scrollbar">
+
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8">
           {children}
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full h-16 bg-[var(--bg-panel)] border-t ledger-border z-40 flex items-center justify-around px-2">
-        <button onClick={() => router.push('/')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
-          <Home size={20} />
-          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Home</span>
-        </button>
-        <button onClick={() => router.push('/attendance')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/attendance' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
-          <Clock size={20} />
-          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Time</span>
-        </button>
-        <button onClick={() => router.push('/leave')} className={`flex flex-col items-center justify-center w-16 h-full ${pathname === '/leave' ? 'text-[var(--signal-amber)]' : 'text-[var(--text-muted)]'}`}>
-          <Calendar size={20} />
-          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Leave</span>
-        </button>
-        <button onClick={() => setIsMobileMenuOpen(true)} className="flex flex-col items-center justify-center w-16 h-full text-[var(--text-muted)] hover:text-white transition-colors">
+      <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-2 md:hidden">
+        {[
+          { path: '/', icon: Home, label: 'Home' },
+          { path: '/attendance', icon: Clock, label: 'Time' },
+          { path: '/leave', icon: Calendar, label: 'Leave' },
+          { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
+        ].map((item) => {
+          const Icon = item.icon;
+          const active = pathname === item.path;
+          return (
+            <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
+              className={`flex h-full w-16 flex-col items-center justify-center transition-colors ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
+              <Icon size={20} />
+              <span className="mt-1 text-[10px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
+        <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="flex h-full w-16 flex-col items-center justify-center text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
           <Menu size={20} />
-          <span className="text-[8px] font-mono mt-1 uppercase tracking-widest">Menu</span>
+          <span className="mt-1 text-[10px] font-medium">Menu</span>
         </button>
       </div>
 
       <CommandPalette />
+      <ToastContainer />
+      <PwaInstallPrompt />
     </div>
   );
 }

@@ -1,40 +1,47 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 
-export function SprintHeatmap() {
-  const heatmapData = useMemo(() => {
-    return Array.from({ length: 364 }, (_, i) => Math.random() > 0.6 ? Math.floor(Math.random() * 4) + 1 : 0);
-  }, []);
+interface SprintHeatmapProps {
+  /** Real activity intensity per day (0-4) for the last 364 days. */
+  data?: number[];
+}
+
+export function SprintHeatmap({ data }: SprintHeatmapProps) {
+  const heatmapData = data && data.length === 364 ? data : Array<number>(364).fill(0);
+  const totalActive = heatmapData.filter((v) => v > 0).length;
 
   return (
-    <div className="ledger-panel p-6 shadow-sm flex flex-col mt-6">
-      <h3 className="font-mono text-xs uppercase text-[var(--text-muted)] mb-4">Sprint Activity Hashrate (Commits / Resolutions)</h3>
+    <div className="flex flex-col">
+      <h3 className="mb-1 text-sm font-semibold text-[var(--text-main)]">Activity Heatmap</h3>
+      <p className="mb-3 text-xs text-[var(--text-muted)]">
+        {totalActive} active {totalActive === 1 ? 'day' : 'days'} in the last 52 weeks
+      </p>
       <div className="flex-1 w-full overflow-x-auto custom-scrollbar">
-        <div className="grid grid-rows-7 grid-flow-col gap-1 w-max">
+        <div className="grid grid-flow-col grid-rows-7 w-max gap-1">
           {heatmapData.map((val: number, idx: number) => {
-            let color = 'bg-[var(--bg-void)] border border-[var(--border-hairline)]';
-            if (val === 1) color = 'bg-[var(--verify-green)]/30';
-            if (val === 2) color = 'bg-[var(--verify-green)]/60';
-            if (val === 3) color = 'bg-[var(--verify-green)]/90';
-            if (val >= 4) color = 'bg-[var(--verify-green)] shadow-[0_0_5px_var(--verify-green)]';
-            
+            let color = 'bg-[var(--bg-hover)] border border-[var(--border-hairline)]';
+            if (val === 1) color = 'bg-[var(--emerald)]/30';
+            if (val === 2) color = 'bg-[var(--emerald)]/60';
+            if (val === 3) color = 'bg-[var(--emerald)]/90';
+            if (val >= 4) color = 'bg-[var(--emerald)] shadow-[0_0_5px_var(--emerald)]';
+
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 title={`Day ${idx + 1}: ${val} operations`}
-                className={`w-3 h-3 md:w-4 md:h-4 rounded-sm ${color} transition-colors hover:border-[var(--ledger-blue)]`}
-              ></div>
+                className={`h-3 w-3 rounded-sm transition-colors hover:border-[var(--brand)] md:h-4 md:w-4 ${color}`}
+              />
             );
           })}
         </div>
-        <div className="flex justify-between items-center text-[9px] font-mono text-[var(--text-muted)] mt-2 w-max min-w-full">
+        <div className="mt-2 flex w-max min-w-full items-center justify-between text-[10px] text-[var(--text-muted)]">
           <span>52 WEEKS AGO</span>
           <div className="flex items-center gap-2">
             <span>LESS</span>
             <div className="flex gap-1">
-              <div className="w-3 h-3 bg-[var(--bg-void)] border border-[var(--border-hairline)]"></div>
-              <div className="w-3 h-3 bg-[var(--verify-green)]/30"></div>
-              <div className="w-3 h-3 bg-[var(--verify-green)]/60"></div>
-              <div className="w-3 h-3 bg-[var(--verify-green)]"></div>
+              <div className="h-3 w-3 border border-[var(--border-hairline)] bg-[var(--bg-hover)]" />
+              <div className="h-3 w-3 bg-[var(--emerald)]/30" />
+              <div className="h-3 w-3 bg-[var(--emerald)]/60" />
+              <div className="h-3 w-3 bg-[var(--emerald)]" />
             </div>
             <span>MORE</span>
           </div>

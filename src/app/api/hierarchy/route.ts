@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logError } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 
@@ -74,7 +75,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ users });
   } catch (error: any) {
-    console.error('Hierarchy Fetch Error:', error);
+    logError('Hierarchy Fetch Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -1,211 +1,342 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Play, Pause, Plus, Zap, Cpu, Search, Trash2, ArrowRight, Settings, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Workflow, Plus, Play, Pause, Trash2, Zap, ArrowRight, Check, ShieldAlert, Search } from 'lucide-react';
+import { trpc } from '@/lib/trpc/client';
+import { useUser } from '@/components/UserProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/EmptyState';
+
+type RuleStatus = 'Active' | 'Paused';
+
+type AutomationRule = {
+  id: string;
+  name: string;
+  description: string | null;
+  trigger: string;
+  condition: string | null;
+  action: string;
+  status: RuleStatus;
+  ownerId: string;
+  lastRunAt: string | null;
+  createdAt: string;
+};
+
+const TRIGGER_OPTIONS = ['employee.added', 'leave.requested', 'review.due', 'ticket.opened'];
+const ACTION_OPTIONS = ['send_welcome', 'notify_manager', 'auto_approve_leave', 'create_ticket'];
 
 export default function AutomationsPage() {
-  
-  // Local state for mocking automation engine
-  const [rules, setRules] = useState([
-    { id: 'rule1', name: 'New Hire Onboarding', condition: 'When Employee is Added', action: 'Send Welcome Packet & Slack Invite', status: 'Active' },
-    { id: 'rule2', name: 'Performance Review Ping', condition: 'If Date is Dec 1', action: 'Notify Managers to start Q4 Reviews', status: 'Paused' },
-    { id: 'rule3', name: 'Automated Leave Approval', condition: 'If Leave Request < 3 Days', action: 'Auto-Approve & Notify Manager', status: 'Active' }
-  ]);
-  
+  const { user } = useUser();
+  const isAdmin = user.role === 'Admin' || user.role === 'HR Manager';
+
+  const utils = trpc.useUtils();
+  const { data: list, isLoading } = trpc.automations.list.useQuery(undefined, { enabled: isAdmin });
+
+  const [rules, setRules] = useState<AutomationRule[]>([]);
   const [showBuilder, setShowBuilder] = useState(false);
-  const [newRule, setNewRule] = useState({ name: '', condition: '', action: '' });
+  const [search, setSearch] = useState('');
+
+  const [newRule, setNewRule] = useState({
+    name: '',
+    description: '',
+    trigger: '',
+    action: '',
+    status: 'Active' as RuleStatus,
+  });
+
+  useEffect(() => {
+    if (list) setRules(list as AutomationRule[]);
+  }, [list]);
+
+  const createMutation = trpc.automations.create.useMutation({
+    onSuccess: (created) => {
+      if (created) setRules((prev) => [created as AutomationRule, ...prev]);
+      setShowBuilder(false);
+      setNewRule({ name: '', description: '', trigger: '', action: '', status: 'Active' });
+      utils.automations.list.invalidate();
+    },
+  });
+
+  const toggleMutation = trpc.automations.toggle.useMutation({
+    onSuccess: (updated) => {
+      if (updated) {
+        setRules((prev) => prev.map((r) => (r.id === (updated as AutomationRule).id ? (updated as AutomationRule) : r)));
+      }
+      utils.automations.list.invalidate();
+    },
+  });
+
+  const removeMutation = trpc.automations.remove.useMutation({
+    onSuccess: (deleted) => {
+      const id = (deleted as any)?.id ?? (deleted as any);
+      if (id) setRules((prev) => prev.filter((r) => r.id !== id));
+      utils.automations.list.invalidate();
+    },
+  });
 
   const toggleStatus = (id: string) => {
-    setRules(rules.map(r => r.id === id ? { ...r, status: r.status === 'Active' ? 'Paused' : 'Active' } : r));
+    const rule = rules.find((r) => r.id === id);
+    if (!rule) return;
+    const next: RuleStatus = rule.status === 'Active' ? 'Paused' : 'Active';
+    setRules((prev) => prev.map((r) => (r.id === id ? { ...r, status: next } : r)));
+    toggleMutation.mutate({ id, status: next });
   };
 
   const deleteRule = (id: string) => {
-    setRules(rules.filter(r => r.id !== id));
+    if (!confirm('Are you sure you want to delete this automation rule? This action cannot be undone.')) return;
+    setRules((prev) => prev.filter((r) => r.id !== id));
+    removeMutation.mutate({ id });
   };
 
   const saveRule = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newRule.name || !newRule.condition || !newRule.action) return;
-    setRules([{ id: Date.now().toString(), name: newRule.name, condition: newRule.condition, action: newRule.action, status: 'Active' }, ...rules]);
-    setShowBuilder(false);
-    setNewRule({ name: '', condition: '', action: '' });
+    if (!newRule.name || !newRule.trigger || !newRule.action) return;
+    createMutation.mutate({
+      name: newRule.name,
+      description: newRule.description || undefined,
+      trigger: newRule.trigger,
+      condition: `${newRule.trigger} → ${newRule.action}`,
+      action: newRule.action,
+      status: newRule.status,
+    });
   };
 
-  return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-purple-500/10 to-transparent blur-3xl -z-10" />
-        <div>
-          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
-            <Cpu className="text-purple-500" size={36} />
-            Automation Engine
-          </h2>
-          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
-            Configure logical IF/THEN workflows to automate HR operations.
-          </p>
-        </div>
-        <button 
-          onClick={() => setShowBuilder(!showBuilder)}
-          className="mt-6 md:mt-0 bg-purple-600 text-white px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:bg-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center gap-2"
-        >
-          {showBuilder ? 'Cancel Workflow' : <><Plus size={16} /> Build Workflow</>}
-        </button>
+  if (!isAdmin) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
+        <EmptyState
+          title="Access Denied"
+          description="The Automation Engine requires HR authorization clearance."
+          icon={<ShieldAlert size={24} />}
+        />
       </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-16 text-center text-sm text-[var(--text-muted)] sm:px-6">
+        Initializing Automation Engine…
+      </div>
+    );
+  }
+
+  const filteredRules = rules.filter(
+    (r) =>
+      r.name.toLowerCase().includes(search.toLowerCase()) ||
+      r.trigger.toLowerCase().includes(search.toLowerCase()) ||
+      r.action.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+      <PageHeader
+        title="Automation Engine"
+        subtitle="Configure logical IF/THEN workflows to automate HR operations."
+        icon={<Workflow size={20} />}
+        actions={
+          <Button onClick={() => setShowBuilder(!showBuilder)}>
+            {showBuilder ? 'Cancel Workflow' : <><Plus size={16} /> Build Workflow</>}
+          </Button>
+        }
+      />
 
       {showBuilder && (
-        <div className="bg-[#0a0a0a] border border-purple-500/30 rounded-3xl p-8 shadow-[0_0_50px_rgba(168,85,247,0.15)] animate-in slide-in-from-top-4 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
-          
-          <h3 className="font-mono text-xl font-black text-white uppercase tracking-widest flex items-center gap-2 border-b border-white/10 pb-4 mb-6 relative z-10">
-            <Zap className="text-purple-400" size={24} /> Logic Builder
-          </h3>
-          
-          <form className="space-y-8 relative z-10" onSubmit={saveRule}>
-            <div>
-              <label className="block text-xs font-mono font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3">Workflow Name</label>
-              <input 
-                type="text" required placeholder="e.g. Birthday Notifier"
-                value={newRule.name} onChange={e => setNewRule({...newRule, name: e.target.value})}
-                className="w-full bg-black/60 border border-white/10 rounded-xl p-4 text-base font-mono text-white focus:border-purple-500 outline-none transition-colors shadow-inner"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white/5 p-6 rounded-2xl border border-white/10">
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-purple-400">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/20 border border-purple-500/50 flex items-center justify-center font-black font-mono">1</div>
-                  <h4 className="font-mono font-bold uppercase tracking-widest text-sm">Trigger (IF)</h4>
-                </div>
-                <select 
-                  required value={newRule.condition} onChange={e => setNewRule({...newRule, condition: e.target.value})}
-                  className="w-full bg-black/60 border border-purple-500/30 rounded-xl p-4 text-sm font-mono text-white focus:border-purple-500 outline-none appearance-none transition-colors"
-                >
-                  <option value="">Select Trigger Condition...</option>
-                  <option value="When Employee is Added">When New Employee is Added</option>
-                  <option value="If Leave Request < 3 Days">If Leave Request is under 3 days</option>
-                  <option value="If Performance Review Overdue">If Performance Review is overdue</option>
-                  <option value="On First of Month">Time-based: First of the month</option>
-                </select>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap size={18} className="text-[var(--brand-strong)]" /> Logic Builder
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-6" onSubmit={saveRule}>
+              <div className="space-y-1">
+                <Label className="text-[var(--text-muted)]">Workflow Name</Label>
+                <Input
+                  required
+                  placeholder="e.g. Birthday Notifier"
+                  value={newRule.name}
+                  onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
+                />
               </div>
 
-              <div className="hidden md:flex justify-center -mx-4 z-10">
-                <div className="bg-black border border-white/10 p-3 rounded-full text-[var(--text-muted)]">
-                  <ArrowRight size={24} />
+              <div className="space-y-1">
+                <Label className="text-[var(--text-muted)]">Description (optional)</Label>
+                <Input
+                  placeholder="Describe what this rule does"
+                  value={newRule.description}
+                  onChange={(e) => setNewRule({ ...newRule, description: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 items-center gap-4 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6 md:grid-cols-[1fr_auto_1fr]">
+                <div className="space-y-2">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-[var(--brand-strong)]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand-soft)] text-xs font-bold">1</span>
+                    Trigger (IF)
+                  </p>
+                  <select
+                    required
+                    value={newRule.trigger}
+                    onChange={(e) => setNewRule({ ...newRule, trigger: e.target.value })}
+                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                  >
+                    <option value="">Select Trigger Event…</option>
+                    {TRIGGER_OPTIONS.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="hidden justify-center md:flex">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border-hairline)] bg-[var(--bg-panel)] text-[var(--text-muted)]">
+                    <ArrowRight size={18} />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-[var(--sky)]">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sky-soft)] text-xs font-bold">2</span>
+                    Action (THEN)
+                  </p>
+                  <select
+                    required
+                    value={newRule.action}
+                    onChange={(e) => setNewRule({ ...newRule, action: e.target.value })}
+                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                  >
+                    <option value="">Select Executable Action…</option>
+                    {ACTION_OPTIONS.map((a) => (
+                      <option key={a} value={a}>{a}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-cyan-400">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/50 flex items-center justify-center font-black font-mono">2</div>
-                  <h4 className="font-mono font-bold uppercase tracking-widest text-sm">Action (THEN)</h4>
+              <div className="space-y-2">
+                <Label className="text-[var(--text-muted)]">Initial Status</Label>
+                <div className="flex gap-2">
+                  {(['Active', 'Paused'] as RuleStatus[]).map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setNewRule({ ...newRule, status: s })}
+                      className={`rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
+                        newRule.status === s
+                          ? s === 'Active'
+                            ? 'border-[var(--emerald)]/40 bg-[var(--emerald-soft)] text-[var(--emerald)]'
+                            : 'border-[var(--amber)]/40 bg-[var(--amber-soft)] text-[var(--amber)]'
+                          : 'border-[var(--border-hairline)] bg-[var(--bg-hover)] text-[var(--text-muted)] hover:bg-[var(--bg-panel)]'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
                 </div>
-                <select 
-                  required value={newRule.action} onChange={e => setNewRule({...newRule, action: e.target.value})}
-                  className="w-full bg-black/60 border border-cyan-500/30 rounded-xl p-4 text-sm font-mono text-white focus:border-cyan-500 outline-none appearance-none transition-colors"
-                >
-                  <option value="">Select Executable Action...</option>
-                  <option value="Send Welcome Packet & Slack Invite">Send Welcome Packet & Slack Invite</option>
-                  <option value="Auto-Approve & Notify Manager">Auto-Approve & Notify Manager</option>
-                  <option value="Send Escalation Email to HR">Send Escalation Email to HR</option>
-                  <option value="Generate Compliance Report">Generate Compliance Report</option>
-                </select>
               </div>
 
-            </div>
-
-            <button 
-              disabled={!newRule.name || !newRule.condition || !newRule.action} type="submit" 
-              className="w-full bg-purple-600 text-white px-6 py-4 rounded-xl font-black font-mono text-sm uppercase tracking-widest hover:brightness-110 shadow-[0_0_30px_rgba(168,85,247,0.3)] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-            >
-              <Check size={20} /> Compile & Deploy Workflow
-            </button>
-          </form>
-        </div>
+              <Button
+                type="submit"
+                disabled={!newRule.name || !newRule.trigger || !newRule.action || createMutation.isPending}
+                className="w-full"
+              >
+                <Check size={16} /> {createMutation.isPending ? 'Deploying…' : 'Compile & Deploy Workflow'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Rules Grid */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
-          <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest flex items-center gap-2">
-            <Settings size={16} className="text-purple-400" /> Active Logic Matrix
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+            <Workflow size={16} className="text-[var(--brand-strong)]" /> Active Logic Matrix
           </h3>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={14} />
-            <input 
-              type="text" placeholder="Search rules..." 
-              className="bg-black/50 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-xs font-mono text-white focus:border-purple-500 outline-none w-64 transition-colors"
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search rules…"
+              className="w-64 pl-9"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-          {rules.length === 0 ? (
-            <div className="col-span-full py-16 text-center border border-dashed border-white/10 rounded-3xl bg-black/20">
-              <Zap size={48} className="mx-auto text-[var(--text-muted)] opacity-50 mb-4" />
-              <h3 className="font-mono text-sm font-bold text-[var(--text-muted)] uppercase tracking-widest">Logic Engine Offline. No Rules Configured.</h3>
-            </div>
-          ) : (
-            rules.map((rule) => (
-              <div key={rule.id} className="bg-white/5 backdrop-blur-xl border border-white/10 hover:border-purple-500/30 transition-colors rounded-3xl p-6 relative overflow-hidden group shadow-lg">
-                <div className={`absolute top-0 right-0 w-1.5 h-full opacity-50 ${rule.status === 'Active' ? 'bg-gradient-to-b from-[var(--verify-green)] to-transparent' : 'bg-gradient-to-b from-[var(--signal-amber)] to-transparent'}`} />
-                
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h4 className="font-black text-white text-lg font-mono mb-1">{rule.name}</h4>
-                    <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">UUID: {rule.id}</p>
+        {filteredRules.length === 0 ? (
+          <EmptyState
+            title={rules.length === 0 ? 'No rules configured' : 'No rules match your search'}
+            description={rules.length === 0 ? 'Build your first automation workflow to get started.' : undefined}
+            icon={<Zap size={22} />}
+          />
+        ) : (
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+            {filteredRules.map((rule) => (
+              <Card key={rule.id} className="relative overflow-hidden">
+                <span
+                  className={`absolute right-0 top-0 h-full w-1.5 ${
+                    rule.status === 'Active' ? 'bg-[var(--emerald)]' : 'bg-[var(--amber)]'
+                  }`}
+                />
+                <CardContent className="space-y-4 pt-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h4 className="text-lg font-semibold text-[var(--text-main)]">{rule.name}</h4>
+                      {rule.description && <p className="text-xs text-[var(--text-muted)]">{rule.description}</p>}
+                      <p className="mt-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]">UUID: {rule.id}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => toggleStatus(rule.id)}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                          rule.status === 'Active'
+                            ? 'border-[var(--emerald)]/40 bg-[var(--emerald-soft)] text-[var(--emerald)] hover:bg-[var(--emerald)] hover:text-white'
+                            : 'border-[var(--amber)]/40 bg-[var(--amber-soft)] text-[var(--amber)] hover:bg-[var(--amber)] hover:text-white'
+                        }`}
+                        title={rule.status === 'Active' ? 'Pause Rule' : 'Resume Rule'}
+                      >
+                        {rule.status === 'Active' ? <Pause size={16} /> : <Play size={16} />}
+                      </button>
+                      <button
+                        onClick={() => deleteRule(rule.id)}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--rose)]/40 bg-[var(--rose-soft)] text-[var(--rose)] transition-colors hover:bg-[var(--rose)] hover:text-white"
+                        title="Delete Rule"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => toggleStatus(rule.id)}
-                      className={`p-2 rounded-lg border flex items-center justify-center transition-colors ${
-                        rule.status === 'Active' ? 'bg-[var(--verify-green)]/10 border-[var(--verify-green)]/30 text-[var(--verify-green)] hover:bg-[var(--verify-green)] hover:text-black' : 
-                        'bg-[var(--signal-amber)]/10 border-[var(--signal-amber)]/30 text-[var(--signal-amber)] hover:bg-[var(--signal-amber)] hover:text-black'
-                      }`}
-                      title={rule.status === 'Active' ? 'Pause Rule' : 'Resume Rule'}
-                    >
-                      {rule.status === 'Active' ? <Pause size={16} /> : <Play size={16} />}
-                    </button>
-                    <button 
-                      onClick={() => deleteRule(rule.id)}
-                      className="p-2 rounded-lg bg-[var(--alert-red)]/10 border border-[var(--alert-red)]/30 text-[var(--alert-red)] hover:bg-[var(--alert-red)] hover:text-white transition-colors"
-                      title="Delete Rule"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="bg-black/40 rounded-2xl p-4 border border-white/5 space-y-3 font-mono text-xs">
-                  <div className="flex items-start gap-4">
-                    <span className="text-purple-400 font-bold uppercase tracking-widest w-16 shrink-0 mt-0.5">IF</span>
-                    <span className="text-white bg-purple-500/10 px-3 py-1.5 rounded-lg border border-purple-500/20">{rule.condition}</span>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <span className="text-cyan-400 font-bold uppercase tracking-widest w-16 shrink-0 mt-0.5">THEN</span>
-                    <span className="text-white bg-cyan-500/10 px-3 py-1.5 rounded-lg border border-cyan-500/20">{rule.action}</span>
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex items-center justify-between pt-4 border-t border-white/10">
-                  <span className={`text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-2 ${
-                    rule.status === 'Active' ? 'text-[var(--verify-green)]' : 'text-[var(--signal-amber)]'
-                  }`}>
-                    {rule.status === 'Active' ? <span className="w-2 h-2 rounded-full bg-[var(--verify-green)] animate-pulse"/> : <span className="w-2 h-2 rounded-full bg-[var(--signal-amber)]"/>}
-                    {rule.status}
-                  </span>
-                  <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">
-                    Last execution: N/A
-                  </span>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
 
+                  <div className="space-y-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4 text-sm">
+                    <div className="flex items-start gap-4">
+                      <span className="w-12 shrink-0 text-xs font-bold uppercase tracking-widest text-[var(--brand-strong)]">IF</span>
+                      <span className="rounded-lg border border-[var(--brand)]/20 bg-[var(--brand-soft)] px-3 py-1.5 text-[var(--brand-strong)]">{rule.trigger}</span>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <span className="w-12 shrink-0 text-xs font-bold uppercase tracking-widest text-[var(--sky)]">THEN</span>
+                      <span className="rounded-lg border border-[var(--sky)]/20 bg-[var(--sky-soft)] px-3 py-1.5 text-[var(--sky)]">{rule.action}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-3">
+                    <Badge variant={rule.status === 'Active' ? 'emerald' : 'amber'}>
+                      {rule.status === 'Active' ? <><span className="mr-1 h-2 w-2 rounded-full bg-[var(--emerald)]" />Active</> : 'Paused'}
+                    </Badge>
+                    <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">
+                      Last run: {rule.lastRunAt ? new Date(rule.lastRunAt).toLocaleDateString() : 'N/A'}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

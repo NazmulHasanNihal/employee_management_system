@@ -45,6 +45,13 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
+    // Allow server-to-server cron / webhook routes that authenticate via a
+    // shared secret (CRON_SECRET) instead of a Supabase session. These routes
+    // enforce their own authorization internally.
+    if (request.nextUrl.pathname.startsWith('/api/cron')) {
+      return supabaseResponse;
+    }
+
     if (
       !user &&
       !request.nextUrl.pathname.startsWith('/login') &&

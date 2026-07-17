@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { logError } from '@/lib/logger';
+import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
-
-const prisma = new PrismaClient();
+import { parseApiBody, webPushSchema } from '@/lib/validation';
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +13,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { subscription } = await req.json();
+    const parsed = await parseApiBody(req, webPushSchema);
+    if ('res' in parsed) return parsed.res;
+    const subscription = parsed.data.subscription as any;
 
     const updatedUser = await prisma.user.update({
       where: { id: authUser.id },
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, user: updatedUser });
   } catch (error: any) {
-    console.error('Subscribe Error:', error);
+    logError('Subscribe Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

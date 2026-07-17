@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, ArrowUpRight, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getUserRoleByEmail } from "@/app/actions/admin";
 
@@ -29,20 +29,17 @@ export default function LoginPage() {
       }
       setError(errorMessage);
     } else if (data?.user) {
-      let role = data.user.user_metadata?.role || 'Employee';
-      
-      // If metadata says Employee, fallback to checking actual Prisma DB to ensure no sync issues
-      if (role !== 'Admin') {
-        const dbRole = await getUserRoleByEmail(email);
-        if (dbRole === 'Admin') role = 'Admin';
-      }
-      
+      // Authoritative role comes from the Prisma DB (set during provisioning),
+      // not from mutable user_metadata. This prevents privilege escalation via
+      // tampered auth metadata.
+      const role = await getUserRoleByEmail(email);
+
       if (loginType === 'admin' && role !== 'Admin') {
         await supabase.auth.signOut();
         setError("Access denied. You do not have Administrator privileges.");
         return;
       }
-      
+
       if (loginType === 'employee' && role === 'Admin') {
         await supabase.auth.signOut();
         setError("Please use the Administrator portal to log in.");
@@ -53,100 +50,132 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Enter your email address to reset your password.");
+      return;
+    }
+    setError("");
+    const supabase = createClient();
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setError("If that email exists, a password reset link has been sent.");
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md ledger-panel p-8 shadow-[var(--shadow-offset)] shadow-[var(--shadow-color)]">
-        <div className="text-center mb-8 border-b ledger-border pb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-[var(--bg-void)] border ledger-border mb-4">
-            <Lock size={20} className={loginType === 'admin' ? 'text-[var(--signal-amber)]' : 'text-[var(--ledger-blue)]'} />
-          </div>
-          <h1 className="text-2xl font-mono font-bold uppercase tracking-widest ledger-text">
-            {loginType === 'admin' ? 'Admin Portal' : 'Employee Portal'}
-          </h1>
-          <p className="text-[10px] font-mono ledger-muted mt-2 uppercase tracking-widest">
-            {loginType === 'admin' ? 'Elevated Access Required' : 'Identity Verification Required'}
-          </p>
-        </div>
-
-        <div className="flex w-full mb-6 border border-white/10 p-1 rounded-xl bg-black/40">
-          <button 
-            type="button"
-            onClick={() => setLoginType('employee')}
-            className={`flex-1 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-all ${loginType === 'employee' ? 'bg-[var(--ledger-blue)] text-black font-bold shadow-[0_0_15px_rgba(0,255,255,0.2)]' : 'text-[var(--text-muted)] hover:text-white'}`}
-          >
-            Employee
-          </button>
-          <button 
-            type="button"
-            onClick={() => setLoginType('admin')}
-            className={`flex-1 py-2 text-xs font-mono uppercase tracking-widest rounded-lg transition-all ${loginType === 'admin' ? 'bg-[var(--signal-amber)] text-black font-bold shadow-[0_0_15px_rgba(255,170,0,0.2)]' : 'text-[var(--text-muted)] hover:text-white'}`}
-          >
-            Administrator
-          </button>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-3 border border-[var(--alert-red)] bg-[var(--alert-red)]/10 text-[var(--alert-red)] text-xs font-mono font-bold uppercase">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} className="space-y-4 mb-6">
-          <div>
-            <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">
-              Email Address
-            </label>
-            <div className="relative">
-              <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 ledger-muted" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 ledger-input text-sm"
-                placeholder="operator@system.com"
-              />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-4">
+      <div className="ledger-accent" />
+      <div className="relative z-10 w-full max-w-md animate-fade-up">
+        <div className="ledger-card rounded-2xl p-8 shadow-[var(--shadow-lg)]">
+          <div className="mb-7 flex flex-col items-center text-center">
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-[var(--shadow-sm)]">
+              <Lock size={22} />
             </div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+              {loginType === 'admin' ? 'Admin Sign In' : 'Welcome Back'}
+            </h1>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
+              {loginType === 'admin'
+                ? 'Elevated access for system administrators'
+                : 'Sign in to your EMS workspace'}
+            </p>
           </div>
-          <div>
-            <label className="block text-[10px] font-mono ledger-muted uppercase tracking-widest mb-1">
-              Passphrase
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-4 pr-10 py-2 ledger-input text-sm"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-white transition-colors"
-              >
-                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
-          </div>
-          <button 
-            type="submit" 
-            className={`btn-primary w-full py-3 flex items-center justify-center gap-2 transition-all ${
-              loginType === 'admin' 
-                ? 'bg-[var(--signal-amber)] text-black hover:brightness-110 shadow-[0_0_20px_rgba(255,170,0,0.2)]' 
-                : 'bg-[var(--ledger-blue)] text-black hover:brightness-110 shadow-[0_0_20px_rgba(0,255,255,0.2)]'
-            }`}
-          >
-            Authenticate <ArrowUpRight size={16} />
-          </button>
-        </form>
 
-        <div className="relative border-t ledger-border pt-6">
-          <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] px-2 text-[10px] font-mono ledger-muted uppercase">
-            System Locked
-          </span>
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-1">
+            <button
+              type="button"
+              onClick={() => setLoginType('employee')}
+              className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all ${
+                loginType === 'employee'
+                  ? 'bg-[var(--brand)] text-white shadow-[var(--shadow-sm)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+              }`}
+            >
+              <UserRound size={15} /> Employee
+            </button>
+            <button
+              type="button"
+              onClick={() => setLoginType('admin')}
+              className={`flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold transition-all ${
+                loginType === 'admin'
+                  ? 'bg-[var(--brand)] text-white shadow-[var(--shadow-sm)]'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+              }`}
+            >
+              <ShieldCheck size={15} /> Admin
+            </button>
+          </div>
+
+          {error && (
+            <div className="mb-4 rounded-xl border border-[var(--rose)]/40 bg-[var(--rose-soft)] px-3 py-2.5 text-sm font-medium text-[var(--rose)]">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
+                Email address
+              </label>
+              <div className="relative">
+                <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="ledger-input w-full rounded-xl py-2.5 pl-10 pr-4 text-sm"
+                  placeholder="you@company.com"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="ledger-input w-full rounded-xl py-2.5 pl-4 pr-11 text-sm"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <button type="submit" className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm">
+              Sign in <ArrowRight size={16} />
+            </button>
+          </form>
+
+          <div className="mt-5 text-center">
+            <button
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-sm font-medium text-[var(--brand)] transition-colors hover:underline"
+            >
+              Forgot your password?
+            </button>
+          </div>
         </div>
+
+        <p className="mt-6 text-center text-xs text-[var(--text-muted)]">
+          EMS Ledger · Enterprise Management System
+        </p>
       </div>
     </div>
   );

@@ -1,43 +1,163 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   EMS Design System — Modern Enterprise SaaS
+   - Light theme by default, proper dark mode via next-themes (<html class="dark">)
+   - Indigo primary + semantic emerald / amber / rose / sky
+   - Soft surfaces, rounded-2xl, subtle shadows, 8px spacing rhythm
+   ========================================================================== */
+
 :root {
-  --bg-void: #0A0A0B;
-  --bg-panel: #131316;
-  --bg-hover: #1C1C20;
-  --border-hairline: #27272A;
-  --signal-amber: #FBBF24;
-  --verify-green: #22C55E;
-  --alert-red: #EF4444;
-  --ledger-blue: #3B82F6;
-  --text-main: #E4E4E7;
-  --text-muted: #A1A1AA;
-  --shadow-color: rgba(0,0,0,1);
-  --shadow-offset: 6px 6px 0px 0px;
+  /* Brand */
+  --brand: #4f46e5;          /* indigo-600 */
+  --brand-strong: #4338ca;   /* indigo-700 */
+  --brand-soft: #eef2ff;     /* indigo-50  */
+
+  /* Semantic */
+  --emerald: #059669;
+  --emerald-soft: #ecfdf5;
+  --amber: #d97706;
+  --amber-soft: #fffbeb;
+  --rose: #e11d48;
+  --rose-soft: #fff1f2;
+  --sky: #0284c7;
+  --sky-soft: #f0f9ff;
+
+  /* Surfaces (light) */
+  --bg-app: #f6f7fb;
+  --bg-panel: #ffffff;
+  --bg-hover: #f3f4f8;
+  --bg-elevated: #ffffff;
+
+  /* Lines & text (light) */
+  --border-hairline: #e6e8ef;
+  --border-strong: #d3d7e0;
+  --text-main: #1b1f2a;
+  --text-muted: #5b6270;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.06), 0 2px 4px rgba(16, 24, 40, 0.04);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.10), 0 4px 8px rgba(16, 24, 40, 0.05);
+  --shadow-glow: 0 8px 30px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.dark {
+  color-scheme: dark;
+  --brand: #6366f1;
+  --brand-strong: #818cf8;
+  --brand-soft: #1e1b4b;
+
+  --emerald: #34d399;
+  --emerald-soft: #052e22;
+  --amber: #fbbf24;
+  --amber-soft: #2a2106;
+  --rose: #fb7185;
+  --rose-soft: #2d1117;
+  --sky: #38bdf8;
+  --sky-soft: #07273a;
+
+  --bg-app: #0b0d14;
+  --bg-panel: #131620;
+  --bg-hover: #1a1e2b;
+  --bg-elevated: #171b27;
+
+  --border-hairline: #232838;
+  --border-strong: #2e3346;
+  --text-main: #eef1f7;
+  --text-muted: #9aa3b5;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 8px 30px color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+/* Back-compat aliases used by a few legacy components */
+:root {
+  --bg-void: var(--bg-app);
+  --bg-card: var(--bg-panel);
+  --border-color: var(--border-hairline);
+  --text-monomuted: var(--text-muted);
+  /* legacy accent names mapped to new semantic palette */
+  --signal-amber: var(--amber);
+  --verify-green: var(--emerald);
+  --alert-red: var(--rose);
+  --ledger-blue: var(--brand);
+  --violet: #8b5cf6;
+  --bg-elevated-old: var(--bg-elevated);
 }
 
 @theme inline {
-  --color-background: var(--bg-void);
+  --color-background: var(--bg-app);
   --color-foreground: var(--text-main);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  
   --color-panel: var(--bg-panel);
   --color-hover: var(--bg-hover);
+  --color-elevated: var(--bg-elevated);
   --color-hairline: var(--border-hairline);
-  --color-amber: var(--signal-amber);
-  --color-green: var(--verify-green);
-  --color-red: var(--alert-red);
-  --color-blue: var(--ledger-blue);
+  --color-strong: var(--border-strong);
   --color-muted: var(--text-muted);
+
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-emerald: var(--emerald);
+  --color-emerald-soft: var(--emerald-soft);
+  --color-amber: var(--amber);
+  --color-amber-soft: var(--amber-soft);
+  --color-rose: var(--rose);
+  --color-rose-soft: var(--rose-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  /* Tokens required by base-ui primitives (select/dialog) */
+  --color-popover: var(--bg-panel);
+  --color-popover-foreground: var(--text-main);
+  --color-foreground: var(--text-main);
+  --color-muted-foreground: var(--text-muted);
+  --color-input: var(--border-hairline);
+  --color-ring: var(--brand);
+  --color-border: var(--border-hairline);
+  --color-accent: var(--bg-hover);
+  --color-accent-foreground: var(--text-main);
+  --color-destructive: var(--rose);
+  --radius-md: 0.5rem;
 }
+
+* { border-color: var(--border-hairline); }
 
 body {
-  background-color: var(--bg-void);
+  background-color: var(--bg-app);
   color: var(--text-main);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Custom Utilities from Mockup */
+/* Bengali font when Bangla is active (a11y: correct glyph shaping + native feel) */
+html.lang-bn body,
+html.lang-bn :not([class*="font-mono"]) {
+  font-family: var(--font-bengali), var(--font-sans);
+}
+
+html[lang="bn"] {
+  font-family: var(--font-bengali), var(--font-sans);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand) 30%, transparent);
+  color: var(--text-main);
+}
+
+/* ── Custom Utilities ── */
 @layer utilities {
   .ledger-panel {
     background-color: var(--bg-panel);
@@ -46,41 +166,37 @@ body {
   .ledger-border { border-color: var(--border-hairline); }
   .ledger-text { color: var(--text-main); }
   .ledger-muted { color: var(--text-muted); }
+
   .ledger-input {
-    background-color: var(--bg-void);
+    background-color: var(--bg-app);
     border: 1px solid var(--border-hairline);
     color: var(--text-main);
+    transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
   }
   .ledger-input:focus {
-    border-color: var(--signal-amber);
+    border-color: var(--brand);
     outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
   }
-  
+
   .btn-primary {
-    background-color: var(--signal-amber);
-    color: #0A0A0B;
+    background-color: var(--brand);
+    color: #fff;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: transform 0.1s, box-shadow 0.1s;
-    box-shadow: var(--shadow-offset) var(--shadow-color);
-    border: 1px solid var(--border-hairline);
+    transition: transform 0.12s var(--ease-out), box-shadow 0.12s var(--ease-out), filter 0.12s var(--ease-out);
+    box-shadow: var(--shadow-sm);
   }
-  .btn-primary:active {
-    transform: translate(4px, 4px);
-    box-shadow: 0px 0px 0px 0px var(--shadow-color);
-  }
+  .btn-primary:hover { filter: brightness(1.05); box-shadow: var(--shadow-glow); }
+  .btn-primary:active { transform: translateY(1px); }
   .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
-  
+
   .btn-secondary {
     background-color: var(--bg-panel);
     color: var(--text-main);
     border: 1px solid var(--border-hairline);
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
+    transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out);
   }
-  .btn-secondary:hover { background-color: var(--bg-hover); }
+  .btn-secondary:hover { background-color: var(--bg-hover); border-color: var(--border-strong); }
 
   .badge {
     display: inline-flex;
@@ -88,23 +204,152 @@ body {
     padding: 0.125rem 0.5rem;
     border-radius: 9999px;
     font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     border: 1px solid currentColor;
     background: transparent;
   }
-  
+
   .table-row { transition: background-color 0.15s ease-out; }
   .table-row:hover {
     background-color: var(--bg-hover);
-    border-left: 2px solid var(--signal-amber);
+    border-left: 2px solid var(--brand);
   }
-  
-  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-  .custom-scrollbar::-webkit-scrollbar-track { background: var(--bg-void); }
+
+  .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--border-hairline);
-    border-radius: 3px;
+    background: var(--border-strong);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ── Shared page chrome ── */
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-hairline);
+    margin-bottom: 1.75rem;
+  }
+  @media (min-width: 768px) {
+    .page-header { flex-direction: row; align-items: flex-end; justify-content: space-between; }
+  }
+  .page-title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 1.75rem;
+    line-height: 2.1rem;
+    color: var(--text-main);
+  }
+  @media (min-width: 768px) { .page-title { font-size: 2.1rem; line-height: 2.4rem; } }
+  .page-subtitle { margin-top: 0.35rem; font-size: 0.9rem; color: var(--text-muted); }
+
+  .ledger-accent {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--brand) 10%, transparent), transparent 60%),
+      radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--sky) 7%, transparent), transparent 55%);
+    z-index: 0;
+  }
+
+  .ledger-card {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-hairline);
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+  }
+  .ledger-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+
+  /* ── Motion: shimmer skeleton ── */
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--bg-hover);
+  }
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-muted) 16%, transparent), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+  /* Entrance animations */
+  .animate-fade-up { animation: fade-up 0.5s var(--ease-out) both; }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-scale-in { animation: scale-in 0.35s var(--ease-out) both; }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-slide-in-right { animation: slide-in-right 0.4s var(--ease-out) both; }
+  @keyframes slide-in-right {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Staggered children: add .stagger to a container, .stagger-item to children */
+  .stagger > .stagger-item { animation: fade-up 0.5s var(--ease-out) both; }
+  .stagger > .stagger-item:nth-child(1) { animation-delay: 0.02s; }
+  .stagger > .stagger-item:nth-child(2) { animation-delay: 0.06s; }
+  .stagger > .stagger-item:nth-child(3) { animation-delay: 0.10s; }
+  .stagger > .stagger-item:nth-child(4) { animation-delay: 0.14s; }
+  .stagger > .stagger-item:nth-child(5) { animation-delay: 0.18s; }
+  .stagger > .stagger-item:nth-child(6) { animation-delay: 0.22s; }
+  .stagger > .stagger-item:nth-child(7) { animation-delay: 0.26s; }
+  .stagger > .stagger-item:nth-child(8) { animation-delay: 0.30s; }
+  .stagger > .stagger-item:nth-child(n+9) { animation-delay: 0.34s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after, .animate-fade-up, .animate-scale-in,
+    .animate-slide-in-right, .stagger > .stagger-item { animation: none; }
+    * { transition-duration: 0.01ms !important; }
+  }
+
+  /* Accessibility: visible keyboard focus ring for interactive elements. */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--brand, #2f80ed);
+    outline-offset: 2px;
+    border-radius: 0.5rem;
+  }
 }
+
+/* ── Global scrollbar (so every panel + page matches the ledger theme) ── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+  border: 2px solid var(--bg-app);
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Smooth, theme-aware scrolling (disabled under reduced-motion below) */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+

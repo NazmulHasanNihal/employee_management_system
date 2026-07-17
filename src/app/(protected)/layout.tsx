@@ -1,10 +1,13 @@
 import AppLayout from "@/components/Layout";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import OnboardingFlow from "@/components/OnboardingFlow";
+import { UserProvider } from "@/components/UserProvider";
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
+
+
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -18,7 +21,22 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     where: { id: authUser.id }
   });
 
-  const isSystemOwner = authUser.email === 'nazmulhas36@gmail.com';
+  // If user not found by ID, try to find by email (handles cases where Supabase user was recreated)
+  if (!dbUser && authUser.email) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: authUser.email }
+    });
+
+    if (existingUser) {
+      // Update the Prisma user's ID to match the new Supabase auth ID
+      dbUser = await prisma.user.update({
+        where: { email: authUser.email },
+        data: { id: authUser.id }
+      });
+    }
+  }
+
+  const isSystemOwner = authUser.email === process.env.OWNER_EMAIL;
 
   if (!dbUser) {
     dbUser = await prisma.user.create({
@@ -26,7 +44,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         id: authUser.id,
         email: authUser.email!,
         name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Authorized User',
-        role: isSystemOwner ? 'Admin' : (authUser.user_metadata?.role || 'Employee'),
+        role: isSystemOwner ? 'CEO' : (authUser.user_metadata?.role || 'Employee'),
         department: isSystemOwner ? 'Executive' : (authUser.user_metadata?.department || 'Operations'),
         designation: isSystemOwner ? 'CEO' : (authUser.user_metadata?.designation || 'Staff'),
         status: 'active',
@@ -34,12 +52,12 @@ export default async function ProtectedLayout({ children }: { children: React.Re
         isOwner: isSystemOwner
       }
     });
-  } else if (isSystemOwner && (!dbUser.isOwner || dbUser.role !== 'Admin')) {
+  } else if (isSystemOwner && (!dbUser.isOwner || dbUser.role !== 'CEO')) {
     // Ensure the system owner always has their privileges, even if someone tried to change them
     dbUser = await prisma.user.update({
       where: { id: authUser.id },
       data: {
-        role: 'Admin',
+        role: 'CEO',
         designation: 'CEO',
         department: 'Executive',
         isOwner: true,
@@ -56,16 +74,57 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     department: dbUser.department || 'Unassigned',
     designation: dbUser.designation || 'Staff',
     avatarUrl: dbUser.avatarUrl,
-    isOnboarded: dbUser.isOnboarded
+    isOnboarded: dbUser.isOnboarded,
+    branchId: dbUser.branchId
   };
 
+  const isOwner = dbUser.isOwner;
+  const isCEO = isOwner || dbUser.role === 'CEO';
+  const isAdmin = dbUser.role === 'Admin' || dbUser.role === 'HR Manager';
+  const isHR = dbUser.role === 'HR Manager';
+
+  const userContext = {
+    user: layoutUser,
+    isOwner,
+    isCEO,
+    isAdmin,
+    isHR,
+  };
+
+  // Prefetch notifications on the server so the header badge has no client round-trip.
+  let notifications: any[] = [];
+  try {
+    notifications = await prisma.notification.findMany({
+      where: { userId: dbUser.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  } catch {
+    notifications = [];
+  }
+
   if (!dbUser.isOnboarded) {
-    return <OnboardingFlow user={layoutUser} />;
+    return (
+      <UserProvider value={userContext}>
+        <OnboardingFlow user={layoutUser} />
+      </UserProvider>
+    );
+  }
+
+  // Verify-email gate (P0): block access until the auth email is confirmed,
+  // unless this is the system owner or the account was provisioned/accepted
+  // with email_confirm already true. Invited users who just set a password via
+  // /api/invite/accept get email_confirm:true, so they pass straight through.
+  const emailVerified = !!authUser.email_confirmed_at;
+  if (!emailVerified && !dbUser.isOwner) {
+    redirect('/verify-email');
   }
 
   return (
-    <AppLayout user={layoutUser}>
-      {children}
-    </AppLayout>
+    <UserProvider value={userContext}>
+      <AppLayout user={layoutUser} notifications={notifications}>
+        {children}
+      </AppLayout>
+    </UserProvider>
   );
 }

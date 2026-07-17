@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { logError } from '@/lib/logger';
+import { prisma } from '@/lib/prisma';
 import { createClient } from '@/lib/supabase/server';
 
-const prisma = new PrismaClient();
+
 
 export async function POST(req: Request) {
   try {
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, user: updatedUser });
   } catch (error: any) {
-    console.error('Unsubscribe Error:', error);
+    logError('Unsubscribe Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -1,0 +1,44 @@
+graph TB
+  subgraph Client["Client (Browser / PWA)"]
+    UI["Next.js 15 App Router UI<br/>Tailwind + Framer Motion<br/>Command Palette · Offline (Serwist)"]
+    SW["Service Worker (PWA)<br/>Serwist"]
+  end
+
+  subgraph Edge["Next.js Server (Vercel)"]
+    SA["Server Actions<br/>executeServerQuery / Mutation"]
+    RH["REST Route Handlers<br/>/api/upload · /api/notifications"]
+    MID["Middleware (Auth + Rate-limit)"]
+    AUT["Automation Engine<br/>src/server/automation.ts"]
+  end
+
+  subgraph Data["Data & Services"]
+    SB[(Supabase Postgres + Auth)]
+    PRISMA["Prisma ORM"]
+    REDIS[(Upstash Redis<br/>BullMQ queues)]
+    GO["Go / Fiber Microservice<br/>Payroll & Attendance PDF"]
+  end
+
+  subgraph Observability["Observability"]
+    SENTRY["Sentry (errors)"]
+    POSTHOG["PostHog (funnels)"]
+  end
+
+  UI --> SW
+  UI --> SA
+  UI --> RH
+  SA --> MID
+  RH --> MID
+  SA --> PRISMA
+  PRISMA --> SB
+  AUT --> PRISMA
+  RH --> GO
+  AUT --> REDIS
+  SA --> REDIS
+  SA --> SENTRY
+  RH --> SENTRY
+  UI --> POSTHOG
+
+  classDef svc fill:#0a0e14,stroke:#ff3366,color:#e6edf3;
+  classDef data fill:#10261f,stroke:#3ddc97,color:#e6edf3;
+  class UI,SW,SA,RH,MID,AUT svc;
+  class SB,PRISMA,REDIS,GO data;

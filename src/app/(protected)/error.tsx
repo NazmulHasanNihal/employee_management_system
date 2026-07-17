@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { ShieldAlert, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -12,49 +13,47 @@ export default function ErrorBoundary({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    // Report to Sentry so we are notified immediately when a user hits a crash.
+    Sentry.captureException(error);
     console.error(error);
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center animate-in fade-in zoom-in duration-500">
-      <div className="relative">
-        <div className="absolute inset-0 bg-[var(--alert-red)]/20 blur-3xl rounded-full scale-150 animate-pulse" />
-        <div className="bg-black/80 backdrop-blur-xl border border-[var(--alert-red)]/50 p-6 rounded-3xl relative z-10 shadow-[0_0_50px_rgba(255,51,102,0.2)]">
-          <ShieldAlert className="text-[var(--alert-red)] w-24 h-24 mx-auto" strokeWidth={1.5} />
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 px-4 text-center">
+      <div className="ledger-card flex flex-col items-center rounded-2xl p-8 shadow-[var(--shadow-lg)]">
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--rose-soft)] text-[var(--rose)]">
+          <ShieldAlert className="h-8 w-8" strokeWidth={1.75} />
         </div>
-      </div>
-      
-      <div className="space-y-2 max-w-md">
-        <h2 className="text-3xl font-black font-mono text-white tracking-tighter uppercase">
-          System Fault
+
+        <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+          Something went wrong
         </h2>
-        <p className="text-sm font-mono text-[var(--text-muted)]">
-          A critical exception occurred while attempting to render this module. Our telemetry has logged the error.
+        <p className="mt-2 max-w-md text-sm text-[var(--text-muted)]">
+          A critical exception occurred while rendering this page. The error has been logged and our team has been notified.
         </p>
-      </div>
 
-      <div className="bg-black/40 border border-white/10 p-4 rounded-xl text-left max-w-lg w-full overflow-hidden">
-        <p className="text-[10px] font-mono text-[var(--alert-red)] uppercase mb-2 font-bold tracking-widest">
-          Stack Trace Preview
-        </p>
-        <p className="text-[10px] font-mono text-white/70 truncate">
-          {error.message || "Unknown Runtime Error"}
-        </p>
-        {error.digest && (
-          <p className="text-[10px] font-mono text-white/50 mt-1">
-            Digest: {error.digest}
+        <div className="mt-5 w-full max-w-lg rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-4 text-left">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--rose)]">
+            Error details
           </p>
-        )}
-      </div>
+          <p className="truncate text-xs text-[var(--text-muted)]">
+            {error.message || "Unknown runtime error"}
+          </p>
+          {error.digest && (
+            <p className="mt-1 text-xs text-[var(--text-muted)] opacity-70">
+              Digest: {error.digest}
+            </p>
+          )}
+        </div>
 
-      <Button 
-        onClick={() => reset()}
-        className="bg-transparent border-2 border-[var(--alert-red)] text-[var(--alert-red)] hover:bg-[var(--alert-red)] hover:text-black hover:shadow-[0_0_20px_var(--alert-red)] font-mono font-bold uppercase tracking-widest px-8 py-6 rounded-xl transition-all"
-      >
-        <RefreshCw className="mr-2 h-4 w-4" />
-        Reboot Module
-      </Button>
+        <Button
+          onClick={() => reset()}
+          className="mt-2 rounded-xl px-8 py-3 text-sm"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Try again
+        </Button>
+      </div>
     </div>
   );
 }

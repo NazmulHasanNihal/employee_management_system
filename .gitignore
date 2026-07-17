@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# partykit runtime cache (not source)
+.partykit/
 
 # vercel
 .vercel
@@ -50,3 +54,8 @@ public/sw.js
 public/sw.js.map
 public/workbox-*.js
 walkthrough.md
+*.zcode
+
+# committed build artifacts / local uploads
+services/go-backend/go-backend.exe
+public/uploads/*

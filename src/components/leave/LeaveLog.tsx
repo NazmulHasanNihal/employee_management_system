@@ -3,7 +3,7 @@
 import React from 'react';
 import { Calendar, CalendarPlus, Check, Clock, X } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
-import usePartySocket from '@/lib/usePartySocket';
+import useRealtimePresence from '@/lib/useRealtimePresence';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '../StatusBadge';
 import { EmptyState } from '../EmptyState';
@@ -16,8 +16,7 @@ interface LeaveLogProps {
 
 export function LeaveLog({ requests, isAdmin, currentUser }: LeaveLogProps) {
   const utils = trpc.useUtils();
-  const socket = usePartySocket({
-    host: 'localhost:1999',
+  const socket = useRealtimePresence({
     room: 'ems-global',
   });
 

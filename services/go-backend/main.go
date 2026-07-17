@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/go-pdf/fpdf"
 	"github.com/gofiber/fiber/v2"
@@ -17,19 +18,38 @@ type PayrollRequest struct {
 	TaxDeduction float64 `json:"taxDeduction"`
 }
 
+// requireAuth validates the incoming Bearer token against the configured secret.
+func requireAuth(c *fiber.Ctx, authToken string) error {
+	authHeader := c.Get("Authorization")
+	if authHeader != "Bearer "+authToken {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
+	}
+	return nil
+}
+
 func main() {
 	app := fiber.New()
 
+	// Auth token and allowed CORS origin are environment-driven.
+	// PAYROLL_API_TOKEN is REQUIRED — the service refuses to start without it.
+	authToken := os.Getenv("PAYROLL_API_TOKEN")
+	if authToken == "" {
+		log.Fatal("PAYROLL_API_TOKEN environment variable is required")
+	}
+	corsOrigin := os.Getenv("PAYROLL_CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "http://localhost:3000"
+	}
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
+		AllowOrigins: corsOrigin,
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
 	app.Post("/api/payroll/generate-payslip", func(c *fiber.Ctx) error {
 		// Basic Auth Check
-		authHeader := c.Get("Authorization")
-		if authHeader != "Bearer shared_secret_token_123" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
+		if err := requireAuth(c, authToken); err != nil {
+			return err
 		}
 
 		req := new(PayrollRequest)
@@ -75,6 +95,10 @@ func main() {
 	}
 
 	app.Post("/api/reports/attendance-pdf", func(c *fiber.Ctx) error {
+		if err := requireAuth(c, authToken); err != nil {
+			return err
+		}
+
 		var records []AttendanceRecord
 		if err := c.BodyParser(&records); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid JSON"})

@@ -1,29 +1,18 @@
 import React from 'react';
-import { createClient } from "@/lib/supabase/server";
-import { PrismaClient } from "@prisma/client";
-import { redirect } from "next/navigation";
-import { executeServerQuery } from "@/app/actions/db";
-import AuditClientPage from "@/components/audit/AuditClientPage";
+import { getAuditLogs } from '@/server/queries';
+import { getCaller } from '@/lib/auth';
+import { redirect } from 'next/navigation';
+import AuditClientPage from '@/components/audit/AuditClientPage';
 
-const prisma = new PrismaClient();
+export const dynamic = 'force-dynamic';
 
 export default async function AuditPage() {
-  const supabase = await createClient();
-  const { data: { user: authUser }, error } = await supabase.auth.getUser();
-
-  if (error || !authUser) {
-    redirect("/login");
+  const caller = await getCaller();
+  if (!caller || (!caller.isAdmin && !caller.isCEO)) {
+    redirect('/');
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: authUser.id }
-  });
-
-  if (!dbUser || (dbUser.role !== 'Admin' && dbUser.role !== 'HR Manager')) {
-    redirect("/");
-  }
-
-  const events = await executeServerQuery('audit.getLogs', {});
+  const events = await getAuditLogs();
 
   return <AuditClientPage initialEvents={events} />;
 }

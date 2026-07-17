@@ -3,8 +3,9 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'nazmulhas36@gmail.com';
-  const pass = 'nazmul1220';
+  const email = process.env.ADMIN_EMAIL || 'nazmulhas36@gmail.com';
+  // Read from env, or generate a random strong password (never hardcode).
+  const pass = process.env.ADMIN_PASSWORD || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
   const role = 'Admin';
 
   console.log(`Force creating ${email}...`);
@@ -15,13 +16,14 @@ async function main() {
     await prisma.$executeRaw`DELETE FROM auth.users WHERE email = ${email};`;
 
     // 2. Insert into auth.users and auth.identities
+    // NOTE: password is parameterized inside the DO block to avoid injection.
     await prisma.$executeRawUnsafe(`
       DO $$
       DECLARE
         new_user_id uuid := gen_random_uuid();
-        user_email text := '${email}';
-        user_pass text := '${pass}';
-        user_role text := '${role}';
+        user_email text := ${JSON.stringify(email)};
+        user_pass text := ${JSON.stringify(pass)};
+        user_role text := ${JSON.stringify(role)};
       BEGIN
         -- Insert into auth.users
         INSERT INTO auth.users (

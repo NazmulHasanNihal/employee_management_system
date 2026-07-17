@@ -23,6 +23,39 @@ model User {
   managerId   String?
   manager     User?        @relation("ManagerToEmployee", fields: [managerId], references: [id])
   reports     User[]       @relation("ManagerToEmployee")
+  // Delegation: who acts on this user's behalf (proxy). Set via team.setProxy.
+  proxyId     String?
+  proxy       User?        @relation("ProxyToUser", fields: [proxyId], references: [id])
+  proxiedUsers User[]      @relation("ProxyToUser")
+  // ── Bangladesh localization (Phase B) ──
+  branchId    String?
+  branch      Branch?      @relation("BranchMembers", fields: [branchId], references: [id])
+  nid         String?      // National ID — stored AES-256-GCM encrypted at rest (app layer: prefix "nid:v1:iv:tag:ct"). Plaintext legacy rows are still readable.
+  nidMasked   String?      // Display-safe mask (e.g. ***-**1234) derived at write time
+  bloodGroup  String?      // A+, B-, O+, etc.
+  religion    String?      // optional, used for leave eligibility
+  preferredLanguage String @default("en") // 'en' | 'bn'
+  baseSalary  Float?       // Monthly base salary used by payroll engine
+  lastSeen    DateTime?    // Last activity timestamp, used for presence
+  isOnline    Boolean      @default(false) // Derived presence flag
+
+  // ── Profile (Phase 3): rich editable identity / contact / employment info ──
+  phone                String?
+  bio                  String?
+  dateOfBirth          DateTime?
+  gender               String? // Male, Female, Non-Binary, Prefer Not to Say
+  address              String?
+  city                 String?
+  country              String?
+  emergencyContactName String?
+  emergencyContactPhone String?
+  employmentType       String   @default("Full-Time") // Full-Time, Part-Time, Contract, Intern
+  joinDate             DateTime?
+  linkedin             String?
+  github               String?
+  twitter              String?
+  website              String?
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -31,9 +64,12 @@ model User {
   leaveRequests LeaveRequest[]
   payrolls      Payroll[]
   tickets       Ticket[]
+  ticketReplies TicketReply[]
+  automationRules AutomationRule[]
   messagesSent  Message[] @relation("MessageSender")
   messagesRecv  Message[] @relation("MessageReceiver")
   attendances   Attendance[]
+  festivalBonuses FestivalBonus[]
   notifications Notification[]
 
   // New relations
@@ -42,6 +78,34 @@ model User {
   calendarAssigned    CalendarEvent[]  @relation("EventAssignee")
   tasksAssigned       TeamTask[]       @relation("TaskAssignee")
   tasksCreated        TeamTask[]       @relation("TaskAssigner")
+
+  // Additional feature relations
+  certifications       Certification[]
+  whistleblowerReports WhistleblowerReport[]
+  benefits             BenefitEnrollment[]
+  equityGrants         EquityGrant[]
+  objectives           Objective[]
+  reviewsGiven         Review[]  @relation("ReviewReviewer")
+  reviewsReceived      Review[]  @relation("ReviewSubject")
+  reviewScoresGiven    ReviewScore[] @relation("ReviewScoreReviewer")
+  reviewScoresReceived ReviewScore[] @relation("ReviewScoreSubject")
+  jobRequisitions      JobRequisition[]  @relation("JobRequisitionOwner")
+  candidates           Candidate[]       @relation("CandidateOwner")
+  feedbackGiven        Feedback[]        @relation("FeedbackAuthor")
+  feedbackReceived     Feedback[]        @relation("FeedbackRecipient")
+  kudosSent            Kudo[]            @relation("KudoSender")
+  kudosReceived        Kudo[]            @relation("KudoRecipient")
+  documents            Document[]
+  skills               Skill[]
+  trainingEnrollments  TrainingEnrollment[]
+  statutoryCalcs       StatutoryCalc[]
+  shiftAssignments     ShiftAssignment[]
+  onboardingTasks      OnboardingTask[]  @relation("OnboardingOwner")
+  createdWorkflows     OnboardingTask[]  @relation("OnboardingCreator")
+
+  // ── P8 relation back-refs ──
+  calibrationSessions  CalibrationSession[]  @relation("CalibrationCreator")
+  calibrationEntries   CalibrationEntry[]
 }
 
 model Department {
@@ -49,8 +113,50 @@ model Department {
   name      String   @unique
   budget    Float    @default(0)
   headId    String?
+  branchId  String?
+  branch    Branch?  @relation("DepartmentBranch", fields: [branchId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ── Multi-branch / multi-location (Bangladesh businesses are often multi-site) ──
+model Branch {
+  id       String   @id @default(cuid())
+  name     String
+  city     String
+  address  String?
+  timezone String   @default("Asia/Dhaka")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members     User[]            @relation("BranchMembers")
+  departments Department[] @relation("DepartmentBranch")
+  shifts      Shift[]      @relation("ShiftBranch")
+  relations   BranchRelations[]
+
+  @@unique([name])
+}
+
+// ── Branch external relations (C2) ──
+// Used for localized offer/appointment letters (e.g. bank, insurance, govt office).
+model BranchRelations {
+  id           String @id @default(cuid())
+  branchId     String
+  branch       Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  relationName String // e.g. "Bank", "Insurance Provider", "Labour Office"
+  contactName  String?
+  phone        String?
+  email        String?
+  address      String?
+}
+
+// ── Bangladesh public/govt holidays (seeded; verify official dates before use) ──
+model Holiday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  name      String
+  nameBn    String?
+  type      String   @default("Public") // Public, Religious, National, Festival
+  createdAt DateTime @default(now())
 }
 
 model Expense {
@@ -89,21 +195,81 @@ model LeaveRequest {
   createdAt DateTime @default(now())
 }
 
+// ── Bangladesh leave types (B3) ──
+// Canonical leave categories per the Bangladesh Labour Act (2006). The `category`
+// field is the stable key consumed by computeBdLeaveBalance / leave UI, so
+// submitted leave requests reconcile with balance buckets.
+model LeaveType {
+  id              String  @id @default(cuid())
+  name            String  @unique
+  nameBn          String? // Bangla label, e.g. "ঐচ্ছিক ছুটি"
+  category        String  // Casual | Earned | Sick | Festival | Maternity | Paternity
+  defaultDays     Int     @default(0) // statutory entitlement per year
+  isPaid          Boolean @default(true)
+  applicableGender String? // null = all, "Female" | "Male"
+  isActive        Boolean @default(true)
+}
+
 model Payroll {
-  id          String   @id @default(cuid())
-  month       String
-  year        Int
-  status      String   @default("DRAFT") // DRAFT, PROCESSED
-  totalAmount Float
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+  id                String   @id @default(cuid())
+  month             String
+  year              Int
+  status            String   @default("DRAFT") // DRAFT, PROCESSED
+  totalAmount       Float
+  earnings          Float    @default(0)
+  deductions        Float    @default(0)
+  currency          String   @default("BDT") // BDT default for Bangladesh
+  salaryStructureId String?
+  salaryStructure   SalaryStructure? @relation(fields: [salaryStructureId], references: [id])
+
+  // ── Extended breakdown (B2/C4) ──
+  earningsBreakdown  Json? // [{ head, amount }]
+  deductionsBreakdown Json? // [{ head, amount }]
+  overtimeHours      Float  @default(0)
+  lateDays           Int    @default(0)
+  nightHours         Float  @default(0)
+  tax                Float  @default(0) // BD income tax withheld
+  netPay             Float? // earnings - deductions - tax
+  providentFund      Float  @default(0) // PF contribution for the period
+  gratuityAccrued    Float  @default(0) // gratuity accrual for the period
+  festivalBonus      Float  @default(0) // festival bonus included this period
+
+  salaryHeads        SalaryHead[] // resolved heads used in this payroll (M:N convenience)
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+}
+
+// ── Bangladesh Festival Bonus (B2) ──
+// Tracks the two statutory festival bonuses (e.g. Eid-ul-Fitr, Eid-ul-Adha).
+// Surfaced in payroll + statutory reports.
+model FestivalBonus {
+  id                 String   @id @default(cuid())
+  year               Int
+  occasion           String   // e.g. "Eid-ul-Fitr"
+  occasionBn         String?  // e.g. "ঈদ-উল-ফিতর"
+  amount             Float    // bonus amount paid
+  baseSalarySnapshot Float    // base salary at time of payout
+  status             String   @default("PENDING") // PENDING, PAID
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
 }
 
 model SalaryHead {
   id   String @id @default(cuid())
   name String @unique
   type String // EARNING, DEDUCTION
+
+  // ── Bangladesh-aware salary head metadata (B2) ──
+  displayNameBn    String? // Bangla label, e.g. "মূল বেতন"
+  isDefault        Boolean @default(false) // seeded default head (Basic/HRA/Medical/Conveyance/Festival Bonus/PF/TDS)
+  category         String? // BASIC, ALLOWANCE, STATUTORY_DEDUCTION
+  calculationType  String  @default("flat") // flat | percentage_of_base | formula
+  factor           Float   @default(0) // percent (0-100) of base when calculationType = percentage_of_base
+  isStatutory      Boolean @default(false) // PF / TDS etc. — surfaced in statutory reports
+
+  payrolls Payroll[] // denormalized FK back-reference for convenience queries
 }
 
 model Ticket {
@@ -113,6 +279,17 @@ model Ticket {
   status    String   @default("Open") // Open, In Progress, Resolved
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies   TicketReply[]
+  createdAt DateTime @default(now())
+}
+
+model TicketReply {
+  id        String   @id @default(cuid())
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
   createdAt DateTime @default(now())
 }
 
@@ -165,6 +342,17 @@ model Attendance {
   clockIn   DateTime?
   clockOut  DateTime?
   location  String?
+  // ── Factory/shift attendance extensions (C1) ──
+  branchId        String?
+  shiftId         String?
+  shift           Shift?   @relation(fields: [shiftId], references: [id])
+  overtimeMinutes Int      @default(0) // minutes beyond standard shift length
+  nightMinutes    Int      @default(0) // minutes within night-differential window
+  lateMinutes     Int      @default(0) // minutes after grace period
+  workedMinutes   Int?     // total paid minutes (clock-out - clock-in - break)
+  geoLat          Float?   // captured latitude at clock-in
+  geoLng          Float?   // captured longitude at clock-in
+  geoVerified     Boolean  @default(false) // passed geo-fence validation
   createdAt DateTime  @default(now())
 }
 
@@ -229,4 +417,394 @@ model TeamTask {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
+
+// ── Shifts & Roster (C1) ──
+model Shift {
+  id           String           @id @default(cuid())
+  name         String
+  startTime    String // "09:00"
+  endTime      String // "17:00" — may wrap past midnight for night shifts
+  location     String?
+  graceMinutes Int              @default(10) // minutes after startTime before "Late"
+  isNightShift Boolean          @default(false) // drives night-differential computation
+  breakMinutes Int              @default(60) // unpaid break deducted from worked time
+  branchId     String?
+  branch       Branch?          @relation("ShiftBranch", fields: [branchId], references: [id])
+  assignments  ShiftAssignment[]
+  attendances  Attendance[]
+  createdAt    DateTime         @default(now())
+}
+
+model ShiftAssignment {
+  id        String   @id @default(cuid())
+  shiftId   String
+  shift     Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  createdAt DateTime @default(now())
+}
+
+// ── Performance ──
+model Objective {
+  id        String   @id @default(cuid())
+  title     String
+  progress  Int      @default(0) // 0-100
+  status    String   @default("On Track") // On Track, At Risk, Completed
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  reviewPeriod String
+  rating       String // Exceeds Expectations, Meets Expectations, Needs Improvement
+  comments     String
+  reviewerId   String
+  reviewer     User     @relation("ReviewReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation("ReviewSubject", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  scores       ReviewScore[] // deterministic per-dimension ratings
+}
+
+// ── Performance: deterministic per-dimension ratings ──
+// Replaces the Math.random jitter previously used in reviews.getMine radar.
+// One row per (review, dimension). rating is 1-5.
+model ReviewScore {
+  id          String   @id @default(cuid())
+  reviewId    String
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  dimension   String   // e.g. "Communication", "Leadership", "Execution", "Teamwork"
+  rating      Float    // 1.0 - 5.0
+  reviewerId  String
+  reviewer    User     @relation("ReviewScoreReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation("ReviewScoreSubject", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([reviewId, dimension])
+  @@index([userId])
+}
+
+// ── Recruitment ──
+model JobRequisition {
+  id             String     @id @default(cuid())
+  title          String
+  department     String
+  location       String
+  type           String     @default("Full-Time")
+  description    String?
+  requiredSkills String? // JSON array string
+  status         String     @default("Open") // Open, Closed, On Hold
+  ownerId        String
+  owner          User       @relation("JobRequisitionOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  candidates     Candidate[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Candidate {
+  id          String          @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  resumeUrl   String? // uploaded CV / resume link
+  status      String          @default("Applied") // Applied, Interviewing, Offered, Hired, Rejected
+  jobId       String
+  job         JobRequisition  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  ownerId     String
+  owner       User            @relation("CandidateOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime        @default(now())
+}
+
+// ── Compliance ──
+model Certification {
+  id         String   @id @default(cuid())
+  name       String
+  expiryDate DateTime
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model WhistleblowerReport {
+  id         String   @id @default(cuid())
+  report     String
+  userId     String? // anonymized; stored but not surfaced
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status     String   @default("Received") // Received, Investigating, Resolved
+  assignedTo String? // CommitteeMember name
+  resolution String? // Resolution notes (admin only)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ── Benefits & Equity ──
+model Benefit {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  provider    String?
+  category    String   @default("Health") // Health, Retirement, Wellness
+  enrollments BenefitEnrollment[]
+  createdAt   DateTime @default(now())
+}
+
+model BenefitEnrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  benefitId String
+  benefit   Benefit  @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  status    String   @default("ENROLLED") // ENROLLED, WAITING, DECLINED
+  createdAt DateTime @default(now())
+}
+
+model EnrollmentPeriod {
+  id        String    @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime  @default(now())
+}
+
+model EquityGrant {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalShares      Int
+  vestedShares    Int      @default(0)
+  currentStrikePrice Float
+  grantDate        DateTime
+  createdAt        DateTime @default(now())
+}
+
+// ── Feedback ──
+model Feedback {
+  id         String   @id @default(cuid())
+  content    String
+  type       String   @default("Suggestion") // Suggestion, Praise, Concern
+  status     String   @default("Open") // Open, Reviewed, Addressed
+  anonymous  Boolean  @default(true)
+  authorId   String
+  author     User     @relation("FeedbackAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  recipientId String?
+  recipient  User?    @relation("FeedbackRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+}
+
+// ── Recognition (Kudos) ──
+model Kudo {
+  id        String   @id @default(cuid())
+  message   String
+  senderId  String
+  sender    User     @relation("KudoSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver  User     @relation("KudoRecipient", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ── Documents ──
+model Document {
+  id        String   @id @default(cuid())
+  title     String
+  url       String
+  type      String   @default("General") // General, Contract, Policy, Identity
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  signed    Boolean  @default(false)
+  signedAt  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Skills ──
+model Skill {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill  String
+  level  Int    @default(1) // 1-5
+}
+
+// ── Workflows (Onboarding / Offboarding / Probation) ──
+model OnboardingTask {
+  id        String   @id @default(cuid())
+  title     String
+  isCompleted Boolean @default(false)
+  category  String   @default("Onboarding") // Onboarding, Probation, Offboarding
+  userId    String
+  user      User     @relation("OnboardingOwner", fields: [userId], references: [id], onDelete: Cascade)
+  creatorId String
+  creator   User     @relation("OnboardingCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// ── Training / Learning (C3) ──
+model TrainingCourse {
+  id           String  @id @default(cuid())
+  title        String
+  titleBn      String?
+  description  String?
+  category     String  @default("Compliance") // Compliance, Technical, SoftSkills, Onboarding
+  durationHours Int    @default(1)
+  isMandatory  Boolean @default(false)
+  isActive     Boolean @default(true)
+  enrollments  TrainingEnrollment[]
+  createdAt    DateTime @default(now())
+}
+
+model TrainingEnrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    TrainingCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status    String   @default("Enrolled") // Enrolled, InProgress, Completed, Expired
+  progress  Int      @default(0) // 0-100
+  enrolledAt DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+}
+
+// ── Document templates / mail-merge (C5) ──
+model DocumentTemplate {
+  id          String   @id @default(cuid())
+  slug        String   @unique // e.g. "appointment-letter", "noc", "increment-letter"
+  name        String
+  nameBn      String?
+  category    String   @default("Letter") // Appointment, Experience, SalaryCertificate, NOC, Increment, Offer
+  language    String   @default("en") // en | bn | both
+  body        String // Handlebars markup; variables substituted at generation time
+  variables   Json? // list of variable names expected by `body`
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ── Whistleblower ethics committee (C4) ──
+model CommitteeMember {
+  id        String   @id @default(cuid())
+  name      String
+  role      String   // e.g. "Chair", "HR Representative", "External Auditor"
+  email     String?
+  isChair   Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ── Cached statutory calculations (C4) ──
+// Stores computed PF / gratuity / festival-bonus figures per user-month so
+// statutory report exports read from a stable snapshot.
+model StatutoryCalc {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month              Int
+  year               Int
+  providentFund      Float    @default(0)
+  gratuityAccrued    Float    @default(0)
+  festivalBonus      Float    @default(0)
+  taxableIncome      Float    @default(0)
+  tax                Float    @default(0)
+  createdAt          DateTime @default(now())
+
+  @@unique([userId, month, year])
+}
+
+// ── Payroll Structures ──
+model SalaryStructure {
+  id        String   @id @default(cuid())
+  name      String
+  baseSalary Float
+  // JSON mapping of SalaryHead name -> amount, e.g. {"Basic Salary": 5000, "Income Tax": -800}
+  heads     Json
+  payrolls  Payroll[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Automation Rules (no-code workflow engine) ──
+model AutomationRule {
+  id         String   @id @default(cuid())
+  name       String
+  description String?
+  trigger    String // e.g. "employee.added", "leave.requested", "review.due"
+  condition  String? // optional JSON-encoded predicate
+  action     String // e.g. "send_welcome", "notify_manager", "auto_approve_leave"
+  status     String   @default("Active") // Active, Paused
+  ownerId    String
+  owner      User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  lastRunAt  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Performance Calibration (P8) ──
+// A calibration session bundles per-review score adjustments so managers/HR can
+// normalize ratings across the org before they feed payroll/reviews.
+model CalibrationSession {
+  id           String   @id @default(cuid())
+  label        String
+  reviewPeriod String
+  status       String   @default("Draft") // Draft, Open, Locked
+  createdById  String
+  createdBy    User     @relation("CalibrationCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  entries      CalibrationEntry[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model CalibrationEntry {
+  id              String   @id @default(cuid())
+  sessionId       String
+  session         CalibrationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  reviewId        String
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rawScore        Float    @default(0)
+  calibratedScore Float    @default(0)
+  multiplier      Float    @default(1)
+  note            String?
+  createdAt       DateTime @default(now())
+
+  @@unique([sessionId, reviewId])
+}
+
+// ── Engagement Greetings (P10) ──
+// Rules toggle which automated BD greetings fire (birthday / festival / anniversary).
+model GreetingRule {
+  id             String   @id @default(cuid())
+  kind           String   // birthday, festival, anniversary
+  channel        String   @default("inapp") // inapp, push, both
+  messageTemplate String
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+}
+
+// Dedupe log so the cron route is idempotent (one greeting per user per kind per day).
+model GreetingLog {
+  id      String   @id @default(cuid())
+  kind    String   // birthday, festival, anniversary
+  userId  String?
+  message String
+  sentAt  DateTime @default(now())
+
+  @@unique([kind, userId, sentAt])
+}
+
+// ── System Flags / key-value settings (Pillar 3/4) ──
+// Persists the toggles shown on the Settings page so they are not local-only UI state.
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   // stored as string; callers coerce to bool/number/json
+  updatedAt DateTime @updatedAt
+  updatedById String?
+}
+
 

@@ -1,25 +1,37 @@
+'use client';
+
 import React from 'react';
 import { Shield } from 'lucide-react';
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+} from 'recharts';
 
 export function CombatStats({ user }: { user: any }) {
+  const level = Number(user?.rpgLevel || 1);
+  const data = [
+    { subject: 'Leadership', A: Math.min(5, 1 + level * 0.5), fullMark: 5 },
+    { subject: 'Output', A: Math.min(5, 1.5 + level * 0.3), fullMark: 5 },
+    { subject: 'Teamwork', A: Math.min(5, 1.2 + level * 0.4), fullMark: 5 },
+    { subject: 'Reliability', A: Math.min(5, 1.7 + level * 0.2), fullMark: 5 },
+    { subject: 'Initiative', A: Math.min(5, 0.8 + level * 0.6), fullMark: 5 },
+  ];
   return (
-    <div className="ledger-panel p-6">
-      <h4 className="font-mono text-[10px] font-bold text-[var(--ledger-blue)] uppercase tracking-widest mb-4 flex items-center gap-2">
-        <Shield size={14}/> Combat Stats (Skills)
+    <div className="flex h-full flex-col">
+      <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+        <Shield size={15} className="text-[var(--brand-strong)]" /> Combat Stats
       </h4>
-      <div className="min-h-[180px] w-full md:min-h-[220px]">
+      <div className="min-h-[220px] w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
-            { subject: 'Leadership', A: Math.min(100, 40 + ((user.rpgLevel || 1) * 5)), fullMark: 100 },
-            { subject: 'Output', A: Math.min(100, 60 + ((user.rpgLevel || 1) * 3)), fullMark: 100 },
-            { subject: 'Teamwork', A: Math.min(100, 50 + ((user.rpgLevel || 1) * 4)), fullMark: 100 },
-            { subject: 'Reliability', A: Math.min(100, 70 + ((user.rpgLevel || 1) * 2)), fullMark: 100 },
-            { subject: 'Initiative', A: Math.min(100, 30 + ((user.rpgLevel || 1) * 6)), fullMark: 100 },
-          ]}>
-            <PolarGrid stroke="var(--ledger-border)" />
-            <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-muted)', fontSize: 10, fontFamily: 'monospace' }} />
-            <Radar name="Stats" dataKey="A" stroke="var(--ledger-blue)" fill="var(--ledger-blue)" fillOpacity={0.25} />
+          <RadarChart data={data} outerRadius="72%">
+            <PolarGrid stroke="var(--border-hairline)" />
+            <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
+            <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
+            <Radar name="Stats" dataKey="A" stroke="var(--brand)" fill="var(--brand)" fillOpacity={0.3} />
           </RadarChart>
         </ResponsiveContainer>
       </div>

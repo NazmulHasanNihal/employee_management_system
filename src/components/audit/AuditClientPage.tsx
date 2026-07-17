@@ -1,105 +1,94 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
-import { ShieldCheck, FileDigit, Search, Lock } from 'lucide-react';
-import { EmptyState } from '../EmptyState';
+import { Lock, FileDigit, Search, ShieldCheck } from 'lucide-react';
+import { useUser } from '@/components/UserProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/EmptyState';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 interface AuditClientPageProps {
   initialEvents: any[];
 }
 
 export default function AuditClientPage({ initialEvents }: AuditClientPageProps) {
+  useUser();
   const [searchTerm, setSearchTerm] = useState('');
 
   const events = initialEvents || [];
-  const filteredEvents = events.filter((event: any) => 
-    event.action.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredEvents = events.filter((event: any) =>
+    event.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (event.actorName && event.actorName.toLowerCase().includes(searchTerm.toLowerCase())) ||
     event.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b-4 border-black relative">
-        <div>
-          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3 px-2 py-1 bg-black">
-            <Lock className="text-white" size={36} />
-            Immutable Audit Trail
-          </h2>
-          <p className="font-mono text-sm md:text-base mt-2 text-white flex items-center gap-2 bg-black px-2 inline-block">
-            <ShieldCheck size={16} className="text-[var(--verify-green)]" />
-            Cryptographically secured event-sourced ledger.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-white p-1 border-4 border-black shadow-[8px_8px_0_0_rgba(255,255,255,1)] flex flex-col h-[700px]">
-        <div className="bg-black text-white p-4 font-mono flex items-center justify-between border-b-4 border-white">
-          <h4 className="font-mono text-xl font-black uppercase tracking-widest flex items-center gap-2">
-            <FileDigit size={24} /> System Events
-          </h4>
-          
-          <div className="flex bg-white text-black p-1">
-            <input 
-              type="text" 
-              placeholder="SEARCH HASH / ACTOR"
+    <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
+      <PageHeader
+        icon={<Lock className="h-5 w-5" />}
+        title="Immutable Audit Trail"
+        subtitle="Cryptographically secured event-sourced ledger."
+        actions={
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+            <Input
+              placeholder="Search hash / actor..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-transparent outline-none px-2 font-mono text-xs w-64 placeholder-black/50 uppercase"
+              className="pl-9"
             />
-            <Search size={16} className="text-black m-1" />
           </div>
-        </div>
-        
-        <div className="flex-1 overflow-x-auto bg-white custom-scrollbar">
-          {filteredEvents.length === 0 ? (
-            <div className="p-8">
-              <EmptyState 
-                title="No Events Found" 
-                description="No system records match your query." 
-              />
-            </div>
-          ) : (
-            <table className="w-full min-w-max text-left font-mono">
-              <thead className="bg-black text-white">
-                <tr>
-                  <th className="p-4 border-r-4 border-white whitespace-nowrap">TIMESTAMP</th>
-                  <th className="p-4 border-r-4 border-white">EVENT ID / HASH</th>
-                  <th className="p-4 border-r-4 border-white">ACTOR</th>
-                  <th className="p-4 border-r-4 border-white">ACTION</th>
-                  <th className="p-4">DETAILS</th>
-                </tr>
-              </thead>
-              <tbody className="text-black divide-y-2 divide-black">
-                {filteredEvents.map((event: any) => (
-                  <tr key={event.id} className="hover:bg-black/10 transition-colors group">
-                    <td className="p-4 font-bold border-r-4 border-black whitespace-nowrap">
-                      {new Date(event.timestamp).toLocaleString()}
-                    </td>
-                    <td className="p-4 text-xs opacity-70 group-hover:opacity-100 transition-opacity border-r-4 border-black">
-                      {event.hash || event.id}
-                    </td>
-                    <td className="p-4 border-r-4 border-black">
-                      <div className="flex flex-col">
-                        <span className="font-bold">{event.actorName || event.actorId}</span>
-                        <span className="text-[9px] uppercase tracking-widest text-black/60">{event.actorRole}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 border-r-4 border-black">
-                      <span className="text-[10px] uppercase tracking-widest px-2 py-1 bg-black text-white">
-                        {event.action}
-                      </span>
-                    </td>
-                    <td className="p-4 text-xs max-w-xs truncate">
-                      {event.details ? JSON.stringify(event.details) : '-'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+        }
+      />
+
+      <Card>
+        {filteredEvents.length === 0 ? (
+          <EmptyState
+            title="No Events Found"
+            description="No system records match your query."
+            icon={<FileDigit className="h-5 w-5" />}
+          />
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>Event ID / Hash</TableHead>
+                <TableHead>Actor</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredEvents.map((event: any) => (
+                <TableRow key={event.id}>
+                  <TableCell className="font-mono font-semibold whitespace-nowrap">
+                    {new Date(event.timestamp).toLocaleString()}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-[var(--text-muted)] whitespace-nowrap">
+                    {event.hash || event.id}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-[var(--text-main)]">{event.actorName || event.actorId}</span>
+                      <span className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{event.actorRole}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="default" className="font-mono uppercase tracking-wide">{event.action}</Badge>
+                  </TableCell>
+                  <TableCell className="text-xs text-[var(--text-muted)] max-w-xs truncate">
+                    {event.details ? JSON.stringify(event.details) : '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </Card>
     </div>
   );
 }

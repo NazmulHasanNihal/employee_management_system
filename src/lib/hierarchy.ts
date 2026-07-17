@@ -1,26 +1,33 @@
 export function getUserRank(role?: string, designation?: string): number {
-  const desigLower = (designation || '').toLowerCase();
-  
-  if (desigLower.includes('ceo') || desigLower.includes('founder')) {
-    return 1;
-  }
-  
+  // Rank is derived from the authoritative `role` field, NOT the free-text
+  // `designation` (which a user can edit on their own profile). This prevents
+  // privilege escalation by setting designation to "CEO".
   switch (role) {
+    case 'CEO':
+      return 1;
     case 'Admin':
       return 2;
     case 'HR Manager':
       return 3;
-    case 'Manager':
+    case 'Director':
       return 4;
-    default:
+    case 'Manager':
       return 5;
+    default:
+      return 6;
   }
 }
 
-export function canModifyUser(currentUser: { role?: string, designation?: string }, targetUser: { role?: string, designation?: string }): boolean {
+export function canModifyUser(
+  currentUser: { role?: string; designation?: string; isOwner?: boolean },
+  targetUser: { role?: string; designation?: string; isOwner?: boolean }
+): boolean {
+  // The system owner can never be modified or demoted.
+  if (targetUser.isOwner) return false;
+
   const currentRank = getUserRank(currentUser.role, currentUser.designation);
   const targetRank = getUserRank(targetUser.role, targetUser.designation);
-  
-  // A user can only modify someone with a higher numerical rank (meaning lower power)
+
+  // A user can only modify someone with a higher numerical rank (lower power).
   return currentRank < targetRank;
 }

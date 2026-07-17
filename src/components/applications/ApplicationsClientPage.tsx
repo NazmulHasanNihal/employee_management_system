@@ -1,19 +1,21 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { Download, Check, X, Plus, Send, Network, Server, Fingerprint } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
+import { useUser } from '@/components/UserProvider';
 import { StatusBadge } from '../StatusBadge';
 import { EmptyState } from '../EmptyState';
+import { toast } from '@/lib/toast';
 
 interface ApplicationsClientPageProps {
   initialApps: any[];
-  user: any;
+  isAdmin: boolean;
 }
 
-export default function ApplicationsClientPage({ initialApps, user }: ApplicationsClientPageProps) {
-  const isAdmin = user?.role === 'Admin' || user?.role === 'HR Manager';
-  
+export default function ApplicationsClientPage({ initialApps, isAdmin }: ApplicationsClientPageProps) {
+  const { user } = useUser();
+
   const [showModal, setShowModal] = useState(false);
   const [newApp, setNewApp] = useState({ type: 'Leave Request', details: '' });
   const [localApps, setLocalApps] = useState<any[]>(initialApps || []);
@@ -50,91 +52,89 @@ export default function ApplicationsClientPage({ initialApps, user }: Applicatio
   const applicationsList = localApps || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-7xl mx-auto">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end pb-6 border-b border-white/10 relative">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[var(--ledger-blue)]/10 to-transparent blur-3xl -z-10" />
-        <div>
-          <h2 className="text-4xl md:text-5xl font-mono font-black uppercase tracking-tight text-white flex items-center gap-3">
-            <Network className="text-[var(--ledger-blue)]" size={36} />
-            Operations Hub
-          </h2>
-          <p className="font-sans text-sm md:text-base mt-2 text-[var(--text-muted)] flex items-center gap-2">
-            {isAdmin ? 'Global Request & Authorization Queue.' : 'My Formal Requests & Authorizations.'}
-          </p>
+    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
+      <header className="page-header flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
+            <Network className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="page-title">Operations Hub</h1>
+            <p className="page-subtitle">
+              {isAdmin ? 'Global request & authorization queue.' : 'My formal requests & authorizations.'}
+            </p>
+          </div>
         </div>
-        <div className="flex gap-4 mt-6 md:mt-0">
-          <button 
-            onClick={() => window.alert('CSV Export Triggered')} 
-            className="bg-black/50 border border-white/10 text-white px-4 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:border-[var(--ledger-blue)] transition-all flex items-center gap-2"
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => toast.info('CSV Export Triggered', 'Your export is being prepared.')}
+            className="btn-secondary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
           >
-            <Download size={14} /> Export
+            <Download className="h-4 w-4" /> Export
           </button>
           {!isAdmin && (
-            <button 
-              onClick={() => setShowModal(true)} 
-              className="bg-[var(--ledger-blue)] text-black px-6 py-3 rounded-xl font-bold font-mono text-xs uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(0,255,255,0.3)] transition-all flex items-center gap-2"
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             >
-              <Plus size={16} /> New Request
+              <Plus className="h-4 w-4" /> New Request
             </button>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Main Data Table */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-        <div className="bg-black/40 border-b border-white/10 p-6 flex justify-between items-center">
-          <h3 className="text-sm font-bold font-mono text-white uppercase tracking-widest flex items-center gap-2">
-            <Server size={16} className="text-[var(--text-muted)]" /> Authorization Ledger
+      <div className="ledger-card overflow-hidden rounded-2xl">
+        <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+            <Server className="h-4 w-4 text-[var(--text-muted)]" /> Authorization Ledger
           </h3>
         </div>
-        
-        <div className="overflow-x-auto custom-scrollbar">
+
+        <div className="overflow-x-auto">
           {applicationsList.length === 0 ? (
             <div className="p-8">
-              <EmptyState 
-                title="Operations Queue is Empty" 
-                description="There are no formal requests awaiting authorization." 
-                actionText={!isAdmin ? "New Request" : undefined}
+              <EmptyState
+                title="Operations Queue is Empty"
+                description="There are no formal requests awaiting authorization."
+                actionText={!isAdmin ? 'New Request' : undefined}
                 onAction={!isAdmin ? () => setShowModal(true) : undefined}
               />
             </div>
           ) : (
-            <table className="w-full min-w-max text-left border-collapse whitespace-nowrap">
+            <table className="w-full min-w-max text-left">
               <thead>
-                <tr className="bg-black/20 border-b border-white/10">
-                  <th className="py-4 px-6 font-mono text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Trace ID</th>
-                  <th className="py-4 px-6 font-mono text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Vector / Type</th>
-                  {isAdmin && <th className="py-4 px-6 font-mono text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Origin Entity</th>}
-                  <th className="py-4 px-6 font-mono text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Payload Details</th>
-                  <th className="py-4 px-6 font-mono text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-center">Clearance Status</th>
-                  {isAdmin && <th className="py-4 px-6 font-mono text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest text-right">Overrides</th>}
+                <tr className="border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]">
+                  <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Trace ID</th>
+                  <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Vector / Type</th>
+                  {isAdmin && <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Origin Entity</th>}
+                  <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Payload Details</th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-[var(--text-muted)]">Clearance Status</th>
+                  {isAdmin && <th className="px-6 py-4 text-right text-xs font-semibold text-[var(--text-muted)]">Overrides</th>}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-[var(--border-hairline)]">
                 {applicationsList.map((app: any) => (
-                  <tr key={app.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="py-4 px-6 text-[10px] font-mono text-[var(--text-muted)]">{app.id.slice(0, 8)}</td>
-                    <td className="py-4 px-6 text-xs text-white font-mono font-bold uppercase tracking-wider">{app.type}</td>
-                    {isAdmin && <td className="py-4 px-6 text-xs text-white font-mono">{app.user?.name}</td>}
-                    <td className="py-4 px-6 text-xs text-[var(--text-muted)] font-sans italic truncate max-w-[300px]">"{app.details}"</td>
-                    <td className="py-4 px-6 text-center">
-                      <StatusBadge status={app.status.toUpperCase() as any} />
+                  <tr key={app.id} className="group hover:bg-[var(--bg-hover)]">
+                    <td className="px-6 py-4 text-xs text-[var(--text-muted)]">{app.id.slice(0, 8)}</td>
+                    <td className="px-6 py-4 text-xs font-semibold uppercase text-[var(--text-main)]">{app.type}</td>
+                    {isAdmin && <td className="px-6 py-4 text-xs text-[var(--text-main)]">{app.user?.name}</td>}
+                    <td className="max-w-[300px] truncate px-6 py-4 text-xs italic text-[var(--text-muted)]">"{app.details}"</td>
+                    <td className="px-6 py-4 text-center">
+                      <StatusBadge status={app.status.toUpperCase()} />
                     </td>
                     {isAdmin && (
-                      <td className="py-4 px-6 text-right">
+                      <td className="px-6 py-4 text-right">
                         {app.status.includes('Pending') ? (
-                          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => handleUpdate(app.id, 'Approved')} className="bg-[var(--verify-green)]/20 text-[var(--verify-green)] p-2 rounded-lg hover:bg-[var(--verify-green)] hover:text-black transition-colors" title="Approve">
-                              <Check size={14}/>
+                          <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                            <button onClick={() => handleUpdate(app.id, 'Approved')} className="rounded-lg bg-[var(--emerald-soft)] p-2 text-[var(--emerald)] hover:bg-[var(--emerald)] hover:text-white" title="Approve">
+                              <Check className="h-3.5 w-3.5" />
                             </button>
-                            <button onClick={() => handleUpdate(app.id, 'Rejected')} className="bg-[var(--alert-red)]/20 text-[var(--alert-red)] p-2 rounded-lg hover:bg-[var(--alert-red)] hover:text-white transition-colors" title="Reject">
-                              <X size={14}/>
+                            <button onClick={() => handleUpdate(app.id, 'Rejected')} className="rounded-lg bg-[var(--rose-soft)] p-2 text-[var(--rose)] hover:bg-[var(--rose)] hover:text-white" title="Reject">
+                              <X className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">-</span>
+                          <span className="text-xs text-[var(--text-muted)]">-</span>
                         )}
                       </td>
                     )}
@@ -146,26 +146,25 @@ export default function ApplicationsClientPage({ initialApps, user }: Applicatio
         </div>
       </div>
 
-      {/* New Request Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0a0a0a] border border-[var(--ledger-blue)]/50 rounded-3xl w-full max-w-lg shadow-[0_0_50px_rgba(0,255,255,0.1)] animate-in zoom-in-95 duration-200 overflow-hidden">
-            <div className="bg-[var(--ledger-blue)]/10 p-6 border-b border-[var(--ledger-blue)]/20 flex justify-between items-center relative">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--ledger-blue)]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
-              <h3 className="font-mono text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 relative z-10">
-                <Fingerprint className="text-[var(--ledger-blue)]" size={18} /> Authorize New Request
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="ledger-card w-full max-w-lg overflow-hidden rounded-2xl">
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+                <Fingerprint className="h-4 w-4 text-[var(--brand-strong)]" /> Authorize New Request
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-[var(--text-muted)] hover:text-white transition-colors relative z-10">
-                <X size={20} />
+              <button onClick={() => setShowModal(false)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
+                <X className="h-5 w-5" />
               </button>
             </div>
-            
-            <form className="p-6 space-y-6" onSubmit={e => { e.preventDefault(); submitMutation.mutate(newApp); }}>
+
+            <form className="space-y-4 p-6" onSubmit={(e) => { e.preventDefault(); submitMutation.mutate(newApp); }}>
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2">Request Vector</label>
-                <select 
-                  value={newApp.type} onChange={e => setNewApp({...newApp, type: e.target.value})}
-                  className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white focus:border-[var(--ledger-blue)] outline-none appearance-none transition-colors"
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Request Vector</label>
+                <select
+                  value={newApp.type}
+                  onChange={(e) => setNewApp({ ...newApp, type: e.target.value })}
+                  className="ledger-input"
                 >
                   <option value="Leave Request">Leave / PTO</option>
                   <option value="Expense Claim">Expense Claim</option>
@@ -174,29 +173,32 @@ export default function ApplicationsClientPage({ initialApps, user }: Applicatio
                   <option value="Access Request">System Access Request</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-2">Payload Specifications</label>
-                <textarea 
-                  required rows={4} value={newApp.details} onChange={e => setNewApp({...newApp, details: e.target.value})}
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Payload Specifications</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={newApp.details}
+                  onChange={(e) => setNewApp({ ...newApp, details: e.target.value })}
                   placeholder="Provide detailed justification..."
-                  className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--ledger-blue)] outline-none resize-none transition-colors custom-scrollbar"
+                  className="ledger-input resize-none"
                 />
               </div>
 
               <div className="pt-2">
-                <button 
-                  disabled={submitMutation.isPending || !newApp.details.trim()} type="submit" 
-                  className="w-full bg-[var(--ledger-blue)] text-black px-6 py-4 rounded-xl text-xs font-mono font-bold uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(0,255,255,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                <button
+                  type="submit"
+                  disabled={submitMutation.isPending || !newApp.details.trim()}
+                  className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold disabled:opacity-50"
                 >
-                  <Send size={16} /> Transmit Request
+                  <Send className="h-4 w-4" /> Transmit Request
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-
     </div>
   );
 }

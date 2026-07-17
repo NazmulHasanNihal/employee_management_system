@@ -38,6 +38,9 @@ export const translations: Record<string, Record<string, string>> = {
     'My Profile': 'My Profile',
     'Settings': 'Settings',
     'Sign Out': 'Sign Out',
+    'Engagement': 'Engagement',
+    'Whistleblower': 'Whistleblower',
+    'Performance Calibration': 'Performance Calibration',
 
     // Onboarding
     'Welcome to the Platform': 'Welcome to the Platform',
@@ -149,9 +152,13 @@ export const translations: Record<string, Record<string, string>> = {
     'DEI Auditor': 'ডিইআই নিরীক্ষক',
     'Audit Log': 'অডিট লগ',
     'Config': 'কনফিগ',
-    'My Profile': 'আমার প্রোফাইল',
+    'My Profile': 'ব্যক্তিগত প্রোফাইল',
     'Settings': 'সেটিংস',
     'Sign Out': 'লগ আউট',
+    'Engagement': 'এনগেজমেন্ট',
+    'Whistleblower': 'হুইসেলব্লোয়ার',
+    'Performance Calibration': 'পারফরম্যান্স ক্যালিব্রেশন',
+
 
     // Onboarding
     'Welcome to the Platform': 'প্ল্যাটফর্মে স্বাগতম',
@@ -226,6 +233,59 @@ export const translations: Record<string, Record<string, string>> = {
     'IT Assets & Hardware': 'আইটি সম্পদ ও হার্ডওয়্যার',
     'Attendance & Leave': 'উপস্থিতি ও ছুটি',
     'Policy Acknowledgment': 'নীতি স্বীকৃতি',
+
+    // App UI strings (Bengali) — additions beyond the base dictionary
+    'Headcount': 'জনবল',
+    'Open Tickets': 'খোলা টিকিট',
+    'Total Payroll': 'মোট বেতন',
+    'Total Expenses': 'মোট ব্যয়',
+    'Department Breakdown': 'বিভাগভিত্তিক বিভাজন',
+    'No departments yet': 'এখনও কোনো বিভাগ নেই',
+    'Welcome back': 'স্বাগতম',
+    'Organization overview': 'প্রতিষ্ঠানের সংক্ষিপ্ত চিত্র',
+    'My Overview': 'আমার সংক্ষিপ্ত চিত্র',
+    'Branch': 'শাখা',
+    'All Branches': 'সকল শাখা',
+    'Select Branch': 'শাখা নির্বাচন করুন',
+    'Compensation, distributions & payslips.': 'ক্ষতিপূরণ, বিতরণ ও বেতন-স্লিপ।',
+    'Total Payroll YTD': 'চলতি বছরে মোট বেতন',
+    'Across': 'জুড়ে',
+    'employees': 'কর্মচারী',
+    'Last Run': 'সর্বশেষ চালান',
+    'Leave Management': 'ছুটি ব্যবস্থাপনা',
+    'PTO balances, accruals, and request tracking.': 'ছুটির ব্যালেন্স, সঞ্চয় ও আবেদন ট্র্যাকিং।',
+    'Restructure Sandbox': 'পুনর্গঠন স্যান্ডবক্স',
+    'Configure operational units, budgets, and leadership.': 'অপারেশনাল ইউনিট, বাজেট ও নেতৃত্ব কনফিগার করুন।',
+    'Restricted Zone': 'নিষিদ্ধ অঞ্চল',
+    'Applicant Tracking': 'প্রার্থী ট্র্যাকিং',
+    'Manage active job requisitions and candidate pipelines.': 'সক্রিয় চাকরির বিজ্ঞপ্তি ও প্রার্থী পাইপলাইন পরিচালনা করুন।',
+    'Performance Hub': 'কর্মক্ষমতা কেন্দ্র',
+    'Objectives, Key Results & Managerial Feedback.': 'উদ্দেশ্য, মূল ফলাফল ও ব্যবস্থাপকের মতামত।',
+    'Governance': 'সুশাসন',
+    'Compliance Tracking & Integrity Reporting.': 'কমপ্লায়েন্স ট্র্যাকিং ও সততা রিপোর্টিং।',
+    'Benefits & Equity': 'সুবিধা ও ইকুইটি',
+    'Perks, Insurance, and Stock Vesting Dashboard.': 'সুবিধা, বীমা ও শেয়ার ভেস্টিং ড্যাশবোর্ড।',
+    'Chain of command, tasks, and team performance.': 'কমান্ড চেইন, কাজ ও দলের কর্মক্ষমতা।',
+    'Assets': 'সম্পদ',
+    'Corporate reimbursement approvals.': 'কর্পোরেট রিম্বার্সমেন্ট অনুমোদন।',
+    'My expense & reimbursement claims.': 'আমার ব্যয় ও রিম্বার্সমেন্ট দাবি।',
+    'No reporting chain': 'কোনো রিপোর্টিং চেইন নেই',
+    'Your reporting structure will appear here.': 'আপনার রিপোর্টিং কাঠামো এখানে প্রদর্শিত হবে।',
+    'No performance data': 'কোনো কর্মক্ষমতা তথ্য নেই',
+    'Team performance metrics will appear here.': 'দলের কর্মক্ষমতা মেট্রিক এখানে প্রদর্শিত হবে।',
+    'Profile not found': 'প্রোফাইল পাওয়া যায়নি',
+    'No user record matched your account.': 'আপনার অ্যাকাউন্টের সাথে মিলে এমন কোনো ব্যবহারকারী রেকর্ড নেই।',
+    'Your identity, contact details, employment info, and performance at a glance.': 'এক নজরে আপনার পরিচয়, যোগাযোগের তথ্য, চাকরির তথ্য ও কর্মক্ষমতা।',
+    'No Active Objectives': 'কোনো সক্রিয় উদ্দেশ্য নেই',
+    'No active equity grants': 'কোনো সক্রিয় ইকুইটি গ্রান্ট নেই',
+    'Access Denied': 'অ্যাক্সেস নিষিদ্ধ',
+    'Not signed in': 'সাইন ইন করা হয়নি',
+    "We couldn't load your profile. Please sign in and try again.": 'আমরা আপনার প্রোফাইল লোড করতে পারিনি। অনুগ্রহ করে সাইন ইন করে আবার চেষ্টা করুন।',
+    'ATS Systems require HR Authorization Clearance.': 'এটিএস সিস্টেমের জন্য এইচআর কর্তৃপক্ষের অনুমোদন প্রয়োজন।',
+    'Objective Tracker (OKRs)': 'উদ্দেশ্য ট্র্যাকার (OKR)',
+    'Define your first objective to start tracking progress against your key results.': 'আপনার মূল ফলাফলের বিপরীতে অগ্রগতি ট্র্যাক করতে প্রথম উদ্দেশ্য নির্ধারণ করুন।',
+    'Reporting Chain': 'রিপোর্টিং চেইন',
+    'Direct Reports': 'সরাসরি রিপোর্ট',
   }
 };
 
@@ -234,3 +294,17 @@ export function useTranslation(language: 'en' | 'bn') {
     return translations[language]?.[key] || key;
   };
 }
+
+/**
+ * Server-safe equivalent of `useTranslation` — no React hook, so it can be
+ * called from Server Components that read the language from a cookie.
+ */
+export function getTranslation(language: 'en' | 'bn') {
+  return function t(key: string): string {
+    return translations[language]?.[key] || key;
+  };
+}
+
+export type Lang = 'en' | 'bn';
+
+export const LANG_COOKIE = 'ems_lang';
