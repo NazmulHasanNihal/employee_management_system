@@ -46,7 +46,17 @@ export async function getCaller(): Promise<Caller | null> {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+  // Resolve the Prisma user by email (authoritative, from the verified Supabase
+  // session) first, then fall back to the Supabase auth id. Matching by email
+  // keeps login working even when the Prisma `id` differs from the Supabase
+  // `user.id` (e.g. a seeded owner whose id was set before the auth account
+  // existed). The session is already verified by Supabase, so trusting the
+  // email is safe.
+  const dbUser =
+    (user.email
+      ? await prisma.user.findUnique({ where: { email: user.email } })
+      : null) ??
+    (await prisma.user.findUnique({ where: { id: user.id } }));
   if (!dbUser) return null;
 
   const isOwner = dbUser.isOwner;
@@ -82,7 +92,11 @@ export function derivePrivileges(opts: {
   isOwner: boolean;
 }): { isAdmin: boolean; isHR: boolean; isCEO: boolean } {
   const isCEO = opts.isOwner || opts.role === 'CEO';
-  const isAdmin = opts.role === 'Admin' || opts.role === 'HR Manager';
-  const isHR = opts.role === 'HR Manager';
+  // The system owner is the head of everything: they must pass every
+  // `isAdmin`-gated check (visibility, edits, provisioning) in addition to the
+  // CEO-level gates. This is derived only from the authoritative `isOwner`
+  // flag, never from the self-editable `designation`.
+  const isAdmin = opts.isOwner || opts.role === 'Admin' || opts.role === 'HR Manager';
+  const isHR = opts.isOwner || opts.role === 'HR Manager';
   return { isAdmin, isHR, isCEO };
 }

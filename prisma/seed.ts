@@ -66,15 +66,17 @@ async function main() {
     await prisma.department.create({ data: { name, budget: 1_000_000 } });
   }
 
-  // 2. System owner (admin/CEO). Upsert so re-running seed is idempotent.
-  const adminId = 'cmri3jxi700041mmgjct8xyss'; // Same ID used in auth client for ease
+  // 2. System owner (CEO + isOwner = head of everything). Upsert by email so
+  // re-running seed is idempotent. The id matches the real Supabase Auth user
+  // so sessions resolve correctly via getCaller().
+  const adminId = '451556d1-7c77-4899-b963-cf7ef17b2047';
   const owner = await prisma.user.upsert({
     where: { email: OWNER_EMAIL },
     update: {
       name: 'Nazmul Admin',
-      role: 'Admin',
+      role: 'CEO',
       department: 'Executive',
-      designation: 'CEO',
+      designation: 'Chief Executive Officer',
       status: 'active',
       isOnboarded: true,
       isOwner: true,
@@ -83,9 +85,9 @@ async function main() {
       id: adminId,
       name: 'Nazmul Admin',
       email: OWNER_EMAIL,
-      role: 'Admin',
+      role: 'CEO',
       department: 'Executive',
-      designation: 'CEO',
+      designation: 'Chief Executive Officer',
       status: 'active',
       isOnboarded: true,
       isOwner: true,

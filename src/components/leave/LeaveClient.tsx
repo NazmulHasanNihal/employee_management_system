@@ -39,10 +39,10 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
   const [requests, setRequests] = useState<any[]>(initialRequests || []);
   const utils = trpc.useUtils();
 
-  // Language-aware label: show EN only, BN only, or EN (BN) when bilingual.
+  // Language-aware label: Bangla mode shows Bangla only (falling back to EN),
+  // English mode shows English only (no Bangla appended).
   const labelFor = (en: string, bn?: string | null) => {
     if (lang === 'bn') return bn || en;
-    if (bn) return `${en} (${bn})`;
     return en;
   };
 

@@ -80,7 +80,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
 
   const isOwner = dbUser.isOwner;
   const isCEO = isOwner || dbUser.role === 'CEO';
-  const isAdmin = dbUser.role === 'Admin' || dbUser.role === 'HR Manager';
+  const isAdmin = isCEO || dbUser.role === 'Admin' || dbUser.role === 'HR Manager';
   const isHR = dbUser.role === 'HR Manager';
 
   const userContext = {

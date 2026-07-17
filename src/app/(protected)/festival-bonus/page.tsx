@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { getFestivalBonuses } from '@/server/queries';
 import { getCaller } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
-import { getServerT } from '@/lib/i18n-server';
+import { getServerT, getLanguage } from '@/lib/i18n-server';
 import { FestivalBonusClient } from '@/components/payroll/FestivalBonusClient';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +16,7 @@ export default async function FestivalBonusPage() {
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
   const t = await getServerT();
+  const lang = await getLanguage();
   const bonuses = await getFestivalBonuses(caller);
 
   const totalPaid = bonuses.filter((b: any) => b.status === 'PAID').reduce((sum: number, b: any) => sum + (b.amount || 0), 0);
@@ -50,7 +51,7 @@ export default async function FestivalBonusPage() {
                 <div key={b.id} className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                   <div>
                     <p className="font-semibold text-[var(--text-main)]">{b.user?.name || 'Unknown'}</p>
-                    <p className="text-xs text-[var(--text-muted)]">{b.occasion}{b.occasionBn ? ` · ${b.occasionBn}` : ''} — {b.year}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{(lang === 'bn' && b.occasionBn ? b.occasionBn : b.occasion)} — {b.year}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-semibold text-[var(--amber)]">{formatCurrency(b.amount, 'BDT', 'en')}</span>

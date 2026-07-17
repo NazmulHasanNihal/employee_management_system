@@ -12,7 +12,7 @@ ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "isOwner" BOOLEAN NOT NULL DEFAULT f
 UPDATE "User" 
 SET 
     "role" = 'Admin',
-    "designation" = 'CEO',
+    "designation" = 'Founder & CEO',
     "department" = 'Executive',
     "isOwner" = true,
     "status" = 'active'

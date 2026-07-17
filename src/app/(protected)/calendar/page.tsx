@@ -1,13 +1,15 @@
 import { CalendarDays } from 'lucide-react';
 import { getCaller } from '@/lib/auth';
+import { getLanguage } from '@/lib/i18n-server';
 import { getCalendarFeed, getMyTeam, getDepartments } from '@/server/queries';
 import { PageHeader } from '@/components/PageHeader';
 import CalendarView from '@/components/calendar/CalendarView';
 
 export default async function CalendarPage() {
   const caller = await getCaller();
+  const lang = await getLanguage();
   const [events, myTeam, departments] = await Promise.all([
-    getCalendarFeed(caller),
+    getCalendarFeed(caller, lang),
     getMyTeam(caller),
     getDepartments(),
   ]);

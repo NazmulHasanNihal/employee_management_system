@@ -166,7 +166,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
     !(i.hideForContractor && isContractor);
 
   return (
-    <div className="flex min-h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)] transition-colors duration-300 md:flex-row">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)] transition-colors duration-300 md:flex-row">
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -254,7 +254,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </motion.aside>
 
-      <main className="relative flex h-[100dvh] flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
+      <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
         {isOffline && (
           <div className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
             <div className="flex items-center gap-2">

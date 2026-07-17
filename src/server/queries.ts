@@ -576,7 +576,7 @@ export interface CalendarFeedItem {
   derived: 'event' | 'holiday' | 'shift' | 'birthday';
 }
 
-export async function getCalendarFeed(caller: Caller | null): Promise<CalendarFeedItem[]> {
+export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' = 'en'): Promise<CalendarFeedItem[]> {
   const userId = caller?.id;
   const [events, holidays, birthdays, shiftAssignments] = await Promise.all([
     prisma.calendarEvent.findMany({
@@ -621,7 +621,7 @@ export async function getCalendarFeed(caller: Caller | null): Promise<CalendarFe
   for (const h of holidays) {
     items.push({
       id: `holiday-${h.id}`,
-      title: h.nameBn ? `${h.name} · ${h.nameBn}` : h.name,
+      title: lang === 'bn' && h.nameBn ? h.nameBn : h.name,
       description: `Bangladesh ${h.type} holiday`,
       date: h.date,
       type: 'Holiday',

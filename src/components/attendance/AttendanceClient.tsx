@@ -119,8 +119,8 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
         date: new Date(log.date).toLocaleDateString(),
         employee: log.userName || '',
         status: log.status,
-        clockIn: log.clockIn ? new Date(log.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
-        clockOut: log.clockOut ? new Date(log.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--',
+        clockIn: log.clockIn ? new Date(log.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '--:--',
+        clockOut: log.clockOut ? new Date(log.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '--:--',
       }));
 
       const res = await fetch('http://localhost:8080/api/reports/attendance-pdf', {
@@ -184,7 +184,7 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
               <div className="relative z-10 mb-8 text-center">
                 <p className="text-sm uppercase tracking-wide text-[var(--text-muted)]">Local Server Time</p>
                 <h3 className="font-mono text-4xl font-bold tracking-widest text-[var(--text-main)]">
-                  {currentTime.toLocaleTimeString([], { hour12: false })}
+                  {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
                 </h3>
                 <p className="mt-2 text-xs uppercase text-[var(--brand-strong)]">SYS_SYNC_OK</p>
               </div>
@@ -312,10 +312,10 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
                         </Badge>
                       </TableCell>
                       <TableCell className="text-[var(--text-muted)]">
-                        {log.clockIn ? new Date(log.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                        {log.clockIn ? new Date(log.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '--:--'}
                       </TableCell>
                       <TableCell className="text-[var(--text-muted)]">
-                        {log.clockOut ? new Date(log.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                        {log.clockOut ? new Date(log.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '--:--'}
                       </TableCell>
                       {isAdmin && <TableCell className="text-[var(--text-muted)]">{log.lateMinutes ? `${log.lateMinutes}m` : '—'}</TableCell>}
                       {isAdmin && <TableCell className="text-[var(--text-muted)]">{log.overtimeMinutes ? `${Math.floor(log.overtimeMinutes / 60)}h${log.overtimeMinutes % 60}m` : '—'}</TableCell>}
