@@ -1,0 +1,58 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart LR
+    %% Figure 3.2b — Use Case Diagram (HR Manager & Admin)
+    
+    HR(("🧑‍💼 HR Manager"))
+    ADMIN(("🛡️ Admin / CEO"))
+
+    subgraph SYSTEM["OpsHub Employee Management System"]
+        direction TB
+
+        %% Finance
+        UC5["💵 Process Payroll"]
+        UC6["🎉 Disburse Festival Bonus"]
+        UC7["⚖️ Manage Penalties"]
+
+        %% HR Admin
+        UC12["👤 Provision Employee"]
+        UC13["✅ Approve/Reject Leave"]
+        UC14["🏢 Manage Branches"]
+        UC15["📊 Generate Reports"]
+        UC16["📰 Publish Announcements"]
+
+        %% Recruitment
+        UC21["📝 Post Job Requisition"]
+        UC22["👥 Manage Candidates (ATS)"]
+
+        %% System Owner specific
+        UC17["⚙️ System Configuration"]
+        UC18["🔒 View Immutable Audit Log"]
+        UC19["🛡️ Manage RBAC Roles"]
+        UC20["📋 Whistleblower Review"]
+    end
+
+    %% HR Manager
+    HR --> UC5
+    HR --> UC6
+    HR --> UC7
+    HR --> UC12
+    HR --> UC13
+    HR --> UC14
+    HR --> UC15
+    HR --> UC16
+    HR --> UC21
+    HR --> UC22
+
+    %% Admin / CEO / System Owner
+    ADMIN --> UC17
+    ADMIN --> UC18
+    ADMIN --> UC19
+    ADMIN --> UC20
+    ADMIN --> UC5
+    ADMIN --> UC12
+    ADMIN --> UC15
+
+    style SYSTEM fill:#f6f7fb,stroke:#4f46e5,stroke-width:2px
+    style HR fill:#fffbeb,stroke:#d97706
+    style ADMIN fill:#fff1f2,stroke:#e11d48

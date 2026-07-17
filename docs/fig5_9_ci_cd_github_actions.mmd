@@ -1,0 +1,38 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart LR
+    %% Figure 5.9 — CI/CD Pipeline (GitHub Actions & Vercel)
+    
+    DEV(("🧑‍💻 Developer"))
+    GH["🐙 GitHub Repository"]
+    
+    subgraph ACTIONS["⚙️ GitHub Actions (CI)"]
+        direction TB
+        LINT["🧹 Lint (ESLint & Prettier)"]
+        TEST["🧪 Run Tests (Vitest)"]
+        BUILD["📦 Build Test (Next.js)"]
+        LINT --> TEST --> BUILD
+    end
+    
+    subgraph VERCEL["🚀 Vercel (CD)"]
+        direction TB
+        PREV["👀 Preview Deployment (PRs)"]
+        PROD["🔥 Production Deployment (main)"]
+        PREV ~~~ PROD
+    end
+    
+    DB[("🐘 Supabase PostgreSQL")]
+    
+    DEV -->|1. Push / PR| GH
+    GH -->|2. Webhook triggers| ACTIONS
+    
+    BUILD -->|3. On Success| VERCEL
+    
+    PREV -.->|Migrations| DB
+    PROD -->|Prisma Push| DB
+    
+    style DEV fill:#ecfdf5,stroke:#059669
+    style GH fill:#f3f4f6,stroke:#374151
+    style ACTIONS fill:#e0e7ff,stroke:#4338ca
+    style VERCEL fill:#18181b,stroke:#000000,color:#fff
+    style DB fill:#dcfce3,stroke:#15803d

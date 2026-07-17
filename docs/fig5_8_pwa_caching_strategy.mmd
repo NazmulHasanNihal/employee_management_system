@@ -1,0 +1,36 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart TB
+    %% Figure 5.8 — PWA Caching Strategy (Serwist)
+    
+    CLIENT("📱 PWA Client (Browser)")
+    SW("⚙️ Service Worker (Serwist)")
+    CACHE("🗄️ CacheStorage (IndexedDB)")
+    NET("🌐 Network (API / Vercel)")
+    
+    CLIENT -->|Fetch Request| SW
+    
+    subgraph STRATEGIES["Caching Strategies"]
+        direction TB
+        S1["Static Assets (JS/CSS/Fonts)<br/>Strategy: CacheFirst"]
+        S2["API Data (e.g. Leave Balance)<br/>Strategy: StaleWhileRevalidate"]
+        S3["Mutations (e.g. Clock In)<br/>Strategy: NetworkOnly (Fallback to Background Sync)"]
+        S1 ~~~ S2 ~~~ S3
+    end
+    
+    SW --> STRATEGIES
+    
+    S1 -->|1. Try Cache| CACHE
+    S1 -->|2. If Miss| NET
+    
+    S2 -->|1. Serve Cache| CACHE
+    S2 -->|2. Fetch Update| NET
+    NET -->|3. Update Cache| CACHE
+    
+    S3 -->|1. Send| NET
+    S3 -.->|If Offline| CACHE
+    
+    style CLIENT fill:#ecfdf5,stroke:#059669
+    style SW fill:#fef3c7,stroke:#d97706
+    style CACHE fill:#f0f9ff,stroke:#0284c7
+    style NET fill:#fff1f2,stroke:#e11d48

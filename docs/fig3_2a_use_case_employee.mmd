@@ -1,12 +1,10 @@
 %%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
 
 flowchart LR
-    %% Figure 3.2 — Use Case Diagram (All User Roles)
+    %% Figure 3.2a — Use Case Diagram (Employee & Manager)
     
     EMP(("👷 Employee"))
     MGR(("👔 Manager"))
-    HR(("🧑‍💼 HR Manager"))
-    ADMIN(("🛡️ Admin / CEO"))
 
     subgraph SYSTEM["OpsHub Employee Management System"]
         direction TB
@@ -18,9 +16,6 @@ flowchart LR
 
         %% Finance
         UC4["💰 View Payslip"]
-        UC5["💵 Process Payroll"]
-        UC6["🎉 Disburse Festival Bonus"]
-        UC7["⚖️ Manage Penalties"]
 
         %% Talent
         UC8["⭐ Submit Performance Review"]
@@ -28,28 +23,13 @@ flowchart LR
         UC10["🏅 Send Kudos"]
         UC11["📚 Enroll in Training"]
 
-        %% HR Admin
-        UC12["👤 Provision Employee"]
+        %% Manager specific
         UC13["✅ Approve/Reject Leave"]
-        UC14["🏢 Manage Branches"]
-        UC15["📊 Generate Reports"]
-        UC16["📰 Publish Announcements"]
-
-        %% System Owner
-        UC17["⚙️ System Configuration"]
-        UC18["🔒 View Immutable Audit Log"]
-        UC19["🛡️ Manage RBAC Roles"]
-        UC20["📋 Whistleblower Review"]
-
-        %% Recruitment
-        UC21["📝 Post Job Requisition"]
-        UC22["👥 Manage Candidates (ATS)"]
 
         %% Self-Service
         UC23["🪪 Edit Profile"]
         UC24["📄 View/Sign Documents"]
         UC25["🔔 Receive Notifications"]
-        UC26["🎂 Automated Greetings"]
     end
 
     %% Employee Use Cases
@@ -63,7 +43,6 @@ flowchart LR
     EMP --> UC23
     EMP --> UC24
     EMP --> UC25
-    EMP --> UC26
 
     %% Manager inherits Employee + extras
     MGR --> UC1
@@ -71,29 +50,6 @@ flowchart LR
     MGR --> UC8
     MGR --> UC13
 
-    %% HR Manager
-    HR --> UC5
-    HR --> UC6
-    HR --> UC7
-    HR --> UC12
-    HR --> UC13
-    HR --> UC14
-    HR --> UC15
-    HR --> UC16
-    HR --> UC21
-    HR --> UC22
-
-    %% Admin / CEO / System Owner
-    ADMIN --> UC17
-    ADMIN --> UC18
-    ADMIN --> UC19
-    ADMIN --> UC20
-    ADMIN --> UC5
-    ADMIN --> UC12
-    ADMIN --> UC15
-
     style SYSTEM fill:#f6f7fb,stroke:#4f46e5,stroke-width:2px
     style EMP fill:#ecfdf5,stroke:#059669
     style MGR fill:#f0f9ff,stroke:#0284c7
-    style HR fill:#fffbeb,stroke:#d97706
-    style ADMIN fill:#fff1f2,stroke:#e11d48
