@@ -7,7 +7,7 @@ import {
   Receipt, HeartPulse, UserPlus, CalendarRange, Gift,
   Laptop, BookOpen, Briefcase, TrendingUp, PieChart,
   BrainCircuit, Handshake, Calculator, Flame, Scale, Brain, Target, Map, Lightbulb,
-  MessageCircle, Award, CheckSquare, ChevronDown, ChevronRight, Sun, Moon, PenLine,
+  MessageCircle, Award, CheckSquare, ChevronDown, ChevronRight, Sun, Moon, PenLine, Ban,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -52,7 +52,8 @@ export const navCategories: NavCategory[] = [
       { label: 'Payroll', icon: Bitcoin, path: '/payroll', hideForContractor: true },
       { label: 'Festival Bonus', icon: Gift, path: '/festival-bonus', adminOnly: true, hideForContractor: true },
       { label: 'Payroll Config', icon: Settings, path: '/payroll-settings', adminOnly: true },
-      { label: 'Expenses', icon: Receipt, path: '/expenses' },
+      { label: 'Expenses', icon: Receipt, path: '/expenses', adminOnly: true },
+      { label: 'My Penalties', icon: Ban, path: '/penalties' },
       { label: 'IT Assets', icon: Laptop, path: '/assets' },
     ],
   },
