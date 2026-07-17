@@ -61,7 +61,7 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
         <UpcomingCard title="Work Anniversaries" icon={CalendarHeart} color="brand" items={anniversaries} />
       </div>
 
-      {canManage && (
+      {canManage ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
@@ -93,6 +93,15 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
             )}
             <p className="text-xs text-[var(--text-muted)]">
               Greetings are delivered daily by the <code className="rounded bg-[var(--bg-hover)] px-1">/api/cron/greetings</code> job. Contact an admin to wire an external cron.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="flex items-center gap-3 rounded-2xl bg-[var(--bg-hover)] p-4">
+            <Sparkles size={18} className="text-[var(--brand-strong)]" />
+            <p className="text-sm text-[var(--text-muted)]">
+              Greeting automation is configured by your HR/Admin team. Birthdays &amp; work anniversaries are celebrated automatically.
             </p>
           </CardContent>
         </Card>
