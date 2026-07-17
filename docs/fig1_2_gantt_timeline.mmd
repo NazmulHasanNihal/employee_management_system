@@ -1,4 +1,4 @@
-%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '14px' } } }%%
 
 gantt
     title OpsHub — Project Development Timeline
@@ -6,52 +6,52 @@ gantt
     axisFormat %b %Y
     todayMarker stroke-width:3px,stroke:#e11d48
 
-    section 📋 Planning & Research
+    section Planning & Research
         Literature Review & Feasibility         :done, plan1, 2025-01-15, 2025-02-15
-        Requirements Gathering                   :done, plan2, 2025-02-01, 2025-02-28
-        System Architecture Design               :done, plan3, 2025-02-15, 2025-03-15
-        Database Schema (ERD) Design             :done, plan4, 2025-03-01, 2025-03-20
+        Requirements Gathering                  :done, plan2, 2025-02-01, 2025-02-28
+        System Architecture Design              :done, plan3, 2025-02-15, 2025-03-15
+        Database Schema (ERD) Design            :done, plan4, 2025-03-01, 2025-03-20
 
-    section 🏗️ Phase 1 — Core Foundation
-        Next.js 15 Project Setup                 :done, p1a, 2025-03-15, 2025-03-22
-        Supabase Auth & Prisma ORM               :done, p1b, 2025-03-20, 2025-04-05
-        tRPC API Layer + Zod Validation          :done, p1c, 2025-04-01, 2025-04-15
-        Tailwind v4 Design System                :done, p1d, 2025-04-10, 2025-04-25
+    section Phase 1 — Core Foundation
+        Next.js 15 Project Setup                :done, p1a, 2025-03-15, 2025-03-22
+        Supabase Auth & Prisma ORM              :done, p1b, 2025-03-20, 2025-04-05
+        tRPC API Layer + Zod Validation         :done, p1c, 2025-04-01, 2025-04-15
+        Tailwind v4 Design System               :done, p1d, 2025-04-10, 2025-04-25
 
-    section 👤 Phase 2 — Identity & HR Core
-        User Management & Roles (RBAC)           :done, p2a, 2025-04-20, 2025-05-10
-        Attendance (Clock-In/Out, Geo-fence)      :done, p2b, 2025-05-01, 2025-05-20
-        Leave Management (BD Labour Act)          :done, p2c, 2025-05-10, 2025-05-30
-        Shift Scheduling & Team Rostering         :done, p2d, 2025-05-20, 2025-06-10
+    section Phase 2 — Identity & HR
+        User Management & Roles (RBAC)          :done, p2a, 2025-04-20, 2025-05-10
+        Attendance (Clock-In/Out)               :done, p2b, 2025-05-01, 2025-05-20
+        Leave Management (BD Act)               :done, p2c, 2025-05-10, 2025-05-30
+        Shift Scheduling & Team Roster          :done, p2d, 2025-05-20, 2025-06-10
 
-    section 💰 Phase 3 — Payroll & Finance
-        Salary Structure & Heads (BDT)           :done, p3a, 2025-06-05, 2025-06-25
-        Payroll Engine (PF/Gratuity/Tax)          :done, p3b, 2025-06-15, 2025-07-05
-        Festival Bonus (Eid)                      :done, p3c, 2025-06-25, 2025-07-10
-        Payment Hub (bKash/Rocket/Bank)           :done, p3d, 2025-07-01, 2025-07-15
+    section Phase 3 — Payroll & Finance
+        Salary Structure & Heads (BDT)          :done, p3a, 2025-06-05, 2025-06-25
+        Payroll Engine (PF/Gratuity/Tax)        :done, p3b, 2025-06-15, 2025-07-05
+        Festival Bonus (Eid)                    :done, p3c, 2025-06-25, 2025-07-10
+        Payment Hub (bKash/Bank)                :done, p3d, 2025-07-01, 2025-07-15
 
-    section 🔒 Phase 4 — Immutable Ledger
-        Event Sourcing Engine                    :done, p4a, 2025-07-10, 2025-07-30
-        Cryptographic Hash-Chain (SHA-256)        :done, p4b, 2025-07-20, 2025-08-05
-        Audit Log with previousHash              :done, p4c, 2025-07-25, 2025-08-10
+    section Phase 4 — Event Ledger
+        Event Sourcing Engine                   :done, p4a, 2025-07-10, 2025-07-30
+        Hash-Chain (SHA-256)                    :done, p4b, 2025-07-20, 2025-08-05
+        Audit Log Generation                    :done, p4c, 2025-07-25, 2025-08-10
 
-    section 🌐 Phase 5 — Bangladesh Localization
-        Bangla i18n (EN/BN toggle)               :done, p5a, 2025-08-01, 2025-08-20
-        BD Holidays & Religious Calendar          :done, p5b, 2025-08-10, 2025-08-25
-        Multi-Branch Management                   :done, p5c, 2025-08-15, 2025-09-01
+    section Phase 5 — Localization
+        Bangla i18n (EN/BN toggle)              :done, p5a, 2025-08-01, 2025-08-20
+        BD Holidays & Calendar                  :done, p5b, 2025-08-10, 2025-08-25
+        Multi-Branch Management                 :done, p5c, 2025-08-15, 2025-09-01
 
-    section 📊 Phase 6 — Talent & Culture
-        Performance Reviews & 360° Feedback       :done, p6a, 2025-09-01, 2025-09-20
-        Recruitment ATS Pipeline                  :done, p6b, 2025-09-10, 2025-09-30
-        Recognition (Kudos) & Engagement          :done, p6c, 2025-09-20, 2025-10-05
-        Training & Certification Tracker          :done, p6d, 2025-09-25, 2025-10-10
+    section Phase 6 — Talent & Culture
+        Performance Reviews & Feedback          :done, p6a, 2025-09-01, 2025-09-20
+        Recruitment ATS Pipeline                :done, p6b, 2025-09-10, 2025-09-30
+        Recognition (Kudos)                     :done, p6c, 2025-09-20, 2025-10-05
+        Training Tracker                        :done, p6d, 2025-09-25, 2025-10-10
 
-    section 🚀 Phase 7 — PWA & DevOps
-        PWA (Service Worker / Offline)            :done, p7a, 2025-10-05, 2025-10-20
-        Vercel Deployment & CI/CD                 :done, p7b, 2025-10-10, 2025-10-25
-        Sentry + PostHog Observability            :done, p7c, 2025-10-15, 2025-10-30
+    section Phase 7 — DevOps & PWA
+        PWA (Service Worker)                    :done, p7a, 2025-10-05, 2025-10-20
+        Vercel Deployment & CI/CD               :done, p7b, 2025-10-10, 2025-10-25
+        Sentry Observability                    :done, p7c, 2025-10-15, 2025-10-30
 
-    section 📝 Phase 8 — Report & Defence
-        Testing & Bug Fixes                      :done, p8a, 2025-10-25, 2025-11-15
-        Documentation & Report Writing            :active, p8b, 2025-11-01, 2025-12-15
-        Final Presentation & Defence              :p8c, 2025-12-10, 2025-12-20
+    section Phase 8 — Report & Defence
+        Testing & Bug Fixes                     :done, p8a, 2025-10-25, 2025-11-15
+        Documentation & Report                  :active, p8b, 2025-11-01, 2025-12-15
+        Final Presentation                      :p8c, 2025-12-10, 2025-12-20
