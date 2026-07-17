@@ -18,18 +18,22 @@ export default async function BenefitsPage() {
     q.activeEnrollmentPeriod(),
   ]);
 
-  const equityData = equity?.[0];
-  const vestedValue = equityData ? equityData.vestedShares * equityData.currentStrikePrice : 0;
-  const totalValue = equityData ? equityData.totalShares * equityData.currentStrikePrice : 0;
+  const equityGrants = equity || [];
+  const equityData = equityGrants[0];
+  const vestedValue = equityGrants.reduce((sum: number, g: any) => sum + (g.vestedShares * g.currentStrikePrice), 0);
+  const totalValue = equityGrants.reduce((sum: number, g: any) => sum + (g.totalShares * g.currentStrikePrice), 0);
 
   const benefitIcon = (name: string) => {
-    if (name.includes('Health')) return <HeartHandshake size={24} />;
-    if (name.includes('401k')) return <Landmark size={24} />;
+    const n = name.toLowerCase();
+    if (n.includes('health') || n.includes('medical') || n.includes('insurance')) return <HeartHandshake size={24} />;
+    if (n.includes('401k') || n.includes('retire') || n.includes('pension')) return <Landmark size={24} />;
+    if (n.includes('wellness') || n.includes('gym') || n.includes('fitness')) return <Activity size={24} />;
     return <Sparkles size={24} />;
   };
   const benefitVariant = (name: string): 'rose' | 'sky' | 'emerald' => {
-    if (name.includes('Health')) return 'rose';
-    if (name.includes('401k')) return 'sky';
+    const n = name.toLowerCase();
+    if (n.includes('health') || n.includes('medical') || n.includes('insurance')) return 'rose';
+    if (n.includes('401k') || n.includes('retire') || n.includes('pension')) return 'sky';
     return 'emerald';
   };
 
@@ -55,7 +59,7 @@ export default async function BenefitsPage() {
               </p>
             </div>
           </div>
-          <Button variant="primary" className="shrink-0">Enter Portal</Button>
+          <Button variant="primary" className="shrink-0" disabled title="Enrollment portal opens during an active window">{enrollmentPeriod ? 'Enter Portal' : 'Enrollment Closed'}</Button>
         </div>
       ) : (
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-4">
@@ -75,15 +79,15 @@ export default async function BenefitsPage() {
           </h3>
 
           <Card>
-            {equityData ? (
+            {equityGrants.length > 0 ? (
               <CardContent>
                 <div className="mb-8">
                   <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Estimated Current Value (Vested)</p>
                   <h4 className="flex items-center gap-2 text-5xl font-extrabold tracking-tight text-[var(--text-main)]">
-                    ${vestedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    ৳{vestedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </h4>
                   <p className="mt-2 flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--brand-strong)]">
-                    <Activity size={12} /> Strike Price: ${equityData.currentStrikePrice.toFixed(2)}
+                    <Activity size={12} /> {equityGrants.length} grant{equityGrants.length > 1 ? 's' : ''} on record
                   </p>
                 </div>
 
@@ -91,24 +95,26 @@ export default async function BenefitsPage() {
                   <div className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                     <div>
                       <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Total Grant Options</p>
-                      <p className="text-lg font-bold text-[var(--text-main)]">{equityData.totalShares.toLocaleString()}</p>
+                      <p className="text-lg font-bold text-[var(--text-main)]">{equityGrants.reduce((s: number, g: any) => s + g.totalShares, 0).toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Total Potential Value</p>
-                      <p className="text-lg font-bold text-[var(--text-main)]">${totalValue.toLocaleString()}</p>
+                      <p className="text-lg font-bold text-[var(--text-main)]">৳{totalValue.toLocaleString()}</p>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
-                    <div>
-                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Vested Shares</p>
-                      <p className="text-lg font-bold text-[var(--emerald)]">{equityData.vestedShares.toLocaleString()}</p>
+                  {equityGrants.map((g: any) => (
+                    <div key={g.id} className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
+                      <div>
+                        <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Vested Shares</p>
+                        <p className="text-lg font-bold text-[var(--emerald)]">{g.vestedShares.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Grant Date</p>
+                        <p className="text-sm font-bold text-[var(--text-main)]">{new Date(g.grantDate).toLocaleDateString()}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Grant Date</p>
-                      <p className="text-sm font-bold text-[var(--text-main)]">{new Date(equityData.grantDate).toLocaleDateString()}</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             ) : (

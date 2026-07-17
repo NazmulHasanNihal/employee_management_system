@@ -13,6 +13,7 @@ interface LeaveClientProps {
   initialBalance: any;
   leaveTypes: { id: string; name: string; nameBn?: string | null; category: string; defaultDays: number; applicableGender?: string | null }[];
   isAdmin: boolean;
+  lang: string;
 }
 
 const CAT_ICON: Record<string, React.ReactNode> = {
@@ -28,7 +29,7 @@ function PlusIcon() {
   return <Calendar className="h-4 w-4 text-[var(--emerald)]" />;
 }
 
-export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdmin }: LeaveClientProps) {
+export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdmin, lang }: LeaveClientProps) {
   const [type, setType] = useState(leaveTypes[0]?.name || 'Casual Leave');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -37,6 +38,18 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
   const balance = initialBalance;
   const [requests, setRequests] = useState<any[]>(initialRequests || []);
   const utils = trpc.useUtils();
+
+  // Language-aware label: show EN only, BN only, or EN (BN) when bilingual.
+  const labelFor = (en: string, bn?: string | null) => {
+    if (lang === 'bn') return bn || en;
+    if (bn) return `${en} (${bn})`;
+    return en;
+  };
+
+  const fmtDate = (d: string) =>
+    new Date(d).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
 
   const submitRequest = trpc.leave.submitRequest.useMutation({
     onSuccess: () => {
@@ -60,19 +73,20 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
       startDate: new Date(startDate).toISOString(),
       endDate: new Date(endDate).toISOString(),
       reason,
-      days: 0,
     });
   };
 
   const balanceRows = balance
     ? Object.entries(balance as Record<string, { total: number; used: number; remaining: number }>).map(
-        ([key, data]) => ({
-          key,
-          label: key,
-          bnLabel: leaveTypes.find((l) => l.category === key)?.nameBn,
-          icon: CAT_ICON[key] || <UserCircle2 className="h-3.5 w-3.5" />,
-          data,
-        })
+        ([key, data]) => {
+          const lt = leaveTypes.find((l) => l.category === key);
+          return {
+            key,
+            label: labelFor(key, lt?.nameBn),
+            icon: CAT_ICON[key] || <UserCircle2 className="h-3.5 w-3.5" />,
+            data,
+          };
+        }
       )
     : [];
 
@@ -88,7 +102,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
             <Card key={row.key}>
               <CardContent>
                 <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
-                  {row.icon} {row.label} {row.bnLabel && <span className="text-[10px] normal-case text-[var(--text-muted)]">({row.bnLabel})</span>}
+                  {row.icon} {row.label}
                 </p>
                 <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
                   {String(remaining).padStart(2, '0')}
@@ -115,10 +129,10 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Leave Category</label>
-                  <select className="ledger-input" value={type} onChange={(e) => setType(e.target.value)}>
+                  <select className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm transition-shadow focus:outline-none" value={type} onChange={(e) => setType(e.target.value)}>
                     {leaveTypes.map((lt) => (
                       <option key={lt.id} value={lt.name}>
-                        {lt.name}{lt.nameBn ? ` · ${lt.nameBn}` : ''}
+                        {labelFor(lt.name, lt.nameBn)}
                       </option>
                     ))}
                   </select>
@@ -189,7 +203,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                               </Badge>
                             </div>
                             <p className="mt-1 text-xs text-[var(--text-muted)]">
-                              {new Date(req.startDate).toLocaleDateString()} - {new Date(req.endDate).toLocaleDateString()}
+                              {fmtDate(req.startDate)} - {fmtDate(req.endDate)}
                             </p>
                             <p className="mt-1 text-xs italic text-[var(--text-muted)]">"{req.details}"</p>
                             {isAdmin && (

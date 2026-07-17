@@ -8,9 +8,11 @@ import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusPill } from '@/components/ui/status-pill';
 import AttendanceTrend from '@/components/dashboard/AttendanceTrendDynamic';
+import LiveClock from '@/components/dashboard/LiveClock';
 import { LeaveBreakdownDonut, ExpenseBreakdownDonut, DepartmentBar } from '@/components/dashboard/AnalyticsCharts';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +22,22 @@ export default async function HomePage() {
   const caller = await getCaller();
   const t = await getServerT();
   const isAdmin = caller?.isAdmin ?? false;
-  const [stats, myOverview, trainingCompliance] = await Promise.all([
+  const [stats, myOverview, trainingCompliance, officeSetting] = await Promise.all([
     getDashboardStats(caller),
     getDashboardMyOverview(caller),
     isAdmin ? getTrainingCompliance(caller) : Promise.resolve(null),
+    prisma.systemSetting.findUnique({ where: { key: 'officeHours' } }).catch(() => null),
   ]);
+
+  let officeHours: { start?: string; end?: string } | null = null;
+  if (officeSetting?.value) {
+    try {
+      const parsed = JSON.parse(officeSetting.value);
+      officeHours = { start: parsed.start, end: parsed.end };
+    } catch {
+      officeHours = null;
+    }
+  }
 
   const statCards = [
     { label: t('Headcount'), value: stats.headcount, icon: Users, tone: 'text-[var(--brand)] bg-[var(--brand-soft)]' },
@@ -65,6 +78,7 @@ export default async function HomePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <LiveClock officeHours={officeHours} />
         <div className="lg:col-span-2">
           <AttendanceTrend data={stats.attendanceTrend} />
         </div>

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Receipt, CheckCircle2, XCircle, Plus, Landmark, DollarSign } from 'lucide-react';
+import { Receipt, CheckCircle2, XCircle, Plus, Landmark, DollarSign, AlertTriangle, Ban } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
+import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { formatCurrency } from '@/lib/format';
 
 interface ExpensesClientProps {
   initialExpenses: any[];
+  initialPenalties: any[];
   isAdmin: boolean;
 }
 
@@ -23,8 +25,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   OTHER: 'Other Expense',
 };
 
-export function ExpensesClient({ initialExpenses, isAdmin }: ExpensesClientProps) {
+export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: ExpensesClientProps) {
+  const { user } = useUser();
   const [expenses, setExpenses] = useState<any[]>(initialExpenses || []);
+  const [penalties, setPenalties] = useState<any[]>(initialPenalties || []);
   const utils = trpc.useUtils();
 
   const submitExpense = trpc.expenses.createExpense.useMutation({
@@ -43,6 +47,13 @@ export function ExpensesClient({ initialExpenses, isAdmin }: ExpensesClientProps
     },
   });
 
+  const createPenalty = trpc.expenses.createPenalty.useMutation({
+    onSuccess: () => { utils.invalidate('expenses'); utils.invalidate('penalties'); setPenaltyDraft({ userId: '', amount: 0, reason: '', dueDate: '' }); },
+  });
+  const updatePenaltyStatus = trpc.expenses.updatePenaltyStatus.useMutation({
+    onSuccess: () => { utils.invalidate('expenses'); utils.invalidate('penalties'); },
+  });
+
   const [showForm, setShowForm] = useState(false);
   const [newExpense, setNewExpense] = useState({
     amount: 0,
@@ -51,6 +62,10 @@ export function ExpensesClient({ initialExpenses, isAdmin }: ExpensesClientProps
     isMileage: false,
     distance: 0,
   });
+  const [penaltyDraft, setPenaltyDraft] = useState({ userId: '', amount: 0, reason: '', dueDate: '' });
+  const [showPenaltyForm, setShowPenaltyForm] = useState(false);
+
+  const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: isAdmin && showPenaltyForm });
 
   const data = expenses;
 
@@ -91,6 +106,110 @@ export function ExpensesClient({ initialExpenses, isAdmin }: ExpensesClientProps
             {showForm ? 'Cancel Claim' : <><Plus className="h-4 w-4" /> New Claim</>}
           </Button>
         </div>
+      )}
+
+      {/* Penalties — employees see their own; admins manage */}
+      {!isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Ban className="h-4 w-4 text-[var(--rose)]" /> My Penalties
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {penalties.length === 0 ? (
+              <p className="py-6 text-center text-sm text-[var(--text-muted)]">You have no outstanding penalties. 🎉</p>
+            ) : (
+              <div className="space-y-3">
+                {penalties.map((p: any) => (
+                  <div key={p.id} className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--rose-soft)] text-[var(--rose)]">
+                        <AlertTriangle className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--text-main)]">{formatCurrency(p.amount, 'BDT', 'en')}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{p.reason}</p>
+                        {p.dueDate && <p className="text-[10px] text-[var(--text-muted)]">Due: {new Date(p.dueDate).toLocaleDateString()}</p>}
+                      </div>
+                    </div>
+                    <StatusBadge status={p.status === 'PAID' ? 'APPROVED' : 'PENDING'} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {isAdmin && (
+        <>
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => setShowPenaltyForm((s) => !s)}>
+              {showPenaltyForm ? 'Cancel' : <><Plus className="h-4 w-4" /> Add Penalty</>}
+            </Button>
+          </div>
+          {showPenaltyForm && (
+            <Card className="animate-scale-in">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Ban className="h-4 w-4 text-[var(--rose)]" /> Issue Penalty</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-4" onSubmit={(e) => { e.preventDefault(); if (penaltyDraft.userId && penaltyDraft.amount && penaltyDraft.reason) createPenalty.mutate({ ...penaltyDraft, amount: Number(penaltyDraft.amount), dueDate: penaltyDraft.dueDate || undefined }); }}>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Employee</label>
+                    <select required className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={penaltyDraft.userId} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, userId: e.target.value })}>
+                      <option value="">-- Select --</option>
+                      {users?.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Amount (৳)</label>
+                    <Input type="number" required value={penaltyDraft.amount || ''} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, amount: Number(e.target.value) })} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Due Date</label>
+                    <Input type="date" value={penaltyDraft.dueDate} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, dueDate: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Reason</label>
+                    <Input required value={penaltyDraft.reason} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, reason: e.target.value })} placeholder="Reason for penalty" />
+                  </div>
+                  <div className="md:col-span-4">
+                    <Button type="submit" disabled={createPenalty.isPending} className="bg-[var(--rose)] hover:brightness-105">Issue Penalty</Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Ban className="h-4 w-4 text-[var(--rose)]" /> All Penalties</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {penalties.length === 0 ? (
+                <p className="py-6 text-center text-sm text-[var(--text-muted)]">No penalties recorded.</p>
+              ) : (
+                <div className="divide-y divide-[var(--border-hairline)]">
+                  {penalties.map((p: any) => (
+                    <div key={p.id} className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold text-[var(--text-main)]">{formatCurrency(p.amount, 'BDT', 'en')} — {p.user?.name}</p>
+                        <p className="text-xs text-[var(--text-muted)]">{p.reason}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={p.status === 'PAID' ? 'APPROVED' : 'PENDING'} />
+                        {p.status !== 'PAID' && (
+                          <Button variant="outline" size="sm" onClick={() => updatePenaltyStatus.mutate({ id: p.id, status: 'PAID' })}>Mark Paid</Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {showForm && !isAdmin && (

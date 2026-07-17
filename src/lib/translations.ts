@@ -106,6 +106,11 @@ export const translations: Record<string, Record<string, string>> = {
     'Verbose Debug Logging': 'Verbose Debug Logging',
     'Strict 2FA Enforced': 'Strict 2FA Enforced',
     'Auto-Provision Accounts': 'Auto-Provision Accounts',
+    'Office Time': 'Office Time',
+    'Set the standard working hours shown across OpsHub (dashboard clock, shifts, attendance).': 'Set the standard working hours shown across OpsHub (dashboard clock, shifts, attendance).',
+    'Save Office Time': 'Save Office Time',
+    'Saving…': 'Saving…',
+    'Saved!': 'Saved!',
 
     // Policy
     'Corporate Policies': 'Corporate Policies',
@@ -224,6 +229,11 @@ export const translations: Record<string, Record<string, string>> = {
     'Verbose Debug Logging': 'ভার্বোস ডিবাগ লগিং',
     'Strict 2FA Enforced': 'কঠোর 2FA প্রয়োগ',
     'Auto-Provision Accounts': 'অ্যাকাউন্ট স্বয়ংক্রিয়-প্রদান',
+    'Office Time': 'অফিস সময়',
+    'Set the standard working hours shown across OpsHub (dashboard clock, shifts, attendance).': 'OpsHub জুড়ে প্রদর্শিত মানক কর্মঘণ্টা সেট করুন (ড্যাশবোর্ড ঘড়ি, শিফট, উপস্থিতি)।',
+    'Save Office Time': 'অফিস সময় সংরক্ষণ',
+    'Saving…': 'সংরক্ষণ করা হচ্ছে…',
+    'Saved!': 'সংরক্ষিত!',
 
     // Policy
     'Corporate Policies': 'কর্পোরেট নীতি',

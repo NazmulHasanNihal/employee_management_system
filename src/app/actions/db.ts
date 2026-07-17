@@ -648,7 +648,7 @@ export async function runQuery(
       const dayEnd = new Date(date); dayEnd.setHours(23, 59, 59, 999);
       const assignments = await prisma.shiftAssignment.findMany({
         where: { date: { gte: dayStart, lte: dayEnd } },
-        include: { user: { select: { name: true, role: true, avatarUrl: true } }, shift: true },
+        include: { user: { select: { name: true, role: true, avatarUrl: true } }, shift: true, team: true },
         orderBy: { createdAt: 'asc' }
       });
       return assignments.map((a: any) => ({
@@ -658,8 +658,19 @@ export async function runQuery(
         userName: a.user?.name || 'Unknown',
         userRole: a.user?.role || 'Staff',
         userAvatar: a.user?.avatarUrl || null,
+        teamId: a.teamId || null,
+        teamName: a.team?.name || null,
+        workNote: a.workNote || null,
+        roleOnShift: a.roleOnShift || null,
         date: a.date
       }));
+    }
+    if (path === 'shifts.getTeams') {
+      if (!isAdmin && !isCEO) return [];
+      return await prisma.team.findMany({
+        orderBy: { name: 'asc' },
+        include: { lead: { select: { name: true } }, branch: true },
+      });
     }
 
     // ── PERFORMANCE ──
@@ -1354,6 +1365,26 @@ async function runMutation(path: string, input: any) {
       return updated;
     }
 
+    // ── PENALTIES (admin/HR only; employees view their own) ──
+    if (path === 'expenses.createPenalty') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.userId || !input?.amount || !input?.reason) throw new Error('Missing penalty details');
+      return await prisma.penalty.create({
+        data: {
+          userId: input.userId,
+          amount: Number(input.amount),
+          reason: input.reason,
+          status: input.status || 'UNPAID',
+          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        },
+      });
+    }
+    if (path === 'expenses.updatePenaltyStatus') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Penalty id required');
+      return await prisma.penalty.update({ where: { id: input.id }, data: { status: input.status } });
+    }
+
     if (path === 'departments.createDepartment') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.name) throw new Error('Department name is required');
@@ -1680,12 +1711,21 @@ async function runMutation(path: string, input: any) {
     if (path === 'shifts.assignShift') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.userId || !input?.shiftId || !input?.date) throw new Error('Missing required fields');
-      return await prisma.shiftAssignment.create({
-        data: {
+      return await prisma.shiftAssignment.upsert({
+        where: { shiftId_userId_date: { shiftId: input.shiftId, userId: input.userId, date: new Date(input.date) } },
+        create: {
           userId: input.userId,
           shiftId: input.shiftId,
-          date: new Date(input.date)
-        }
+          date: new Date(input.date),
+          teamId: input.teamId || null,
+          workNote: input.workNote || null,
+          roleOnShift: input.roleOnShift || null,
+        },
+        update: {
+          teamId: input.teamId || null,
+          workNote: input.workNote || null,
+          roleOnShift: input.roleOnShift || null,
+        },
       });
     }
     if (path === 'shifts.removeAssignment') {
@@ -1724,6 +1764,7 @@ async function runMutation(path: string, input: any) {
           graceMinutes: input.graceMinutes ?? 10,
           isNightShift: Boolean(input.isNightShift),
           breakMinutes: input.breakMinutes ?? 60,
+          recurringDays: input.recurringDays || [],
           branchId: input.branchId || null,
         },
       });
@@ -1741,9 +1782,47 @@ async function runMutation(path: string, input: any) {
           graceMinutes: input.graceMinutes,
           isNightShift: input.isNightShift === undefined ? undefined : Boolean(input.isNightShift),
           breakMinutes: input.breakMinutes,
+          recurringDays: input.recurringDays,
           branchId: input.branchId === undefined ? undefined : (input.branchId || null),
         },
       });
+    }
+    if (path === 'shifts.deleteShift') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing shift id');
+      return await prisma.shift.delete({ where: { id: input.id } });
+    }
+    if (path === 'shifts.createTeam') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.name) throw new Error('Team name required');
+      return await prisma.team.create({
+        data: {
+          name: input.name,
+          description: input.description || null,
+          branchId: input.branchId || null,
+          leadId: input.leadId || null,
+          memberIds: input.memberIds || [],
+        },
+      });
+    }
+    if (path === 'shifts.updateTeam') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing team id');
+      return await prisma.team.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          description: input.description ?? undefined,
+          branchId: input.branchId === undefined ? undefined : (input.branchId || null),
+          leadId: input.leadId === undefined ? undefined : (input.leadId || null),
+          memberIds: input.memberIds,
+        },
+      });
+    }
+    if (path === 'shifts.deleteTeam') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing team id');
+      return await prisma.team.delete({ where: { id: input.id } });
     }
 
     // ── PERFORMANCE (mutations) ──
@@ -1876,7 +1955,7 @@ async function runMutation(path: string, input: any) {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       if (!input?.receiverId || !input?.message) throw new Error('Receiver and message required');
       return await prisma.kudo.create({
-        data: { senderId: userId!, receiverId: input.receiverId, message: input.message }
+        data: { senderId: userId!, receiverId: input.receiverId, message: input.message, category: input.category || 'Appreciation' }
       });
     }
 
@@ -2000,8 +2079,14 @@ async function runMutation(path: string, input: any) {
         data: {
           title: input.title,
           url: input.url,
+          fileName: input.fileName || input.title,
+          size: input.size || null,
+          mimeType: input.mimeType || null,
           type: input.type || 'General',
-          ownerId: userId!
+          category: input.category || 'General',
+          status: input.status || 'ACTIVE',
+          // Admin distributes to a target employee; otherwise the uploader owns it.
+          ownerId: input.ownerId || userId!
         }
       });
     }
@@ -2222,6 +2307,45 @@ async function runMutation(path: string, input: any) {
       return { success: true };
     }
 
+    // ── PAYMENT HUB (payments + sales) ──
+    if (path === 'payroll.recordPayment') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      // Employee can record their own payment; admin/HR can record for anyone.
+      const targetUserId = isAdmin || isCEO ? (input.userId || userId) : userId;
+      if (!input?.amount || !input?.month || !input?.year) throw new Error('Missing payment details');
+      return await prisma.payment.create({
+        data: {
+          userId: targetUserId,
+          payrollId: input.payrollId || null,
+          month: Number(input.month),
+          year: Number(input.year),
+          amount: Number(input.amount),
+          method: input.method || 'BKASH',
+          reference: input.reference || null,
+          status: input.status || 'PAID',
+          details: input.details || null,
+        },
+      });
+    }
+    if (path === 'payroll.markPaymentPaid') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing payment id');
+      return await prisma.payment.update({ where: { id: input.id }, data: { status: 'PAID' } });
+    }
+    if (path === 'payroll.recordSale') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.userId || !input?.amount || !input?.month || !input?.year) throw new Error('Missing sale details');
+      return await prisma.sale.create({
+        data: {
+          userId: input.userId,
+          month: Number(input.month),
+          year: Number(input.year),
+          amount: Number(input.amount),
+          note: input.note || null,
+        },
+      });
+    }
+
     // ── ASSETS (mutations) ──
     if (path === 'assets.createAsset') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
@@ -2295,6 +2419,11 @@ async function runMutation(path: string, input: any) {
       return await prisma.ticketReply.create({
         data: { ticketId: input.ticketId, authorId: userId!, content: input.content }
       });
+    }
+    if (path === 'helpdesk.updateTicketStatus') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id || !input?.status) throw new Error('Missing fields');
+      return await prisma.ticket.update({ where: { id: input.id }, data: { status: input.status } });
     }
 
     // ── AUTOMATIONS (mutations) ──

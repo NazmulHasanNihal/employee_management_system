@@ -27,6 +27,10 @@ model User {
   proxyId     String?
   proxy       User?        @relation("ProxyToUser", fields: [proxyId], references: [id])
   proxiedUsers User[]      @relation("ProxyToUser")
+  teamsLed    Team[]       @relation("TeamLead")
+  penalties   Penalty[]
+  payments    Payment[]
+  sales       Sale[]
   // ── Bangladesh localization (Phase B) ──
   branchId    String?
   branch      Branch?      @relation("BranchMembers", fields: [branchId], references: [id])
@@ -131,6 +135,7 @@ model Branch {
   members     User[]            @relation("BranchMembers")
   departments Department[] @relation("DepartmentBranch")
   shifts      Shift[]      @relation("ShiftBranch")
+  teams       Team[]       @relation("TeamBranch")
   relations   BranchRelations[]
 
   @@unique([name])
@@ -169,6 +174,17 @@ model Expense {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
+}
+
+model Penalty {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Float
+  reason    String
+  status    String   @default("UNPAID") // UNPAID, PAID
+  dueDate   DateTime?
+  createdAt DateTime @default(now())
 }
 
 model Asset {
@@ -237,7 +253,37 @@ model Payroll {
   salaryHeads        SalaryHead[] // resolved heads used in this payroll (M:N convenience)
   userId             String
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments           Payment[]
   createdAt          DateTime @default(now())
+}
+
+// ── Payments (Payment Hub) ──
+model Payment {
+  id          String   @id @default(cuid())
+  payrollId   String?
+  payroll     Payroll?  @relation(fields: [payrollId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month       Int      // 1-12
+  year        Int
+  amount      Float
+  method      String   @default("BKASH") // BKASH, ROCKET, BANK
+  reference   String?  // transaction reference / account no
+  status      String   @default("PENDING") // PENDING, PAID
+  details     String?  // admin note / manual entry description
+  createdAt   DateTime @default(now())
+}
+
+// ── Sales (employee revenue view) ──
+model Sale {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month     Int
+  year      Int
+  amount    Float
+  note      String?
+  createdAt DateTime @default(now())
 }
 
 // ── Bangladesh Festival Bonus (B2) ──
@@ -428,6 +474,7 @@ model Shift {
   graceMinutes Int              @default(10) // minutes after startTime before "Late"
   isNightShift Boolean          @default(false) // drives night-differential computation
   breakMinutes Int              @default(60) // unpaid break deducted from worked time
+  recurringDays Int[] // 0=Sun..6=Sat; if empty, no weekly recurrence
   branchId     String?
   branch       Branch?          @relation("ShiftBranch", fields: [branchId], references: [id])
   assignments  ShiftAssignment[]
@@ -436,13 +483,34 @@ model Shift {
 }
 
 model ShiftAssignment {
-  id        String   @id @default(cuid())
-  shiftId   String
-  shift     Shift    @relation(fields: [shiftId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date      DateTime
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  shiftId      String
+  shift        Shift     @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId       String?
+  team         Team?     @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  workNote     String? // assigned work / task for this shift
+  roleOnShift  String? // e.g. "Supervisor", "Operator"
+  date         DateTime
+  createdAt    DateTime  @default(now())
+
+  @@unique([shiftId, userId, date])
+}
+
+// ── Teams (for shift rostering & work assignment) ──
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  branchId    String?
+  branch      Branch?  @relation("TeamBranch", fields: [branchId], references: [id])
+  leadId      String?
+  lead        User?    @relation("TeamLead", fields: [leadId], references: [id])
+  memberIds   String[] // user ids
+  assignments ShiftAssignment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ── Performance ──
@@ -600,6 +668,7 @@ model Feedback {
 model Kudo {
   id        String   @id @default(cuid())
   message   String
+  category  String   @default("Appreciation") // Appreciation, Teamwork, Leadership, Innovation, Customer Love
   senderId  String
   sender    User     @relation("KudoSender", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
@@ -611,8 +680,13 @@ model Kudo {
 model Document {
   id        String   @id @default(cuid())
   title     String
+  fileName  String?
+  size      Int?
+  mimeType  String?
   url       String
   type      String   @default("General") // General, Contract, Policy, Identity
+  category  String   @default("General") // folder/category for browsing
+  status    String   @default("ACTIVE") // ACTIVE, PENDING
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   signed    Boolean  @default(false)

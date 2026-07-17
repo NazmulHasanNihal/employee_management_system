@@ -1,16 +1,25 @@
 import React from 'react';
-import { Trophy, Award, Heart } from 'lucide-react';
+import { Trophy, Award, Heart, Star, Crown } from 'lucide-react';
 import { q } from '@/server/queries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { Badge } from '@/components/ui/badge';
 import RecognitionIsland from './RecognitionIsland';
 
 export const dynamic = 'force-dynamic';
 
+const CATEGORY_TONE: Record<string, string> = {
+  Appreciation: 'text-[var(--emerald)] bg-[var(--emerald-soft)]',
+  Teamwork: 'text-[var(--brand-strong)] bg-[var(--brand-soft)]',
+  Leadership: 'text-[var(--amber)] bg-[var(--amber-soft)]',
+  Innovation: 'text-[var(--sky)] bg-[var(--sky-soft)]',
+  'Customer Love': 'text-[var(--rose)] bg-[var(--rose-soft)]',
+};
+
 export default async function RecognitionPage() {
-  const kudos = await q.recentKudos();
+  const [kudos, leaderboard] = await Promise.all([q.recentKudos(), q.kudoLeaderboard()]);
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -33,6 +42,31 @@ export default async function RecognitionPage() {
               <RecognitionIsland />
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-4 w-4 text-[var(--amber)]" /> Top Recognized
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {leaderboard.length === 0 ? (
+                <p className="text-sm text-[var(--text-muted)]">No kudos awarded yet.</p>
+              ) : (
+                leaderboard.map((u: any, i: number) => (
+                  <div key={u.userId} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--amber-soft)] text-xs font-bold text-[var(--amber)]">{i + 1}</span>
+                    <Avatar src={u.avatarUrl} name={u.name} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-[var(--text-main)]">{u.name}</p>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{u.count} kudos</p>
+                    </div>
+                    <Star size={16} className="text-[var(--amber)]" />
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Kudos Feed */}
@@ -52,7 +86,7 @@ export default async function RecognitionPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {kudos.map((kudo: any) => (
-                <div key={kudo.id} className="relative overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-colors hover:border-[var(--amber)]/40">
+                <div key={kudo.id} className="relative overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-all hover:border-[var(--amber)]/40 hover:shadow-md">
                   <div className="mb-4 flex items-start justify-between">
                     <div>
                       <p className="mb-1 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">To</p>
@@ -71,9 +105,12 @@ export default async function RecognitionPage() {
                       <p className="mb-0.5 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">From</p>
                       <p className="text-xs font-bold text-[var(--brand-strong)]">{kudo.senderName}</p>
                     </div>
-                    <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
-                      {new Date(kudo.createdAt).toLocaleDateString()}
-                    </p>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={`${CATEGORY_TONE[kudo.category] || CATEGORY_TONE.Appreciation} border-current`}>{kudo.category}</Badge>
+                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
+                        {new Date(kudo.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}

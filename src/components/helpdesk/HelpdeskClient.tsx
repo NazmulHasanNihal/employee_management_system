@@ -15,9 +15,16 @@ interface HelpdeskClientProps {
 }
 
 function getPriorityVariant(p: string) {
+  if (p === 'Critical') return 'rose';
   if (p === 'High') return 'rose';
   if (p === 'Medium') return 'amber';
   return 'sky';
+}
+
+function getStatusVariant(s: string) {
+  if (s === 'Resolved') return 'emerald';
+  if (s === 'In Progress') return 'amber';
+  return 'rose';
 }
 
 function getPriorityIcon(p: string) {
@@ -49,6 +56,10 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
       setReplyTexts((prev) => ({ ...prev, [variables.ticketId]: '' }));
       utils.helpdesk.getTickets.invalidate();
     },
+  });
+
+  const updateStatus = trpc.helpdesk.updateTicketStatus.useMutation({
+    onSuccess: () => utils.helpdesk.getTickets.invalidate(),
   });
 
   const canReply = (ticket: any) =>
@@ -128,7 +139,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
             <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Active Tickets</h3>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="custom-scrollbar max-h-[70vh] space-y-4 overflow-y-auto pr-1">
             {tickets.map((ticket: any) => (
               <Card key={ticket.id}>
                 <CardContent className="space-y-4">
@@ -150,7 +161,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                   <div className="flex items-center justify-between rounded-2xl bg-[var(--bg-hover)] p-4">
                     <div>
                       <p className="text-xs text-[var(--text-muted)]">Current Status</p>
-                      <Badge variant={ticket.status === 'Resolved' ? 'emerald' : ticket.status === 'Open' ? 'rose' : 'amber'}>
+                      <Badge variant={getStatusVariant(ticket.status) as any}>
                         {ticket.status === 'Resolved' ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                         {ticket.status}
                       </Badge>
@@ -203,8 +214,13 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                   </div>
 
                   {isPrivileged && ticket.status !== 'Resolved' && (
-                    <div className="flex justify-end border-t border-[var(--border-hairline)] pt-4">
-                      <Button variant="outline" size="sm" className="text-[var(--emerald)]">
+                    <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border-hairline)] pt-4">
+                      {ticket.status === 'Open' && (
+                        <Button variant="outline" size="sm" className="text-[var(--amber)]" onClick={() => updateStatus.mutate({ id: ticket.id, status: 'In Progress' })} disabled={updateStatus.isPending}>
+                          Mark In Progress
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" className="text-[var(--emerald)]" onClick={() => updateStatus.mutate({ id: ticket.id, status: 'Resolved' })} disabled={updateStatus.isPending}>
                         <CheckCircle2 className="h-4 w-4" /> Mark Resolved
                       </Button>
                     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Megaphone, AlertTriangle, Info, BellRing, Edit3, Send, Check, Trash2, Pin, PinOff, Users, Globe, Phone, Tag, Filter, Search, AlertOctagon } from 'lucide-react';
+import { Megaphone, AlertTriangle, Info, BellRing, Edit3, Send, Check, Trash2, Pin, PinOff, Users, Globe, Tag, Filter, Search, AlertOctagon } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
 
 type Priority = 'Low' | 'Medium' | 'High' | 'Emergency';
-type Category = 'Universal' | 'Team' | 'Calls' | 'Other';
+type Category = 'Universal' | 'Team' | 'Other';
 
 const PRIORITY_TONE: Record<Priority, { label: string; tone: string }> = {
   Low: { label: 'text-[var(--brand)] bg-[var(--brand-soft)]', tone: 'brand' },
@@ -23,7 +23,7 @@ const PRIORITY_ICON: Record<Priority, any> = {
 };
 
 const CATEGORY_ICON: Record<Category, any> = {
-  Universal: Globe, Team: Users, Calls: Phone, Other: Tag,
+  Universal: Globe, Team: Users, Other: Tag,
 };
 
 interface News {
@@ -125,7 +125,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
           ))}
         </div>
         <div className="flex gap-2">
-          {(['Universal', 'Team', 'Calls'] as Category[]).map((c) => (
+          {(['Universal', 'Team', 'Other'] as Category[]).map((c) => (
             <button key={c} onClick={() => setFilterCategory(filterCategory === c ? null : c)} className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase ${filterCategory === c ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>
               {React.createElement(CATEGORY_ICON[c], { size: 12 })} {c}
             </button>
@@ -225,7 +225,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Category</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {(['Universal', 'Team', 'Calls', 'Other'] as Category[]).map((c) => (
+                    {(['Universal', 'Team', 'Other'] as Category[]).map((c) => (
                       <button key={c} onClick={() => setCategory(c)} className={`flex items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-semibold uppercase ${category === c ? 'border border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>
                         {React.createElement(CATEGORY_ICON[c], { size: 12 })} {c}
                       </button>

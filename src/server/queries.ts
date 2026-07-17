@@ -391,6 +391,27 @@ export async function getSalaryStructures() {
   return prisma.salaryStructure.findMany({ orderBy: { createdAt: 'desc' } });
 }
 
+export async function getPaymentsForUser(caller: Caller | null) {
+  const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  const userId = caller?.id;
+  if (isAdmin || isCEO) return prisma.payment.findMany({ include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
+  return prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+}
+
+export async function getSalesForUser(caller: Caller | null, month?: number, year?: number) {
+  const userId = caller?.id;
+  const where: any = { userId };
+  if (month) where.month = month;
+  if (year) where.year = year;
+  return prisma.sale.findMany({ where, orderBy: [{ year: 'desc' }, { month: 'desc' }] });
+}
+
+export async function getSalesMonthTotal(userId: string, month: number, year: number) {
+  const agg = await prisma.sale.aggregate({ where: { userId, month, year }, _sum: { amount: true } });
+  return agg._sum.amount || 0;
+}
+
 export async function getFestivalBonuses(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
@@ -460,6 +481,13 @@ export async function getExpenses(caller: Caller | null) {
   const userId = caller?.id;
   if (isAdmin) return prisma.expense.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
   return prisma.expense.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
+}
+
+export async function getPenalties(caller: Caller | null) {
+  const isAdmin = caller?.isAdmin ?? false;
+  const userId = caller?.id;
+  if (isAdmin) return prisma.penalty.findMany({ include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+  return prisma.penalty.findMany({ where: { userId }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
 }
 
 export async function getAssets() {
@@ -704,6 +732,75 @@ export async function getReviews(caller: Caller | null, targetId?: string) {
 }
 
 /**
+ * getPromotionReadiness — composite promotion-score engine.
+ * Blends attendance reliability, on-time task completion, objective progress
+ * and manager review scores into a 0–100 readiness score.
+ */
+export async function getPromotionReadiness(caller: Caller | null, targetId?: string) {
+  const userId = caller?.id;
+  if (!userId) return null;
+  const tid = targetId || userId;
+  if (tid !== userId && !caller?.isAdmin && !caller?.isCEO) return null;
+
+  const since = new Date();
+  since.setMonth(since.getMonth() - 3);
+
+  // Attendance
+  const attendance = await prisma.attendance.findMany({
+    where: { userId: tid, date: { gte: since } },
+  });
+  const totalAtt = attendance.length || 1;
+  const presentOrLate = attendance.filter((a: any) => a.status === 'Present' || a.status === 'Late').length;
+  const lateCount = attendance.filter((a: any) => a.status === 'Late').length;
+  const attendanceRate = (presentOrLate / totalAtt) * 100;
+  const punctualityRate = ((presentOrLate - lateCount) / totalAtt) * 100;
+
+  // Task completion on time
+  const tasks = await prisma.teamTask.findMany({
+    where: { assigneeId: tid, createdAt: { gte: since } },
+  });
+  const completedTasks = tasks.filter((t: any) => t.status === 'Done');
+  const onTimeTasks = completedTasks.filter((t: any) => t.dueDate && t.completedAt && new Date(t.completedAt) <= new Date(t.dueDate));
+  const taskCompletionRate = tasks.length ? (completedTasks.length / tasks.length) * 100 : 70;
+  const onTimeRate = completedTasks.length ? (onTimeTasks.length / completedTasks.length) * 100 : 70;
+
+  // Objective progress (avg)
+  const objectives = await prisma.objective.findMany({ where: { userId: tid } });
+  const avgObjective = objectives.length ? objectives.reduce((s: number, o: any) => s + (o.progress || 0), 0) / objectives.length : 60;
+
+  // Review scores
+  const reviewScores = await prisma.reviewScore.findMany({ where: { userId: tid } });
+  const avgReview = reviewScores.length ? reviewScores.reduce((s: number, r: any) => s + (r.rating || 0), 0) / reviewScores.length : 3;
+
+  const score = Math.round(
+    attendanceRate * 0.25 +
+    punctualityRate * 0.10 +
+    taskCompletionRate * 0.20 +
+    onTimeRate * 0.15 +
+    avgObjective * 0.20 +
+    (avgReview / 5) * 100 * 0.10
+  );
+
+  let tier = 'Developing';
+  if (score >= 85) tier = 'Promotion Ready';
+  else if (score >= 70) tier = 'Strong';
+  else if (score >= 55) tier = 'On Track';
+
+  return {
+    score: Math.min(100, score),
+    tier,
+    metrics: {
+      attendanceRate: Math.round(attendanceRate),
+      punctualityRate: Math.round(punctualityRate),
+      taskCompletionRate: Math.round(taskCompletionRate),
+      onTimeRate: Math.round(onTimeRate),
+      avgObjective: Math.round(avgObjective),
+      avgReview: Number(avgReview.toFixed(1)),
+    },
+  };
+}
+
+/**
  * reviews.getMine — DETERMINISTIC.
  * Reads real ReviewScore rows (one per dimension) instead of synthesizing
  * random radar values. Returns averaged scores per dimension across all the
@@ -786,9 +883,30 @@ export async function getRecentKudos() {
     orderBy: { createdAt: 'desc' }, take: 30,
   });
   return kudos.map((k: any) => ({
-    id: k.id, message: k.message,
+    id: k.id, message: k.message, category: k.category || 'Appreciation',
     senderName: k.sender?.name || 'Anonymous', senderAvatar: k.sender?.avatarUrl || null,
     receiverName: k.receiver?.name || 'Team', createdAt: k.createdAt,
+  }));
+}
+
+/** Leaderboard: top kudo recipients across the org. */
+export async function getKudoLeaderboard() {
+  const agg = await prisma.kudo.groupBy({
+    by: ['receiverId'],
+    _count: { _all: true },
+    orderBy: { _count: { receiverId: 'desc' } },
+    take: 5,
+  });
+  const users = await prisma.user.findMany({
+    where: { id: { in: agg.map((a) => a.receiverId) } },
+    select: { id: true, name: true, avatarUrl: true },
+  });
+  const byId = Object.fromEntries(users.map((u: any) => [u.id, u]));
+  return agg.map((a: any) => ({
+    userId: a.receiverId,
+    count: a._count._all,
+    name: byId[a.receiverId]?.name || 'Unknown',
+    avatarUrl: byId[a.receiverId]?.avatarUrl || null,
   }));
 }
 
@@ -1032,7 +1150,10 @@ export const q = {
   payrolls: () => getCaller().then((c) => getPayrolls(c)),
   salaryHeads: getSalaryHeads,
   payrollAdminStats: getPayrollAdminStats,
+  payments: () => getCaller().then((c) => getPaymentsForUser(c)),
+  sales: () => getCaller().then((c) => getSalesForUser(c)),
   expenses: () => getCaller().then((c) => getExpenses(c)),
+  penalties: () => getCaller().then((c) => getPenalties(c)),
   assets: getAssets,
   tickets: () => getCaller().then((c) => getTickets(c)),
   applications: getApplications,
@@ -1043,11 +1164,13 @@ export const q = {
   shifts: getShifts,
   objectives: (targetId?: string) => getCaller().then((c) => getObjectives(c, targetId)),
   reviews: (targetId?: string) => getCaller().then((c) => getReviews(c, targetId)),
+  promotionReadiness: () => getCaller().then((c) => getPromotionReadiness(c)),
   myReviews: () => getCaller().then((c) => getMyReviews(c)),
   employeeBenefits: () => getCaller().then((c) => getEmployeeBenefits(c)),
   equityGrants: () => getCaller().then((c) => getEquityGrants(c)),
   activeEnrollmentPeriod: getActiveEnrollmentPeriod,
   recentKudos: getRecentKudos,
+  kudoLeaderboard: getKudoLeaderboard,
   allFeedback: () => getCaller().then((c) => getAllFeedback(c)),
   documents: (targetId?: string) => getCaller().then((c) => getDocuments(c, targetId)),
   myCertifications: () => getCaller().then((c) => getMyCertifications(c)),

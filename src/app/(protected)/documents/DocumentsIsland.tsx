@@ -89,7 +89,12 @@ function DistributeForm() {
       createDocument.mutate({
         title: name,
         url: json.url,
+        fileName: file.name,
+        size: file.size,
+        mimeType: file.type,
+        category: 'General',
         type: requiresSignature ? 'SIGNATURE_REQUIRED' : 'General',
+        status: requiresSignature ? 'PENDING' : 'ACTIVE',
         ownerId: userId,
       });
     } catch {

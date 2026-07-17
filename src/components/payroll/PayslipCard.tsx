@@ -60,7 +60,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
         </head>
         <body>
           <div class="header">
-            <h1>EMS PAYROLL</h1>
+            <h1>OPSHUB PAYROLL</h1>
             <p>PAYSLIP: ${pay.month} ${pay.year}</p>
           </div>
 
@@ -124,57 +124,57 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
   };
 
   return (
-    <Card className="bg-black/40 border-white/10 hover:border-[var(--ledger-blue)]/50 transition-colors shadow-lg group">
+    <Card className="group">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-[var(--ledger-blue)]/50 transition-colors">
-              <FileText className="text-[var(--ledger-blue)]" size={24} />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-strong)] shrink-0 transition-colors group-hover:bg-[var(--brand)] group-hover:text-white">
+              <FileText size={24} />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-xl font-black font-mono text-white uppercase tracking-widest">{pay.month}</h3>
-                <Badge variant="outline" className={`font-mono text-[10px] h-5 rounded uppercase tracking-widest ${pay.status === 'PROCESSED' || pay.status === 'Disbursed' ? 'text-[var(--verify-green)] border-[var(--verify-green)]' : 'text-[var(--signal-amber)] border-[var(--signal-amber)]'}`}>
+                <h3 className="text-xl font-black uppercase tracking-widest text-[var(--text-main)]">{pay.month} {pay.year}</h3>
+                <Badge variant={pay.status === 'PROCESSED' || pay.status === 'Disbursed' ? 'emerald' : 'amber'}>
                   {pay.status}
                 </Badge>
               </div>
-              <p className="text-sm font-mono text-[var(--text-muted)]">
+              <p className="text-sm text-[var(--text-muted)]">
                 Generated: {new Date(pay.createdAt).toLocaleDateString()}
               </p>
               {isAdmin && pay.user && (
-                <p className="text-xs font-sans text-white/50 mt-1">Employee: {pay.user.name}</p>
+                <p className="text-xs mt-1 text-[var(--text-muted)]">Employee: {pay.user.name}</p>
               )}
             </div>
           </div>
           <div className="text-left md:text-right flex flex-col justify-between h-full">
             <div>
-              <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Net Transfer</p>
-              <p className="text-2xl font-bold font-mono text-[var(--verify-green)]">
+              <p className="text-[10px] uppercase tracking-widest mb-1 text-[var(--text-muted)]">Net Transfer</p>
+              <p className="text-2xl font-bold text-[var(--emerald)]">
                 {sym}{net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
-            <Button onClick={printPayslip} variant="outline" size="sm" className="mt-4 border-white/10 text-white hover:bg-white/10 font-mono text-xs uppercase tracking-widest h-8 w-fit md:ml-auto">
+            <Button onClick={printPayslip} variant="outline" size="sm" className="mt-4 h-8 w-fit md:ml-auto">
               <Printer size={14} className="mr-2" /> Download Slip
             </Button>
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="mt-6 pt-6 border-t border-[var(--border-hairline)] grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Earnings (+)</p>
-            <p className="text-sm font-mono text-[var(--ledger-blue)]">{sym}{totalEarnings.toLocaleString()}</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1 text-[var(--text-muted)]">Earnings (+)</p>
+            <p className="text-sm font-medium text-[var(--brand)]">{sym}{totalEarnings.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-[10px] font-mono text-[var(--alert-red)]/70 uppercase tracking-widest mb-1">Deductions (-)</p>
-            <p className="text-sm font-mono text-[var(--alert-red)]">{sym}{totalDeductions.toLocaleString()}</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1 text-[var(--text-muted)]">Deductions (-)</p>
+            <p className="text-sm font-medium text-[var(--rose)]">{sym}{totalDeductions.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-[10px] font-mono text-[var(--signal-amber)]/70 uppercase tracking-widest mb-1">Overtime Hrs</p>
-            <p className="text-sm font-mono text-[var(--signal-amber)]">{pay.overtimeHours?.toFixed(1) || 0}h</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1 text-[var(--text-muted)]">Overtime Hrs</p>
+            <p className="text-sm font-medium text-[var(--amber)]">{pay.overtimeHours?.toFixed(1) || 0}h</p>
           </div>
           <div>
-            <p className="text-[10px] font-mono text-white/40 uppercase tracking-widest mb-1">Night Hrs</p>
-            <p className="text-sm font-mono text-white/70">{pay.nightHours?.toFixed(1) || 0}h</p>
+            <p className="text-[10px] uppercase tracking-widest mb-1 text-[var(--text-muted)]">Night Hrs</p>
+            <p className="text-sm font-medium text-[var(--text-main)]">{pay.nightHours?.toFixed(1) || 0}h</p>
           </div>
         </div>
       </CardContent>

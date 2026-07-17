@@ -5,7 +5,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { PayrollActions } from '@/components/payroll/PayrollActions';
 import { PayslipCard } from '@/components/payroll/PayslipCard';
-import { getPayrolls, getPayrollAdminStats } from '@/server/queries';
+import { PaymentHub } from '@/components/payroll/PaymentHub';
+import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTotal } from '@/server/queries';
 import { getCaller } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
@@ -16,11 +17,21 @@ export default async function PayrollPage() {
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
   const t = await getServerT();
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+  const lastMonth = month === 1 ? 12 : month - 1;
+  const lastMonthYear = month === 1 ? year - 1 : year;
 
-  const [payrolls, adminStats] = await Promise.all([
+  const [payrolls, adminStats, payments, salesThis, salesLast] = await Promise.all([
     getPayrolls(caller),
     getPayrollAdminStats(),
+    getPaymentsForUser(caller),
+    getSalesMonthTotal(caller?.id || '', month, year),
+    getSalesMonthTotal(caller?.id || '', lastMonth, lastMonthYear),
   ]);
+
+  const latestPayslip = payrolls[0] || null;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
@@ -84,6 +95,17 @@ export default async function PayrollPage() {
           </Card>
         </div>
       )}
+
+      <PaymentHub
+        isAdmin={isAdmin}
+        latestPayslip={latestPayslip}
+        salesThisMonth={salesThis}
+        salesLastMonth={salesLast}
+        payments={payments}
+        month={month}
+        year={year}
+        userId={caller?.id || ''}
+      />
 
       <div className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">

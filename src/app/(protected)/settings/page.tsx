@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Cpu, Activity, Database, Lock } from 'lucide-react';
+import { Cpu, Activity, Database, Lock, Clock } from 'lucide-react';
 import { useUser } from '@/components/UserProvider';
 import { useAppStore } from '@/lib/store';
 import { useTranslation } from '@/lib/translations';
@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
+import { Button } from '@/components/ui/button';
 
 type FlagKey = 'maintenanceMode' | 'debugLogging' | 'strictAuth' | 'autoProvision';
 
@@ -29,6 +30,14 @@ export default function SettingsPage() {
   const [flags, setFlags] = React.useState<Record<FlagKey, boolean>>(DEFAULT_FLAGS);
   const [loaded, setLoaded] = React.useState(false);
 
+  // Office hours (admin/HR configurable)
+  const [officeStart, setOfficeStart] = React.useState('09:00');
+  const [officeEnd, setOfficeEnd] = React.useState('17:00');
+  const [officeGrace, setOfficeGrace] = React.useState(10);
+  const [officeTimezone, setOfficeTimezone] = React.useState('Asia/Dhaka');
+  const [savingOffice, setSavingOffice] = React.useState(false);
+  const [officeSaved, setOfficeSaved] = React.useState(false);
+
   React.useEffect(() => {
     if (savedFlags && !loaded) {
       const next = { ...DEFAULT_FLAGS };
@@ -36,6 +45,15 @@ export default function SettingsPage() {
         if (savedFlags[k] !== undefined) next[k] = savedFlags[k] === 'true';
       });
       setFlags(next);
+      if (savedFlags.officeHours) {
+        try {
+          const oh = JSON.parse(savedFlags.officeHours);
+          if (oh.start) setOfficeStart(oh.start);
+          if (oh.end) setOfficeEnd(oh.end);
+          if (typeof oh.graceMinutes === 'number') setOfficeGrace(oh.graceMinutes);
+          if (oh.timezone) setOfficeTimezone(oh.timezone);
+        } catch { /* ignore */ }
+      }
       setLoaded(true);
     }
   }, [savedFlags, loaded]);
@@ -45,6 +63,18 @@ export default function SettingsPage() {
     setFlags((prev) => ({ ...prev, [key]: value }));
     // Persist immediately.
     trpc.settings.setSystemSetting.useMutation().mutate({ key, value: String(value) });
+  };
+
+  const saveOfficeHours = () => {
+    setSavingOffice(true);
+    setOfficeSaved(false);
+    trpc.settings.setSystemSetting.useMutation().mutate(
+      { key: 'officeHours', value: JSON.stringify({ start: officeStart, end: officeEnd, graceMinutes: officeGrace, timezone: officeTimezone }) },
+      {
+        onSuccess: () => { setSavingOffice(false); setOfficeSaved(true); setTimeout(() => setOfficeSaved(false), 2500); },
+        onError: () => { setSavingOffice(false); },
+      }
+    );
   };
 
   if (!user) return null;
@@ -144,6 +174,41 @@ export default function SettingsPage() {
                   <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{t('tRPC Uptime')}</span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--brand-strong)]">99.999%</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Clock size={16} className="text-[var(--brand-strong)]" /> {t('Office Time')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-xs text-[var(--text-muted)]">{t('Set the standard working hours shown across OpsHub (dashboard clock, shifts, attendance).')}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Start</label>
+                  <input type="time" value={officeStart} onChange={(e) => setOfficeStart(e.target.value)} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">End</label>
+                  <input type="time" value={officeEnd} onChange={(e) => setOfficeEnd(e.target.value)} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Grace (min)</label>
+                  <input type="number" min={0} max={60} value={officeGrace} onChange={(e) => setOfficeGrace(Number(e.target.value))} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Timezone</label>
+                  <input value={officeTimezone} onChange={(e) => setOfficeTimezone(e.target.value)} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button onClick={saveOfficeHours} disabled={savingOffice} className="btn-primary px-4 py-2 text-sm">
+                  {savingOffice ? t('Saving…') : t('Save Office Time')}
+                </Button>
+                {officeSaved && <span className="text-xs font-medium text-[var(--emerald)]">{t('Saved!')}</span>}
               </div>
             </CardContent>
           </Card>

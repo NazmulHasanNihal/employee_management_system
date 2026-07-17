@@ -52,25 +52,22 @@ function NavLink({ item, active, onClick }: { item: any; active: boolean; onClic
     <Link
       href={item.path}
       prefetch
-      onMouseEnter={(e) => {
-        // next/link prefetches on hover automatically; keep for clarity
-        e.currentTarget.focus();
-      }}
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+      className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-out ${
         active
           ? 'bg-[var(--brand-soft)] text-[var(--brand-strong)]'
-          : 'text-[var(--text-muted)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]'
+          : 'text-[var(--text-muted)] hover:-translate-y-px hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)] hover:shadow-sm'
       }`}
     >
       {active && (
         <motion.span
           layoutId="nav-active"
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           className="absolute left-0 h-5 w-1 rounded-full bg-[var(--brand)]"
         />
       )}
-      <Icon size={17} className={active ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-main)]'} />
+      <Icon size={17} className={`transition-colors duration-200 ${active ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-main)]'}`} />
       <span className="truncate">{item.label}</span>
       {status.pending && <span className="ml-auto h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--brand)]" />}
     </Link>
@@ -193,7 +190,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               <LinkIcon size={18} />
             </div>
             <div>
-              <h1 className="text-sm font-extrabold tracking-tight text-[var(--text-main)]">EMS</h1>
+              <h1 className="text-sm font-extrabold tracking-tight text-[var(--text-main)]">OpsHub</h1>
               <p className="text-[10px] font-medium tracking-wide text-[var(--text-muted)]">Workspace</p>
             </div>
           </div>
@@ -257,7 +254,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </motion.aside>
 
-      <main className="relative flex max-h-[calc(100vh-4rem)] flex-1 flex-col overflow-hidden bg-[var(--bg-app)] md:max-h-screen">
+      <main className="relative flex h-[100dvh] flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
         {isOffline && (
           <div className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
             <div className="flex items-center gap-2">

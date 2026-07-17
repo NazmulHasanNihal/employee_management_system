@@ -125,12 +125,12 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                     {isAdmin && (
                       <td className="px-6 py-4 text-right">
                         {app.status.includes('Pending') ? (
-                          <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                            <button onClick={() => handleUpdate(app.id, 'Approved')} className="rounded-lg bg-[var(--emerald-soft)] p-2 text-[var(--emerald)] hover:bg-[var(--emerald)] hover:text-white" title="Approve">
-                              <Check className="h-3.5 w-3.5" />
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => handleUpdate(app.id, 'Approved')} className="flex items-center gap-1 rounded-lg bg-[var(--emerald-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--emerald)] transition-colors hover:bg-[var(--emerald)] hover:text-white" title="Approve">
+                              <Check className="h-3.5 w-3.5" /> Approve
                             </button>
-                            <button onClick={() => handleUpdate(app.id, 'Rejected')} className="rounded-lg bg-[var(--rose-soft)] p-2 text-[var(--rose)] hover:bg-[var(--rose)] hover:text-white" title="Reject">
-                              <X className="h-3.5 w-3.5" />
+                            <button onClick={() => handleUpdate(app.id, 'Rejected')} className="flex items-center gap-1 rounded-lg bg-[var(--rose-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--rose)] transition-colors hover:bg-[var(--rose)] hover:text-white" title="Reject">
+                              <X className="h-3.5 w-3.5" /> Reject
                             </button>
                           </div>
                         ) : (

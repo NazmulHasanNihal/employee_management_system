@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, FileText, Fingerprint, CheckCircle, File, Clock, Download, Upload } from 'lucide-react';
+import { ShieldCheck, FileText, Fingerprint, CheckCircle, File, Clock, Download, Upload, HardDrive } from 'lucide-react';
 import { q } from '@/server/queries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,13 @@ import { EmptyState } from '@/components/EmptyState';
 import DocumentsIsland from './DocumentsIsland';
 
 export const dynamic = 'force-dynamic';
+
+function formatSize(bytes?: number | null) {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
 
 export default async function DocumentsPage() {
   const documents = await q.documents();
@@ -20,8 +27,8 @@ export default async function DocumentsPage() {
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
       <PageHeader
         icon={<ShieldCheck className="h-5 w-5" />}
-        title="E-Signature Vault"
-        subtitle="Secure document distribution and cryptographic signatures."
+        title="Document Vault"
+        subtitle="Secure document storage, distribution and signatures."
         actions={
           <div className="flex flex-wrap gap-2">
             <DocumentsIsland.CreateButton />
@@ -39,11 +46,11 @@ export default async function DocumentsPage() {
               <div key={doc.id} className="relative overflow-hidden rounded-2xl border border-[var(--rose)]/40 bg-[var(--bg-panel)] p-6 transition-colors">
                 <div className="mb-4 flex justify-between items-start">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] text-[var(--rose)]">
-                    <FileSignatureIcon />
+                    <FileText size={24} />
                   </div>
                   <Badge variant="rose">Pending</Badge>
                 </div>
-                <h4 className="mb-2 text-lg font-semibold text-[var(--text-main)]">{doc.name}</h4>
+                <h4 className="mb-2 text-lg font-semibold text-[var(--text-main)]">{doc.title}</h4>
                 <p className="mb-6 flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
                   <Clock size={12} /> Received {new Date(doc.createdAt).toLocaleDateString()}
                 </p>
@@ -62,7 +69,7 @@ export default async function DocumentsPage() {
         {completedDocs.length === 0 ? (
           <EmptyState
             title="No documents in archive"
-            description="Distributed documents that have been signed will appear here."
+            description="Uploaded and signed documents will appear here."
             icon={<FileText className="h-5 w-5" />}
           />
         ) : (
@@ -70,15 +77,22 @@ export default async function DocumentsPage() {
             {completedDocs.map((doc: any) => (
               <div key={doc.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-colors hover:border-[var(--brand)]/30">
                 <div className="mb-4 flex justify-between items-start">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${doc.status === 'SIGNED' ? 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]/30' : 'bg-[var(--bg-hover)] text-[var(--text-muted)] border-[var(--border-hairline)]'}`}>
-                    {doc.status === 'SIGNED' ? <CheckCircle size={20} /> : <File size={20} />}
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${doc.signed ? 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]/30' : 'bg-[var(--bg-hover)] text-[var(--text-muted)] border-[var(--border-hairline)]'}`}>
+                    {doc.signed ? <CheckCircle size={20} /> : <File size={20} />}
                   </div>
-                  <Badge variant={doc.status === 'SIGNED' ? 'emerald' : 'secondary'}>{doc.status}</Badge>
+                  <Badge variant={doc.signed ? 'emerald' : 'secondary'}>{doc.signed ? 'Signed' : 'Stored'}</Badge>
                 </div>
-                <h4 className="mb-2 truncate text-base font-semibold text-[var(--text-main)]" title={doc.name}>{doc.name}</h4>
-                <p className="mb-6 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                  {new Date(doc.createdAt).toLocaleDateString()}
-                </p>
+                <h4 className="mb-1 truncate text-base font-semibold text-[var(--text-main)]" title={doc.title}>{doc.title}</h4>
+                <p className="mb-1 text-[11px] text-[var(--text-muted)]">{doc.category || doc.type}</p>
+                {doc.size ? (
+                  <p className="mb-4 flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+                    <HardDrive size={12} /> {formatSize(doc.size)} · {new Date(doc.createdAt).toLocaleDateString()}
+                  </p>
+                ) : (
+                  <p className="mb-4 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
+                    {new Date(doc.createdAt).toLocaleDateString()}
+                  </p>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -94,8 +108,4 @@ export default async function DocumentsPage() {
       </div>
     </div>
   );
-}
-
-function FileSignatureIcon() {
-  return <FileText size={24} className="text-[var(--rose)]" />;
 }

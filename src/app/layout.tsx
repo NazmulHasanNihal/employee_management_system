@@ -24,8 +24,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { LangSync } from "@/components/LangSync";
 
 export const metadata: Metadata = {
-  title: "EMS Ledger",
-  description: "Enterprise Management System with immutable ledger",
+  title: "OpsHub",
+  description: "Enterprise Operations Hub — HR, payroll, attendance and team management",
   manifest: "/manifest.json"
 };
 

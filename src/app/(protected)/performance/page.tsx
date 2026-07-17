@@ -8,12 +8,13 @@ import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { getServerT } from '@/lib/i18n-server';
 import PerformanceIsland from './PerformanceIsland';
+import { PromotionReadiness } from '@/components/performance/PromotionReadiness';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PerformancePage() {
   const t = await getServerT();
-  const [objectives, reviews] = await Promise.all([q.objectives(), q.reviews()]);
+  const [objectives, reviews, readiness] = await Promise.all([q.objectives(), q.reviews(), q.promotionReadiness()]);
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -48,6 +49,8 @@ export default async function PerformancePage() {
 
         {/* Manager Reviews */}
         <div className="xl:col-span-1 space-y-6">
+          <PromotionReadiness data={readiness} />
+
           <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
               <Star className="h-4 w-4 text-[var(--amber)]" /> Manager Reviews

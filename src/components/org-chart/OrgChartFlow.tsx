@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { ReactFlow, Background, Controls, MiniMap, Node, Edge, Position, Handle, NodeProps } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -21,7 +22,7 @@ interface OrgNodeData {
 const CustomNode = ({ data }: NodeProps) => {
   const d = data as unknown as OrgNodeData;
   return (
-    <div className="w-48 rounded-xl border border-[var(--brand)]/40 bg-[var(--bg-panel)] p-4 text-center shadow-md">
+    <div className="w-52 cursor-pointer rounded-xl border border-[var(--brand)]/40 bg-[var(--bg-panel)] p-4 text-center shadow-md transition-colors hover:border-[var(--brand)]">
       <Handle type="target" position={Position.Top} className="!bg-[var(--brand)]" />
       <div className="truncate text-sm font-semibold text-[var(--text-main)]">{d.name}</div>
       <div className="mt-1 truncate text-[10px] uppercase tracking-wide text-[var(--brand)]">{d.designation}</div>
@@ -73,14 +74,25 @@ const getNodesAndEdges = (treeNode: TreeNode, x = 0, y = 0): { nodes: Node[]; ed
 };
 
 export default function OrgChartFlow({ tree }: { tree: TreeNode }) {
+  const router = useRouter();
   const { nodes, edges } = useMemo(() => getNodesAndEdges(tree, 250, 50), [tree]);
 
   return (
     <div className="h-full min-h-[70vh] flex-1 overflow-hidden rounded-3xl border border-[var(--border-hairline)]" style={{ background: 'var(--bg-app)' }}>
-      <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView minZoom={0.2}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        fitView
+        fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.15}
+        maxZoom={1.5}
+        onNodeClick={(_, node) => router.push(`/profile?id=${node.id}`)}
+        proOptions={{ hideAttribution: true }}
+      >
         <Background color="var(--border-hairline)" gap={20} size={1} />
         <Controls className="!bg-[var(--bg-panel)] !border-[var(--border-hairline)]" />
-        <MiniMap className="!bg-[var(--bg-panel)]" />
+        <MiniMap className="!bg-[var(--bg-panel)]" pannable zoomable />
       </ReactFlow>
     </div>
   );

@@ -82,7 +82,7 @@ export function PayrollSettingsClient({ heads, structures }: PayrollSettingsClie
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                    Baseline Anchor ($)
+                    Baseline Anchor (৳)
                   </label>
                   <Input
                     type="number"
@@ -161,7 +161,7 @@ export function PayrollSettingsClient({ heads, structures }: PayrollSettingsClie
                     <div className="flex items-center justify-between rounded-xl bg-[var(--bg-hover)] p-4">
                       <span className="text-xs text-[var(--text-muted)]">Anchor Base</span>
                       <span className="text-sm font-semibold text-[var(--text-main)]">
-                        ${(s.baseSalary ?? 0).toLocaleString()}
+                        ৳{(s.baseSalary ?? 0).toLocaleString()}
                       </span>
                     </div>
                   </CardContent>

@@ -1,39 +1,45 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CalendarRange, Plus, Trash2, CalendarDays, Zap, Clock, UserCircle2, BrainCircuit, Pencil } from 'lucide-react';
+import { CalendarRange, Plus, Trash2, CalendarDays, Zap, Clock, UserCircle2, BrainCircuit, Pencil, Users, Briefcase, Save } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 interface ShiftsClientProps {
   shifts: any[];
   initialAssignments: any[];
   branches: any[];
+  teams: any[];
   isAdmin: boolean;
 }
 
-export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: ShiftsClientProps) {
+export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAdmin }: ShiftsClientProps) {
   const { user } = useUser();
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [showAssignForm, setShowAssignForm] = useState(false);
-  const [newAssign, setNewAssign] = useState({ userId: '', shiftId: '' });
+  const [newAssign, setNewAssign] = useState({ userId: '', shiftId: '', teamId: '', workNote: '', roleOnShift: '' });
   const [showShiftEditor, setShowShiftEditor] = useState(false);
+  const [showTeamPanel, setShowTeamPanel] = useState(false);
 
   const utils = trpc.useUtils();
   const { data: assignments, isLoading: assignLoading } = trpc.shifts.getAssignments.useQuery(
     { date: selectedDate },
     { initialData: initialAssignments, enabled: isAdmin }
   );
+  const { data: teamsData } = trpc.shifts.getTeams.useQuery(undefined, { initialData: teams, enabled: isAdmin });
+
+  const teamList = teamsData || teams || [];
 
   const assignShift = trpc.shifts.assignShift.useMutation({
     onSuccess: () => {
       utils.shifts.getAssignments.invalidate();
       setShowAssignForm(false);
-      setNewAssign({ userId: '', shiftId: '' });
+      setNewAssign({ userId: '', shiftId: '', teamId: '', workNote: '', roleOnShift: '' });
     },
   });
 
@@ -51,11 +57,21 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
   const updateShift = trpc.shifts.updateShift.useMutation({
     onSuccess: () => { utils.invalidate('shifts'); setEditingShiftId(null); },
   });
+  const deleteShift = trpc.shifts.deleteShift.useMutation({
+    onSuccess: () => { utils.invalidate('shifts'); },
+  });
+  const createTeam = trpc.shifts.createTeam.useMutation({
+    onSuccess: () => { utils.shifts.getTeams.invalidate(); setTeamDraft({ name: '', description: '' }); },
+  });
+  const deleteTeam = trpc.shifts.deleteTeam.useMutation({
+    onSuccess: () => utils.shifts.getTeams.invalidate(),
+  });
 
   const [editingShiftId, setEditingShiftId] = useState<string | null>(null);
   const [shiftDraft, setShiftDraft] = useState({
-    id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, branchId: '',
+    id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, recurringDays: [] as number[], branchId: '',
   });
+  const [teamDraft, setTeamDraft] = useState({ name: '', description: '' });
 
   const openEditor = (shift?: any) => {
     setShiftDraft({
@@ -67,6 +83,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
       graceMinutes: shift?.graceMinutes ?? 10,
       breakMinutes: shift?.breakMinutes ?? 60,
       isNightShift: Boolean(shift?.isNightShift),
+      recurringDays: shift?.recurringDays || [],
       branchId: shift?.branchId || '',
     });
     setShowShiftEditor(true);
@@ -83,7 +100,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
     else createShift.mutate(payload);
   };
 
-  const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: isAdmin && showAssignForm });
+  const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: isAdmin && (showAssignForm || showTeamPanel) });
 
   const assignmentList = isAdmin ? (assignments || []) : initialAssignments;
 
@@ -91,6 +108,8 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
   shifts.forEach((s: any) => {
     groupedAssignments[s.id] = assignmentList.filter((a: any) => a.shiftId === s.id) || [];
   });
+
+  const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -101,7 +120,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
           </div>
           <div>
             <h1 className="page-title">Shift Roster</h1>
-            <p className="page-subtitle">Intelligent workforce scheduling &amp; assignment.</p>
+            <p className="page-subtitle">Intelligent workforce scheduling, teams &amp; work assignment.</p>
           </div>
         </div>
 
@@ -113,7 +132,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
             className="w-auto"
           />
           {isAdmin && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="secondary"
                 size="sm"
@@ -126,7 +145,10 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
               <Button variant="outline" size="sm" onClick={() => setShowAssignForm((s) => !s)}>
                 <Plus className="h-4 w-4" /> Assign
               </Button>
-              <Button variant="outline" size="sm" onClick={() => { setShowShiftEditor((s) => !s); if (!showShiftEditor) { setEditingShiftId(null); setShiftDraft({ id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, branchId: '' }); } }}>
+              <Button variant="outline" size="sm" onClick={() => setShowTeamPanel((s) => !s)}>
+                <Users className="h-4 w-4" /> Teams
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setShowShiftEditor((s) => !s); if (!showShiftEditor) { setEditingShiftId(null); setShiftDraft({ id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, recurringDays: [], branchId: '' }); } }}>
                 <CalendarRange className="h-4 w-4" /> {showShiftEditor ? 'Close Editor' : 'New Shift'}
               </Button>
             </div>
@@ -134,29 +156,86 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
         </div>
       </div>
 
+      {showTeamPanel && isAdmin && (
+        <Card className="animate-scale-in border-[var(--brand)]/30">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-[var(--brand-strong)]" /> Teams
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form
+              className="grid grid-cols-1 items-end gap-4 md:grid-cols-3"
+              onSubmit={(e) => { e.preventDefault(); if (teamDraft.name) createTeam.mutate({ ...teamDraft, memberIds: [] }); }}
+            >
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Team Name</label>
+                <Input value={teamDraft.name} onChange={(e) => setTeamDraft({ ...teamDraft, name: e.target.value })} placeholder="e.g. Assembly Line A" />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Description</label>
+                <Input value={teamDraft.description} onChange={(e) => setTeamDraft({ ...teamDraft, description: e.target.value })} placeholder="Short description" />
+              </div>
+              <Button type="submit" disabled={createTeam.isPending || !teamDraft.name}>Create Team</Button>
+            </form>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {teamList.length === 0 ? (
+                <p className="text-xs text-[var(--text-muted)]">No teams yet. Create one above.</p>
+              ) : teamList.map((tm: any) => (
+                <div key={tm.id} className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[var(--text-main)]">{tm.name}</p>
+                    <p className="truncate text-xs text-[var(--text-muted)]">{tm.description || 'No description'}</p>
+                    <p className="mt-1 text-[10px] uppercase text-[var(--text-muted)]">{tm._count?.members ?? tm.memberIds?.length ?? 0} members</p>
+                  </div>
+                  <button onClick={() => deleteTeam.mutate({ id: tm.id })} className="text-[var(--text-muted)] transition-colors hover:text-[var(--rose)]" aria-label="Delete team">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {showAssignForm && isAdmin && (
         <Card className="animate-scale-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserCircle2 className="h-4 w-4 text-[var(--brand-strong)]" /> Manual Shift Override
+              <UserCircle2 className="h-4 w-4 text-[var(--brand-strong)]" /> Assign Personnel or Team
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form
-              className="grid grid-cols-1 items-end gap-4 md:grid-cols-3"
+              className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-3"
               onSubmit={(e) => {
                 e.preventDefault();
+                if (!newAssign.shiftId || (!newAssign.userId && !newAssign.teamId)) return;
                 assignShift.mutate({ ...newAssign, date: selectedDate });
               }}
             >
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Select Personnel</label>
-                <select
-                  required
-                  className="ledger-input"
-                  value={newAssign.userId}
-                  onChange={(e) => setNewAssign({ ...newAssign, userId: e.target.value })}
-                >
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Target Shift</label>
+                <select required className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.shiftId} onChange={(e) => setNewAssign({ ...newAssign, shiftId: e.target.value })}>
+                  <option value="">-- Select Block --</option>
+                  {shifts.map((s: any) => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.startTime} - {s.endTime})</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assign Team (optional)</label>
+                <select className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.teamId} onChange={(e) => setNewAssign({ ...newAssign, teamId: e.target.value, userId: e.target.value ? '' : newAssign.userId })}>
+                  <option value="">— No team —</option>
+                  {teamList.map((tm: any) => (
+                    <option key={tm.id} value={tm.id}>{tm.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Or Select Personnel</label>
+                <select className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.userId} onChange={(e) => setNewAssign({ ...newAssign, userId: e.target.value, teamId: e.target.value ? '' : newAssign.teamId })}>
                   <option value="">-- Browse Directory --</option>
                   {users?.map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name} - {u.designation}</option>
@@ -164,22 +243,18 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Target Shift</label>
-                <select
-                  required
-                  className="ledger-input"
-                  value={newAssign.shiftId}
-                  onChange={(e) => setNewAssign({ ...newAssign, shiftId: e.target.value })}
-                >
-                  <option value="">-- Select Block --</option>
-                  {shifts.map((s: any) => (
-                    <option key={s.id} value={s.id}>{s.name} ({s.startTime} - {s.endTime})</option>
-                  ))}
-                </select>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Role on Shift</label>
+                <Input value={newAssign.roleOnShift} onChange={(e) => setNewAssign({ ...newAssign, roleOnShift: e.target.value })} placeholder="e.g. Supervisor" />
               </div>
-              <Button type="submit" disabled={assignShift.isPending || !newAssign.userId || !newAssign.shiftId}>
-                Confirm Override
-              </Button>
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assigned Work</label>
+                <Input value={newAssign.workNote} onChange={(e) => setNewAssign({ ...newAssign, workNote: e.target.value })} placeholder="Describe the work assigned for this shift" />
+              </div>
+              <div className="flex items-end">
+                <Button type="submit" disabled={assignShift.isPending || !newAssign.shiftId || (!newAssign.userId && !newAssign.teamId)}>
+                  Confirm Assignment
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -220,16 +295,33 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Branch</label>
-                <select value={shiftDraft.branchId} onChange={(e) => setShiftDraft({ ...shiftDraft, branchId: e.target.value })} className="ledger-input">
+                <select value={shiftDraft.branchId} onChange={(e) => setShiftDraft({ ...shiftDraft, branchId: e.target.value })} className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm">
                   <option value="">— No branch —</option>
                   {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
-              <div className="flex items-end gap-4">
+              <div className="flex flex-col gap-2">
                 <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                   <input type="checkbox" checked={shiftDraft.isNightShift} onChange={(e) => setShiftDraft({ ...shiftDraft, isNightShift: e.target.checked })} />
                   Night shift (night differential)
                 </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {WEEKDAYS.map((d, i) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setShiftDraft((prev) => ({
+                        ...prev,
+                        recurringDays: prev.recurringDays.includes(i)
+                          ? prev.recurringDays.filter((x) => x !== i)
+                          : [...prev.recurringDays, i],
+                      }))}
+                      className={`rounded-md px-2 py-1 text-[10px] font-semibold transition-colors ${shiftDraft.recurringDays.includes(i) ? 'bg-[var(--brand)] text-white' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
@@ -253,29 +345,35 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
                       <Clock className="h-6 w-6" />
                     </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-[var(--text-main)]">{shift.name}</h3>
-                    <p className="text-xs text-[var(--text-muted)]">
-                      {shift.startTime} - {shift.endTime} • {shift.location || 'HQ Building'}
-                    </p>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">Grace {shift.graceMinutes ?? 10}m</span>
-                      <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">Break {shift.breakMinutes ?? 60}m</span>
-                      {shift.isNightShift && <span className="rounded-full bg-[var(--brand-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--brand-strong)]">Night</span>}
+                    <div>
+                      <h3 className="text-lg font-semibold text-[var(--text-main)]">{shift.name}</h3>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {shift.startTime} - {shift.endTime} • {shift.location || 'HQ Building'}
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">Grace {shift.graceMinutes ?? 10}m</span>
+                        <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">Break {shift.breakMinutes ?? 60}m</span>
+                        {shift.isNightShift && <span className="rounded-full bg-[var(--brand-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--brand-strong)]">Night</span>}
+                        {shift.recurringDays?.length > 0 && <span className="rounded-full bg-[var(--sky-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--sky)]">Recurring {shift.recurringDays.map((d: number) => WEEKDAYS[d]).join('/')}</span>}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <Button variant="ghost" size="icon-sm" onClick={() => openEditor(shift)} aria-label="Edit shift">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <div className="rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 py-2 text-center">
-                    <p className="text-xs text-[var(--text-muted)]">Headcount</p>
-                    <p className="text-lg font-bold text-[var(--text-main)]">{shiftAssignments.length}</p>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <>
+                        <Button variant="ghost" size="icon-sm" onClick={() => openEditor(shift)} aria-label="Edit shift">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => deleteShift.mutate({ id: shift.id })} aria-label="Delete shift" className="hover:text-[var(--rose)]">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    <div className="rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 py-2 text-center">
+                      <p className="text-xs text-[var(--text-muted)]">Headcount</p>
+                      <p className="text-lg font-bold text-[var(--text-main)]">{shiftAssignments.length}</p>
+                    </div>
                   </div>
-                </div>
                 </div>
 
                 <CardContent>
@@ -284,27 +382,39 @@ export function ShiftsClient({ shifts, initialAssignments, branches, isAdmin }: 
                       No personnel assigned to this block.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {shiftAssignments.map((assignment: any) => (
                         <div
                           key={assignment.id}
-                          className="group/card flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4"
+                          className="group/card flex flex-col gap-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4"
                         >
-                          <div className="flex items-center gap-3 overflow-hidden">
-                            <Avatar src={assignment.userAvatar} name={assignment.userName} size="md" />
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-[var(--text-main)]">{assignment.userName}</p>
-                              <p className="truncate text-xs text-[var(--text-muted)]">{assignment.userRole || 'Staff'}</p>
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex min-w-0 items-center gap-3">
+                              <Avatar src={assignment.userAvatar} name={assignment.userName} size="md" />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-semibold text-[var(--text-main)]">{assignment.userName}</p>
+                                <p className="truncate text-xs text-[var(--text-muted)]">{assignment.roleOnShift || assignment.userRole || 'Staff'}</p>
+                              </div>
                             </div>
+                            {isAdmin && (
+                              <button
+                                onClick={() => removeAssignment.mutate({ id: assignment.id })}
+                                className="text-[var(--text-muted)] opacity-0 transition-all hover:text-[var(--rose)] group-hover/card:opacity-100"
+                                title="Remove Assignment"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
-                          {isAdmin && (
-                            <button
-                              onClick={() => removeAssignment.mutate({ id: assignment.id })}
-                              className="text-[var(--text-muted)] opacity-0 transition-all hover:text-[var(--rose)] group-hover/card:opacity-100"
-                              title="Remove Assignment"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                          {assignment.teamName && (
+                            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-0.5 text-[10px] font-semibold uppercase text-[var(--brand-strong)]">
+                              <Users className="h-3 w-3" /> {assignment.teamName}
+                            </span>
+                          )}
+                          {assignment.workNote && (
+                            <p className="flex items-start gap-1.5 rounded-lg bg-[var(--bg-panel)] p-2 text-xs text-[var(--text-muted)]">
+                              <Briefcase className="mt-0.5 h-3 w-3 shrink-0 text-[var(--brand)]" /> {assignment.workNote}
+                            </p>
                           )}
                         </div>
                       ))}
