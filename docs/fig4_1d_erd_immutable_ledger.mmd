@@ -1,0 +1,37 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+erDiagram
+    %% Figure 4.1d — Immutable Event Ledger ERD
+
+    AuditLog {
+        string id PK
+        string action "CREATE | UPDATE | DELETE | LOGIN"
+        string target "affected resource"
+        string user "actor identifier"
+        string severity "INFO | WARN | CRITICAL"
+        datetime timestamp "event time"
+        string previousHash "SHA-256 of prior entry"
+        string hash "SHA-256 of current entry"
+    }
+
+    Event {
+        string id PK
+        string action "domain event type"
+        string actorId "who performed"
+        string targetId "affected entity"
+        json details "event payload"
+        datetime timestamp "event time"
+        string hash "SHA-256 integrity"
+    }
+
+    EventSnapshot {
+        string id PK
+        string entityId "e.g. User ID"
+        string entityType "User | LeaveBalance | Payroll"
+        json stateData "materialized state"
+        int version "monotonic version"
+        datetime createdAt "snapshot time"
+    }
+
+    AuditLog ||--|{ AuditLog : "previousHash chain"
+    Event ||--o{ EventSnapshot : "replayed into"

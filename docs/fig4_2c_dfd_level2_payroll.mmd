@@ -1,0 +1,48 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart TD
+    %% Figure 4.2c — Level 2 Payroll Calculation Pipeline
+
+    HR(("🧑‍💼 HR / Admin"))
+    EMP_DB[("👤 User Table<br/>(baseSalary)")]
+    ATT_DB[("📋 Attendance Table<br/>(OT / Late / Night)")]
+    HEAD_DB[("📊 SalaryHead Table<br/>(Earnings / Deductions)")]
+    STRUCT_DB[("📐 SalaryStructure")]
+    PAY_DB[("💰 Payroll Table")]
+    STAT_DB[("📑 StatutoryCalc Table")]
+    BONUS_DB[("🎉 FestivalBonus Table")]
+    PMT_DB[("💳 Payment Table")]
+
+    HR -->|"1. Trigger payroll.run<br/>for month/year"| INIT["4.1 Initialize Payroll Run"]
+    
+    INIT -->|"2. Fetch employees"| EMP_DB
+    EMP_DB -->|"baseSalary, branchId"| CALC["4.2 Calculate Earnings"]
+    
+    INIT -->|"3. Fetch attendance"| ATT_DB
+    ATT_DB -->|"OT mins, late days,<br/>night hours"| CALC
+    
+    INIT -->|"4. Resolve heads"| HEAD_DB
+    HEAD_DB -->|"head configs"| CALC
+    STRUCT_DB -->|"structure template"| CALC
+
+    CALC -->|"gross earnings"| DED["4.3 Apply Deductions"]
+    
+    DED -->|"PF, Gratuity"| STAT["4.4 Statutory Computation"]
+    STAT -->|"Tax (BD slab)"| TAX["4.5 Income Tax Calculation"]
+    
+    BONUS_DB -->|"Festival bonus<br/>(if applicable)"| CALC
+
+    TAX -->|"net pay = earnings - deductions - tax"| NET["4.6 Compute Net Pay"]
+
+    NET -->|"Write payroll record"| PAY_DB
+    NET -->|"Write statutory snapshot"| STAT_DB
+    NET -->|"Generate payment"| PMT_DB
+
+    PMT_DB -->|"Disburse via<br/>bKash / Rocket / Bank"| DISBURSE["4.7 Payment Disbursement"]
+
+    DISBURSE -->|"Emit PAYROLL_PROCESSED event"| LEDGER["📒 Immutable Ledger"]
+
+    style CALC fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style DED fill:#fffbeb,stroke:#d97706,stroke-width:2px
+    style TAX fill:#fff1f2,stroke:#e11d48,stroke-width:2px
+    style LEDGER fill:#eef2ff,stroke:#4f46e5,stroke-width:2px

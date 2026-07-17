@@ -1,0 +1,67 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart TD
+    %% Figure 4.2b — Level 1 System-Wide DFD
+
+    USER(("👤 User"))
+
+    subgraph P1["1.0 Authentication & Session"]
+        AUTH["Supabase Auth<br/>(JWT + Middleware)"]
+    end
+
+    subgraph P2["2.0 Attendance & Time"]
+        CLOCK["Clock In/Out Engine"]
+        GEO["Geo-Fence Validator"]
+        SHIFT_ENG["Shift Scheduler"]
+    end
+
+    subgraph P3["3.0 Leave Management"]
+        LEAVE_REQ["Leave Request Handler"]
+        LEAVE_BAL["BD Leave Balance Calculator"]
+        LEAVE_APPROVE["Approval Engine"]
+    end
+
+    subgraph P4["4.0 Payroll Processing"]
+        PAY_CALC["Salary Calculator"]
+        STAT_ENGINE["Statutory Engine<br/>(PF / Gratuity / Tax)"]
+        PAY_DISBURSE["Payment Disbursement"]
+    end
+
+    subgraph P5["5.0 Talent & Performance"]
+        REVIEW["360° Review Engine"]
+        OKR["OKR Objectives Tracker"]
+        RECRUIT["Recruitment ATS"]
+    end
+
+    subgraph P6["6.0 Immutable Ledger"]
+        EVENT_STORE["Event Store"]
+        HASH_CHAIN["SHA-256 Hash-Chain"]
+        SNAPSHOT["State Snapshots"]
+    end
+
+    subgraph P7["7.0 Communication"]
+        NEWS["Announcement Engine"]
+        NOTIF["Notification Service"]
+        KUDOS["Kudos / Recognition"]
+    end
+
+    DB[("🗄️ PostgreSQL")]
+
+    USER --> AUTH
+    AUTH -->|"Session"| P2 & P3 & P4 & P5 & P7
+    CLOCK --> GEO
+    CLOCK --> SHIFT_ENG
+    LEAVE_REQ --> LEAVE_BAL
+    LEAVE_REQ --> LEAVE_APPROVE
+    PAY_CALC --> STAT_ENGINE
+    PAY_CALC --> PAY_DISBURSE
+    REVIEW --> OKR
+
+    P2 & P3 & P4 & P5 & P7 -->|"Domain Events"| EVENT_STORE
+    EVENT_STORE --> HASH_CHAIN
+    EVENT_STORE --> SNAPSHOT
+
+    P2 & P3 & P4 & P5 & P6 <-->|"Prisma ORM"| DB
+
+    style P6 fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style DB fill:#fffbeb,stroke:#d97706,stroke-width:2px

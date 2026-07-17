@@ -1,0 +1,22 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+stateDiagram-v2
+    %% Figure 5.5 — Leave Request Lifecycle
+    
+    [*] --> Pending : Employee submits leave request
+    
+    state Pending {
+        [*] --> AwaitingApproval
+        AwaitingApproval --> Validated : Check BD Leave Balance (Casual, Sick, Earned)
+    }
+    
+    Pending --> Approved : Manager / HR approves
+    Pending --> Rejected : Manager / HR rejects (or Insufficient Balance)
+    
+    Approved --> [*] : Leave days deducted from balance bucket
+    Rejected --> [*] : Request closed, no deduction
+    
+    note right of Pending
+        Requires validation against
+        Bangladesh Labour Act quotas.
+    end note

@@ -1,0 +1,36 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '13px' } } }%%
+
+flowchart LR
+    %% Figure 4.2a — Level 0 Context Diagram
+
+    EMP(("👷 Employee"))
+    MGR(("👔 Manager"))
+    HR(("🧑‍💼 HR / Admin"))
+    OWNER(("🛡️ System Owner"))
+
+    SYSTEM["🏢 OpsHub<br/>Employee Management System"]
+
+    SUPA[("☁️ Supabase<br/>PostgreSQL + Auth")]
+    BKASH["💳 bKash / Rocket<br/>Payment Gateway"]
+    EMAIL["📧 Email Service<br/>(Password Reset)"]
+    PUSH["🔔 Web Push<br/>Notifications"]
+
+    EMP -->|"Clock In/Out, Leave Request,<br/>View Payslip, Edit Profile"| SYSTEM
+    SYSTEM -->|"Payslip, Shift Schedule,<br/>Notifications, Kudos"| EMP
+
+    MGR -->|"Approve Leave,<br/>Submit Reviews"| SYSTEM
+    SYSTEM -->|"Team Reports,<br/>Task Status"| MGR
+
+    HR -->|"Process Payroll, Provision Users,<br/>Manage Leave Types, Publish News"| SYSTEM
+    SYSTEM -->|"Reports, Audit Logs,<br/>Statutory Calculations"| HR
+
+    OWNER -->|"System Config, RBAC,<br/>View Hash-Chain Audit"| SYSTEM
+    SYSTEM -->|"Full Audit Trail,<br/>System Health"| OWNER
+
+    SYSTEM <-->|"CRUD via Prisma ORM"| SUPA
+    SYSTEM -->|"Disbursement Data"| BKASH
+    SYSTEM -->|"Password Reset Link"| EMAIL
+    SYSTEM -->|"Real-time Alerts"| PUSH
+
+    style SYSTEM fill:#eef2ff,stroke:#4f46e5,stroke-width:3px
+    style SUPA fill:#fffbeb,stroke:#d97706,stroke-width:2px

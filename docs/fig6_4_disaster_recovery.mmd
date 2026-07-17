@@ -1,0 +1,37 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart TD
+    %% Figure 6.4 — Disaster Recovery & Point-in-Time Event Replay
+
+    START(("🔴 Disaster Detected<br/>Data corruption / breach"))
+
+    START --> ASSESS["1. Assess Damage<br/>Identify affected entities<br/>and time range"]
+
+    ASSESS --> VERIFY["2. Verify Hash-Chain Integrity<br/>Walk AuditLog backward:<br/>entry[N].previousHash === entry[N-1].hash"]
+
+    VERIFY -->|"Chain intact"| FIND_BREAK["3. Find Corruption Point<br/>Identify first tampered<br/>or invalid entry"]
+    VERIFY -->|"Chain broken"| ALERT["🚨 ALERT: Tampering Detected<br/>Chain break at entry #X<br/>Notify system owner"]
+
+    ALERT --> FIND_BREAK
+
+    FIND_BREAK --> SNAPSHOT["4. Load Last Valid Snapshot<br/>Query EventSnapshot<br/>WHERE version < corruption_version"]
+
+    SNAPSHOT --> REPLAY["5. Replay Events<br/>Re-apply Event records<br/>from snapshot.version + 1<br/>to latest valid event"]
+
+    REPLAY --> REBUILD["6. Rebuild Materialized State<br/>Update EventSnapshot<br/>with replayed state"]
+
+    REBUILD --> VALIDATE["7. Validate Rebuilt State<br/>Compare checksums<br/>Run integrity tests"]
+
+    VALIDATE -->|"✅ Pass"| RESTORE["8. Restore Service<br/>Clear maintenance mode<br/>Notify stakeholders"]
+    VALIDATE -->|"❌ Fail"| MANUAL["9. Manual Intervention<br/>DBA review required<br/>Supabase PITR fallback"]
+
+    RESTORE --> POSTMORTEM["10. Post-Incident Review<br/>Update AuditLog with<br/>RECOVERY event<br/>Generate incident report"]
+
+    MANUAL --> PITR["Supabase Point-in-Time Recovery<br/>(database-level restore)"]
+    PITR --> VALIDATE
+
+    style START fill:#fff1f2,stroke:#e11d48,stroke-width:3px
+    style ALERT fill:#fff1f2,stroke:#e11d48,stroke-width:2px
+    style REPLAY fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style RESTORE fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style POSTMORTEM fill:#eef2ff,stroke:#4f46e5,stroke-width:2px

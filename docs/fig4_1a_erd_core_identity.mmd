@@ -1,0 +1,69 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+erDiagram
+    %% Figure 4.1a — Core Identity & Access ERD
+
+    User {
+        string id PK "Supabase Auth ID"
+        string email UK "unique login"
+        string name "display name"
+        string role "Admin | Manager | HR Manager | Employee"
+        string department "department name"
+        string designation "job title"
+        string status "active | inactive"
+        boolean isOwner "system owner flag"
+        boolean isOnboarded "onboarding complete"
+        string preferredLanguage "en | bn"
+        string employmentType "Full-Time | Part-Time | Contract | Intern"
+        string nid "AES-256-GCM encrypted NID"
+        string nidMasked "display-safe mask"
+        string bloodGroup "A+ | B- | O+ etc."
+        float baseSalary "monthly base (BDT)"
+        string managerId FK "self-referencing"
+        string proxyId FK "delegation proxy"
+        string branchId FK "assigned branch"
+        datetime createdAt "auto-set"
+        datetime updatedAt "auto-updated"
+    }
+
+    Branch {
+        string id PK
+        string name UK "branch name"
+        string city "location city"
+        string address "full address"
+        string timezone "Asia/Dhaka default"
+    }
+
+    Department {
+        string id PK
+        string name UK "department name"
+        float budget "allocated budget"
+        string headId "department head"
+        string branchId FK "parent branch"
+    }
+
+    Team {
+        string id PK
+        string name "team name"
+        string description "purpose"
+        string branchId FK "branch"
+        string leadId FK "team lead"
+        string_arr memberIds "user IDs"
+    }
+
+    BranchRelations {
+        string id PK
+        string branchId FK
+        string relationName "Bank | Insurance | Labour Office"
+        string contactName "contact person"
+        string phone "phone number"
+        string email "email address"
+    }
+
+    User ||--o{ User : "manages (manager)"
+    User ||--o{ User : "proxies (delegation)"
+    Branch ||--o{ User : "has members"
+    Branch ||--o{ Department : "has departments"
+    Branch ||--o{ Team : "has teams"
+    Branch ||--o{ BranchRelations : "external relations"
+    User ||--o{ Team : "leads"

@@ -1,0 +1,84 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+erDiagram
+    %% Figure 4.1b — HR Operations ERD
+
+    User {
+        string id PK
+        string email UK
+        string name
+    }
+
+    Attendance {
+        string id PK
+        string userId FK
+        datetime date "attendance date"
+        string status "Present | Late | Absent"
+        datetime clockIn "clock-in timestamp"
+        datetime clockOut "clock-out timestamp"
+        string shiftId FK "assigned shift"
+        int overtimeMinutes "OT beyond shift"
+        int nightMinutes "night differential"
+        int lateMinutes "after grace period"
+        int workedMinutes "total paid minutes"
+        float geoLat "GPS latitude"
+        float geoLng "GPS longitude"
+        boolean geoVerified "geo-fence pass"
+    }
+
+    LeaveRequest {
+        string id PK
+        string userId FK
+        string type "leave category"
+        string status "Pending | Approved | Rejected"
+        datetime startDate "leave start"
+        datetime endDate "leave end"
+        int days "total days"
+        string details "reason"
+    }
+
+    LeaveType {
+        string id PK
+        string name UK "Casual | Earned | Sick | Festival | Maternity | Paternity"
+        string nameBn "Bangla label"
+        string category "leave category key"
+        int defaultDays "statutory entitlement"
+        boolean isPaid "paid leave flag"
+        string applicableGender "null = all"
+    }
+
+    Shift {
+        string id PK
+        string name "shift name"
+        string startTime "HH:MM"
+        string endTime "HH:MM"
+        int graceMinutes "late threshold"
+        boolean isNightShift "night differential"
+        int breakMinutes "unpaid break"
+        int_arr recurringDays "0=Sun to 6=Sat"
+        string branchId FK
+    }
+
+    ShiftAssignment {
+        string id PK
+        string shiftId FK
+        string userId FK
+        string teamId FK
+        string workNote "task for shift"
+        string roleOnShift "Supervisor | Operator"
+        datetime date "assignment date"
+    }
+
+    Holiday {
+        string id PK
+        datetime date UK
+        string name "English name"
+        string nameBn "Bangla name"
+        string type "Public | Religious | National | Festival"
+    }
+
+    User ||--o{ Attendance : "records"
+    User ||--o{ LeaveRequest : "submits"
+    Shift ||--o{ Attendance : "governs"
+    Shift ||--o{ ShiftAssignment : "assigns to"
+    User ||--o{ ShiftAssignment : "assigned"

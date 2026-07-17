@@ -1,0 +1,63 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart TB
+    %% Figure 2.1 — Market Comparison Matrix
+    %% Using a flowchart with invisible links to force column layout
+
+    subgraph OPSHUB["🟢 OpsHub (This Project)"]
+        direction TB
+        O1["✅ Event-Sourced Immutable Ledger"] ~~~ O2["✅ Bangladesh Labour Act Compliance"]
+        O2 ~~~ O3["✅ Bangla i18n (EN/BN)"]
+        O3 ~~~ O4["✅ BDT Payroll (bKash/Rocket)"]
+        O4 ~~~ O5["✅ PWA Offline-First"]
+        O5 ~~~ O6["✅ tRPC End-to-End Type Safety"]
+        O6 ~~~ O7["✅ SHA-256 Hash-Chain Audit"]
+        O7 ~~~ O8["✅ Zero SaaS Vendor Lock-In"]
+        O8 ~~~ O9["💰 $0/mo (self-hosted)"]
+    end
+
+    subgraph DEEL["🔵 Deel"]
+        direction TB
+        D1["❌ No Event Sourcing"] ~~~ D2["⚠️ Limited BD compliance"]
+        D2 ~~~ D3["❌ No Bangla support"]
+        D3 ~~~ D4["✅ Multi-currency payroll"]
+        D4 ~~~ D5["❌ No offline mode"]
+        D5 ~~~ D6["✅ REST API"]
+        D6 ~~~ D7["❌ No crypto audit trail"]
+        D7 ~~~ D8["⚠️ Vendor-locked SaaS"]
+        D8 ~~~ D9["💰 $49–$599/mo per user"]
+    end
+
+    subgraph GUSTO["🟠 Gusto"]
+        direction TB
+        G1["❌ No Event Sourcing"] ~~~ G2["❌ US-only compliance"]
+        G2 ~~~ G3["❌ English only"]
+        G3 ~~~ G4["❌ USD only"]
+        G4 ~~~ G5["❌ No offline mode"]
+        G5 ~~~ G6["✅ REST API"]
+        G6 ~~~ G7["❌ No crypto audit trail"]
+        G7 ~~~ G8["⚠️ Vendor-locked SaaS"]
+        G8 ~~~ G9["💰 $40 base + $6/user/mo"]
+    end
+
+    subgraph SAP["🔴 SAP SuccessFactors"]
+        direction TB
+        S1["❌ CRUD-based mutations"] ~~~ S2["✅ Global compliance"]
+        S2 ~~~ S3["⚠️ Limited Bangla"]
+        S3 ~~~ S4["✅ Multi-currency"]
+        S4 ~~~ S5["❌ No PWA"]
+        S5 ~~~ S6["✅ OData/REST"]
+        S6 ~~~ S7["❌ No hash-chain"]
+        S7 ~~~ S8["⚠️ Heavy vendor dependency"]
+        S8 ~~~ S9["💰 $8–$22/user/mo (enterprise)"]
+    end
+
+    %% Force side-by-side alignment of subgraphs
+    OPSHUB ~~~ DEEL
+    DEEL ~~~ GUSTO
+    GUSTO ~~~ SAP
+
+    style OPSHUB fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style DEEL fill:#f0f9ff,stroke:#0284c7,stroke-width:1px
+    style GUSTO fill:#fffbeb,stroke:#d97706,stroke-width:1px
+    style SAP fill:#fff1f2,stroke:#e11d48,stroke-width:1px

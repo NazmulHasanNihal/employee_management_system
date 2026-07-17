@@ -1,0 +1,47 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+stateDiagram-v2
+    %% Figure 5.4b — PWA Offline-First Cache and Sync Logic
+
+    [*] --> Online: App loads
+
+    state Online {
+        [*] --> Fresh: Service Worker installed
+        Fresh --> Cached: Serwist caches static assets + API responses
+        Cached --> Serving: Serve from cache-first strategy
+        Serving --> Updated: New SW version detected
+        Updated --> Serving: skipWaiting + clients.claim
+    }
+
+    Online --> Offline: Network lost (navigator.onLine = false)
+
+    state Offline {
+        [*] --> CacheHit: Request matches cached response
+        CacheHit --> ServeStale: Return stale data from SW cache
+        ServeStale --> QueueMutation: User performs write action
+        QueueMutation --> PendingQueue: Store in IndexedDB queue
+        PendingQueue --> WaitReconnect: Wait for connectivity
+    }
+
+    Offline --> Reconnecting: Network restored
+
+    state Reconnecting {
+        [*] --> DrainQueue: Replay queued mutations (FIFO)
+        DrainQueue --> Revalidate: Re-fetch stale cached data
+        Revalidate --> Synced: All data consistent
+    }
+
+    Reconnecting --> Online: Sync complete
+
+    note right of Offline
+        🔴 Offline Banner shown in UI
+        "You are currently offline.
+         Changes will sync when
+         connection is restored."
+    end note
+
+    note right of Online
+        🟢 Full functionality
+        Real-time notifications
+        tRPC queries served live
+    end note

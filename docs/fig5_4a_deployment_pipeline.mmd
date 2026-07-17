@@ -1,0 +1,39 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '13px' } } }%%
+
+flowchart LR
+    %% Figure 5.4 — Deployment Pipeline (DevOps)
+
+    DEV["💻 Developer<br/>Local (git)"] -->|"git push"| GH
+
+    subgraph GH["GitHub Repository"]
+        MAIN["main branch"]
+        CI["GitHub Actions CI<br/>lint · typecheck · test"]
+    end
+
+    GH --> CI
+    CI -->|"build & deploy (pass)"| VERCEL
+
+    subgraph VERCEL["▲ Vercel (Edge)"]
+        FE["Next.js Frontend<br/>Server Actions · tRPC · PWA"]
+    end
+
+    subgraph SUPA["☁️ Supabase Cloud"]
+        DB[("PostgreSQL<br/>Primary DB")]
+        AUTH["Auth (JWT + RLS)"]
+        STORE["Storage (Assets)"]
+    end
+
+    VERCEL <-->|"Prisma Queries"| SUPA
+    VERCEL -->|"Verify JWT"| AUTH
+
+    subgraph MONITOR["📡 Monitoring"]
+        SENT["Sentry<br/>Error Tracking"]
+        PH["PostHog<br/>Analytics"]
+    end
+
+    VERCEL -->|"Telemetry"| MONITOR
+
+    style GH fill:#f6f7fb,stroke:#4f46e5,stroke-width:2px
+    style VERCEL fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style SUPA fill:#fffbeb,stroke:#d97706,stroke-width:2px
+    style MONITOR fill:#fff1f2,stroke:#e11d48,stroke-width:1px

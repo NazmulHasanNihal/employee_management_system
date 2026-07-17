@@ -1,0 +1,48 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+flowchart TB
+    %% Figure 6.2 — System Log Matrix / Authorization Metadata Table
+
+    subgraph AUDIT_FLOW["🔒 Audit Log Entry Structure"]
+        direction LR
+        ENTRY["AuditLog Entry"]
+        FIELDS["id: cuid()<br/>action: SALARY_UPDATE<br/>target: user_abc123<br/>user: admin@company.com<br/>severity: WARN<br/>timestamp: 2025-07-17T14:30:00Z<br/>previousHash: 7f3a...b2c1<br/>hash: SHA-256(prev + payload)"]
+        ENTRY --- FIELDS
+    end
+
+    subgraph SEVERITY["⚠️ Severity Levels"]
+        direction TB
+        INFO["ℹ️ INFO<br/>Login, View, Read"] ~~~ WARN["⚠️ WARN<br/>Update, Approve, Reject"]
+        WARN ~~~ CRITICAL["🔴 CRITICAL<br/>Delete, Role Change, Payroll Process"]
+    end
+
+    subgraph ENDPOINTS["📋 Protected Endpoints"]
+        direction TB
+        E1["payroll.run → Admin only"] ~~~ E2["payroll.getAll → Admin, HR"]
+        E2 ~~~ E3["attendance.clockIn → All authenticated"]
+        E3 ~~~ E4["leave.approve → Admin, HR, Manager"]
+        E4 ~~~ E5["users.provision → Admin only"]
+        E5 ~~~ E6["audit.getLogs → Admin (read-only)"]
+        E6 ~~~ E7["settings.setSystemSetting → Admin only"]
+        E7 ~~~ E8["team.setProxy → Admin, Team Lead"]
+        E8 ~~~ E9["recruitment.createJob → Admin, HR"]
+        E9 ~~~ E10["reviews.submit → Manager, Admin"]
+    end
+
+    subgraph MIDDLEWARE_CHAIN["🛡️ Middleware Authorization Chain"]
+        direction LR
+        M1["1. Edge Middleware<br/>(Supabase JWT validation)"]
+        M2["2. tRPC Context<br/>(getCaller → resolve DB user)"]
+        M3["3. Route Guard<br/>(isAdmin / isHR / isOwner check)"]
+        M4["4. Audit Emit<br/>(append to hash-chain)"]
+        M1 --> M2 --> M3 --> M4
+    end
+
+    %% Force layout grouping
+    AUDIT_FLOW ~~~ SEVERITY
+    SEVERITY ~~~ ENDPOINTS
+    ENDPOINTS ~~~ MIDDLEWARE_CHAIN
+
+    style AUDIT_FLOW fill:#eef2ff,stroke:#4f46e5,stroke-width:2px
+    style SEVERITY fill:#fffbeb,stroke:#d97706,stroke-width:1px
+    style MIDDLEWARE_CHAIN fill:#ecfdf5,stroke:#059669,stroke-width:2px

@@ -1,0 +1,68 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#4f46e5', 'fontSize': '13px' } } }%%
+
+flowchart TD
+    %% Figure 3.1 — Full Stack System Architecture
+
+    subgraph CLIENT["🖥️ Client Layer (Browser / PWA)"]
+        direction TB
+        NEXTUI["Next.js 15 App Router<br/>(React 19 · Server Components)"]
+        TW["Tailwind CSS v4<br/>+ Custom Design System"]
+        FM["Framer Motion<br/>Animations"]
+        SW["Serwist Service Worker<br/>(PWA Offline Cache)"]
+        NEXTUI --- TW
+        NEXTUI --- FM
+        NEXTUI --- SW
+    end
+
+    subgraph TRANSPORT["🔗 API & Transport Layer"]
+        direction TB
+        TRPC["tRPC v11<br/>Type-Safe RPC"]
+        ZOD["Zod v4<br/>Runtime Validation"]
+        SA["Next.js Server Actions<br/>(Mutations)"]
+        TRPC --- ZOD
+        SA --- ZOD
+    end
+
+    subgraph SERVER["⚙️ Server Compute"]
+        direction TB
+        NEXT_SRV["Next.js Server<br/>(Vercel Edge Functions)"]
+        PRISMA["Prisma ORM v6<br/>(Query Builder)"]
+        AUTH_LIB["Auth Library<br/>(getCaller / RBAC)"]
+        CRON["Cron Routes<br/>(/api/cron/greetings)"]
+        AUDIT["Immutable Ledger Engine<br/>(Event Sourcing + Hash-Chain)"]
+        NEXT_SRV --- PRISMA
+        NEXT_SRV --- AUTH_LIB
+        NEXT_SRV --- CRON
+        NEXT_SRV --- AUDIT
+    end
+
+    subgraph DATA["🗄️ Data & Infrastructure Layer"]
+        direction TB
+        SUPA_DB[("Supabase PostgreSQL<br/>(Primary Database)")]
+        SUPA_AUTH["Supabase Auth<br/>(JWT + RLS)"]
+        SUPA_STORE["Supabase Storage<br/>(Assets / Avatars)"]
+    end
+
+    subgraph OBSERVE["📡 Observability & DevOps"]
+        direction TB
+        SENTRY["Sentry<br/>Error Tracking"]
+        POSTHOG["PostHog<br/>Product Analytics"]
+        GH_CI["GitHub Actions<br/>CI/CD Pipeline"]
+        VERCEL["Vercel<br/>Edge Deployment"]
+    end
+
+    %% Connections
+    CLIENT <-->|"Strict Type-Safe JSON"| TRANSPORT
+    TRANSPORT <-->|"RPC / Server Actions"| SERVER
+    SERVER <-->|"Prisma Queries"| SUPA_DB
+    SERVER -->|"Verify JWT Session"| SUPA_AUTH
+    SERVER <-->|"File Upload/Download"| SUPA_STORE
+    CLIENT -->|"Telemetry Events"| OBSERVE
+    GH_CI -->|"Auto-Deploy on Push"| VERCEL
+    VERCEL -.->|"Hosts"| SERVER
+
+    style CLIENT fill:#eef2ff,stroke:#4f46e5,stroke-width:2px
+    style TRANSPORT fill:#f0f9ff,stroke:#0284c7,stroke-width:2px
+    style SERVER fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style DATA fill:#fffbeb,stroke:#d97706,stroke-width:2px
+    style OBSERVE fill:#fff1f2,stroke:#e11d48,stroke-width:1px

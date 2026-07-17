@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant A as Actor
+    participant S as Server
+    participant L as EventStore
+    participant H as HashEngine
+    participant AL as AuditLog
+    participant ES as StateSnapshot
+
+    A->>S: Perform action eg update salary
+    activate S
+
+    S->>S: Execute domain mutation via Prisma
+
+    S->>L: Create Event record
+    activate L
+    Note over L: action, actorId, targetId,<br/>details, timestamp
+
+    L->>AL: Fetch latest AuditLog entry
+    AL-->>L: previousHash from last entry
+
+    L->>H: Compute hash
+    activate H
+    Note over H: input = previousHash +<br/>action + target +<br/>user + timestamp +<br/>JSON.stringify details
+    H->>H: SHA-256 digest
+    H-->>L: hash = a3f7c9e2...
+    deactivate H
+
+    L->>AL: INSERT audit entry
+    Note over AL: Immutable: no UPDATE<br/>or DELETE allowed
+
+    L->>ES: Upsert state snapshot
+    Note over ES: Materialized view of<br/>current entity state<br/>version incremented
+
+    deactivate L
+
+    S-->>A: Response with audit ID
+    deactivate S
+
+    Note over AL: Hash Chain Integrity:<br/>Entry N.previousHash ===<br/>Entry N-1 hash.<br/>Any tampering breaks chain.

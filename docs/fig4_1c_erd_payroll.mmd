@@ -1,0 +1,121 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px' } } }%%
+
+erDiagram
+    %% Figure 4.1c — Payroll Engine ERD
+
+    User {
+        string id PK
+        string email UK
+        float baseSalary "monthly base (BDT)"
+    }
+
+    Payroll {
+        string id PK
+        string userId FK
+        string month "payroll month"
+        int year "payroll year"
+        string status "DRAFT | PROCESSED"
+        float totalAmount "gross total"
+        float earnings "total earnings"
+        float deductions "total deductions"
+        string currency "BDT default"
+        float overtimeHours "OT hours"
+        int lateDays "late attendance days"
+        float nightHours "night shift hours"
+        float tax "BD income tax withheld"
+        float netPay "take-home pay"
+        float providentFund "PF contribution"
+        float gratuityAccrued "gratuity accrual"
+        float festivalBonus "bonus this period"
+        json earningsBreakdown "head-wise earnings"
+        json deductionsBreakdown "head-wise deductions"
+        string salaryStructureId FK
+    }
+
+    SalaryStructure {
+        string id PK
+        string name "structure name"
+        float baseSalary "base amount"
+        json heads "head to amount mapping"
+    }
+
+    SalaryHead {
+        string id PK
+        string name UK "head name"
+        string type "EARNING | DEDUCTION"
+        string displayNameBn "Bangla label"
+        string category "BASIC | ALLOWANCE | STATUTORY_DEDUCTION"
+        string calculationType "flat | percentage_of_base | formula"
+        float factor "percent of base"
+        boolean isStatutory "PF | TDS flag"
+    }
+
+    Payment {
+        string id PK
+        string payrollId FK
+        string userId FK
+        int month "1-12"
+        int year "payment year"
+        float amount "paid amount"
+        string method "BKASH | ROCKET | BANK"
+        string reference "txn reference"
+        string status "PENDING | PAID"
+    }
+
+    FestivalBonus {
+        string id PK
+        string userId FK
+        int year "bonus year"
+        string occasion "Eid-ul-Fitr"
+        string occasionBn "ঈদ-উল-ফিতর"
+        float amount "bonus amount"
+        float baseSalarySnapshot "base at payout"
+        string status "PENDING | PAID"
+    }
+
+    StatutoryCalc {
+        string id PK
+        string userId FK
+        int month "calc month"
+        int year "calc year"
+        float providentFund "PF"
+        float gratuityAccrued "gratuity"
+        float festivalBonus "festival bonus"
+        float taxableIncome "taxable income"
+        float tax "tax withheld"
+    }
+
+    Expense {
+        string id PK
+        string userId FK
+        float amount "expense amount"
+        string category "expense category"
+        string status "PENDING | APPROVED | REJECTED"
+    }
+
+    Penalty {
+        string id PK
+        string userId FK
+        float amount "penalty amount"
+        string reason "penalty reason"
+        string status "UNPAID | PAID"
+    }
+
+    Sale {
+        string id PK
+        string userId FK
+        int month "sale month"
+        int year "sale year"
+        float amount "revenue"
+    }
+
+    User ||--o{ Payroll : "receives"
+    User ||--o{ Payment : "paid via"
+    User ||--o{ FestivalBonus : "earns"
+    User ||--o{ StatutoryCalc : "calculated for"
+    User ||--o{ Expense : "claims"
+    User ||--o{ Penalty : "incurs"
+    User ||--o{ Sale : "generates"
+    Payroll ||--o{ Payment : "disbursed as"
+    Payroll }o--o{ SalaryHead : "uses heads"
+    SalaryStructure ||--o{ Payroll : "structures"

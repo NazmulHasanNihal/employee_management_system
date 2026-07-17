@@ -1,0 +1,33 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#4f46e5', 'edgeLabelBackground': '#f6f7fb', 'fontSize': '14px' } } }%%
+
+graph TB
+    %% Figure 1.1 — Standard HR Data vs. Event-Sourced Immutable Data
+
+    subgraph TRAD["🔴 Traditional CRUD (Destructive Updates)"]
+        direction TB
+        T1["Employee Record<br/>Salary: ৳50,000"]
+        T2["UPDATE SET salary = ৳55,000"]
+        T3["Employee Record<br/>Salary: ৳55,000"]
+        T4["⚠️ Previous value ৳50,000<br/>permanently lost"]
+        T1 -->|"Admin edits"| T2
+        T2 -->|"Overwrite"| T3
+        T3 -.-|"No audit trail"| T4
+    end
+
+    subgraph EVNT["🟢 Event-Sourced Immutable Ledger (OpsHub)"]
+        direction TB
+        E1["Event #001<br/>EMPLOYEE_CREATED<br/>salary: ৳50,000<br/>hash: a3f7..."]
+        E2["Event #002<br/>SALARY_UPDATED<br/>old: ৳50,000 → new: ৳55,000<br/>hash: SHA-256(prev + payload)"]
+        E3["Event #003<br/>BONUS_AWARDED<br/>festival: Eid-ul-Fitr ৳55,000<br/>hash: SHA-256(prev + payload)"]
+        E4["EventSnapshot<br/>Current State: ৳55,000 + bonus<br/>✅ Full history preserved"]
+        E1 -->|"Append-only"| E2
+        E2 -->|"Append-only"| E3
+        E3 -.-|"Replay to derive"| E4
+    end
+
+    TRAD ---|"vs."| EVNT
+
+    style TRAD fill:#fff1f2,stroke:#e11d48,stroke-width:2px
+    style EVNT fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    style T4 fill:#fff1f2,stroke:#e11d48,stroke-dasharray:5
+    style E4 fill:#ecfdf5,stroke:#059669,stroke-dasharray:5
