@@ -160,9 +160,8 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
-  const roleForNav = ctxUser?.role || user.role;
   const canSee = (i: any) =>
-    !(i.adminOnly && roleForNav !== 'Admin' && roleForNav !== 'HR Manager') &&
+    !(i.adminOnly && !isAdmin) &&
     !(i.hideForContractor && isContractor);
 
   return (

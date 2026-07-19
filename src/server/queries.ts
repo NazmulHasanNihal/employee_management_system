@@ -24,18 +24,12 @@ export type { Caller };
 // DASHBOARD
 // ───────────────────────────────────────────────────────────────────────────
 
-async function computeDashboardStats(caller: Caller | null) {
-  const isAdmin = caller?.isAdmin ?? false;
-  const isCEO = caller?.isCEO ?? false;
-  const userId = caller?.id;
-
+async function computeDashboardStats(caller: Caller | null, selectedBranch: string | null) {
   // Branch scope: admins/CEOs see the selected branch (or all); everyone else
   // is locked to their own branch.
-  const selectedBranch = isAdmin || isCEO ? await getSelectedBranchId() : null;
   const branchScope: string | null | undefined = selectedBranch ?? caller?.branchId ?? null;
   const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
   const branchWhere = branchScope ? { branchId: branchScope } : {};
-  const userBranchOrBranch = branchScope ? { OR: [{ branchId: branchScope }, { user: { branchId: branchScope } }] } : {};
 
   const headcount = await prisma.user.count({ where: branchWhere });
   const pendingLeaves = await prisma.leaveRequest.count({ where: { status: 'Pending', ...userBranch } });
@@ -111,11 +105,18 @@ async function computeDashboardStats(caller: Caller | null) {
 
 // Cached wrapper: the dashboard runs ~20 DB queries, so we memoize the result
 // for 60s per scope (branch + admin/CEO flag) to cut DB load and TTFB.
-export const getDashboardStats = unstable_cache(
-  (caller: Caller | null) => computeDashboardStats(caller),
+const cachedDashboardStats = unstable_cache(
+  (caller: Caller | null, selectedBranch: string | null) => computeDashboardStats(caller, selectedBranch),
   ['dashboard-stats'],
   { revalidate: 60, tags: ['dashboard'] }
 );
+
+export async function getDashboardStats(caller: Caller | null) {
+  const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  const selectedBranch = isAdmin || isCEO ? await getSelectedBranchId() : null;
+  return cachedDashboardStats(caller, selectedBranch);
+}
 
 export async function getDashboardMyOverview(caller: Caller | null) {
   const userId = caller?.id;
