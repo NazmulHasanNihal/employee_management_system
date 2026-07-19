@@ -208,7 +208,7 @@ export default function TeamTasksBoard({
         {(['ToDo', 'InProgress', 'Done', 'Blocked'] as TaskStatus[]).map((status) => (
           <div
             key={status}
-            className={`rounded-2xl border p-3 flex flex-col ${STATUS_CONFIG[status].tone} ${activeTab === status ? 'block' : 'hidden lg:flex'}`}
+            className={`rounded-2xl border p-3 flex-col ${STATUS_CONFIG[status].tone} ${activeTab === status ? 'flex' : 'hidden lg:flex'}`}
           >
             <div className="mb-3 flex items-center justify-between">
               <h4 className="text-xs font-bold uppercase tracking-wide">{STATUS_CONFIG[status].label}</h4>
