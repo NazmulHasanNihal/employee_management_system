@@ -23,6 +23,7 @@ export function Avatar({
   rounded?: 'full' | 'md';
   className?: string;
 }) {
+  const [errored, setErrored] = React.useState(false);
   const radius = rounded === 'full' ? 'rounded-full' : 'rounded-xl';
   const fallback = (
     <div
@@ -34,7 +35,7 @@ export function Avatar({
     </div>
   );
 
-  if (!src) return fallback;
+  if (!src || errored) return fallback;
 
   return (
     <div className={`relative overflow-hidden ${radius} border border-[var(--border-hairline)] ${className}`} style={{ width: size, height: size }}>
@@ -44,10 +45,7 @@ export function Avatar({
         fill
         sizes={`${size}px`}
         className="object-cover"
-        onError={(e) => {
-          // Hide broken image so the fallback initials show through.
-          (e.currentTarget as HTMLImageElement).style.display = 'none';
-        }}
+        onError={() => setErrored(true)}
       />
     </div>
   );

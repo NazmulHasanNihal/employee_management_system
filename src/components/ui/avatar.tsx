@@ -27,6 +27,11 @@ function initials(name?: string | null) {
 }
 
 export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
+  // If the image fails to load (e.g. a blocked/403 storage URL), fall back to
+  // initials instead of showing a broken-image icon.
+  const [errored, setErrored] = React.useState(false);
+  const showImage = src && !errored;
+
   return (
     <div
       className={cn(
@@ -35,9 +40,14 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
         className
       )}
     >
-      {src ? (
+      {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={name || 'avatar'} className="h-full w-full object-cover" />
+        <img
+          src={src}
+          alt={name || 'avatar'}
+          className="h-full w-full object-cover"
+          onError={() => setErrored(true)}
+        />
       ) : (
         <span>{initials(name)}</span>
       )}

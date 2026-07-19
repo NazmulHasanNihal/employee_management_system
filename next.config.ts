@@ -16,9 +16,25 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
+    // Serve modern formats so avatars/documents are smaller over the wire.
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
+    ],
+  },
+  // Tree-shake heavy icon/component barrels so they don't ship whole libraries
+  // in the shared chunk. This noticeably trims the ~187 kB common bundle.
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "recharts",
+      "framer-motion",
+      "@xyflow/react",
+      "reactflow",
+      "date-fns",
+      "@radix-ui/react-slot",
+      "@base-ui/react",
     ],
   },
 };

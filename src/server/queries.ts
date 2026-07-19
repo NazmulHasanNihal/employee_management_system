@@ -16,6 +16,7 @@
 import { prisma } from '@/lib/prisma';
 import { getCaller, type Caller } from '@/lib/auth';
 import { computeBdLeaveBalance } from '@/server/leaveBalance';
+import { unstable_cache } from 'next/cache';
 
 export type { Caller };
 
@@ -23,7 +24,7 @@ export type { Caller };
 // DASHBOARD
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getDashboardStats(caller: Caller | null) {
+async function computeDashboardStats(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
   const userId = caller?.id;
@@ -108,6 +109,14 @@ export async function getDashboardStats(caller: Caller | null) {
   };
 }
 
+// Cached wrapper: the dashboard runs ~20 DB queries, so we memoize the result
+// for 60s per scope (branch + admin/CEO flag) to cut DB load and TTFB.
+export const getDashboardStats = unstable_cache(
+  (caller: Caller | null) => computeDashboardStats(caller),
+  ['dashboard-stats'],
+  { revalidate: 60, tags: ['dashboard'] }
+);
+
 export async function getDashboardMyOverview(caller: Caller | null) {
   const userId = caller?.id;
   if (!userId) return null;
@@ -143,30 +152,36 @@ export async function getDashboardMyOverview(caller: Caller | null) {
 // REGISTRY / ORG
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getEmployees() {
-  return prisma.user.findMany({ include: { manager: true }, orderBy: { name: 'asc' } });
-}
+export const getEmployees = unstable_cache(
+  () => prisma.user.findMany({ include: { manager: true }, orderBy: { name: 'asc' } }),
+  ['employees'],
+  { revalidate: 120, tags: ['employees'] }
+);
 
-export async function getOrgTree() {
-  const users = await prisma.user.findMany();
-  const userMap: any = {};
-  users.forEach((u) => (userMap[u.id] = { ...u, children: [] }));
-  let root: any = null;
-  const isDescendant = (nodeId: string, ancestorId: string): boolean => {
-    if (!nodeId || !userMap[nodeId]) return false;
-    if (nodeId === ancestorId) return true;
-    for (const child of userMap[nodeId].children) if (isDescendant(child.id, ancestorId)) return true;
-    return false;
-  };
-  users.forEach((u) => {
-    if (u.managerId && userMap[u.managerId]) {
-      if (!isDescendant(u.id, u.managerId)) userMap[u.managerId].children.push(userMap[u.id]);
-    } else if (!u.managerId) {
-      if (!root || u.role === 'Admin' || u.designation === 'CEO') root = userMap[u.id];
-    }
-  });
-  return root || { ...users[0], children: [] };
-}
+export const getOrgTree = unstable_cache(
+  async () => {
+    const users = await prisma.user.findMany();
+    const userMap: any = {};
+    users.forEach((u) => (userMap[u.id] = { ...u, children: [] }));
+    let root: any = null;
+    const isDescendant = (nodeId: string, ancestorId: string): boolean => {
+      if (!nodeId || !userMap[nodeId]) return false;
+      if (nodeId === ancestorId) return true;
+      for (const child of userMap[nodeId].children) if (isDescendant(child.id, ancestorId)) return true;
+      return false;
+    };
+    users.forEach((u) => {
+      if (u.managerId && userMap[u.managerId]) {
+        if (!isDescendant(u.id, u.managerId)) userMap[u.managerId].children.push(userMap[u.id]);
+      } else if (!u.managerId) {
+        if (!root || u.role === 'Admin' || u.role === 'CEO') root = userMap[u.id];
+      }
+    });
+    return root || { ...users[0], children: [] };
+  },
+  ['org-tree'],
+  { revalidate: 120, tags: ['org-tree'] }
+);
 
 // ───────────────────────────────────────────────────────────────────────────
 // TEAM
@@ -506,9 +521,11 @@ export async function getApplications() {
   return prisma.leaveRequest.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
 }
 
-export async function getDepartments() {
-  return prisma.department.findMany();
-}
+export const getDepartments = unstable_cache(
+  () => prisma.department.findMany(),
+  ['departments'],
+  { revalidate: 300, tags: ['departments'] }
+);
 
 // ───────────────────────────────────────────────────────────────────────────
 // AUDIT / EVENTS / NEWS / CALENDAR
@@ -1119,9 +1136,11 @@ export async function getActivityHeatmap(caller: Caller | null) {
 // MULTI-BRANCH
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getBranches() {
-  return prisma.branch.findMany({ orderBy: { name: 'asc' } });
-}
+export const getBranches = unstable_cache(
+  () => prisma.branch.findMany({ orderBy: { name: 'asc' } }),
+  ['branches'],
+  { revalidate: 300, tags: ['branches'] }
+);
 
 /** Reads the admin's selected branch from the `ems_branch` cookie (server-side). */
 export async function getSelectedBranchId(): Promise<string | null> {
