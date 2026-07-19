@@ -324,12 +324,22 @@ export async function runQuery(
             userMap[u.managerId].children.push(userMap[u.id]);
           }
         } else if (!u.managerId) {
-          if (!root || u.role === 'Admin' || u.designation === 'CEO') {
+          // Prefer the org root by authoritative role, not free-text designation.
+          const score = (r: string) => (r === 'CEO' ? 3 : r === 'Admin' ? 2 : r === 'Director' ? 1 : 0);
+          if (!root || score(u.role) > score(root.role || '')) {
             root = userMap[u.id];
           }
         }
       });
-      return root || { ...users[0], children: [] };
+      if (!root && users.length) {
+        // Fallback: the node that ends up with the most descendants.
+        let best = userMap[users[0].id];
+        for (const u of users) {
+          if (userMap[u.id].children.length > best.children.length) best = userMap[u.id];
+        }
+        root = best;
+      }
+      return root;
     }
 
     // ── TEAM (Enhanced - Chain of Command) ──
@@ -1019,9 +1029,10 @@ export async function runQuery(
 
     if (path === 'payroll.getRunPreview') {
       if (!isAdmin && !isCEO) return { employeeCount: 0, estimatedNetTotal: 0, totalHours: 0, month: args?.month, year: args?.year };
-      const month = args?.month || new Date().toLocaleString('en', { month: 'short' });
       const year = args?.year || new Date().getFullYear();
-      const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
+      const rawMonth = args?.month || new Date().toLocaleString('en', { month: 'short' });
+      const monthIndex = new Date(`${rawMonth} 1, ${year}`).getMonth();
+      const month = new Date(2000, monthIndex, 1).toLocaleString('en', { month: 'short' });
       const periodStart = new Date(year, monthIndex, 1);
       const periodEnd = new Date(year, monthIndex + 1, 1);
       const WORKING_DAYS = 30;
@@ -1089,32 +1100,17 @@ async function runMutation(path: string, input: any) {
     if (path === 'profile.updateMyProfile') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
 
-      // Editable self fields (position/role are NOT editable)
+      // Self-service profile update. Only allow genuinely self-editable,
+      // non-privileged fields. Role / status / manager / designation / department
+      // are intentionally excluded (privilege-escalation guards); those are
+      // handled by the dedicated server actions in src/app/actions/profile.ts
+      // (department is self-editable there, designation/employment only by HR/admin).
       const data: any = input?.data || {};
-      const updateData: any = {
-        name: data.name,
-        department: data.department,
-        designation: data.designation,
-        avatarUrl: data.avatarUrl,
-        status: data.status,
-      };
+      const updateData: any = {};
+      if (typeof data.name === 'string') updateData.name = data.name;
+      if (typeof data.avatarUrl === 'string') updateData.avatarUrl = data.avatarUrl;
 
-      // Prevent updating protected fields even if client sends them.
-      // NOTE: `designation` is intentionally blocked for self-update. Historically
-      // privileges were derived from `designation`, so allowing a user to set their
-      // own designation to "CEO" was a privilege-escalation vector.
-      delete updateData.role;
-      delete updateData.empId;
-      delete updateData.managerId;
-      delete updateData.manager;
-      delete updateData.designation;
-      delete updateData.department;
-      delete updateData.isOnboarded;
-      delete updateData.isOwner;
-      delete updateData.status;
-
-      // Remove undefined keys
-      Object.keys(updateData).forEach((k) => updateData[k] === undefined && delete updateData[k]);
+      if (Object.keys(updateData).length === 0) return { ok: true };
 
       return await prisma.user.update({
         where: { id: userId },
@@ -1988,15 +1984,6 @@ async function runMutation(path: string, input: any) {
     }
 
     // ── TRAINING / LMS (P8) ──
-    if (path === 'training.enroll') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.courseId) throw new Error('Course required');
-      return await prisma.trainingEnrollment.upsert({
-        where: { userId_courseId: { userId: userId!, courseId: input.courseId } },
-        update: { status: 'Enrolled' },
-        create: { userId: userId!, courseId: input.courseId, status: 'Enrolled', progress: 0 },
-      });
-    }
     if (path === 'training.updateProgress') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       if (!input?.enrollmentId || typeof input.progress !== 'number') throw new Error('Missing fields');
@@ -2158,12 +2145,13 @@ async function runMutation(path: string, input: any) {
     }
     if (path === 'payroll.runAutomatedPayroll') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      const month = input?.month || new Date().toLocaleString('en', { month: 'short' });
       const year = input?.year || new Date().getFullYear();
-
-      // Resolve the calendar window for the month so we can pull attendance +
-      // approved leave for the period.
-      const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
+      // Normalize the month to a canonical 3-letter short name (e.g. "Jul") so
+      // that numeric inputs from the UI (7) and default string inputs ("Jul")
+      // dedupe consistently. `new Date(7 1, 2025)` parses as July.
+      const rawMonth = input?.month || new Date().toLocaleString('en', { month: 'short' });
+      const monthIndex = new Date(`${rawMonth} 1, ${year}`).getMonth();
+      const month = new Date(2000, monthIndex, 1).toLocaleString('en', { month: 'short' });
       const periodStart = new Date(year, monthIndex, 1);
       const periodEnd = new Date(year, monthIndex + 1, 1);
 
@@ -2376,11 +2364,13 @@ async function runMutation(path: string, input: any) {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       if (!input?.proxyId) throw new Error('Proxy user required');
       if (input.proxyId === userId) throw new Error('Cannot delegate to yourself');
-      return await prisma.user.update({ where: { id: userId }, data: { proxyId: input.proxyId } });
+      const data: any = { proxyId: input.proxyId };
+      if (input.proxyValidUntil) data.proxyValidUntil = new Date(input.proxyValidUntil);
+      return await prisma.user.update({ where: { id: userId }, data });
     }
     if (path === 'team.clearProxy') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      return await prisma.user.update({ where: { id: userId }, data: { proxyId: null } });
+      return await prisma.user.update({ where: { id: userId }, data: { proxyId: null, proxyValidUntil: null } });
     }
 
     // ── LEAVE (alias mutation) ──

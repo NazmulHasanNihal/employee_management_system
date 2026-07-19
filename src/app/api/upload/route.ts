@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (file.size > MAX_BYTES) {
-      return NextResponse.json({ success: false, error: 'File too large (max 10MB)' }, { status: 413 });
+      return NextResponse.json({ success: false, error: 'File too large (max 25MB)' }, { status: 413 });
     }
 
     const originalName = file.name || 'upload.bin';

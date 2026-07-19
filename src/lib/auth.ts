@@ -92,11 +92,13 @@ export function derivePrivileges(opts: {
   isOwner: boolean;
 }): { isAdmin: boolean; isHR: boolean; isCEO: boolean } {
   const isCEO = opts.isOwner || opts.role === 'CEO';
-  // The system owner is the head of everything: they must pass every
-  // `isAdmin`-gated check (visibility, edits, provisioning) in addition to the
-  // CEO-level gates. This is derived only from the authoritative `isOwner`
-  // flag, never from the self-editable `designation`.
-  const isAdmin = opts.isOwner || opts.role === 'Admin' || opts.role === 'HR Manager';
-  const isHR = opts.isOwner || opts.role === 'HR Manager';
+  // The system owner is treated as CEO. Admin-gated checks elsewhere (e.g.
+  // admin.ts, layout gating) include an explicit `|| isOwner` clause, so the
+  // owner still passes every admin gate WITHOUT also being flagged `isAdmin`.
+  // Keeping `isAdmin` false for the owner matches the privilege spec: owner is
+  // CEO, not an Admin/HR role. `isAdmin` is derived only from the authoritative
+  // `role`, never from the self-editable `designation`.
+  const isAdmin = opts.role === 'Admin' || opts.role === 'HR Manager';
+  const isHR = opts.role === 'HR Manager';
   return { isAdmin, isHR, isCEO };
 }

@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server';
 import { logError } from '@/lib/logger';
-import { createClient } from '@/lib/supabase/server';
+import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-
 
 export async function GET(req: Request) {
   try {
-    const supabase = await createClient();
-    const { data: { user: authUser }, error } = await supabase.auth.getUser();
-
-    if (error || !authUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const dbUser = await prisma.user.findUnique({ where: { id: authUser.id } });
-    if (!dbUser || (dbUser.role !== 'Admin' && dbUser.role !== 'HR Manager')) {
+    const caller = await getCaller();
+    if (!caller || !caller.isAdmin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -29,3 +21,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

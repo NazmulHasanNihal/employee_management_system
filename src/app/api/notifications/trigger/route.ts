@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { logError } from '@/lib/logger';
+import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
 import webpush from 'web-push';
 import { parseApiBody, notifySchema } from '@/lib/validation';
 
@@ -9,24 +9,8 @@ export async function POST(req: Request) {
   try {
     // ── Auth + authorization gate ──
     // Only an authenticated Admin/HR/CEO may trigger a push to another user.
-    const supabase = await createClient();
-    const {
-      data: { user: authUser },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !authUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const caller = await prisma.user.findUnique({ where: { id: authUser.id } });
-    const isPrivileged =
-      caller?.role === 'Admin' ||
-      caller?.role === 'HR Manager' ||
-      caller?.role === 'CEO' ||
-      caller?.isOwner;
-
-    if (!isPrivileged) {
+    const caller = await getCaller();
+    if (!caller || !(caller.isAdmin || caller.isHR || caller.isCEO || caller.isOwner)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -50,7 +34,7 @@ export async function POST(req: Request) {
     }
 
     const payload = JSON.stringify({ title, body, url });
-    
+
     await webpush.sendNotification(user.pushSub as any, payload);
 
     return NextResponse.json({ success: true });

@@ -202,9 +202,10 @@ export default async function ProfilePage() {
           <CardContent className="space-y-4">
             {leaveBalance ? (
               <>
-                <LeaveBar label="Vacation" used={leaveBalance.Vacation?.used || 0} total={leaveBalance.Vacation?.total || 0} color="var(--emerald)" />
+                <LeaveBar label="Earned / Annual" used={leaveBalance.Earned?.used || 0} total={leaveBalance.Earned?.total || 0} color="var(--emerald)" />
                 <LeaveBar label="Sick Leave" used={leaveBalance.Sick?.used || 0} total={leaveBalance.Sick?.total || 0} color="var(--amber)" />
-                <LeaveBar label="Personal" used={leaveBalance.Personal?.used || 0} total={leaveBalance.Personal?.total || 0} color="var(--sky)" />
+                <LeaveBar label="Casual" used={leaveBalance.Casual?.used || 0} total={leaveBalance.Casual?.total || 0} color="var(--sky)" />
+                <LeaveBar label="Festival" used={leaveBalance.Festival?.used || 0} total={leaveBalance.Festival?.total || 0} color="var(--brand-strong)" />
               </>
             ) : (
               <p className="text-sm text-[var(--text-muted)]">Unavailable</p>
