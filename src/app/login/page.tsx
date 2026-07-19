@@ -33,14 +33,15 @@ export default function LoginPage() {
       // not from mutable user_metadata. This prevents privilege escalation via
       // tampered auth metadata.
       const role = await getUserRoleByEmail(email);
+      const isPrivileged = ['Admin', 'CEO', 'HR Manager'].includes(role);
 
-      if (loginType === 'admin' && role !== 'Admin') {
+      if (loginType === 'admin' && !isPrivileged) {
         await supabase.auth.signOut();
         setError("Access denied. You do not have Administrator privileges.");
         return;
       }
 
-      if (loginType === 'employee' && role === 'Admin') {
+      if (loginType === 'employee' && isPrivileged) {
         await supabase.auth.signOut();
         setError("Please use the Administrator portal to log in.");
         return;
