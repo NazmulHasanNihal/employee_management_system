@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
-import DocumentsIsland from './DocumentsIsland';
+import { CreateButton, SignButton } from './DocumentsIsland';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +31,7 @@ export default async function DocumentsPage() {
         subtitle="Secure document storage, distribution and signatures."
         actions={
           <div className="flex flex-wrap gap-2">
-            <DocumentsIsland.CreateButton />
+            <CreateButton />
           </div>
         }
       />
@@ -54,7 +54,7 @@ export default async function DocumentsPage() {
                 <p className="mb-6 flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
                   <Clock size={12} /> Received {new Date(doc.createdAt).toLocaleDateString()}
                 </p>
-                <DocumentsIsland.SignButton id={doc.id} />
+                <SignButton id={doc.id} />
               </div>
             ))}
           </div>

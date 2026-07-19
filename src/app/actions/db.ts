@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
 import { logError, logWarn } from '@/lib/logger';
 import { MutationError, classifyError } from '@/lib/mutation-error';
@@ -1162,10 +1162,22 @@ async function runMutation(path: string, input: any) {
     }
     if (path === 'registry.updatePermissions') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (input.status === 'terminated' || input.status === 'active') {
-        return await prisma.user.update({ where: { id: input.userId }, data: { status: input.status } });
+      const data: Record<string, unknown> = {};
+      // Persist the granted permission set (stored as a JSON string on User).
+      if (Array.isArray(input.permissions)) {
+        data.permissions = JSON.stringify(input.permissions);
       }
-      throw new Error('Invalid status value');
+      // Account status is still settable here for backwards compatibility.
+      if (input.status === 'terminated' || input.status === 'active') {
+        data.status = input.status;
+      }
+      if (Object.keys(data).length === 0) {
+        throw new Error('No valid fields provided (expected permissions array and/or status)');
+      }
+      const updated = await prisma.user.update({ where: { id: input.userId }, data });
+      // Keep the cached employee list (used by the registry/hierarchy/grid) fresh.
+      try { revalidateTag('employees'); } catch { /* revalidateTag unavailable outside a request scope */ }
+      return updated;
     }
 
     // ── ATTENDANCE ──

@@ -7,12 +7,12 @@ import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-export default function DocumentsIsland() {
-  return null;
-}
-
 // Admin-only "Distribute Document" toggle button placed in the header actions.
-DocumentsIsland.CreateButton = function CreateButton() {
+// Exported as a NAMED export (not a static on a default export) because
+// static properties are stripped when a 'use client' component is imported
+// into a Server Component — accessing them there yields `undefined` and
+// crashes with "Element type is invalid".
+export function CreateButton() {
   const { isAdmin } = useUser();
   const [open, setOpen] = useState(false);
   if (!isAdmin) return null;
@@ -24,10 +24,10 @@ DocumentsIsland.CreateButton = function CreateButton() {
       {open && <DistributeForm />}
     </>
   );
-};
+}
 
 // Sign button shown on each pending document.
-DocumentsIsland.SignButton = function SignButton({ id }: { id: string }) {
+export function SignButton({ id }: { id: string }) {
   const utils = trpc.useUtils();
   const signDocument = trpc.documents.signDocument.useMutation({
     onSuccess: () => utils.documents.getDocuments.invalidate(),
@@ -37,12 +37,12 @@ DocumentsIsland.SignButton = function SignButton({ id }: { id: string }) {
       variant="danger"
       className="w-full"
       disabled={signDocument.isPending}
-      onClick={() => signDocument.mutate(id)}
+      onClick={() => signDocument.mutate({ id })}
     >
       <FingerprintIcon /> Cryptographically Sign
     </Button>
   );
-};
+}
 
 function FingerprintIcon() {
   return <FileSignature size={14} />;

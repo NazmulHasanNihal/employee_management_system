@@ -20,6 +20,7 @@ model User {
   isOnboarded Boolean      @default(false)
   isOwner     Boolean      @default(false)
   pushSub     Json?        // Push subscription object
+  permissions String?     // JSON array of granted permission keys (e.g. ["MANAGE_ASSETS"]) set via registry access control
   managerId   String?
   manager     User?        @relation("ManagerToEmployee", fields: [managerId], references: [id])
   reports     User[]       @relation("ManagerToEmployee")
