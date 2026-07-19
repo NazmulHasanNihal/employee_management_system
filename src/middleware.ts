@@ -52,11 +52,15 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse;
     }
 
-    if (
-      !user &&
-      !request.nextUrl.pathname.startsWith('/login') &&
-      !request.nextUrl.pathname.startsWith('/setup')
-    ) {
+    const isPublicRoute = 
+      request.nextUrl.pathname.startsWith('/login') ||
+      request.nextUrl.pathname.startsWith('/setup') ||
+      request.nextUrl.pathname.startsWith('/auth/callback') ||
+      request.nextUrl.pathname.startsWith('/api/invite') ||
+      request.nextUrl.pathname.startsWith('/invite') ||
+      request.nextUrl.pathname.startsWith('/verify-email');
+
+    if (!user && !isPublicRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)

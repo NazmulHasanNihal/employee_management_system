@@ -33,7 +33,7 @@ test.describe('Leave request → manager approval flow', () => {
     // The leave-balance server action is invoked via POST to the server-action
     // endpoint; an unauthenticated call must be rejected (not 500), proving the
     // edge validation added in Phase 0 is wired.
-    const res = await request.post('/leave', { data: {} });
+    const res = await request.post('/leave', { data: {}, maxRedirects: 0 });
     expect([200, 301, 302, 307, 401, 403]).toContain(res.status());
   });
 });
@@ -42,6 +42,7 @@ test.describe('Invite → verify-email edge', () => {
   test('invite verify rejects a garbage token', async ({ request }) => {
     const res = await request.post('/api/invite/verify', {
       data: { token: 'not-a-real-token' },
+      maxRedirects: 0,
     });
     expect([400, 401]).toContain(res.status());
   });
@@ -49,6 +50,7 @@ test.describe('Invite → verify-email edge', () => {
   test('invite accept enforces password policy', async ({ request }) => {
     const res = await request.post('/api/invite/accept', {
       data: { token: 'abc.def', password: 'short' },
+      maxRedirects: 0,
     });
     // Validation must fail before any DB work (400) or be rejected for auth.
     expect([400, 401, 404]).toContain(res.status());
@@ -60,7 +62,7 @@ test.describe('Invite → verify-email edge', () => {
   });
 
   test('auth callback handles missing params gracefully', async ({ request }) => {
-    const res = await request.get('/auth/callback');
+    const res = await request.get('/auth/callback', { maxRedirects: 0 });
     // Missing code/token_hash → redirect to /login with an error, not a crash.
     expect([301, 302, 307]).toContain(res.status());
   });

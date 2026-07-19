@@ -56,7 +56,8 @@ test.describe('accessibility — public routes', () => {
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
 
-test.describe.skipIf(!email || !password)('accessibility — protected routes', () => {
+test.describe('accessibility — protected routes', () => {
+  test.skip(!email || !password, 'Missing credentials');
   test.beforeEach(async ({ page }) => {
     await page.goto('/login');
     await page.fill('input[type="email"]', email!);

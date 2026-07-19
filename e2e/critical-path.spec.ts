@@ -15,7 +15,8 @@ import { test, expect } from '@playwright/test';
 const email = process.env.E2E_EMAIL;
 const password = process.env.E2E_PASSWORD;
 
-test.describe.skipIf(!email || !password)('critical path (staging)', () => {
+test.describe('critical path (staging)', () => {
+  test.skip(!email || !password, 'Missing credentials');
   test('login → create leave → verify saved → logout', async ({ page }) => {
     await page.goto('/login');
     await page.fill('input[type="email"]', email!);

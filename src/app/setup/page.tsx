@@ -23,7 +23,7 @@ export default function SetupPage() {
             <p>
               The edge middleware intercepted this request because the server is missing your Supabase credentials.
             </p>
-            <p className="text-[var(--amber)]">
+            <p className="text-[var(--text-main)] font-medium">
               Even if you added them to your hosting dashboard, you must{' '}
               <strong>redeploy</strong> your application for them to take effect.
             </p>
