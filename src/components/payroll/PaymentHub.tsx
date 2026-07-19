@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Wallet, TrendingUp, Smartphone, Landmark, CheckCircle2, AlertCircle, CreditCard } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -37,9 +38,11 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
   const relatedPayment = payments.find((p) => p.payrollId === latestPayslip?.id) || null;
   const isPaid = relatedPayment?.status === 'PAID';
 
-  const utils = trpc.useUtils();
+  const router = useRouter();
+  // `latestPayslip`/`payments` are server props, so a trpc invalidate would be a
+  // no-op. Refresh the server Component to recompute the paid status + history.
   const recordPayment = trpc.payroll.recordPayment.useMutation({
-    onSuccess: () => { utils.invalidate('payroll'); setReference(''); setAmount(''); },
+    onSuccess: () => { router.refresh(); setReference(''); setAmount(''); },
   });
 
   const payNow = () => {

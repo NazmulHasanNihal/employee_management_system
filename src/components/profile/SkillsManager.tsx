@@ -26,7 +26,15 @@ export function SkillsManager({ initialSkills }: { initialSkills: SkillRow[] }) 
     try {
       const created = await addSkill(trimmed, newLevel);
       if (created && (created as SkillRow).id) {
-        setSkills((prev) => [...prev, created as SkillRow]);
+        const row = created as SkillRow;
+        setSkills((prev) => {
+          // `addSkill` updates the existing row when the skill already exists,
+          // so replace any prior entry with the same id/skill instead of
+          // appending a duplicate.
+          const exists = prev.some((s) => s.id === row.id || s.skill === row.skill);
+          if (exists) return prev.map((s) => (s.id === row.id || s.skill === row.skill ? row : s));
+          return [...prev, row];
+        });
       } else {
         // refresh defensively
         setSkills((prev) => [...prev, { id: `${Date.now()}`, skill: trimmed, level: newLevel }]);

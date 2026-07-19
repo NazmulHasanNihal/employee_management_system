@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Layers, Bitcoin, Plus, Save } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
@@ -14,18 +15,21 @@ interface PayrollSettingsClientProps {
 }
 
 export function PayrollSettingsClient({ heads, structures }: PayrollSettingsClientProps) {
-  const utils = trpc.useUtils();
+  const router = useRouter();
+  // `heads`/`structures` are server props; trpc invalidation would be a no-op.
+  // Refresh the server Component so the new head/structure appears immediately.
+  const refresh = () => router.refresh();
 
   const createHeadMutation = trpc.payroll.createHead.useMutation({
     onSuccess: () => {
-      utils.payroll.getHeads.invalidate();
+      refresh();
       setNewHeadName('');
     },
   });
 
   const createStructureMutation = trpc.payroll.createStructure.useMutation({
     onSuccess: () => {
-      utils.payroll.getStructures.invalidate();
+      refresh();
       setStructureForm(false);
     },
   });

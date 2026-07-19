@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { logError } from '@/lib/logger';
+import { requireCronSecret } from '@/lib/validation';
 import { prisma } from '@/lib/prisma';
 import webpush from 'web-push';
 
@@ -18,13 +19,8 @@ import webpush from 'web-push';
  */
 export async function GET(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization') || req.headers.get('x-cron-secret');
-    const secret = process.env.CRON_SECRET;
-    if (secret && authHeader !== `Bearer ${secret}`) {
-      // If CRON_SECRET is configured, require it. If not configured, allow
-      // (e.g. local/manual runs) but log.
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const denied = requireCronSecret(req);
+    if (denied) return denied;
 
     if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
       webpush.setVapidDetails(

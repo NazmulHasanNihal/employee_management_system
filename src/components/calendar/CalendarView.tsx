@@ -53,6 +53,18 @@ interface CalEvent {
 interface Member { id: string; name: string; }
 interface Department { id: string; name: string; }
 
+/**
+ * Parse an event date, returning `null` for missing/invalid values instead of
+ * falling back to the Unix epoch (which would silently misplace events in 1970
+ * and break month/week/day filtering). Derived events (holidays, birthdays,
+ * shifts) may legitimately lack a `date`.
+ */
+function safeDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 export default function CalendarView({ events, teamMembers, departments }: { events: CalEvent[]; teamMembers: Member[]; departments: Department[] }) {
   const { user, isAdmin } = useUser();
   const isManager = isAdmin || user.role === 'Manager';
@@ -102,8 +114,12 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
     if (filterType) result = result.filter((e) => e.type === filterType);
     if (filterStatus) result = result.filter((e) => e.status === filterStatus);
     if (filterDerived) result = result.filter((e) => (e.derived || 'event') === filterDerived);
-    if (selectedDay) result = result.filter((e) => { const d = new Date(e.date); return d.getDate() === selectedDay && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
-    return result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (selectedDay) result = result.filter((e) => { const d = safeDate(e.date); return !!d && d.getDate() === selectedDay && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
+    return result.sort((a, b) => {
+      const da = safeDate(a.date)?.getTime() ?? 0;
+      const db = safeDate(b.date)?.getTime() ?? 0;
+      return da - db;
+    });
   }, [events, filterType, filterStatus, filterDerived, selectedDay, currentMonth, currentYear]);
 
   const weekDays = useMemo(() => {
@@ -214,7 +230,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                   if (!day) return <div key={i} className="pointer-events-none opacity-0" />;
                   const isToday = day === todayDate && currentMonth === todayMonth && currentYear === todayYear;
                   const isSelected = day === selectedDay;
-                  const dayEvents = events.filter((e) => { const d = new Date(e.date); return d.getDate() === day && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
+                  const dayEvents = events.filter((e) => { const d = safeDate(e.date); return !!d && d.getDate() === day && d.getMonth() === currentMonth && d.getFullYear() === currentYear; });
                   return (
                     <button key={i} onClick={() => setSelectedDay(isSelected ? null : day)} className={`flex aspect-square flex-col items-center justify-center rounded-2xl transition-colors ${isSelected ? 'border-2 border-[var(--brand)] bg-[var(--brand-soft)]' : isToday ? 'border-2 border-[var(--text-main)] text-[var(--text-main)]' : 'border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 text-[var(--text-muted)] hover:border-[var(--brand)]/50'}`}>
                       <span className="text-lg">{day}</span>
@@ -246,7 +262,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
               <div className="grid grid-cols-7 gap-3">
                 {weekDays.map((day, i) => {
                   const isToday = day.getDate() === todayDate && day.getMonth() === todayMonth && day.getFullYear() === todayYear;
-                  const dayEvents = events.filter((e) => { const d = new Date(e.date); return d.getDate() === day.getDate() && d.getMonth() === day.getMonth() && d.getFullYear() === day.getFullYear(); });
+                  const dayEvents = events.filter((e) => { const d = safeDate(e.date); return !!d && d.getDate() === day.getDate() && d.getMonth() === day.getMonth() && d.getFullYear() === day.getFullYear(); });
                   return (
                     <div key={i} className={`min-h-[200px] rounded-2xl border p-3 ${isToday ? 'border-[var(--brand)]/50 bg-[var(--brand-soft)]' : 'border-[var(--border-hairline)] bg-[var(--bg-hover)]/40'}`}>
                       <div className="mb-3 text-center">

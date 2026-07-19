@@ -22,14 +22,16 @@ function getIcon(name: string) {
   return <Cpu className="h-8 w-8" />;
 }
 
-function calculateDepreciation(asset: any) {
-  if (!asset.purchasePrice || !asset.purchaseDate) return { current: 0 };
+function calculateDepreciation(asset: any): { current: number | null } {
+  // `null` signals "no book value available" (missing price/date) so the UI can
+  // render a clean N/A instead of a misleading $0.00.
+  if (!asset.purchasePrice || !asset.purchaseDate) return { current: null };
   const purchaseDate = new Date(asset.purchaseDate);
   const now = new Date();
   const yearsElapsed = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
   const depPerYear = asset.purchasePrice / (asset.depreciationYears || 3);
   const currentValue = Math.max(0, asset.purchasePrice - depPerYear * yearsElapsed);
-  return { current: currentValue.toFixed(2) };
+  return { current: Number(currentValue.toFixed(2)) };
 }
 
 export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
@@ -187,8 +189,8 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                     </div>
                     <div>
                       <p className="text-xs text-[var(--text-muted)]">Book Value</p>
-                      <p className={`text-sm font-semibold ${dep.current === '0.00' ? 'text-[var(--rose)]' : 'text-[var(--text-main)]'}`}>
-                        ${dep.current || 'N/A'}
+                      <p className={`text-sm font-semibold ${dep.current === 0 ? 'text-[var(--rose)]' : 'text-[var(--text-main)]'}`}>
+                        {dep.current === null ? 'N/A' : `$${dep.current.toFixed(2)}`}
                       </p>
                     </div>
                   </div>

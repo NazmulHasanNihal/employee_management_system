@@ -27,6 +27,42 @@ export const ServerActionArgsSchema = z.object({
 
 export type ServerActionArgs = z.infer<typeof ServerActionArgsSchema>;
 
+/**
+ * Guard a CRON/webhook route. The endpoint must be called with a shared secret
+ * (`Authorization: Bearer <CRON_SECRET>` or `x-cron-secret` header).
+ *
+ * Security model:
+ *  - If `CRON_SECRET` IS configured, the request must present it — fail closed.
+ *  - If `CRON_SECRET` is NOT configured: this is fine for local/dev, but in a
+ *    production deployment it means the endpoint is unauthenticated. Fail
+ *    closed there (return a 500 with guidance) so a missing secret can never
+ *    silently expose a world-callable, mutating cron endpoint.
+ *
+ * Returns `null` when authorized (caller may proceed) or a `NextResponse`
+ * (the caller should `return` it) when unauthorized.
+ */
+export function requireCronSecret(req: Request): NextResponse | null {
+  const secret = process.env.CRON_SECRET;
+  const authHeader =
+    req.headers.get('authorization') || req.headers.get('x-cron-secret');
+
+  if (secret) {
+    if (authHeader !== `Bearer ${secret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return null;
+  }
+
+  // No secret configured.
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: 'Server misconfiguration: CRON_SECRET is not set' },
+      { status: 500 },
+    );
+  }
+  return null;
+}
+
 /** Envelope for batched queries: an array of `{ path, args }` pairs. */
 export const BatchSchema = z
   .array(

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, X, Check, Trash2, ListTodo } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Avatar } from '@/components/ui/avatar';
@@ -56,20 +57,25 @@ export default function TeamTasksBoard({
   const [assigneeId, setAssigneeId] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  const utils = trpc.useUtils();
+  const router = useRouter();
+
+  // The board's data arrives as a server prop (not a mounted trpc query), so
+  // `utils.invalidate` would be a no-op and the list would stay stale after a
+  // mutation. Refresh the server Component instead to pull fresh data.
+  const refresh = () => router.refresh();
 
   const createMutation = trpc.team.createTask.useMutation({
     onSuccess: () => {
       setShowCreate(false);
       setTitle(''); setDescription(''); setPriority('Medium'); setAssigneeId(''); setDueDate('');
-      utils.invalidate('team');
+      refresh();
     },
   });
   const updateStatusMutation = trpc.team.updateTaskStatus.useMutation({
-    onSuccess: () => utils.invalidate('team'),
+    onSuccess: () => refresh(),
   });
   const deleteMutation = trpc.team.deleteTask.useMutation({
-    onSuccess: () => utils.invalidate('team'),
+    onSuccess: () => refresh(),
   });
 
   const tasksByStatus = useMemo(() => {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { logError } from '@/lib/logger';
+import { requireCronSecret } from '@/lib/validation';
 import { prisma } from '@/lib/prisma';
 
 /**
@@ -21,11 +22,8 @@ import { prisma } from '@/lib/prisma';
  */
 export async function GET(req: Request) {
   try {
-    const authHeader = req.headers.get('authorization') || req.headers.get('x-cron-secret');
-    const secret = process.env.CRON_SECRET;
-    if (secret && authHeader !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const denied = requireCronSecret(req);
+    if (denied) return denied;
 
     const url = new URL(req.url);
     const dateParam = url.searchParams.get('date');
