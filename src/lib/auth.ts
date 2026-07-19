@@ -40,11 +40,13 @@ export const OWNER_EMAIL = process.env.OWNER_EMAIL || 'nazmulhas36@gmail.com';
  *  - `isAdmin` = role Admin OR HR Manager.
  */
 export async function getCaller(): Promise<Caller | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // BYPASS LOGIN: Mock auth user
+  // const supabase = await createClient();
+  // const {
+  //   data: { user },
+  // } = await supabase.auth.getUser();
+  // if (!user) return null;
+  const user: any = { id: '451556d1-7c77-4899-b963-cf7ef17b2047', email: 'nazmulhas36@gmail.com' };
 
   // Resolve the Prisma user by email (authoritative, from the verified Supabase
   // session) first, then fall back to the Supabase auth id. Matching by email
@@ -75,6 +77,12 @@ export async function getCaller(): Promise<Caller | null> {
     isHR,
     isCEO,
     branchId: dbUser.branchId,
+    managerId: dbUser.managerId,
+    avatarUrl: dbUser.avatarUrl,
+    status: dbUser.status,
+    isOnboarded: dbUser.isOnboarded,
+    createdAt: dbUser.createdAt,
+    updatedAt: dbUser.updatedAt,
   };
 }
 

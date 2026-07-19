@@ -10,12 +10,20 @@ export const dynamic = 'force-dynamic';
 
 
 export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user: authUser }, error } = await supabase.auth.getUser();
+  // BYPASS LOGIN: Mock auth user
+  // const supabase = await createClient();
+  // const { data: { user: authUser }, error } = await supabase.auth.getUser();
+  const authUser: any = {
+    id: '451556d1-7c77-4899-b963-cf7ef17b2047',
+    email: 'nazmulhas36@gmail.com',
+    user_metadata: { name: 'Md. Nazmul', role: 'CEO' },
+    email_confirmed_at: new Date().toISOString()
+  };
+  const error = null;
 
-  if (error || !authUser) {
-    redirect("/login");
-  }
+  // if (error || !authUser) {
+  //   redirect("/login");
+  // }
 
   let dbUser = await prisma.user.findUnique({
     where: { id: authUser.id }

@@ -61,9 +61,10 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.startsWith('/verify-email');
 
     if (!user && !isPublicRoute) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/login'
-      return NextResponse.redirect(url)
+      // BYPASS LOGIN: Commmented out to allow direct access
+      // const url = request.nextUrl.clone()
+      // url.pathname = '/login'
+      // return NextResponse.redirect(url)
     }
 
     if (
