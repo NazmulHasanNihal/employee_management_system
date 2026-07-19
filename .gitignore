@@ -59,3 +59,6 @@ walkthrough.md
 # committed build artifacts / local uploads
 services/go-backend/go-backend.exe
 public/uploads/*
+
+# temp
+scratch/
