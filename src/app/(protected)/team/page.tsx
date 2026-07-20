@@ -4,9 +4,11 @@ import { getChainOfCommand, getTeamTasks, getTeamPerformance, getMyTeam } from '
 import { getServerT } from '@/lib/i18n-server';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { DeltaBadge } from '@/components/ui/delta-badge';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import TeamTasksBoard from '@/components/team/TeamTasksBoard';
+import TeamCompletionChartDynamic from '@/components/team/TeamCompletionChartDynamic';
 
 export default async function TeamPage() {
   const caller = await getCaller();
@@ -25,6 +27,18 @@ export default async function TeamPage() {
     designation: m.designation,
     avatarUrl: m.avatarUrl,
   }));
+
+  // Team-level derived analytics from the per-member performance array.
+  const teamSummary = (() => {
+    if (performance.length === 0) return { avgCompletion: 0, totalDone: 0, totalBlocked: 0, blockedRate: 0, doneThisWeek: 0 };
+    const totalTasks = performance.reduce((s, m: any) => s + (m.totalTasks || 0), 0);
+    const totalDone = performance.reduce((s, m: any) => s + (m.doneTasks || 0), 0);
+    const totalBlocked = performance.reduce((s, m: any) => s + (m.blockedTasks || 0), 0);
+    const doneThisWeek = performance.reduce((s, m: any) => s + (m.doneThisWeek || 0), 0);
+    const avgCompletion = Math.round(performance.reduce((s: number, m: any) => s + (m.completionRate || 0), 0) / performance.length);
+    const blockedRate = totalTasks > 0 ? Math.round((totalBlocked / totalTasks) * 100) : 0;
+    return { avgCompletion, totalDone, totalBlocked, blockedRate, doneThisWeek };
+  })();
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -217,6 +231,33 @@ export default async function TeamPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Team analytics: KPI strip + completion chart */}
+      {performance.length > 0 && (
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--text-main)]">{teamSummary.avgCompletion}%</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Avg Completion</p>
+            </Card>
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--emerald)]">{teamSummary.totalDone}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Tasks Completed</p>
+            </Card>
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--brand)]">{teamSummary.doneThisWeek}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Done This Week</p>
+            </Card>
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--rose)]">{teamSummary.blockedRate}%</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Blocked Rate</p>
+            </Card>
+          </div>
+          <TeamCompletionChartDynamic
+            data={performance.map((m: any) => ({ name: m.name, completionRate: m.completionRate }))}
+          />
+        </>
+      )}
     </div>
   );
 }

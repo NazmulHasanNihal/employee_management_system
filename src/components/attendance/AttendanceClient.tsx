@@ -7,6 +7,8 @@ import useRealtimePresence from '@/lib/useRealtimePresence';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { DeltaBadge } from '@/components/ui/delta-badge';
+import AttendanceSparklineDynamic from '@/components/attendance/AttendanceSparklineDynamic';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 interface AttendanceClientProps {
@@ -144,8 +146,8 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
     }
   };
 
-  const stats = adminStats || { onShift: 0, lateArrivals: 0, absent: 0, totalEmployees: 0 };
-  const onShiftPct = stats.totalEmployees > 0 ? Math.round((stats.onShift / stats.totalEmployees) * 100) : 0;
+  const stats = adminStats || { onShift: 0, lateArrivals: 0, absent: 0, totalEmployees: 0, presentRate: 0, absenteeismRate: 0, onShiftPct: 0, attendanceTrend: [] };
+  const onShiftPct = stats.totalEmployees > 0 ? Math.round((stats.onShift / stats.totalEmployees) * 100) : (stats.onShiftPct || 0);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -252,12 +254,22 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
                       <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--emerald)]" />
                       Currently On-Shift
                     </div>
-                    <span className="text-xl font-bold text-[var(--text-main)]">{stats.onShift}</span>
+                    <span className="flex items-center gap-2 text-xl font-bold text-[var(--text-main)]">
+                      {stats.onShift}
+                      <span className="text-xs font-normal text-[var(--text-muted)]">{onShiftPct}% of staff</span>
+                    </span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
                     <div className="h-full rounded-full bg-[var(--emerald)]" style={{ width: `${onShiftPct}%` }} />
                   </div>
-                  <div className="grid grid-cols-2 gap-4 border-t border-[var(--border-hairline)] pt-4">
+                  <AttendanceSparklineDynamic data={stats.attendanceTrend || []} />
+                  <div className="grid grid-cols-3 gap-3 border-t border-[var(--border-hairline)] pt-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Present Rate</p>
+                      <p className="flex items-center gap-2 text-lg font-bold text-[var(--emerald)]">
+                        {stats.presentRate}% <CheckCircle2 className="h-3 w-3" />
+                      </p>
+                    </div>
                     <div>
                       <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Late Arrivals</p>
                       <p className="flex items-center gap-2 text-lg font-bold text-[var(--amber)]">
@@ -270,6 +282,10 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
                         {stats.absent} <XCircle className="h-3 w-3" />
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-[var(--bg-hover)]/60 p-3">
+                    <span className="text-xs text-[var(--text-muted)]">Absenteeism Rate</span>
+                    <DeltaBadge value={stats.absenteeismRate} label="of workforce" goodWhen="down" />
                   </div>
                 </div>
               </CardContent>

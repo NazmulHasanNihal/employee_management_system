@@ -6,6 +6,8 @@ import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { DeltaBadge } from '@/components/ui/delta-badge';
+import { LeaveBreakdownDonut } from '@/components/dashboard/AnalyticsCharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
 interface LeaveClientProps {
@@ -94,6 +96,21 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
       )
     : [];
 
+  // Org-wide leave analytics (admins only). Derived from the request list
+  // already loaded, so no extra query is needed.
+  const leaveAnalytics = (() => {
+    const reqs = (requests || []) as any[];
+    const total = reqs.length;
+    const approved = reqs.filter((r) => r.status === 'Approved').length;
+    const rejected = reqs.filter((r) => r.status === 'Rejected').length;
+    const pending = reqs.filter((r) => r.status === 'Pending').length;
+    const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+    const byTypeMap: Record<string, number> = {};
+    reqs.forEach((r) => { byTypeMap[r.type] = (byTypeMap[r.type] || 0) + 1; });
+    const byType = Object.entries(byTypeMap).map(([type, count]) => ({ type, count }));
+    return { total, approved, rejected, pending, approvalRate, byType };
+  })();
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -120,6 +137,27 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
           );
         })}
       </div>
+
+      {isAdmin && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-3 gap-4 lg:col-span-2">
+            <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
+              <p className="text-2xl font-bold text-[var(--emerald)]">{leaveAnalytics.approvalRate}%</p>
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">Approval Rate</p>
+              <DeltaBadge value={leaveAnalytics.approvalRate} label="approved" goodWhen="up" className="mt-1" />
+            </div>
+            <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
+              <p className="text-2xl font-bold text-[var(--amber)]">{leaveAnalytics.pending}</p>
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">Pending</p>
+            </div>
+            <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
+              <p className="text-2xl font-bold text-[var(--rose)]">{leaveAnalytics.rejected}</p>
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">Rejected</p>
+            </div>
+          </div>
+          <LeaveBreakdownDonut data={leaveAnalytics.byType} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">

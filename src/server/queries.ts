@@ -418,16 +418,19 @@ export async function getTeamPerformance(caller: Caller | null) {
     memberIds.push(userId);
   }
   const performance = [];
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
   for (const memberId of memberIds.slice(0, 20)) {
     const member = await prisma.user.findUnique({ where: { id: memberId }, select: { id: true, name: true, designation: true, department: true, avatarUrl: true } });
     if (!member) continue;
     const totalTasks = await prisma.teamTask.count({ where: { assigneeId: memberId } });
     const doneTasks = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'Done' } });
     const inProgressTasks = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'InProgress' } });
+    const blockedTasks = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'Blocked' } });
+    const doneThisWeek = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'Done', completedAt: { gte: weekAgo } } });
     const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const attendanceCount = await prisma.attendance.count({ where: { userId: memberId, date: { gte: thirtyDaysAgo } } });
     const attendanceRate = Math.min(100, Math.round((attendanceCount / 22) * 100));
-    performance.push({ ...member, totalTasks, doneTasks, inProgressTasks, completionRate: totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0, attendanceRate });
+    performance.push({ ...member, totalTasks, doneTasks, inProgressTasks, blockedTasks, doneThisWeek, completionRate: totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0, attendanceRate });
   }
   return performance;
 }
@@ -471,7 +474,27 @@ export async function getAttendanceAdminStats(caller?: Caller | null) {
   });
   const absent = Math.max(explicitAbsent, assignedButMissing > onShift ? assignedButMissing - onShift : 0);
   const totalEmployees = await prisma.user.count({ where: branchWhere });
-  return { onShift, lateArrivals, absent, totalEmployees };
+
+  // Derived analytics: present rate, absenteeism rate, on-shift %, and a
+  // 7-day present-rate trend for the trend chart.
+  const presentToday = await prisma.attendance.count({ where: { date: { gte: today }, status: { not: 'Absent' }, ...userBranch } });
+  const presentRate = totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0;
+  const absenteeismRate = totalEmployees > 0 ? Math.round((absent / totalEmployees) * 100) : 0;
+  const onShiftPct = totalEmployees > 0 ? Math.round((onShift / totalEmployees) * 100) : 0;
+
+  const attendanceTrend = [];
+  for (let i = 6; i >= 0; i--) {
+    const day = new Date(); day.setDate(day.getDate() - i); day.setHours(0, 0, 0, 0);
+    const nextDay = new Date(day); nextDay.setDate(nextDay.getDate() + 1);
+    const present = await prisma.attendance.count({ where: { date: { gte: day, lt: nextDay }, status: { not: 'Absent' }, ...userBranch } });
+    const total = await prisma.attendance.count({ where: { date: { gte: day, lt: nextDay }, ...userBranch } });
+    attendanceTrend.push({
+      day: day.toLocaleDateString('en', { weekday: 'short' }),
+      rate: total > 0 ? Math.round((present / totalEmployees) * 100) : 0,
+    });
+  }
+
+  return { onShift, lateArrivals, absent, totalEmployees, presentRate, absenteeismRate, onShiftPct, attendanceTrend };
 }
 
 export async function getActiveAttendanceSession(caller: Caller | null) {
@@ -543,15 +566,44 @@ export async function getSalaryHeads() {
   return prisma.salaryHead.findMany();
 }
 
-export async function getPayrollAdminStats() {
-  const totalPayroll = await prisma.payroll.aggregate({ _sum: { totalAmount: true } });
-  const employeeCount = await prisma.user.count();
-  const lastRun = await prisma.payroll.findFirst({ orderBy: { createdAt: 'desc' } });
+export async function getPayrollAdminStats(caller?: Caller | null) {
+  const isPrivileged = caller?.isAdmin || caller?.isCEO;
+  const branchScope = isPrivileged ? await getSelectedBranchId() : null;
+  const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
+  const branchWhere = branchScope ? { branchId: branchScope } : {};
+
+  const ytdStart = new Date(new Date().getFullYear(), 0, 1);
+  const totalPayroll = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: ytdStart } }, _sum: { totalAmount: true } });
+  const employeeCount = await prisma.user.count({ where: branchWhere });
+  const lastRun = await prisma.payroll.findFirst({ where: userBranch, orderBy: { createdAt: 'desc' } });
+
+  // Month-over-month payroll delta: sum of last 3 runs vs the 3 prior runs,
+  // so a single off-cycle payment doesn't distort the trend.
+  const recent = await prisma.payroll.findMany({ where: userBranch, orderBy: { createdAt: 'desc' }, take: 6, select: { totalAmount: true } });
+  const last3 = recent.slice(0, 3).reduce((s, p) => s + (p.totalAmount || 0), 0);
+  const prev3 = recent.slice(3, 6).reduce((s, p) => s + (p.totalAmount || 0), 0);
+  const momDeltaPct = prev3 === 0 ? (last3 === 0 ? 0 : 100) : Math.round(((last3 - prev3) / prev3) * 100);
+
+  const monthsElapsed = Math.max(1, new Date().getMonth() + 1);
+  const totalYTD = totalPayroll._sum.totalAmount || 0;
+  const monthlyRunRate = Math.round(totalYTD / monthsElapsed);
+  const avgPerEmployee = employeeCount > 0 ? Math.round(totalYTD / employeeCount) : 0;
+
+  // Processed vs draft runs ratio.
+  const processedCount = await prisma.payroll.count({ where: { ...userBranch, status: 'PROCESSED' } });
+  const draftCount = await prisma.payroll.count({ where: { ...userBranch, status: 'DRAFT' } });
+  const totalRuns = processedCount + draftCount;
+  const processedPct = totalRuns > 0 ? Math.round((processedCount / totalRuns) * 100) : 0;
+
   return {
-    totalYTD: totalPayroll._sum.totalAmount || 0,
+    totalYTD,
     employeeCount,
     lastRunMonth: lastRun ? `${lastRun.month} ${lastRun.year}` : 'Never',
     lastRunStatus: lastRun?.status || 'N/A',
+    monthlyRunRate,
+    avgPerEmployee,
+    momDeltaPct,
+    processedPct,
   };
 }
 

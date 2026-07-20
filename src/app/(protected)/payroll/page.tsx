@@ -3,6 +3,7 @@ import { DollarSign, History, CheckCircle2 } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
+import { DeltaBadge } from '@/components/ui/delta-badge';
 import { PayrollActions } from '@/components/payroll/PayrollActions';
 import { PayslipCard } from '@/components/payroll/PayslipCard';
 import { PaymentHub } from '@/components/payroll/PaymentHub';
@@ -25,7 +26,7 @@ export default async function PayrollPage() {
 
   const [payrolls, adminStats, payments, salesThis, salesLast] = await Promise.all([
     getPayrolls(caller),
-    getPayrollAdminStats(),
+    getPayrollAdminStats(caller),
     getPaymentsForUser(caller),
     getSalesMonthTotal(caller?.id || '', month, year),
     getSalesMonthTotal(caller?.id || '', lastMonth, lastMonthYear),
@@ -43,7 +44,7 @@ export default async function PayrollPage() {
       />
 
       {isAdmin && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
@@ -52,8 +53,23 @@ export default async function PayrollPage() {
               <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
                 {formatCurrency(adminStats.totalYTD, 'BDT', 'en')}
               </p>
+              <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                <span>{t('Across')} {adminStats.employeeCount} {t('employees')}</span>
+                <DeltaBadge value={adminStats.momDeltaPct} label="run cost MoM" goodWhen="up" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
+                Monthly Run-Rate
+              </p>
+              <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+                {formatCurrency(adminStats.monthlyRunRate, 'BDT', 'en')}
+              </p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">
-                {t('Across')} {adminStats.employeeCount} {t('employees')}
+                Avg {formatCurrency(adminStats.avgPerEmployee, 'BDT', 'en')} / employee
               </p>
             </CardContent>
           </Card>
@@ -89,6 +105,9 @@ export default async function PayrollPage() {
                 </p>
                 <p className="mt-1 text-3xl font-semibold text-[var(--text-main)]">
                   {payrolls.length}
+                </p>
+                <p className="mt-1 text-xs text-[var(--text-muted)]">
+                  {adminStats.processedPct}% runs processed
                 </p>
               </div>
             </CardContent>
