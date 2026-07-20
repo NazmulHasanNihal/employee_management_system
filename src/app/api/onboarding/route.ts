@@ -4,6 +4,7 @@ import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { maskNid, validateNid, encryptNid } from '@/lib/nid';
 import { parseApiBody, nidOnboardingSchema } from '@/lib/validation';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
@@ -30,10 +31,19 @@ export async function POST(req: Request) {
       nidRaw = encryptNid(nidRaw) ?? nidRaw;
     }
 
+    if (body.password) {
+      const supabase = await createClient();
+      const { error: passErr } = await supabase.auth.updateUser({ password: String(body.password) });
+      if (passErr) {
+        return NextResponse.json({ error: passErr.message }, { status: 400 });
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: caller.id },
       data: {
         isOnboarded: true,
+        ...(body.password ? { status: 'active' } : {}),
         name: body.name ? String(body.name) : undefined,
         phone: body.phone ?? undefined,
         nid: nidRaw,

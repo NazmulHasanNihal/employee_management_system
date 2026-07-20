@@ -3,6 +3,22 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
   try {
+    const code = request.nextUrl.searchParams.get('code');
+    const tokenHash = request.nextUrl.searchParams.get('token_hash');
+    const type = request.nextUrl.searchParams.get('type');
+    
+    // Intercept Supabase Auth redirects (magic links / invites) gracefully.
+    // If the request contains auth parameters but isn't already going to the callback,
+    // forward it to the callback route so the session is securely exchanged.
+    if ((code || (tokenHash && type)) && !request.nextUrl.pathname.startsWith('/auth/callback')) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/auth/callback';
+      if (!url.searchParams.has('next')) {
+        url.searchParams.set('next', request.nextUrl.pathname === '/' ? '/' : request.nextUrl.pathname);
+      }
+      return NextResponse.redirect(url);
+    }
+
     let supabaseResponse = NextResponse.next({
       request,
     })

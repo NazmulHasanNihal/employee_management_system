@@ -105,9 +105,7 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
       // Send the real invite email via Supabase Auth. Supabase delivers the
       // email containing its own magic-link; clicking it lands at our
       // /auth/callback handler (which exchanges the token hash for a session)
-      // and then routes the new user into onboarding. If Supabase email
-      // transport is disabled/unconfigured, this fails soft — the copy-link
-      // (inviteToken) is still returned so the admin can share it manually.
+      // and then routes the new user into onboarding where they set their password.
       const origin = getSiteUrl();
       const redirectTo = `${origin}/auth/callback?next=/`;
       try {

@@ -7,7 +7,7 @@ import { useTranslation } from '@/lib/translations';
 import { useAppStore } from '@/lib/store';
 import { validateNid } from '@/lib/nid';
 
-export default function OnboardingFlow({ user }: { user: any }) {
+export default function OnboardingFlow({ user, requiresPassword }: { user: any, requiresPassword?: boolean }) {
   const router = useRouter();
   const { language } = useAppStore();
   const t = useTranslation(language);
@@ -22,6 +22,8 @@ export default function OnboardingFlow({ user }: { user: any }) {
     address: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    password: '',
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,10 @@ export default function OnboardingFlow({ user }: { user: any }) {
     if (!form.name.trim()) e.name = 'Name is required';
     if (form.phone && !/^[0-9+()\-\s]{6,}$/.test(form.phone)) e.phone = 'Invalid phone number';
     if (form.nid && !validateNid(form.nid)) e.nid = 'NID must be 10, 13, or 17 digits';
+    if (requiresPassword) {
+      if (!form.password || form.password.length < 8) e.password = 'Password must be at least 8 characters';
+      if (form.password !== form.confirmPassword) e.confirmPassword = 'Passwords do not match';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -62,6 +68,7 @@ export default function OnboardingFlow({ user }: { user: any }) {
           address: form.address || null,
           emergencyContactName: form.emergencyContactName || null,
           emergencyContactPhone: form.emergencyContactPhone || null,
+          ...(requiresPassword && form.password ? { password: form.password } : {}),
         }),
       });
       if (res.ok) {
@@ -153,6 +160,20 @@ export default function OnboardingFlow({ user }: { user: any }) {
                 </select>
               </div>
             </div>
+            {requiresPassword && (
+              <div className="grid grid-cols-2 gap-4 border-t border-[var(--border-hairline)] pt-4 mt-2">
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Set Password</label>
+                  <input type="password" value={form.password} onChange={(e) => update('password', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" />
+                  {errors.password && <p className="text-[10px] text-[var(--alert-red)]">{errors.password}</p>}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Confirm Password</label>
+                  <input type="password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" />
+                  {errors.confirmPassword && <p className="text-[10px] text-[var(--alert-red)]">{errors.confirmPassword}</p>}
+                </div>
+              </div>
+            )}
             <ButtonRow onBack={back} onNext={next} step={step} loading={loading} />
           </div>
         )}

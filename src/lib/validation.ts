@@ -143,6 +143,7 @@ export const nidOnboardingSchema = z
     emergencyContactName: z.string().max(200).optional(),
     emergencyContactPhone: z.string().max(30).optional(),
     avatarUrl: z.string().url().optional(),
+    password: z.string().min(8).optional(),
   })
   .passthrough();
 export const notifySchema = z.object({

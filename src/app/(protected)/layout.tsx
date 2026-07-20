@@ -106,7 +106,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   if (!dbUser.isOnboarded) {
     return (
       <UserProvider value={userContext}>
-        <OnboardingFlow user={layoutUser} />
+        <OnboardingFlow user={layoutUser} requiresPassword={dbUser.status === 'invited'} />
       </UserProvider>
     );
   }
