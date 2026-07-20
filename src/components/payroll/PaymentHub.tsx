@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { Wallet, TrendingUp, Smartphone, Landmark, CheckCircle2, AlertCircle, CreditCard } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -34,15 +33,18 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
   const [reference, setReference] = React.useState('');
   const [amount, setAmount] = React.useState<string>('');
 
+  // Mount the payment list as a live query (seeded with the server prop) so
+  // recording a payment refreshes the paid-status in place — no full reload.
+  const utils = trpc.useUtils();
+  const { data: paymentData } = trpc.payroll.getPayments.useQuery(undefined, { initialData: payments as any });
+  const livePayments = (paymentData as any[] | undefined) ?? payments;
+
   const amountDue = latestPayslip?.netPay ?? latestPayslip?.totalAmount ?? 0;
-  const relatedPayment = payments.find((p) => p.payrollId === latestPayslip?.id) || null;
+  const relatedPayment = livePayments.find((p) => p.payrollId === latestPayslip?.id) || null;
   const isPaid = relatedPayment?.status === 'PAID';
 
-  const router = useRouter();
-  // `latestPayslip`/`payments` are server props, so a trpc invalidate would be a
-  // no-op. Refresh the server Component to recompute the paid status + history.
   const recordPayment = trpc.payroll.recordPayment.useMutation({
-    onSuccess: () => { router.refresh(); setReference(''); setAmount(''); },
+    onSuccess: () => { utils.payroll.getPayments.invalidate(); setReference(''); setAmount(''); },
   });
 
   const payNow = () => {

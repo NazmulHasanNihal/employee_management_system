@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
 import { getFestivalBonuses } from '@/server/queries';
-import { getCaller } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
 import { getServerT, getLanguage } from '@/lib/i18n-server';
 import { FestivalBonusClient } from '@/components/payroll/FestivalBonusClient';
@@ -13,8 +13,8 @@ import { FestivalBonusClient } from '@/components/payroll/FestivalBonusClient';
 export const dynamic = 'force-dynamic';
 
 export default async function FestivalBonusPage() {
-  const caller = await getCaller();
-  const isAdmin = caller?.isAdmin ?? false;
+  const caller = await requireAdmin();
+  const isAdmin = true;
   const t = await getServerT();
   const lang = await getLanguage();
   const bonuses = await getFestivalBonuses(caller);

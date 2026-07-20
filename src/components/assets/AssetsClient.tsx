@@ -35,12 +35,14 @@ function calculateDepreciation(asset: any): { current: number | null } {
 }
 
 export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
-  const [assetsList, setAssetsList] = useState<any[]>(assets || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [newAsset, setNewAsset] = useState({ name: '', status: 'Active', userId: '', purchasePrice: 0, purchaseDate: '' });
 
   const utils = trpc.useUtils();
+  // Live list (seeded with server prop) so create/update refreshes in place.
+  const { data: assetsData } = trpc.assets.getAssets.useQuery(undefined, { initialData: assets as any });
+  const assetsList = (assetsData as any[] | undefined) ?? assets ?? [];
   const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: isAdmin });
 
   const createMutation = trpc.assets.createAsset.useMutation({

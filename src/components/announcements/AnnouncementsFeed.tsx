@@ -67,11 +67,15 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
   const [searchQuery, setSearchQuery] = useState('');
 
   const utils = trpc.useUtils();
+  // Live feed (seeded with server prop) so create/update/delete refreshes in place.
+  const { data: newsData } = trpc.news.getAll.useQuery(undefined, { initialData: news as any });
+  const liveNews = (newsData as News[] | undefined) ?? news ?? [];
+
   const createMutation = trpc.news.create.useMutation({
-    onSuccess: () => { setTitle(''); setContent(''); setPriority('Medium'); setCategory('Universal'); setTargetTeam(''); setIsPinned(false); setIsSubmitting(false); utils.invalidate('news'); },
+    onSuccess: () => { setTitle(''); setContent(''); setPriority('Medium'); setCategory('Universal'); setTargetTeam(''); setIsPinned(false); setIsSubmitting(false); utils.news.getAll.invalidate(); },
   });
-  const updateMutation = trpc.news.update.useMutation({ onSuccess: () => { setEditingId(null); utils.invalidate('news'); } });
-  const deleteMutation = trpc.news.delete.useMutation({ onSuccess: () => utils.invalidate('news') });
+  const updateMutation = trpc.news.update.useMutation({ onSuccess: () => { setEditingId(null); utils.news.getAll.invalidate(); } });
+  const deleteMutation = trpc.news.delete.useMutation({ onSuccess: () => utils.news.getAll.invalidate() });
 
   const handlePost = () => {
     if (!title || !content) return;
@@ -97,7 +101,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
     }
   };
 
-  const filtered = news.filter((ann) => {
+  const filtered = liveNews.filter((ann) => {
     if (filterPriority && ann.priority !== filterPriority) return false;
     if (filterCategory && ann.category !== filterCategory) return false;
     if (searchQuery) {

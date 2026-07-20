@@ -34,13 +34,15 @@ function getPriorityIcon(p: string) {
 }
 
 export function HelpdeskClient({ initialTickets, userId, isPrivileged }: HelpdeskClientProps) {
-  const [tickets, setTickets] = useState<any[]>(initialTickets || []);
   const [subject, setSubject] = useState('');
   const [priority, setPriority] = useState('Low');
   const [description, setDescription] = useState('');
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
 
   const utils = trpc.useUtils();
+  // Live list (seeded with server prop) so create/reply/status refreshes in place.
+  const { data: ticketsData } = trpc.helpdesk.getTickets.useQuery(undefined, { initialData: initialTickets as any });
+  const tickets = (ticketsData as any[] | undefined) ?? initialTickets ?? [];
 
   const createTicket = trpc.helpdesk.createTicket.useMutation({
     onSuccess: () => {

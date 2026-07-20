@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { toPublicAvatarUrl } from '@/lib/avatar';
 
 interface AvatarProps {
   src?: string | null;
@@ -29,10 +30,14 @@ function initials(name?: string | null) {
 }
 
 export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
-  // If the image fails to load (e.g. a blocked/403 storage URL), fall back to
+  // Normalize the source: a stored Supabase signed URL expires after ~1h and
+  // then 403s (broken avatar). Convert any signed/storage path to the
+  // permanent public URL so the image always renders.
+  const normalizedSrc = toPublicAvatarUrl(src);
+  // If the image fails to load (e.g. a genuinely missing object), fall back to
   // initials instead of showing a broken-image icon.
   const [errored, setErrored] = React.useState(false);
-  const showImage = src && !errored;
+  const showImage = normalizedSrc && !errored;
 
   return (
     <div
@@ -45,7 +50,7 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
       {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={src}
+          src={normalizedSrc}
           alt={name || 'avatar'}
           className="h-full w-full object-cover"
           onError={() => setErrored(true)}

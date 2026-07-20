@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "@/lib/toast";
 import { navCategories } from "@/components/nav-config";
+import { useUser } from "@/components/UserProvider";
 
 interface NavItem {
   label: string;
@@ -18,6 +19,13 @@ interface NavItem {
 // Flatten the nav tree into a single searchable index.
 const NAV_INDEX: NavItem[] = navCategories.flatMap((cat) => cat.items);
 
+// Same visibility rule as the sidebar (Layout.tsx): hide admin-only items from
+// non-admins and items flagged for contractors from contractors.
+function makeCanSee(isAdmin: boolean, isContractor: boolean) {
+  return (i: NavItem) =>
+    !(i.adminOnly && !isAdmin) && !(i.hideForContractor && isContractor);
+}
+
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -26,6 +34,11 @@ export default function CommandPalette() {
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
+  const { user, isAdmin } = useUser();
+  const isContractor = (user as any)?.employmentType === "Contract";
+  const canSee = makeCanSee(isAdmin, isContractor);
+  // Only surface nav items the current user is allowed to see.
+  const visibleNav = useMemo(() => NAV_INDEX.filter(canSee), [canSee]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -87,9 +100,10 @@ export default function CommandPalette() {
     }
 
     if (!q) {
-      // Default suggestions: a few popular destinations + commands.
+      // Default suggestions: a few popular destinations + commands. Only items
+      // the current user may access are shown.
       return [
-        ...NAV_INDEX.slice(0, 5).map((item) => ({
+        ...visibleNav.slice(0, 5).map((item) => ({
           icon: React.createElement(item.icon, { size: 14 }),
           label: `Go to ${item.label}`,
           action: () => router.push(item.path),
@@ -99,9 +113,9 @@ export default function CommandPalette() {
       ];
     }
 
-    // Free-text search over the nav index (label match; fallback prefix).
+    // Free-text search over the visible nav index (label match; fallback prefix).
     const lower = q.toLowerCase();
-    const matches = NAV_INDEX.filter(
+    const matches = visibleNav.filter(
       (item) => item.label.toLowerCase().includes(lower)
     ).slice(0, 8);
 
@@ -113,7 +127,7 @@ export default function CommandPalette() {
       label: `Go to ${item.label}`,
       action: () => { router.push(item.path); setOpen(false); },
     }));
-  }, [query, resolvedTheme, handleCommand, router]);
+  }, [query, resolvedTheme, handleCommand, router, visibleNav]);
 
   const handleSelect = useCallback((res: CmdResult) => {
     if (res.action) res.action();

@@ -29,9 +29,15 @@ export default function HierarchyManager({
   const [newDept, setNewDept] = useState({ name: '', budget: 100000, headId: '' });
 
   const utils = trpc.useUtils();
+  // Live data (seeded with server props) so create/delete refresh in place.
+  const { data: departmentsData } = trpc.departments.getDepartments.useQuery(undefined, { initialData: departments as any });
+  const liveDepartments = (departmentsData as Department[] | undefined) ?? departments ?? [];
+  const { data: employeesData } = trpc.registry.getAll.useQuery(undefined, { initialData: employees as any });
+  const liveEmployees = (employeesData as Employee[] | undefined) ?? employees ?? [];
+
   const createDept = trpc.departments.createDepartment.useMutation({
     onSuccess: () => {
-      utils.invalidate('departments');
+      utils.departments.getDepartments.invalidate();
       setShowCreate(false);
       setNewDept({ name: '', budget: 100000, headId: '' });
     },
@@ -88,7 +94,7 @@ export default function HierarchyManager({
                   className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
                 >
                   <option value="">Leave Unassigned...</option>
-                  {employees.map((u) => (
+                  {liveEmployees.map((u) => (
                     <option key={u.id} value={u.id}>{u.name}</option>
                   ))}
                 </select>
@@ -101,7 +107,7 @@ export default function HierarchyManager({
         </div>
       )}
 
-      {departments.length === 0 ? (
+      {liveDepartments.length === 0 ? (
         <EmptyState
           title="No operational units defined"
           description="Create your first department to organize the org structure."
@@ -109,7 +115,7 @@ export default function HierarchyManager({
         />
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {departments.map((dept) => (
+          {liveDepartments.map((dept) => (
             <div key={dept.id} className="flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
               <div className="mb-4 flex items-center gap-3 border-b border-[var(--border-hairline)] pb-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
@@ -145,7 +151,7 @@ export default function HierarchyManager({
 
       <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
         <Users className="h-4 w-4" />
-        {employees.length} employees in directory
+        {liveEmployees.length} employees in directory
       </div>
     </div>
   );

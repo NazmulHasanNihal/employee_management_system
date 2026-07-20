@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Layers, Bitcoin, Plus, Save } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
@@ -15,21 +14,24 @@ interface PayrollSettingsClientProps {
 }
 
 export function PayrollSettingsClient({ heads, structures }: PayrollSettingsClientProps) {
-  const router = useRouter();
-  // `heads`/`structures` are server props; trpc invalidation would be a no-op.
-  // Refresh the server Component so the new head/structure appears immediately.
-  const refresh = () => router.refresh();
+  const utils = trpc.useUtils();
+  // Mount heads/structures as live queries (seeded with server props) so
+  // creating a head or structure refreshes in place — no full reload.
+  const { data: headData } = trpc.payroll.getHeads.useQuery(undefined, { initialData: heads });
+  const { data: structData } = trpc.payroll.getStructures.useQuery(undefined, { initialData: structures });
+  const headList = (headData as any[] | undefined) ?? heads ?? [];
+  const structList = (structData as any[] | undefined) ?? structures ?? [];
 
   const createHeadMutation = trpc.payroll.createHead.useMutation({
     onSuccess: () => {
-      refresh();
+      utils.payroll.getHeads.invalidate();
       setNewHeadName('');
     },
   });
 
   const createStructureMutation = trpc.payroll.createStructure.useMutation({
     onSuccess: () => {
-      refresh();
+      utils.payroll.getStructures.invalidate();
       setStructureForm(false);
     },
   });
@@ -39,9 +41,6 @@ export function PayrollSettingsClient({ heads, structures }: PayrollSettingsClie
   const [structureForm, setStructureForm] = useState(false);
   const [sName, setSName] = useState('');
   const [sBase, setSBase] = useState(5000);
-
-  const headList = heads || [];
-  const structList = structures || [];
 
   const handleCreateHead = (e: React.FormEvent) => {
     e.preventDefault();

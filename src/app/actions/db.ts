@@ -509,6 +509,17 @@ export async function runQuery(
       return await prisma.payroll.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
     }
     if (path === 'payroll.getHeads') return await prisma.salaryHead.findMany();
+    if (path === 'payroll.getStructures') return await prisma.salaryStructure.findMany({ orderBy: { createdAt: 'desc' } });
+    if (path === 'payroll.getFestivalBonuses') {
+      if (isAdmin || isCEO) {
+        return await prisma.festivalBonus.findMany({ include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+      }
+      return await prisma.festivalBonus.findMany({ where: { userId }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+    }
+    if (path === 'payroll.getPayments') {
+      if (isAdmin || isCEO) return await prisma.payment.findMany({ include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
+      return await prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+    }
     if (path === 'payroll.getAdminStats') {
       const totalPayroll = await prisma.payroll.aggregate({ _sum: { totalAmount: true } });
       const employeeCount = await prisma.user.count();
@@ -525,6 +536,10 @@ export async function runQuery(
     if (path === 'expenses.getAll' || path === 'expenses.getMyExpenses') {
       if (isAdmin) return await prisma.expense.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
       return await prisma.expense.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
+    }
+    if (path === 'expenses.getPenalties') {
+      if (isAdmin) return await prisma.penalty.findMany({ include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+      return await prisma.penalty.findMany({ where: { userId }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
     }
 
     // ── ASSETS ──

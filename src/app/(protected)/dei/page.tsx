@@ -1,31 +1,17 @@
 import React from 'react';
-import { Scale, AlertCircle, CheckCircle2, TrendingDown, TrendingUp, ShieldAlert, BarChart3, Users, DollarSign } from 'lucide-react';
+import { Scale, AlertCircle, CheckCircle2, TrendingDown, TrendingUp, BarChart3, Users, DollarSign } from 'lucide-react';
 import { q } from '@/server/queries';
-import { getCaller } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/EmptyState';
 import BiasChart from './BiasChartDynamic';
 import { formatCurrency } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DEIPage() {
-  const caller = await getCaller();
-  const isAdmin = caller?.isAdmin ?? false;
-
-  if (!isAdmin) {
-    return (
-      <div className="flex h-full flex-1 items-center justify-center">
-        <EmptyState
-          title="Classified Intel"
-          description="DEI Equity Scans are restricted to HR Clearance."
-          icon={<ShieldAlert className="h-5 w-5" />}
-        />
-      </div>
-    );
-  }
+  await requireAdmin();
 
   const audit = await q.biasAudit();
   const analysisData = audit?.analysis || [];

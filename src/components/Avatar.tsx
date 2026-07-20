@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import React from 'react';
+import { toPublicAvatarUrl } from '@/lib/avatar';
 
 function initials(name?: string | null): string {
   if (!name) return '?';
@@ -25,6 +26,7 @@ export function Avatar({
 }) {
   const [errored, setErrored] = React.useState(false);
   const radius = rounded === 'full' ? 'rounded-full' : 'rounded-xl';
+  const normalizedSrc = toPublicAvatarUrl(src);
   const fallback = (
     <div
       className={`flex items-center justify-center bg-[var(--ledger-blue)]/20 border border-[var(--ledger-blue)]/30 text-[var(--ledger-blue)] font-mono font-bold ${radius} ${className}`}
@@ -35,12 +37,12 @@ export function Avatar({
     </div>
   );
 
-  if (!src || errored) return fallback;
+  if (!normalizedSrc || errored) return fallback;
 
   return (
     <div className={`relative overflow-hidden ${radius} border border-[var(--border-hairline)] ${className}`} style={{ width: size, height: size }}>
       <Image
-        src={src}
+        src={normalizedSrc}
         alt={name || 'User'}
         fill
         sizes={`${size}px`}

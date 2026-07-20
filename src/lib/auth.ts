@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
+import { redirect } from 'next/navigation';
 
 export type Role = 'Employee' | 'Manager' | 'HR Manager' | 'Admin' | 'CEO' | 'Director';
 
@@ -40,13 +41,11 @@ export const OWNER_EMAIL = process.env.OWNER_EMAIL || 'nazmulhas36@gmail.com';
  *  - `isAdmin` = role Admin OR HR Manager.
  */
 export async function getCaller(): Promise<Caller | null> {
-  // BYPASS LOGIN: Mock auth user
-  // const supabase = await createClient();
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser();
-  // if (!user) return null;
-  const user: any = { id: '451556d1-7c77-4899-b963-cf7ef17b2047', email: 'nazmulhas36@gmail.com' };
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
   // Resolve the Prisma user by email (authoritative, from the verified Supabase
   // session) first, then fall back to the Supabase auth id. Matching by email
@@ -87,6 +86,34 @@ export async function getCaller(): Promise<Caller | null> {
 }
 
 export function isManagerOrAbove(caller: Caller): boolean {
+  return caller.isAdmin || caller.isCEO || caller.role === 'Manager' || caller.role === 'Director';
+}
+
+/**
+ * Server-side authorization guard. Resolves the authenticated caller and
+ * redirects to `/` when they are not an admin, HR Manager, CEO, or the system
+ * owner. Call this at the top of any admin-only Server Component so the page
+ * (and its data) can never be server-rendered for an unauthorized user — hiding
+ * the nav link alone is not sufficient, since the URL can be visited directly.
+ *
+ * Returns the caller for convenience so callers can do:
+ *   const caller = await requireAdmin();
+ */
+export async function requireAdmin(): Promise<Caller> {
+  const caller = await getCaller();
+  if (!caller || !(caller.isAdmin || caller.isCEO)) {
+    redirect('/');
+  }
+  return caller;
+}
+
+/**
+ * True when the caller may view organization-wide employee data (the full
+ * directory, org chart, and presence grid). Admins, HR, CEO/owner and managers
+ * qualify; regular employees do not (they see only their own profile + team).
+ */
+export function canViewOrg(caller: Caller | null): boolean {
+  if (!caller) return false;
   return caller.isAdmin || caller.isCEO || caller.role === 'Manager' || caller.role === 'Director';
 }
 

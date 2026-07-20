@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getUserRoleByEmail } from "@/app/actions/admin";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,16 +10,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginType, setLoginType] = useState<'employee' | 'admin'>('employee');
   const [error, setError] = useState("");
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    setLoading(false);
     if (error) {
       let errorMessage = error.message;
       if (errorMessage === "{}" || !errorMessage) {
@@ -29,24 +29,16 @@ export default function LoginPage() {
       }
       setError(errorMessage);
     } else if (data?.user) {
-      // Authoritative role comes from the Prisma DB (set during provisioning),
-      // not from mutable user_metadata. This prevents privilege escalation via
-      // tampered auth metadata.
-      const role = await getUserRoleByEmail(email);
-      const isPrivileged = ['Admin', 'CEO', 'HR Manager'].includes(role);
-
-      if (loginType === 'admin' && !isPrivileged) {
-        await supabase.auth.signOut();
-        setError("Access denied. You do not have Administrator privileges.");
-        return;
-      }
-
-      if (loginType === 'employee' && isPrivileged) {
-        await supabase.auth.signOut();
-        setError("Please use the Administrator portal to log in.");
-        return;
-      }
-
+      // Flush the session to cookies before navigating. signInWithPassword
+      // resolves before @supabase/ssr has finished writing the auth cookie
+      // (it's an async storage write); awaiting getSession() guarantees the
+      // cookie is persisted so the server layout's getUser() sees the session
+      // on the next request instead of bouncing back to /login.
+      await supabase.auth.getSession();
+      // Authorization (role-based gating, admin-only surfaces) is enforced
+      // server-side in the protected layout, which reads the authoritative
+      // role from the Prisma DB. A full-reload navigation guarantees the new
+      // request carries the freshly-set auth cookie.
       window.location.href = "/";
     }
   };
@@ -158,8 +150,8 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
-            <button type="submit" className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm">
-              Sign in <ArrowRight size={16} />
+            <button type="submit" disabled={loading} className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-60">
+              {loading ? "Signing in…" : <>Sign in <ArrowRight size={16} /></>}
             </button>
           </form>
 
@@ -175,7 +167,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-6 text-center text-xs text-[var(--text-muted)]">
-          EMS Ledger · Enterprise Management System
+          OpsHub · Enterprise Operations Hub
         </p>
       </div>
     </div>

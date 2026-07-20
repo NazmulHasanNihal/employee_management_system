@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { CheckCircle2, Rocket, ShieldAlert } from 'lucide-react';
 import { useTranslation } from '@/lib/translations';
 import { useAppStore } from '@/lib/store';
 import { validateNid } from '@/lib/nid';
 
 export default function OnboardingFlow({ user }: { user: any }) {
+  const router = useRouter();
   const { language } = useAppStore();
   const t = useTranslation(language);
 
@@ -63,7 +65,10 @@ export default function OnboardingFlow({ user }: { user: any }) {
         }),
       });
       if (res.ok) {
-        window.location.href = '/'; // Force reload to bypass layout state
+        // Soft client navigation + server refresh (no full page reload) so the
+        // protected layout re-reads isOnboarded and lands the user in the app.
+        router.refresh();
+        router.push('/');
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Failed to complete onboarding. Please try again.');

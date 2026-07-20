@@ -27,9 +27,12 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: ExpensesClientProps) {
   const { user } = useUser();
-  const [expenses, setExpenses] = useState<any[]>(initialExpenses || []);
-  const [penalties, setPenalties] = useState<any[]>(initialPenalties || []);
   const utils = trpc.useUtils();
+  // Live lists (seeded with server props) so mutations refresh in place.
+  const { data: expensesData } = trpc.expenses.getAll.useQuery(undefined, { initialData: initialExpenses as any });
+  const expenses = (expensesData as any[] | undefined) ?? initialExpenses ?? [];
+  const { data: penaltiesData } = trpc.expenses.getPenalties.useQuery(undefined, { initialData: initialPenalties as any });
+  const penalties = (penaltiesData as any[] | undefined) ?? initialPenalties ?? [];
 
   const submitExpense = trpc.expenses.createExpense.useMutation({
     onSuccess: () => {
@@ -48,10 +51,10 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
   });
 
   const createPenalty = trpc.expenses.createPenalty.useMutation({
-    onSuccess: () => { utils.invalidate('expenses'); utils.invalidate('penalties'); setPenaltyDraft({ userId: '', amount: 0, reason: '', dueDate: '' }); },
+    onSuccess: () => { utils.expenses.getPenalties.invalidate(); setPenaltyDraft({ userId: '', amount: 0, reason: '', dueDate: '' }); },
   });
   const updatePenaltyStatus = trpc.expenses.updatePenaltyStatus.useMutation({
-    onSuccess: () => { utils.invalidate('expenses'); utils.invalidate('penalties'); },
+    onSuccess: () => { utils.expenses.getPenalties.invalidate(); },
   });
 
   const [showForm, setShowForm] = useState(false);

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Plus, Download, Gift } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
@@ -21,16 +20,19 @@ export function FestivalBonusClient({ bonuses, isAdmin }: Props) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [amount, setAmount] = useState('');
 
-  const router = useRouter();
   const utils = trpc.useUtils();
   const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: showForm });
+  // Live list (seeded with server prop) so granting refreshes in place.
+  const { data: bonusData } = trpc.payroll.getFestivalBonuses.useQuery(undefined, { initialData: bonuses });
+  const liveBonuses = (bonusData as any[] | undefined) ?? bonuses;
+
   const grant = trpc.payroll.grantFestivalBonus.useMutation({
-    onSuccess: () => { router.refresh(); setShowForm(false); setUserId(''); setAmount(''); },
+    onSuccess: () => { utils.payroll.getFestivalBonuses.invalidate(); setShowForm(false); setUserId(''); setAmount(''); },
   });
 
   const exportCsv = () => {
-    if (bonuses.length === 0) return;
-    downloadCSV('festival_bonus.csv', toFestivalBonusCsv(bonuses));
+    if (liveBonuses.length === 0) return;
+    downloadCSV('festival_bonus.csv', toFestivalBonusCsv(liveBonuses));
   };
 
   return (

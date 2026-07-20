@@ -1,34 +1,20 @@
 import React from 'react';
 import { ShieldAlert } from 'lucide-react';
 import { q } from '@/server/queries';
-import { getCaller } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { getServerT } from '@/lib/i18n-server';
 import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/EmptyState';
 
 export const dynamic = 'force-dynamic';
 
 export default async function WhistleblowerPage() {
-  const caller = await getCaller();
-  const isAdmin = caller?.isAdmin ?? false;
+  await requireAdmin();
   const t = await getServerT();
 
   const [reports, members] = await Promise.all([
-    isAdmin ? q.whistleblowerReports() : Promise.resolve([]),
+    q.whistleblowerReports(),
     q.committeeMembers(),
   ]);
-
-  if (!isAdmin) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-        <EmptyState
-          title="Access Denied"
-          description="The Whistleblower Committee workflow requires admin authorization."
-          icon={<ShieldAlert size={24} />}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">

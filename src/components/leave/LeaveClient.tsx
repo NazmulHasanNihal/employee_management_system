@@ -35,9 +35,13 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
   const [endDate, setEndDate] = useState('');
   const [reason, setReason] = useState('');
 
-  const balance = initialBalance;
-  const [requests, setRequests] = useState<any[]>(initialRequests || []);
+  // Live list (seeded with server prop) so submitting/approving refreshes in
+  // place instead of requiring navigation.
   const utils = trpc.useUtils();
+  const { data: requestsData } = trpc.leave.getRequests.useQuery(undefined, { initialData: initialRequests as any });
+  const requests = (requestsData as any[] | undefined) ?? initialRequests ?? [];
+  const { data: balanceData } = trpc.leave.getBalance.useQuery(undefined, { initialData: initialBalance as any });
+  const balance = (balanceData as any) ?? initialBalance;
 
   // Language-aware label: Bangla mode shows Bangla only (falling back to EN),
   // English mode shows English only (no Bangla appended).

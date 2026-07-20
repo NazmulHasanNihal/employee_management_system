@@ -7,9 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusPill } from '@/components/ui/status-pill';
+import { DeltaBadge } from '@/components/ui/delta-badge';
 import AttendanceTrend from '@/components/dashboard/AttendanceTrendDynamic';
 import LiveClock from '@/components/dashboard/LiveClock';
 import { LeaveBreakdownDonut, ExpenseBreakdownDonut, DepartmentBar } from '@/components/dashboard/AnalyticsCharts';
+import AttendanceMixDonutDynamic from '@/components/dashboard/AttendanceMixDonutDynamic';
+import PayrollTrendDynamic from '@/components/dashboard/PayrollTrendDynamic';
+import HeadcountTrendDynamic from '@/components/dashboard/HeadcountTrendDynamic';
+import LeaveExpenseTrendDynamic from '@/components/dashboard/LeaveExpenseTrendDynamic';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
 import { prisma } from '@/lib/prisma';
@@ -21,13 +26,20 @@ const currency = (n: number) => formatCurrency(n, 'BDT', 'en');
 export default async function HomePage() {
   const caller = await getCaller();
   const t = await getServerT();
-  const isAdmin = caller?.isAdmin ?? false;
+  const isPrivilegedCaller = caller?.isAdmin || caller?.isCEO || false;
   const [stats, myOverview, trainingCompliance, officeSetting] = await Promise.all([
     getDashboardStats(caller),
     getDashboardMyOverview(caller),
-    isAdmin ? getTrainingCompliance(caller) : Promise.resolve(null),
+    // Training Compliance is an org-wide admin metric — only computed for
+    // privileged users. For employees, stats.isPrivileged is false and the
+    // card is omitted below.
+    isPrivilegedCaller ? getTrainingCompliance(caller) : Promise.resolve(null),
     prisma.systemSetting.findUnique({ where: { key: 'officeHours' } }).catch(() => null),
   ]);
+
+  // `stats.isPrivileged` is the authoritative scope flag: true only for
+  // admin/HR/CEO/owner. Employees see only their own aggregated stats.
+  const isAdmin = stats.isPrivileged;
 
   let officeHours: { start?: string; end?: string } | null = null;
   if (officeSetting?.value) {
@@ -40,12 +52,62 @@ export default async function HomePage() {
   }
 
   const statCards = [
-    { label: t('Headcount'), value: stats.headcount, icon: Users, tone: 'text-[var(--brand)] bg-[var(--brand-soft)]' },
-    { label: t('Attendance Rate'), value: `${stats.attendanceRate}%`, icon: Clock, tone: 'text-[var(--emerald)] bg-[var(--emerald-soft)]' },
-    { label: t('Pending Leaves'), value: stats.pendingLeaves, icon: CalendarClock, tone: 'text-[var(--amber)] bg-[var(--amber-soft)]' },
-    { label: t('Open Tickets'), value: stats.openTickets, icon: Ticket, tone: 'text-[var(--rose)] bg-[var(--rose-soft)]' },
-    { label: t('Total Payroll'), value: currency(stats.totalPayroll), icon: DollarSign, tone: 'text-[var(--sky)] bg-[var(--sky-soft)]' },
-    { label: t('Total Expenses'), value: currency(stats.totalExpenses), icon: Receipt, tone: 'text-[var(--brand)] bg-[var(--brand-soft)]' },
+    ...(isAdmin
+      ? [{
+          label: t('Headcount'),
+          value: stats.headcount,
+          icon: Users,
+          tone: 'text-[var(--brand)] bg-[var(--brand-soft)]',
+          delta: stats.headcountGrowthPct,
+          deltaLabel: 'vs prior 30d',
+          goodWhen: 'up' as const,
+        }]
+      : []),
+    {
+      label: t('Attendance Rate'),
+      value: `${stats.attendanceRate}%`,
+      icon: Clock,
+      tone: 'text-[var(--emerald)] bg-[var(--emerald-soft)]',
+      delta: stats.attendanceDelta,
+      deltaLabel: 'vs prior 7d',
+      goodWhen: 'up' as const,
+    },
+    {
+      label: t('Pending Leaves'),
+      value: stats.pendingLeaves,
+      icon: CalendarClock,
+      tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
+      delta: -stats.leaveDeltaPct,
+      deltaLabel: 'leave vol. MoM',
+      goodWhen: 'down' as const,
+    },
+    {
+      label: t('Open Tickets'),
+      value: stats.openTickets,
+      icon: Ticket,
+      tone: 'text-[var(--rose)] bg-[var(--rose-soft)]',
+      delta: undefined,
+      deltaLabel: undefined,
+      goodWhen: 'down' as const,
+    },
+    {
+      label: isAdmin ? t('Payroll (Me)') : t('My Payroll'),
+      value: currency(stats.totalPayroll),
+      icon: DollarSign,
+      tone: 'text-[var(--sky)] bg-[var(--sky-soft)]',
+      delta: stats.payrollDeltaPct,
+      deltaLabel: 'run-rate MoM',
+      goodWhen: 'up' as const,
+    },
+    {
+      label: t('My Expenses'),
+      value: currency(stats.totalExpenses),
+      icon: Receipt,
+      tone: 'text-[var(--brand)] bg-[var(--brand-soft)]',
+      delta: stats.expenseDeltaPct,
+      deltaLabel: 'spend MoM',
+      goodWhen: 'down' as const,
+    },
   ];
 
   if (trainingCompliance) {
@@ -54,6 +116,9 @@ export default async function HomePage() {
       value: `${trainingCompliance.pct}%`,
       icon: GraduationCap,
       tone: 'text-[var(--violet, var(--brand))] bg-[var(--brand-soft)]',
+      delta: undefined,
+      deltaLabel: undefined,
+      goodWhen: 'up' as const,
     });
   }
 
@@ -72,7 +137,15 @@ export default async function HomePage() {
               <s.icon className="h-4 w-4" />
             </div>
             <p className="text-2xl font-semibold text-[var(--text-main)]">{s.value}</p>
-            <p className="mt-1 text-xs text-[var(--text-muted)]">{s.label}</p>
+            <div className="mt-1 flex items-center gap-2">
+              <p className="text-xs text-[var(--text-muted)]">{s.label}</p>
+              {typeof s.delta === 'number' && (
+                <DeltaBadge value={s.delta} goodWhen={s.goodWhen} />
+              )}
+            </div>
+            {s.deltaLabel && (
+              <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{s.deltaLabel}</p>
+            )}
           </Card>
         ))}
       </div>
@@ -122,6 +195,49 @@ export default async function HomePage() {
           <LeaveBreakdownDonut data={stats.leaveBreakdown} />
           <ExpenseBreakdownDonut data={stats.expenseBreakdown} />
         </div>
+      )}
+
+      {/* Admin analytics: trends + status mix */}
+      {isAdmin && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <AttendanceMixDonutDynamic data={stats.attendanceMix} />
+          <PayrollTrendDynamic data={stats.trendSeries.map((d) => ({ month: d.month, payroll: d.payroll }))} />
+          <HeadcountTrendDynamic data={stats.trendSeries.map((d) => ({ month: d.month, headcount: d.headcount }))} />
+        </div>
+      )}
+
+      {/* Admin analytics: month-over-month leave & expense movement + KPI strip */}
+      {isAdmin && (
+        <>
+          <LeaveExpenseTrendDynamic
+            leave={[
+              { period: 'Last Mo', value: stats.leaveLastMonth },
+              { period: 'This Mo', value: stats.leaveThisMonth },
+            ]}
+            expense={[
+              { period: 'Last Mo', value: stats.expenseLastMonth },
+              { period: 'This Mo', value: stats.expenseThisMonth },
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.payrollRunRate)}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Monthly Payroll Run-Rate</p>
+            </Card>
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.payrollYTD)}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Payroll YTD</p>
+            </Card>
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--text-main)]">{stats.leaveApprovalRate}%</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Leave Approval Rate (Mo)</p>
+            </Card>
+            <Card className="animate-fade-up">
+              <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.pendingExpenseAmount)}</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">Pending Expenses</p>
+            </Card>
+          </div>
+        </>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -208,6 +324,10 @@ export default async function HomePage() {
                   <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                     <p className="text-xl font-semibold text-[var(--text-main)]">{myOverview.myInProgressTasks}</p>
                     <p className="text-xs text-[var(--text-muted)]">In Progress</p>
+                  </div>
+                  <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
+                    <p className="text-xl font-semibold text-[var(--text-main)]">{stats.taskCompletionRate}%</p>
+                    <p className="text-xs text-[var(--text-muted)]">Task Completion</p>
                   </div>
                 </div>
 

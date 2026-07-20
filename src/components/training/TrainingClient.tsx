@@ -15,8 +15,11 @@ interface Props {
 
 export function TrainingClient({ catalog, compliance, isAdmin }: Props) {
   const utils = trpc.useUtils();
-  const enroll = trpc.training.enroll.useMutation({ onSuccess: () => utils.invalidate('training') });
-  const updateProgress = trpc.training.updateProgress.useMutation({ onSuccess: () => utils.invalidate('training') });
+  // Live catalog (seeded with server prop) so enroll/progress refreshes in place.
+  const { data: catalogData } = trpc.training.catalog.useQuery(undefined, { initialData: catalog as any });
+  const liveCatalog = (catalogData as any[] | undefined) ?? catalog ?? [];
+  const enroll = trpc.training.enroll.useMutation({ onSuccess: () => utils.training.catalog.invalidate() });
+  const updateProgress = trpc.training.updateProgress.useMutation({ onSuccess: () => utils.training.catalog.invalidate() });
 
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -67,7 +70,7 @@ export function TrainingClient({ catalog, compliance, isAdmin }: Props) {
       <div>
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">Course Catalog</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {catalog.map((course: any) => {
+          {liveCatalog.map((course: any) => {
             const enrollment = course.enrollment;
             return (
               <Card key={course.id} className="flex flex-col">

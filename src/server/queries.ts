@@ -24,12 +24,39 @@ export type { Caller };
 // DASHBOARD
 // ───────────────────────────────────────────────────────────────────────────
 
-async function computeDashboardStats(caller: Caller | null, selectedBranch: string | null) {
-  // Branch scope: admins/CEOs see the selected branch (or all); everyone else
-  // is locked to their own branch.
-  const branchScope: string | null | undefined = selectedBranch ?? caller?.branchId ?? null;
-  const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
-  const branchWhere = branchScope ? { branchId: branchScope } : {};
+/**
+ * Pure date-range helper for "this period vs last period" analytics.
+ * `monthsBack: 0` → current calendar month; `1` → previous calendar month;
+ * `2` → two months ago. Returns inclusive start and exclusive end bounds.
+ */
+function monthBounds(monthsBack: number): { start: Date; end: Date } {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() - monthsBack;
+  const start = new Date(year, month, 1, 0, 0, 0, 0);
+  const end = new Date(year, month + 1, 1, 0, 0, 0, 0);
+  return { start, end };
+}
+
+/** Percentage change from `prev` to `curr`, rounded. Returns 0 when prev is 0. */
+function pctChange(curr: number, prev: number): number {
+  if (prev === 0) return curr === 0 ? 0 : 100;
+  return Math.round(((curr - prev) / prev) * 100);
+}
+
+async function computeDashboardStats(caller: Caller | null, selectedBranch: string | null, isPrivileged: boolean) {
+  const userId = caller?.id;
+  // Privileged users (admin/HR/CEO/owner) see their branch (or the whole org
+  // when no branch is selected). Everyone else is locked to THEIR OWN records
+  // only — employees must never see org-wide headcount, payroll, or expense
+  // totals. Scoping to `userId` makes every aggregate resolve to one person.
+  const branchScope: string | null | undefined = isPrivileged ? (selectedBranch ?? caller?.branchId ?? null) : null;
+  const userBranch = isPrivileged
+    ? (branchScope ? { user: { branchId: branchScope } } : {})
+    : (userId ? { userId } : {});
+  const branchWhere = isPrivileged
+    ? (branchScope ? { branchId: branchScope } : {})
+    : (userId ? { id: userId } : {});
 
   const headcount = await prisma.user.count({ where: branchWhere });
   const pendingLeaves = await prisma.leaveRequest.count({ where: { status: 'Pending', ...userBranch } });
@@ -58,19 +85,25 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   allUsers.forEach((u) => { const d = u.department || 'Unassigned'; deptMap[d] = (deptMap[d] || 0) + 1; });
   const departmentBreakdown = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
 
-  const allLeaves = await prisma.leaveRequest.findMany({ select: { type: true } });
+  const allLeaves = await prisma.leaveRequest.findMany({
+    where: isPrivileged ? {} : { userId },
+    select: { type: true },
+  });
   const leaveTypeMap: Record<string, number> = {};
   allLeaves.forEach((l) => { leaveTypeMap[l.type] = (leaveTypeMap[l.type] || 0) + 1; });
   const leaveBreakdown = Object.entries(leaveTypeMap).map(([type, count]) => ({ type, count }));
 
-  const totalTasks = await prisma.teamTask.count();
-  const doneTasks = await prisma.teamTask.count({ where: { status: 'Done' } });
-  const inProgressTasks = await prisma.teamTask.count({ where: { status: 'InProgress' } });
-  const blockedTasks = await prisma.teamTask.count({ where: { status: 'Blocked' } });
+  const totalTasks = isPrivileged ? await prisma.teamTask.count() : await prisma.teamTask.count({ where: { assigneeId: userId } });
+  const doneTasks = isPrivileged ? await prisma.teamTask.count({ where: { status: 'Done' } }) : await prisma.teamTask.count({ where: { assigneeId: userId, status: 'Done' } });
+  const inProgressTasks = isPrivileged ? await prisma.teamTask.count({ where: { status: 'InProgress' } }) : await prisma.teamTask.count({ where: { assigneeId: userId, status: 'InProgress' } });
+  const blockedTasks = isPrivileged ? await prisma.teamTask.count({ where: { status: 'Blocked' } }) : 0;
 
   const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const recentHires = await prisma.user.findMany({
-    where: { createdAt: { gte: thirtyDaysAgo }, ...branchWhere }, orderBy: { createdAt: 'desc' }, take: 5,
+    where: isPrivileged
+      ? { createdAt: { gte: thirtyDaysAgo }, ...branchWhere }
+      : { id: userId },
+    orderBy: { createdAt: 'desc' }, take: 5,
     select: { name: true, department: true, designation: true, createdAt: true },
   });
 
@@ -93,6 +126,85 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   const presentToday = await prisma.attendance.count({ where: { date: { gte: today }, ...userBranch } });
   const attendanceRate = headcount > 0 ? Math.round((presentToday / headcount) * 100) : 0;
 
+  // ── Derived analytics (period comparisons, run-rate, trends) ──────────────
+  // All aggregations reuse the same `userBranch`/`branchWhere` scoping above
+  // so employees never see org-wide figures.
+
+  // Attendance delta: current 7-day present rate vs the prior 7-day window.
+  const curStart = new Date(); curStart.setDate(curStart.getDate() - 6); curStart.setHours(0, 0, 0, 0);
+  const curEnd = new Date(); curEnd.setHours(0, 0, 0, 0); curEnd.setDate(curEnd.getDate() + 1);
+  const prevStart = new Date(); prevStart.setDate(prevStart.getDate() - 13); prevStart.setHours(0, 0, 0, 0);
+  const prevEnd = new Date(curStart);
+  const curPresent = await prisma.attendance.count({ where: { date: { gte: curStart, lt: curEnd }, ...userBranch } });
+  const prevPresent = await prisma.attendance.count({ where: { date: { gte: prevStart, lt: prevEnd }, ...userBranch } });
+  const curRate = headcount > 0 ? (curPresent / (headcount * 7)) * 100 : 0;
+  const prevRate = headcount > 0 ? (prevPresent / (headcount * 7)) * 100 : 0;
+  const attendanceDelta = Math.round(curRate - prevRate);
+
+  // Attendance status mix over the last 7 days (for a donut).
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7); weekAgo.setHours(0, 0, 0, 0);
+  const attendanceRows = await prisma.attendance.findMany({
+    where: { date: { gte: weekAgo }, ...userBranch },
+    select: { status: true },
+  });
+  const statusMap: Record<string, number> = {};
+  attendanceRows.forEach((a) => { statusMap[a.status] = (statusMap[a.status] || 0) + 1; });
+  const attendanceMix = Object.entries(statusMap).map(([status, count]) => ({ status, count }));
+
+  // Headcount growth: hires in last 30d vs the prior 30d window.
+  const d30 = new Date(); d30.setDate(d30.getDate() - 30);
+  const d60 = new Date(); d60.setDate(d60.getDate() - 60);
+  const newHires30d = await prisma.user.count({ where: { ...branchWhere, createdAt: { gte: d30 } } });
+  const priorHires30d = await prisma.user.count({ where: { ...branchWhere, createdAt: { gte: d60, lt: d30 } } });
+  const headcountGrowthPct = pctChange(newHires30d, priorHires30d);
+
+  // Payroll: YTD total, last-3-month total, prior-3-month total, run-rate.
+  const ytdStart = new Date(new Date().getFullYear(), 0, 1);
+  const payrollYTDResult = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: ytdStart } }, _sum: { totalAmount: true } });
+  const payrollYTD = payrollYTDResult._sum.totalAmount || 0;
+  const { start: lmStart, end: lmEnd } = monthBounds(1);
+  const { start: lm2Start, end: lm2End } = monthBounds(2);
+  const { start: lm3Start, end: lm3End } = monthBounds(3);
+  const last3Agg = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: lm3Start, lt: lmEnd } }, _sum: { totalAmount: true } });
+  const prior3Agg = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: lm3End, lt: lm2End } }, _sum: { totalAmount: true } });
+  const last3Total = last3Agg._sum.totalAmount || 0;
+  const prior3Total = prior3Agg._sum.totalAmount || 0;
+  const payrollRunRate = Math.round(last3Total / 3);
+  const payrollDeltaPct = pctChange(last3Total, prior3Total);
+
+  // Leave: approval rate this month vs last month.
+  const { start: cmStart, end: cmEnd } = monthBounds(0);
+  const thisMonthApproved = await prisma.leaveRequest.count({ where: { ...userBranch, status: 'Approved', createdAt: { gte: cmStart, lt: cmEnd } } });
+  const thisMonthTotal = await prisma.leaveRequest.count({ where: { ...userBranch, createdAt: { gte: cmStart, lt: cmEnd } } });
+  const lastMonthApproved = await prisma.leaveRequest.count({ where: { ...userBranch, status: 'Approved', createdAt: { gte: lmStart, lt: lmEnd } } });
+  const lastMonthTotal = await prisma.leaveRequest.count({ where: { ...userBranch, createdAt: { gte: lmStart, lt: lmEnd } } });
+  const leaveApprovalRate = thisMonthTotal > 0 ? Math.round((thisMonthApproved / thisMonthTotal) * 100) : 0;
+  const leaveDeltaPct = pctChange(thisMonthTotal, lastMonthTotal);
+  const leaveThisMonth = thisMonthTotal;
+  const leaveLastMonth = lastMonthTotal;
+
+  // Expense: this month vs last month + pending amount.
+  const expenseThisMonthAgg = await prisma.expense.aggregate({ where: { ...userBranch, createdAt: { gte: cmStart, lt: cmEnd } }, _sum: { amount: true } });
+  const expenseLastMonthAgg = await prisma.expense.aggregate({ where: { ...userBranch, createdAt: { gte: lmStart, lt: lmEnd } }, _sum: { amount: true } });
+  const pendingExpenseAgg = await prisma.expense.aggregate({ where: { ...userBranch, status: 'PENDING' }, _sum: { amount: true } });
+  const expenseThisMonth = expenseThisMonthAgg._sum.amount || 0;
+  const expenseLastMonth = expenseLastMonthAgg._sum.amount || 0;
+  const pendingExpenseAmount = pendingExpenseAgg._sum.amount || 0;
+  const expenseDeltaPct = pctChange(expenseThisMonth, expenseLastMonth);
+
+  // Task completion rate.
+  const taskCompletionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  // 12-month headcount + payroll series (oldest → newest) for trend charts.
+  const trendSeries: { month: string; headcount: number; payroll: number }[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const { start, end } = monthBounds(i);
+    const monthLabel = start.toLocaleDateString('en', { month: 'short', year: '2-digit' });
+    const hc = await prisma.user.count({ where: { ...branchWhere, createdAt: { lt: end } } });
+    const prAgg = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: start, lt: end } }, _sum: { totalAmount: true } });
+    trendSeries.push({ month: monthLabel, headcount: hc, payroll: Math.round(prAgg._sum.totalAmount || 0) });
+  }
+
   return {
     headcount, attendanceRate, pendingLeaves, approvedLeaves, rejectedLeaves,
     totalPayroll: totalPayrollResult._sum.totalAmount || 0,
@@ -100,13 +212,23 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
     pendingExpenses, openTickets, attendanceTrend, departmentBreakdown,
     leaveBreakdown, expenseBreakdown, totalTasks, doneTasks, inProgressTasks,
     blockedTasks, recentHires, upcomingEvents, recentNews,
+    isPrivileged,
+    // Derived analytics
+    attendanceDelta, attendanceMix,
+    newHires30d, headcountGrowthPct,
+    payrollYTD, payrollRunRate, payrollDeltaPct,
+    leaveApprovalRate, leaveDeltaPct, leaveThisMonth, leaveLastMonth,
+    expenseThisMonth, expenseLastMonth, expenseDeltaPct, pendingExpenseAmount,
+    taskCompletionRate,
+    trendSeries,
   };
 }
 
 // Cached wrapper: the dashboard runs ~20 DB queries, so we memoize the result
 // for 60s per scope (branch + admin/CEO flag) to cut DB load and TTFB.
 const cachedDashboardStats = unstable_cache(
-  (caller: Caller | null, selectedBranch: string | null) => computeDashboardStats(caller, selectedBranch),
+  (caller: Caller | null, selectedBranch: string | null, isPrivileged: boolean) =>
+    computeDashboardStats(caller, selectedBranch, isPrivileged),
   ['dashboard-stats'],
   { revalidate: 60, tags: ['dashboard'] }
 );
@@ -114,8 +236,9 @@ const cachedDashboardStats = unstable_cache(
 export async function getDashboardStats(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
-  const selectedBranch = isAdmin || isCEO ? await getSelectedBranchId() : null;
-  return cachedDashboardStats(caller, selectedBranch);
+  const isPrivileged = isAdmin || isCEO;
+  const selectedBranch = isPrivileged ? await getSelectedBranchId() : null;
+  return cachedDashboardStats(caller, selectedBranch, isPrivileged);
 }
 
 export async function getDashboardMyOverview(caller: Caller | null) {
@@ -183,6 +306,35 @@ export const getOrgTree = unstable_cache(
   ['org-tree'],
   { revalidate: 120, tags: ['org-tree'] }
 );
+
+/**
+ * Scope-limited employee list for the directory / presence surfaces.
+ *
+ * Authorization: only admins, HR, CEO/owner and managers may see the org-wide
+ * roster. Everyone else (regular employees) sees only themselves plus their own
+ * direct reports (so a lead can see their team). This prevents a regular
+ * employee from enumerating the entire workforce via the Employee Directory,
+ * Org Chart, or presence grid.
+ */
+export async function getEmployeesScoped(caller: Caller | null) {
+  if (!caller) return [];
+  const privileged =
+    caller.isAdmin || caller.isCEO || caller.role === 'Manager' || caller.role === 'Director';
+  if (privileged) {
+    return prisma.user.findMany({ include: { manager: true }, orderBy: { name: 'asc' } });
+  }
+  // Non-privileged: self + direct reports only.
+  const reports = await prisma.user.findMany({
+    where: { managerId: caller.id },
+    include: { manager: true },
+    orderBy: { name: 'asc' },
+  });
+  const self = await prisma.user.findUnique({
+    where: { id: caller.id },
+    include: { manager: true },
+  });
+  return self ? [self, ...reports] : reports;
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // TEAM
@@ -1022,6 +1174,29 @@ export async function getActivePresence() {
   const since = new Date(Date.now() - 5 * 60 * 1000);
   return prisma.user.findMany({
     where: { lastSeen: { gte: since }, status: 'active' },
+    select: { id: true, name: true, lastSeen: true, avatarUrl: true, department: true },
+  });
+}
+
+/**
+ * Scope-limited live presence for the presence grid. Admins/HR/CEO/owners and
+ * managers see org-wide presence; regular employees see only themselves and
+ * their direct reports.
+ */
+export async function getActivePresenceScoped(caller: Caller | null) {
+  const since = new Date(Date.now() - 5 * 60 * 1000);
+  const privileged =
+    !!caller && (caller.isAdmin || caller.isCEO || caller.role === 'Manager' || caller.role === 'Director');
+  if (privileged) {
+    return getActivePresence();
+  }
+  if (!caller) return [];
+  const ids = [caller.id, ...(await prisma.user.findMany({
+    where: { managerId: caller.id },
+    select: { id: true },
+  })).map((u) => u.id)];
+  return prisma.user.findMany({
+    where: { id: { in: ids }, lastSeen: { gte: since }, status: 'active' },
     select: { id: true, name: true, lastSeen: true, avatarUrl: true, department: true },
   });
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import { Plus, X, Check, Trash2, ListTodo } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Avatar } from '@/components/ui/avatar';
@@ -57,34 +56,33 @@ export default function TeamTasksBoard({
   const [assigneeId, setAssigneeId] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  const router = useRouter();
-
-  // The board's data arrives as a server prop (not a mounted trpc query), so
-  // `utils.invalidate` would be a no-op and the list would stay stale after a
-  // mutation. Refresh the server Component instead to pull fresh data.
-  const refresh = () => router.refresh();
+  // Mount the task list as a live query (seeded with the server prop) so
+  // mutations can refresh it in place via utils.invalidate — no full reload.
+  const utils = trpc.useUtils();
+  const { data: taskData } = trpc.team.getTeamTasks.useQuery(undefined, { initialData: tasks as any });
+  const liveTasks = (taskData as Task[] | undefined) ?? tasks;
 
   const createMutation = trpc.team.createTask.useMutation({
     onSuccess: () => {
       setShowCreate(false);
       setTitle(''); setDescription(''); setPriority('Medium'); setAssigneeId(''); setDueDate('');
-      refresh();
+      utils.team.getTeamTasks.invalidate();
     },
   });
   const updateStatusMutation = trpc.team.updateTaskStatus.useMutation({
-    onSuccess: () => refresh(),
+    onSuccess: () => utils.team.getTeamTasks.invalidate(),
   });
   const deleteMutation = trpc.team.deleteTask.useMutation({
-    onSuccess: () => refresh(),
+    onSuccess: () => utils.team.getTeamTasks.invalidate(),
   });
 
   const tasksByStatus = useMemo(() => {
     const grouped: Record<TaskStatus, Task[]> = { ToDo: [], InProgress: [], Done: [], Blocked: [] };
-    tasks.forEach((t) => {
+    liveTasks.forEach((t) => {
       if (grouped[t.status as TaskStatus]) grouped[t.status as TaskStatus].push(t);
     });
     return grouped;
-  }, [tasks]);
+  }, [liveTasks]);
 
   const handleCreate = () => {
     if (!title || !assigneeId) return;
@@ -97,7 +95,7 @@ export default function TeamTasksBoard({
     });
   };
 
-  if (tasks.length === 0 && !isManager) {
+  if (liveTasks.length === 0 && !isManager) {
     return (
       <EmptyState
         title="No tasks yet"

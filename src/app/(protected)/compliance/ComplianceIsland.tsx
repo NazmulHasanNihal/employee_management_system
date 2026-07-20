@@ -24,6 +24,14 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
   const [reportSubmitted, setReportSubmitted] = useState(false);
 
   const utils = trpc.useUtils();
+  // Live lists (seeded with server props) so actions refresh in place.
+  const { data: myCertsData } = trpc.compliance.getMyCertifications.useQuery(undefined, { initialData: initialMyCerts as any });
+  const myCerts = (myCertsData as any[] | undefined) ?? initialMyCerts ?? [];
+  const { data: expiringData } = trpc.compliance.getExpiringCertifications.useQuery(undefined, { initialData: initialExpiringCerts as any });
+  const expiringCerts = (expiringData as any[] | undefined) ?? initialExpiringCerts ?? [];
+  const { data: wbData } = trpc.compliance.getWhistleblowerReports.useQuery(undefined, { initialData: initialWhistleblower as any, enabled: isAdmin });
+  const whistleblower = (wbData as any[] | undefined) ?? initialWhistleblower ?? [];
+
   const addCert = trpc.compliance.addCertification.useMutation({
     onSuccess: () => {
       utils.compliance.getMyCertifications.invalidate();
@@ -32,6 +40,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
   });
   const submitReport = trpc.compliance.submitWhistleblower.useMutation({
     onSuccess: () => {
+      utils.compliance.getWhistleblowerReports.invalidate();
       setReportText('');
       setReportSubmitted(true);
       setTimeout(() => setReportSubmitted(false), 4000);
@@ -74,13 +83,13 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                   </Button>
                 </form>
 
-                {(!initialMyCerts || initialMyCerts.length === 0) ? (
+                {(!myCerts || myCerts.length === 0) ? (
                   <div className="rounded-xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)]/50 p-8 text-center text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
                     No active certifications.
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {initialMyCerts.map((cert: any) => {
+                    {myCerts.map((cert: any) => {
                       const daysLeft = Math.ceil((new Date(cert.expiryDate).getTime() - Date.now()) / (1000 * 3600 * 24));
                       const isExpiring = daysLeft <= 30;
                       return (
@@ -109,14 +118,14 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
 
               <Card className="border-[var(--rose)]/30">
                 <CardContent>
-                  {(!initialExpiringCerts || initialExpiringCerts.length === 0) ? (
+                  {(!expiringCerts || expiringCerts.length === 0) ? (
                     <div className="flex flex-col items-center justify-center py-12 text-[10px] uppercase tracking-wide text-[var(--emerald)]">
                       <CheckCircle size={32} className="mb-3 opacity-50" />
                       All Personnel Fully Compliant.
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {initialExpiringCerts.map((cert: any) => (
+                      {expiringCerts.map((cert: any) => (
                         <div key={cert.id} className="flex items-center justify-between gap-4 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-4">
                           <div className="flex-1">
                             <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
@@ -187,10 +196,10 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
             </CardContent>
           </Card>
 
-          {isAdmin && initialWhistleblower.length > 0 && (
+          {isAdmin && whistleblower.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-[var(--text-main)]">Received Reports</h3>
-              {initialWhistleblower.map((r: any) => (
+              {whistleblower.map((r: any) => (
                 <div key={r.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                   <p className="text-sm text-[var(--text-main)]">{r.report}</p>
                   <p className="mt-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{new Date(r.createdAt).toLocaleDateString()} — {r.status}</p>

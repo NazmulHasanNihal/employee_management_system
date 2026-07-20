@@ -1,11 +1,11 @@
 {
-  "name": "EMS Ledger",
-  "short_name": "EMS",
-  "description": "Enterprise Management System with immutable ledger.",
+  "name": "OpsHub — Enterprise Operations Hub",
+  "short_name": "OpsHub",
+  "description": "HR, payroll, attendance and team management for modern teams.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#00ff00",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
   "icons": [
     {
       "src": "/icon-192.png",

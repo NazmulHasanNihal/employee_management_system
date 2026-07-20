@@ -24,13 +24,14 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
   const [jobType, setJobType] = useState('Full-Time');
   const [jobSkills, setJobSkills] = useState('');
 
-  const [localJobs, setLocalJobs] = useState<any[]>(initialJobs || []);
-
-  React.useEffect(() => {
-    setLocalJobs(initialJobs || []);
-  }, [initialJobs]);
-
   const utils = trpc.useUtils();
+  // Live jobs (seeded with server prop) so create/candidate-status refreshes in place.
+  const { data: jobsData } = trpc.recruitment.getJobs.useQuery(undefined, { initialData: initialJobs as any });
+  const liveJobs = (jobsData as any[] | undefined) ?? initialJobs ?? [];
+  // Local mirror for optimistic drag-and-drop; re-syncs from the live query.
+  const [jobsState, setJobsState] = React.useState<any[]>(liveJobs);
+  React.useEffect(() => { setJobsState(liveJobs); }, [liveJobs]);
+
   const createJob = trpc.recruitment.createJob.useMutation({
     onSuccess: () => {
       utils.recruitment.getJobs.invalidate();
@@ -41,7 +42,6 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
   });
   const updateCandidateStatus = trpc.recruitment.updateCandidateStatus.useMutation({
     onSuccess: () => utils.recruitment.getJobs.invalidate(),
-    onError: () => setLocalJobs(initialJobs || []),
   });
 
   const handleDragStart = (e: React.DragEvent, candidateId: string, jobId: string) => {
@@ -55,7 +55,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
     const sourceJobId = e.dataTransfer.getData('jobId');
     if (sourceJobId !== jobId || !candidateId) return;
 
-    setLocalJobs((prev) => prev.map((job) => {
+    setJobsState((prev) => prev.map((job) => {
       if (job.id === jobId) {
         return {
           ...job,
@@ -83,7 +83,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
     });
   };
 
-  const jobList = localJobs || [];
+  const jobList = jobsState || [];
 
   return (
     <div className="space-y-8">

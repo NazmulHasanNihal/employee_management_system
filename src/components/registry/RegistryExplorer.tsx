@@ -49,21 +49,25 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
   const [provisionStatus, setProvisionStatus] = useState({ loading: false, error: null as string | null, success: false, inviteToken: null as string | null });
   const [deleteStatus, setDeleteStatus] = useState<{ loading: boolean; error: string | null }>({ loading: false, error: null });
 
-  // Manager options for the richer provision form.
-  const managerOptions = employees.filter((e) => e.role === 'Manager' || e.role === 'Admin' || e.role === 'HR Manager');
-
   const utils = trpc.useUtils();
+  // Live directory (seeded with server prop) so permission/delete refreshes in place.
+  const { data: employeesData } = trpc.registry.getAll.useQuery(undefined, { initialData: employees as any });
+  const liveEmployees = (employeesData as Employee[] | undefined) ?? employees ?? [];
+
+  // Manager options for the richer provision form.
+  const managerOptions = liveEmployees.filter((e) => e.role === 'Manager' || e.role === 'Admin' || e.role === 'HR Manager');
+
   const updatePermsMutation = trpc.registry.updatePermissions.useMutation({
-    onSuccess: () => utils.invalidate('registry'),
+    onSuccess: () => utils.registry.getAll.invalidate(),
   });
   const deleteMutation = trpc.registry.deleteEmployee.useMutation({
     onSuccess: () => {
-      utils.invalidate('registry');
+      utils.registry.getAll.invalidate();
       setDeleteStatus({ loading: false, error: null });
     },
   });
 
-  const list = employees;
+  const list = liveEmployees;
 
   const handleDelete = async (targetId: string) => {
     if (!confirm('Are you sure you want to completely terminate this personnel record?')) return;

@@ -1,30 +1,16 @@
 import React from 'react';
-import { Target, ShieldAlert, Briefcase } from 'lucide-react';
+import { Target, Briefcase } from 'lucide-react';
 import { q } from '@/server/queries';
-import { getCaller } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth';
 import { getServerT } from '@/lib/i18n-server';
 import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/EmptyState';
 import RecruitmentIsland from './RecruitmentIsland';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RecruitmentPage() {
-  const caller = await getCaller();
-  const isAdmin = caller?.isAdmin ?? false;
+  await requireAdmin();
   const t = await getServerT();
-
-  if (!isAdmin) {
-    return (
-      <div className="flex h-full flex-1 items-center justify-center">
-        <EmptyState
-          title={t('Access Denied')}
-          description={t('ATS Systems require HR Authorization Clearance.')}
-          icon={<ShieldAlert className="h-5 w-5" />}
-        />
-      </div>
-    );
-  }
 
   const jobs = await q.jobs();
 
