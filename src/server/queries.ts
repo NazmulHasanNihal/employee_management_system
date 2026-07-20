@@ -163,7 +163,7 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   const payrollYTDResult = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: ytdStart } }, _sum: { totalAmount: true } });
   const payrollYTD = payrollYTDResult._sum.totalAmount || 0;
   const { start: lmStart, end: lmEnd } = monthBounds(1);
-  const { start: lm2Start, end: lm2End } = monthBounds(2);
+  const { end: lm2End } = monthBounds(2);
   const { start: lm3Start, end: lm3End } = monthBounds(3);
   const last3Agg = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: lm3Start, lt: lmEnd } }, _sum: { totalAmount: true } });
   const prior3Agg = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: lm3End, lt: lm2End } }, _sum: { totalAmount: true } });
@@ -176,7 +176,6 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   const { start: cmStart, end: cmEnd } = monthBounds(0);
   const thisMonthApproved = await prisma.leaveRequest.count({ where: { ...userBranch, status: 'Approved', createdAt: { gte: cmStart, lt: cmEnd } } });
   const thisMonthTotal = await prisma.leaveRequest.count({ where: { ...userBranch, createdAt: { gte: cmStart, lt: cmEnd } } });
-  const lastMonthApproved = await prisma.leaveRequest.count({ where: { ...userBranch, status: 'Approved', createdAt: { gte: lmStart, lt: lmEnd } } });
   const lastMonthTotal = await prisma.leaveRequest.count({ where: { ...userBranch, createdAt: { gte: lmStart, lt: lmEnd } } });
   const leaveApprovalRate = thisMonthTotal > 0 ? Math.round((thisMonthApproved / thisMonthTotal) * 100) : 0;
   const leaveDeltaPct = pctChange(thisMonthTotal, lastMonthTotal);
