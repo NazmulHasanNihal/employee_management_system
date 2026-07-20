@@ -137,7 +137,7 @@
 body {
   background-color: var(--bg-app);
   color: var(--text-main);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -351,5 +351,98 @@ html[lang="bn"] {
 html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+}
+
+/* ============================================================================
+   RESPONSIVE & TYPOGRAPHY HARDENING (audit pass)
+   Goals: no horizontal overflow on any device, consistent & aligned type,
+   fluid scaling on small screens, numbers/figures aligned.
+   ========================================================================== */
+
+/* 1. Consistent base typography + fluid body size.
+     16px on phones → 16px desktop is fine, but we tighten line-height and
+     ensure CJK/Bengali inherit the same metrics. */
+body {
+  font-size: 0.9375rem; /* 15px base for denser enterprise feel */
+  line-height: 1.55;
+}
+@media (min-width: 768px) {
+  body { font-size: 0.9375rem; line-height: 1.6; }
+}
+/* Never allow the page to scroll sideways; the app shell is a fixed flex
+   column and inner panels scroll. This is a safety net only — intentional
+   horizontal scroll (e.g. tables) lives inside its own overflow-x-auto. */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* 2. Form controls always fit their container (no fixed-width blowouts). */
+input, select, textarea, button {
+  max-width: 100%;
+  font: inherit;
+}
+/* Keep control text from overflowing its box on small screens. */
+input, textarea, select { text-overflow: ellipsis; }
+
+/* 3. Numeric figures align (currency, counts, percentages). */
+.tabular, .tabular-nums,
+[data-numeric], .stat-value, .stat-card .value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* 4. Flex children must be allowed to shrink so long content (names, emails)
+      does not force horizontal overflow. Apply to layout columns/cards. */
+.min-w-0 { min-width: 0; }
+.flex > .shrink-safe, .grid > .shrink-safe { min-width: 0; }
+
+/* 5. Card / panel base spacing scales down gracefully on phones. */
+.ledger-card, .panel {
+  padding: 1rem;
+}
+@media (min-width: 640px) {
+  .ledger-card, .panel { padding: 1.25rem; }
+}
+@media (min-width: 1024px) {
+  .ledger-card, .panel { padding: 1.5rem; }
+}
+
+/* 6. Headings share one consistent scale + tight tracking for a unified look. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+}
+/* Page titles already handled by .page-title; keep section headings aligned. */
+h2 { font-size: 1.25rem; line-height: 1.4rem; font-weight: 700; }
+h3 { font-size: 1.05rem; line-height: 1.3rem; font-weight: 650; }
+@media (min-width: 768px) {
+  h2 { font-size: 1.4rem; line-height: 1.6rem; }
+  h3 { font-size: 1.15rem; line-height: 1.4rem; }
+}
+
+/* 7. Tables: allow header/cell text to wrap on small screens to avoid forcing
+      ultra-wide rows; keep horizontal scroll as the fallback (ui/table already
+      wraps in overflow-x-auto). */
+table { font-variant-numeric: tabular-nums; }
+th, td { white-space: normal; }
+@media (max-width: 639px) {
+  /* On phones, let cells wrap so the scroll area is the last resort. */
+  .table-cell, td, th { white-space: normal; }
+}
+
+/* 8. Images/media never exceed their container. */
+img, svg, video, canvas { max-width: 100%; height: auto; }
+
+/* 9. Charts containers stay within bounds (recharts/xyflow can overflow). */
+[data-chart], .recharts-responsive-container, .react-flow {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* 10. Reduced motion already handled above; ensure tappable targets are
+       comfortable on touch (>= 40px). */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
+    min-height: 40px;
+  }
 }
 

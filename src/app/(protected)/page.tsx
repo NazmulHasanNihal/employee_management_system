@@ -308,7 +308,7 @@ export default async function HomePage() {
               <EmptyState title="No overview" description="Sign in to see your personal stats." />
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                   <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                     <p className="text-xl font-semibold text-[var(--text-main)]">{myOverview.attendancePercent}%</p>
                     <p className="text-xs text-[var(--text-muted)]">My Attendance</p>
