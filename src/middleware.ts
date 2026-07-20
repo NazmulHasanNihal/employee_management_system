@@ -52,6 +52,37 @@ export async function middleware(request: NextRequest) {
       return supabaseResponse;
     }
 
+    // ── CSRF / cross-origin protection for state-changing requests ──────────
+    // Server Actions and mutation API routes are same-origin by design. We
+    // reject any mutating request whose Origin/Referer is not this host.
+    // GET/HEAD and the public invite API (which validates its own secret) are
+    // exempt. This is defense-in-depth on top of SameSite cookies.
+    const isMutation =
+      request.method !== "GET" &&
+      request.method !== "HEAD" &&
+      (request.method === "POST" || request.method === "PUT" || request.method === "DELETE" || request.method === "PATCH" || request.headers.has("Next-Action"));
+    const isPublicApi =
+      request.nextUrl.pathname.startsWith("/api/invite") ||
+      request.nextUrl.pathname.startsWith("/api/cron");
+    if (isMutation && !isPublicApi) {
+      const host = request.nextUrl.host;
+      const origin = request.headers.get("origin");
+      const referer = request.headers.get("referer");
+      const refererHost = referer ? (() => { try { return new URL(referer).host; } catch { return null; } })() : null;
+      // Allowed when a same-origin Origin/Referer is present, or when neither
+      // header is sent at all (some same-origin form posts omit Origin) — in
+      // that case SameSite cookies remain the baseline defense. We only block
+      // when a cross-origin Origin/Referer is explicitly present.
+      const crossOrigin =
+        (origin && new URL(origin).host !== host) || (referer && refererHost !== host);
+      if (crossOrigin) {
+        return new NextResponse(
+          JSON.stringify({ error: "CSRF_ORIGIN_MISMATCH" }),
+          { status: 403, headers: { "content-type": "application/json" } }
+        );
+      }
+    }
+
     const isPublicRoute = 
       request.nextUrl.pathname.startsWith('/login') ||
       request.nextUrl.pathname.startsWith('/setup') ||

@@ -37,6 +37,51 @@ const nextConfig: NextConfig = {
       "@base-ui/react",
     ],
   },
+  // ── Security headers ──────────────────────────────────────────────────────
+  // Applied to every route response. Hardening against XSS, clickjacking,
+  // MIME sniffing, and protocol downgrade. CSP allows first-party assets and
+  // the external services the app actually talks to (Supabase, Sentry, GitHub
+  // avatars, PartyKit realtime). Script/style use unsafe-inline because the
+  // framework and Tailwind emit inline styles/scripts; this still blocks
+  // loading scripts/styles from arbitrary third-party origins.
+  async headers() {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+    const supabaseHost = (() => {
+      try {
+        return new URL(supabaseUrl).host;
+      } catch {
+        return "*.supabase.co";
+      }
+    })();
+    const csp = [
+      "default-src 'self'",
+      `img-src 'self' data: blob: https://${supabaseHost} https://avatars.githubusercontent.com`,
+      `font-src 'self' data:`,
+      `connect-src 'self' https://${supabaseHost} https://*.sentry.io wss://*.partykit.dev wss://*.partykit.io`,
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join("; ");
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Content-Security-Policy", value: csp },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
+        ],
+      },
+    ];
+  },
 };
 
 import { withSentryConfig } from "@sentry/nextjs";
