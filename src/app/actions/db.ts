@@ -39,6 +39,17 @@ function canCreateNews(caller: Caller | null): boolean {
   return caller.isCEO || caller.isAdmin || isManager;
 }
 
+// Tenant scoping for the server-action dispatcher. When a deployment is
+// multi-tenant and the caller carries a `tenantId`, every privileged read of
+// tenant-scoped models MUST be restricted to that tenant. In single-tenant
+// deployments `caller.tenantId` is null, so this returns `{}` and behaviour is
+// unchanged (backward-compatible, zero regression). This guards the bulk of the
+// UI's API surface (`runQuery`) which previously applied no tenant filter.
+function callerTenantWhere(caller: Caller | null): { tenantId: string } | Record<string, never> {
+  const tenantId = caller?.tenantId ?? null;
+  return tenantId ? { tenantId } : {};
+}
+
 // Resolve a leave request's `type` string to its canonical LeaveType.category.
 // Cached per call to avoid N+1; callers pass the resolved category.
 const leaveCategoryCache = new Map<string, string | null>();
@@ -119,9 +130,11 @@ export async function runQuery(
   args?: any,
 ) {
   try {
+    // Tenant scope for org-wide privileged reads below. No-op in single-tenant.
+    const tenantWhere = callerTenantWhere(caller);
     // ── DASHBOARD (Enhanced) ──
     if (path === 'dashboard.getStats') {
-      const headcount = await prisma.user.count();
+      const headcount = await prisma.user.count({ where: tenantWhere });
       const pendingApps = await prisma.leaveRequest.count({ where: { status: 'Pending' } });
       const totalPayrollResult = await prisma.payroll.aggregate({ _sum: { totalAmount: true } });
       const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -131,7 +144,7 @@ export async function runQuery(
     }
 
     if (path === 'dashboard.getFullStats') {
-      const headcount = await prisma.user.count();
+      const headcount = await prisma.user.count({ where: tenantWhere });
       const pendingLeaves = await prisma.leaveRequest.count({ where: { status: 'Pending' } });
       const approvedLeaves = await prisma.leaveRequest.count({ where: { status: 'Approved' } });
       const rejectedLeaves = await prisma.leaveRequest.count({ where: { status: 'Rejected' } });
@@ -160,7 +173,7 @@ export async function runQuery(
       }
 
       // Department breakdown
-      const allUsers = await prisma.user.findMany({ select: { department: true } });
+      const allUsers = await prisma.user.findMany({ where: tenantWhere, select: { department: true } });
       const deptMap: Record<string, number> = {};
       allUsers.forEach(u => {
         const dept = u.department || 'Unassigned';
@@ -186,7 +199,7 @@ export async function runQuery(
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const recentHires = await prisma.user.findMany({
-        where: { createdAt: { gte: thirtyDaysAgo } },
+        where: { createdAt: { gte: thirtyDaysAgo }, ...tenantWhere },
         orderBy: { createdAt: 'desc' },
         take: 5,
         select: { name: true, department: true, designation: true, createdAt: true }
@@ -297,12 +310,16 @@ export async function runQuery(
 
     // ── REGISTRY ──
     if (path === 'registry.getAll' || path === 'registry.searchEmployees') {
-      return await prisma.user.findMany({ include: { manager: true }, orderBy: { name: 'asc' } });
+      return await prisma.user.findMany({
+        where: callerTenantWhere(caller),
+        include: { manager: true },
+        orderBy: { name: 'asc' },
+      });
     }
 
     // ── ORG CHART ──
     if (path === 'orgchart.getOrgData' || path === 'orgchart.getTree' || path === 'team.getOrgChart') {
-      const users = await prisma.user.findMany();
+      const users = await prisma.user.findMany({ where: callerTenantWhere(caller) });
       // Build tree from flat list
       const userMap: any = {};
       users.forEach(u => userMap[u.id] = { ...u, children: [] });

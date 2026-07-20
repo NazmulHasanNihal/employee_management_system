@@ -116,6 +116,12 @@ model User {
   // ── P8 relation back-refs ──
   calibrationSessions  CalibrationSession[]  @relation("CalibrationCreator")
   calibrationEntries   CalibrationEntry[]
+
+  // Performance indexes: managerId (org-chart / chain-of-command / team
+  // lookups), branchId + tenantId (tenant/branch-scoped queries), nid lookups.
+  @@index([managerId])
+  @@index([branchId])
+  @@index([tenantId])
 }
 
 model Department {
@@ -279,6 +285,10 @@ model Payroll {
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   payments           Payment[]
   createdAt          DateTime @default(now())
+
+  // Performance index: payroll is aggregated by (userId, year, month) in the
+  // dashboard trend + statutory estimates; index the period columns together.
+  @@index([userId, year, month])
 }
 
 // ── Payments (Payment Hub) ──
@@ -424,6 +434,10 @@ model Attendance {
   geoLng          Float?   // captured longitude at clock-in
   geoVerified     Boolean  @default(false) // passed geo-fence validation
   createdAt DateTime  @default(now())
+
+  // Performance index: attendance is counted/filtered by (userId, date) heavily
+  // in dashboard trends and team performance aggregations.
+  @@index([userId, date])
 }
 
 model Notification {
@@ -486,6 +500,9 @@ model TeamTask {
   completedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  // Performance index: team performance aggregates group by assigneeId.
+  @@index([assigneeId])
 }
 
 // ── Shifts & Roster (C1) ──

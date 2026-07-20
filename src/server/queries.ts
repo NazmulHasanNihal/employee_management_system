@@ -221,7 +221,12 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
 
   const payrollByMonth = await prisma.payroll.groupBy({
     by: ['month', 'year'],
-    where: { ...userBranch, createdAt: { gte: windowStart } },
+    // Scope by tenant/branch (userBranch) only — do NOT filter by `createdAt`,
+    // because Payroll.createdAt is the row insertion time, not the payroll
+    // period. Filtering by it silently drops historical payroll whose rows
+    // were inserted >12 months ago and corrupts the trend series. We instead
+    // bucket every returned period in JS against the 12-month window below.
+    where: { ...userBranch },
     _sum: { totalAmount: true },
   });
   // Payroll.month is stored as a short name (e.g. "Mar"), so key by that.
@@ -415,12 +420,24 @@ export async function getChainOfCommand(caller: Caller | null) {
       })
     : [];
   const secondLevelReports: any[] = [];
-  for (const report of directReports) {
+  if (directReports.length > 0) {
+    // Single bulk query instead of one `findMany` per direct report (avoids
+    // 1+N). Group the results in JS by `managerId`.
+    const reportIds = directReports.map((r) => r.id);
     const subReports = await prisma.user.findMany({
-      where: { managerId: report.id },
-      select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true },
+      where: { managerId: { in: reportIds } },
+      select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, managerId: true },
     });
-    if (subReports.length > 0) secondLevelReports.push({ managerId: report.id, managerName: report.name, reports: subReports });
+    const byManager = new Map<string, typeof subReports>();
+    for (const s of subReports) {
+      const key = s.managerId as string;
+      if (!byManager.has(key)) byManager.set(key, []);
+      byManager.get(key)!.push(s);
+    }
+    for (const report of directReports) {
+      const subs = byManager.get(report.id) ?? [];
+      if (subs.length > 0) secondLevelReports.push({ managerId: report.id, managerName: report.name, reports: subs });
+    }
   }
   return { chain, directReports, peers, secondLevelReports };
 }
