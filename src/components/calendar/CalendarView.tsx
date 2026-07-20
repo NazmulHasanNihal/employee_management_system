@@ -48,6 +48,7 @@ interface CalEvent {
   targetTeam?: string | null;
   assignee?: { name: string } | null;
   derived?: Derived;
+  isTentative?: boolean;
 }
 
 interface Member { id: string; name: string; }
@@ -314,7 +315,12 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                             </div>
                           )}
                           {event.derived !== 'event' && (
-                            <span className="mt-2 inline-block rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--text-muted)]">{event.derived} · read-only</span>
+                            <span className="mt-2 inline-flex items-center gap-1.5">
+                              <span className="inline-block rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--text-muted)]">{event.derived} · read-only</span>
+                              {event.isTentative && (
+                                <span className="inline-block rounded-full bg-[var(--amber-soft)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--amber)]">Tentative</span>
+                              )}
+                            </span>
                           )}
                         </div>
                       </div>

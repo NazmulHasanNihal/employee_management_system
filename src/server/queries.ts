@@ -796,6 +796,8 @@ export interface CalendarFeedItem {
   targetTeam?: string | null;
   assignee?: { name: string } | null;
   derived: 'event' | 'holiday' | 'shift' | 'birthday';
+  /** Present on holiday items when the date is moon-sighted / govt-to-confirm. */
+  isTentative?: boolean;
 }
 
 export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' = 'en'): Promise<CalendarFeedItem[]> {
@@ -841,14 +843,16 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
   }
 
   for (const h of holidays) {
+    const tentative = (h as any).isTentative === true;
     items.push({
       id: `holiday-${h.id}`,
       title: lang === 'bn' && h.nameBn ? h.nameBn : h.name,
-      description: `Bangladesh ${h.type} holiday`,
+      description: `Bangladesh ${h.type} holiday${tentative ? ' (tentative — pending moon sighting / govt notification)' : ''}`,
       date: h.date,
       type: 'Holiday',
       status: 'Done',
       derived: 'holiday',
+      isTentative: tentative,
     });
   }
 

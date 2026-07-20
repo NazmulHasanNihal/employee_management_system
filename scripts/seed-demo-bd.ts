@@ -65,23 +65,9 @@ const DEPARTMENTS = [
   { name: 'Maintenance', branch: 'Gazipur Plant' },
 ];
 
-// NOTE: BD 2026 govt/public holidays below are ILLUSTRATIVE defaults.
-// Eid ul-Fitr / Eid ul-Adha dates depend on the moon sighting — confirm official
-// dates from the Bangladesh government calendar before relying on them.
-const HOLIDAYS_2026: { date: string; name: string; nameBn: string; type: string }[] = [
-  { date: '2026-02-21', name: 'Language Martyrs’ Day', nameBn: 'ভাষা শহীদ দিবস', type: 'National' },
-  { date: '2026-03-17', name: 'Sheikh Mujibur Rahman’s Birthday', nameBn: 'বঙ্গবন্ধুর জন্মদিন', type: 'National' },
-  { date: '2026-03-26', name: 'Independence Day', nameBn: 'স্বাধীনতা দিবস', type: 'National' },
-  { date: '2026-04-14', name: 'Bengali New Year', nameBn: 'পহেলা বৈশাখ', type: 'Festival' },
-  { date: '2026-05-01', name: 'May Day', nameBn: 'মে দিবস', type: 'Public' },
-  { date: '2026-08-15', name: 'National Mourning Day', nameBn: 'জাতীয় শোক দিবস', type: 'National' },
-  { date: '2026-12-16', name: 'Victory Day', nameBn: 'বিজয় দিবস', type: 'National' },
-  { date: '2026-12-31', name: 'New Year’s Eve', nameBn: 'বর্ষবরণ', type: 'Public' },
-  // Religious (illustrative — confirm moon-sighted dates):
-  { date: '2026-03-20', name: 'Eid ul-Fitr', nameBn: 'ঈদুল ফিতর', type: 'Religious' },
-  { date: '2026-05-27', name: 'Eid ul-Adha', nameBn: 'ঈদুল আজহা', type: 'Religious' },
-  { date: '2026-10-11', name: 'Durga Puja (Bijoya Dashami)', nameBn: 'দুর্গা পূজা', type: 'Religious' },
-];
+// Bangladesh public/govt holidays — single maintained dataset (2025–2027).
+// Lunar dates are flagged tentative (moon-sighted / govt-to-confirm).
+import { getBangladeshHolidays } from '../src/lib/bangladesh-holidays';
 
 const USERS: SeedUser[] = [
   // Dhaka HQ leadership
@@ -234,17 +220,17 @@ async function main() {
   }
   console.log(`✅ Users: ${USERS.length} demo users created (manager chains wired)`);
 
-  // Holidays
+  // Holidays (from the shared maintained BD dataset; idempotent upsert by date).
   let holidayCount = 0;
-  for (const h of HOLIDAYS_2026) {
+  for (const h of getBangladeshHolidays()) {
     const date = new Date(h.date + 'T00:00:00Z');
     const existing = await prisma.holiday.findUnique({ where: { date } });
     if (!existing) {
-      await prisma.holiday.create({ data: { date, name: h.name, nameBn: h.nameBn, type: h.type } });
+      await prisma.holiday.create({ data: { date, name: h.name, nameBn: h.nameBn, type: h.type, isTentative: h.tentative ?? false } });
       holidayCount++;
     }
   }
-  console.log(`✅ Holidays: ${holidayCount} new BD 2026 holidays seeded (verify official dates)`);
+  console.log(`✅ Holidays: ${holidayCount} new BD holidays seeded (verify official dates)`);
 
   console.log('\n✅ Demo seed complete.');
   console.log(`   Demo login password: ${DEMO_PASSWORD}`);

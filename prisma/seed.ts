@@ -15,21 +15,9 @@ const prisma = new PrismaClient();
 const OWNER_EMAIL = process.env.OWNER_EMAIL || 'nazmulhas36@gmail.com';
 const departments = ['Engineering', 'Sales', 'Marketing', 'HR', 'Finance', 'Operations', 'Product', 'Customer Support'];
 
-// ── Bangladesh public/govt holidays for 2026 (verify official dates before use) ──
-// * = date depends on lunar sighting; approximate.
-const holidays2026: { date: string; name: string; nameBn: string; type: string }[] = [
-  { date: '2026-02-21', name: 'Language Martyrs\' Day', nameBn: 'ভাষা শহিদ দিবস', type: 'National' },
-  { date: '2026-03-17', name: 'Sheikh Mujibur Rahman\'s Birthday', nameBn: 'শেখ মুজিবুর রহমানের জন্মদিন', type: 'National' },
-  { date: '2026-03-26', name: 'Independence Day', nameBn: 'স্বাধীনতা দিবস', type: 'National' },
-  { date: '2026-04-14', name: 'Bengali New Year', nameBn: 'পহেলা বৈশাখ', type: 'Festival' },
-  { date: '2026-05-01', name: 'May Day', nameBn: 'মে দিবস', type: 'Public' },
-  { date: '2026-05-22', name: 'Eid-ul-Fitr*', nameBn: 'ঈদ-উল-ফিতর*', type: 'Religious' },
-  { date: '2026-07-24', name: 'Eid-ul-Adha*', nameBn: 'ঈদ-উল-আযহা*', type: 'Religious' },
-  { date: '2026-08-16', name: 'Ashura*', nameBn: 'আশুরা*', type: 'Religious' },
-  { date: '2026-10-21', name: 'Durga Puja (Bijoya Dashami)*', nameBn: 'দুর্গাপূজা*', type: 'Religious' },
-  { date: '2026-12-16', name: 'Victory Day', nameBn: 'বিজয় দিবস', type: 'National' },
-  { date: '2026-12-31', name: 'New Year\'s Eve', nameBn: 'নববর্ষের প্রাক্কাল', type: 'Public' },
-];
+// Bangladesh public/govt holidays — single maintained dataset (2025–2027).
+// See src/lib/bangladesh-holidays.ts; lunar dates are flagged tentative.
+const { getBangladeshHolidays } = require('../src/lib/bangladesh-holidays');
 
 async function main() {
   console.log('Clearing old data...');
@@ -132,11 +120,18 @@ async function main() {
   // Link owner to the branch.
   await prisma.user.update({ where: { id: owner.id }, data: { branchId: branch.id } });
 
-  // 6. 2026 Bangladesh public holidays.
+  // 6. Bangladesh public holidays (2025–2027). Reset then seed from the
+  // shared dataset so the calendar always reflects the maintained list.
   await prisma.holiday.deleteMany();
-  for (const h of holidays2026) {
+  for (const h of getBangladeshHolidays()) {
     await prisma.holiday.create({
-      data: { date: new Date(h.date), name: h.name, nameBn: h.nameBn, type: h.type },
+      data: {
+        date: new Date(h.date),
+        name: h.name,
+        nameBn: h.nameBn,
+        type: h.type,
+        isTentative: h.tentative ?? false,
+      },
     });
   }
 

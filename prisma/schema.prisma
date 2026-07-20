@@ -164,6 +164,7 @@ model Holiday {
   name      String
   nameBn    String?
   type      String   @default("Public") // Public, Religious, National, Festival
+  isTentative Boolean @default(false) // true for moon-sighted / govt-to-confirm dates
   createdAt DateTime @default(now())
 }
 
