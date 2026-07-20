@@ -195,13 +195,38 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   const taskCompletionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   // 12-month headcount + payroll series (oldest → newest) for trend charts.
+  // Two bulk queries instead of 24 per-month calls: grab all user creation
+  // timestamps once and bucket in JS, and group payroll by month/year.
+  const windowStart = monthBounds(11).start;
+  const userCreatedAts = (
+    await prisma.user.findMany({
+      where: branchWhere,
+      select: { createdAt: true },
+    })
+  ).map((u) => u.createdAt.getTime()).sort((a, b) => a - b);
+
+  const payrollByMonth = await prisma.payroll.groupBy({
+    by: ['month', 'year'],
+    where: { ...userBranch, createdAt: { gte: windowStart } },
+    _sum: { totalAmount: true },
+  });
+  // Payroll.month is stored as a short name (e.g. "Mar"), so key by that.
+  const payrollMap = new Map<string, number>();
+  for (const p of payrollByMonth) payrollMap.set(`${p.year}-${p.month}`, Math.round(p._sum.totalAmount || 0));
+
   const trendSeries: { month: string; headcount: number; payroll: number }[] = [];
+  // Precompute the 12 month-end timestamps (oldest → newest) once.
+  const monthEnds: number[] = [];
+  for (let i = 11; i >= 0; i--) monthEnds.push(monthBounds(i).end.getTime());
+  let ptr = 0;
   for (let i = 11; i >= 0; i--) {
     const { start, end } = monthBounds(i);
     const monthLabel = start.toLocaleDateString('en', { month: 'short', year: '2-digit' });
-    const hc = await prisma.user.count({ where: { ...branchWhere, createdAt: { lt: end } } });
-    const prAgg = await prisma.payroll.aggregate({ where: { ...userBranch, createdAt: { gte: start, lt: end } }, _sum: { totalAmount: true } });
-    trendSeries.push({ month: monthLabel, headcount: hc, payroll: Math.round(prAgg._sum.totalAmount || 0) });
+    // Advance the pointer through the sorted creation timestamps.
+    while (ptr < userCreatedAts.length && userCreatedAts[ptr] < end.getTime()) ptr++;
+    const monthName = start.toLocaleString('en', { month: 'short' });
+    const payroll = payrollMap.get(`${start.getFullYear()}-${monthName}`) || 0;
+    trendSeries.push({ month: monthLabel, headcount: ptr, payroll });
   }
 
   return {
@@ -405,33 +430,85 @@ export async function getTeamTasks(caller: Caller | null) {
   });
 }
 
+// Cached wrapper: the rewritten function already uses ~4 bulk queries, but the
+// result is still per-viewer and fairly stable, so we memoize for 30s to cut
+// DB load and speed up the Team page.
+const cachedTeamPerformance = unstable_cache(
+  (userId: string, isPrivileged: boolean) =>
+    getTeamPerformanceForUser(userId, isPrivileged),
+  ['team-performance'],
+  { revalidate: 30, tags: ['team'] }
+);
+
 export async function getTeamPerformance(caller: Caller | null) {
-  const isAdmin = caller?.isAdmin ?? false;
-  const isCEO = caller?.isCEO ?? false;
   const userId = caller?.id;
   if (!userId) return [];
-  let memberIds: string[] = [];
-  if (isAdmin || isCEO) memberIds = (await prisma.user.findMany({ select: { id: true } })).map((u) => u.id);
+  const isPrivileged = caller?.isAdmin || caller?.isCEO;
+  return cachedTeamPerformance(userId, isPrivileged);
+}
+
+// Internal: the actual query logic, separated so it can be cached by userId.
+async function getTeamPerformanceForUser(userId: string, isPrivileged: boolean) {
+  const memberIds: string[] = [];
+  if (isPrivileged) memberIds.push(...(await prisma.user.findMany({ select: { id: true } })).map((u) => u.id));
   else {
-    memberIds = (await prisma.user.findMany({ where: { managerId: userId }, select: { id: true } })).map((u) => u.id);
+    memberIds.push(...(await prisma.user.findMany({ where: { managerId: userId }, select: { id: true } })).map((u) => u.id));
     memberIds.push(userId);
   }
-  const performance = [];
+  const ids = memberIds.slice(0, 20);
+  if (ids.length === 0) return [];
+
+  const members = await prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true, designation: true, department: true, avatarUrl: true },
+  });
+
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
-  for (const memberId of memberIds.slice(0, 20)) {
-    const member = await prisma.user.findUnique({ where: { id: memberId }, select: { id: true, name: true, designation: true, department: true, avatarUrl: true } });
-    if (!member) continue;
-    const totalTasks = await prisma.teamTask.count({ where: { assigneeId: memberId } });
-    const doneTasks = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'Done' } });
-    const inProgressTasks = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'InProgress' } });
-    const blockedTasks = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'Blocked' } });
-    const doneThisWeek = await prisma.teamTask.count({ where: { assigneeId: memberId, status: 'Done', completedAt: { gte: weekAgo } } });
-    const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const attendanceCount = await prisma.attendance.count({ where: { userId: memberId, date: { gte: thirtyDaysAgo } } });
-    const attendanceRate = Math.min(100, Math.round((attendanceCount / 22) * 100));
-    performance.push({ ...member, totalTasks, doneTasks, inProgressTasks, blockedTasks, doneThisWeek, completionRate: totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0, attendanceRate });
+  const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const taskGroups = await prisma.teamTask.groupBy({
+    by: ['assigneeId', 'status'],
+    where: { assigneeId: { in: ids } },
+    _count: { _all: true },
+  });
+  const doneWeekGroups = await prisma.teamTask.groupBy({
+    by: ['assigneeId'],
+    where: { assigneeId: { in: ids }, status: 'Done', completedAt: { gte: weekAgo } },
+    _count: { _all: true },
+  });
+  const attendanceGroups = await prisma.attendance.groupBy({
+    by: ['userId'],
+    where: { userId: { in: ids }, date: { gte: thirtyDaysAgo } },
+    _count: { _all: true },
+  });
+
+  const byId = new Map<string, Record<string, number>>();
+  for (const g of taskGroups) {
+    if (!byId.has(g.assigneeId)) byId.set(g.assigneeId, {});
+    byId.get(g.assigneeId)![g.status] = g._count._all;
   }
-  return performance;
+  const doneWeekById = new Map(doneWeekGroups.map((g) => [g.assigneeId, g._count._all]));
+  const attById = new Map(attendanceGroups.map((g) => [g.userId, g._count._all]));
+
+  return members.map((m) => {
+    const counts = byId.get(m.id) || {};
+    const totalTasks = Object.values(counts).reduce((s, n) => s + n, 0);
+    const doneTasks = counts['Done'] || 0;
+    const inProgressTasks = counts['InProgress'] || 0;
+    const blockedTasks = counts['Blocked'] || 0;
+    const doneThisWeek = doneWeekById.get(m.id) || 0;
+    const attendanceRate = Math.min(100, Math.round(((attById.get(m.id) || 0) / 22) * 100));
+    return {
+      ...m,
+      totalTasks,
+      doneTasks,
+      inProgressTasks,
+      blockedTasks,
+      doneThisWeek,
+      completionRate: totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0,
+      attendanceRate,
+    };
+  });
 }
 
 export async function getProxyStatus(caller: Caller | null) {
