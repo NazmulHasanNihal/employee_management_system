@@ -122,7 +122,7 @@ export async function parseApiBody<T>(
 }
 
 // ── Reusable primitives for route schemas ──
-export const tokenSchema = z.object({ token: z.string().min(10).max(2000) });
+export const tokenSchema = z.object({ token: z.string().trim().min(10).max(2000) });
 export const passwordSchema = z
   .object({ password: z.string().min(8).max(200) })
   .strict();

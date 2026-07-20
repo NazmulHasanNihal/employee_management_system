@@ -42,7 +42,11 @@ export function useQueries(queries: { path: string; args?: unknown }[]) {
   const key = JSON.stringify(queries.map((q) => [q.path, q.args ?? null]));
 
   const run = useCallback(() => {
-    setIsLoading(true);
+    setData((prev) => {
+      // Only set loading if we have absolutely no data yet
+      if (prev.every((d) => d === null)) setIsLoading(true);
+      return prev;
+    });
     executeServerBatch(queries)
       .then((res) => {
         setData(res.map((r) => (r.ok ? r.data : null)));
@@ -72,7 +76,10 @@ const createDummyHook = (path: string[]) => {
       const argsString = JSON.stringify(args);
 
       const run = useCallback(() => {
-        setIsLoading(true);
+        setData((prev: any) => {
+          if (prev === null) setIsLoading(true);
+          return prev;
+        });
         const parsedArgs = JSON.parse(argsString);
         executeServerQuery(fullPath, parsedArgs[0])
           .then((res) => {
@@ -87,7 +94,10 @@ const createDummyHook = (path: string[]) => {
 
       useEffect(() => {
         let isMounted = true;
-        setIsLoading(true);
+        setData((prev: any) => {
+          if (prev === null) setIsLoading(true);
+          return prev;
+        });
         const parsedArgs = JSON.parse(argsString);
         executeServerQuery(fullPath, parsedArgs[0])
           .then((res) => {

@@ -49,7 +49,7 @@ export function createInviteToken(email: string, role: string): string {
 
 export function verifyInviteToken(token: string): InvitePayload | null {
   try {
-    const [body, sig] = token.split('.');
+    const [body, sig] = token.trim().split('.');
     if (!body || !sig) return null;
     const expected = sign(body);
     // Constant-time compare to avoid timing attacks.
