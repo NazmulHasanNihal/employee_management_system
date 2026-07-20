@@ -63,7 +63,7 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   // ── Multi-tenancy (SaaS): layer an optional tenant scope on top of branch. ──
   // tenantId is null in single-tenant deployments, so these merges are no-ops and
   // behaviour is unchanged until Tenant rows exist + `prisma db push` is run.
-  const tenantId = await getSelectedTenantId(caller);
+  const tenantId = getSelectedTenantId(caller);
   if (tenantId) {
     const userTenant = { user: { tenantId } };
     userBranch.user
@@ -572,7 +572,7 @@ export async function getAttendanceAdminStats(caller?: Caller | null) {
   const userBranch: any = branchScope ? { user: { branchId: branchScope } } : {};
   const branchWhere: any = branchScope ? { branchId: branchScope } : {};
   // Multi-tenancy: scope to the active tenant when one is set (no-op otherwise).
-  const tenantId = await getSelectedTenantId(caller);
+  const tenantId = getSelectedTenantId(caller);
   if (tenantId) {
     userBranch.user ? (userBranch.user = { ...userBranch.user, tenantId }) : Object.assign(userBranch, { user: { tenantId } });
     branchWhere.tenantId = tenantId;
@@ -1495,19 +1495,38 @@ export async function getSelectedBranchId(): Promise<string | null> {
 }
 
 /**
- * Multi-tenancy (SaaS) — resolves the active tenant.
+ * Multi-tenancy (SaaS) — resolves the active tenant from the authenticated
+ * caller.
  *
- * Resolution order: explicit `ems_tenant` cookie (set when a user switches
- * org in a multi-tenant deployment) → the caller's own `tenantId`. Returns
- * `null` when the deployment is single-tenant (the default today), which keeps
- * every query's behaviour identical to before. Activate by adding `Tenant` rows
- * and setting `User.tenantId`, then run `prisma db push`.
+ * Returns `caller?.tenantId` (or `null` in single-tenant deployments), which
+ * keeps every query's behaviour identical to before. Activate by adding
+ * `Tenant` rows and setting `User.tenantId`, then run `prisma db push`.
+ *
+ * IMPORTANT: this variant must NOT read `cookies()` (a dynamic data source).
+ * It is intentionally caller-only so it can be called from inside functions
+ * wrapped with `unstable_cache` (Next.js forbids `cookies()` inside a cache
+ * scope). The cookie-based override lives in `getSelectedTenantIdFromCookie`,
+ * which must only be called OUTSIDE a cached scope (e.g. server components /
+ * route handlers that resolve the tenant without a caller).
  */
-export async function getSelectedTenantId(caller?: Caller | null): Promise<string | null> {
-  const { cookies } = await import('next/headers');
-  const cookie = (await cookies()).get('ems_tenant')?.value;
-  if (cookie && cookie !== 'all') return cookie;
+export function getSelectedTenantId(caller?: Caller | null): string | null {
   return caller?.tenantId ?? null;
+}
+
+/**
+ * Cookie-based tenant override (`ems_tenant`), resolved outside any
+ * `unstable_cache` scope. Use only where the caller isn't available (or to
+ * honour an explicit org switch). Never call this from a cached query path.
+ */
+export async function getSelectedTenantIdFromCookie(): Promise<string | null> {
+  try {
+    const { cookies } = await import('next/headers');
+    const cookie = (await cookies()).get('ems_tenant')?.value;
+    if (cookie && cookie !== 'all') return cookie;
+  } catch {
+    // Not in a request scope (e.g. background job) — fall back to null.
+  }
+  return null;
 }
 
 /**
@@ -1519,14 +1538,14 @@ export async function getSelectedTenantId(caller?: Caller | null): Promise<strin
  *   prisma.user.count({ where: { ...tenantWhere } })
  *   prisma.payroll.aggregate({ where: { ...userBranch, ...tenantUserWhere } })
  */
-export async function tenantWhere(caller?: Caller | null): Promise<Record<string, unknown>> {
-  const tenantId = await getSelectedTenantId(caller);
+export function tenantWhere(caller?: Caller | null): Record<string, unknown> {
+  const tenantId = getSelectedTenantId(caller);
   return tenantId ? { tenantId } : {};
 }
 
 /** Tenant-aware `user`-relation fragment (for payroll/expense/leave/etc.). */
-export async function tenantUserWhere(caller?: Caller | null): Promise<Record<string, unknown>> {
-  const tenantId = await getSelectedTenantId(caller);
+export function tenantUserWhere(caller?: Caller | null): Record<string, unknown> {
+  const tenantId = getSelectedTenantId(caller);
   return tenantId ? { user: { tenantId } } : {};
 }
 

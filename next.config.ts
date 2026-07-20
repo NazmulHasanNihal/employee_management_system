@@ -55,10 +55,10 @@ const nextConfig: NextConfig = {
     })();
     const csp = [
       "default-src 'self'",
-      `img-src 'self' data: blob: https://${supabaseHost} https://avatars.githubusercontent.com`,
+      `img-src 'self' data: blob: https://${supabaseHost} https://avatars.githubusercontent.com https://*.posthog.com`,
       `font-src 'self' data:`,
-      `connect-src 'self' https://${supabaseHost} https://*.sentry.io wss://*.partykit.dev wss://*.partykit.io`,
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      `connect-src 'self' https://${supabaseHost} https://*.sentry.io https://*.posthog.com wss://*.partykit.dev wss://*.partykit.io`,
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.posthog.com",
       "style-src 'self' 'unsafe-inline'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
