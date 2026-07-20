@@ -17,6 +17,8 @@ export interface Caller {
   /** True for CEO role or the system owner. Never derived from a self-editable designation. */
   isCEO: boolean;
   branchId?: string | null;
+  /** Active tenant (SaaS). Null in single-tenant deployments. */
+  tenantId?: string | null;
   // Extra fields mirrored from the User row so legacy handlers can traverse the
   // manager chain without re-querying. All optional.
   managerId?: string | null;
@@ -76,6 +78,7 @@ export async function getCaller(): Promise<Caller | null> {
     isHR,
     isCEO,
     branchId: dbUser.branchId,
+    tenantId: dbUser.tenantId ?? null,
     managerId: dbUser.managerId,
     avatarUrl: dbUser.avatarUrl,
     status: dbUser.status,

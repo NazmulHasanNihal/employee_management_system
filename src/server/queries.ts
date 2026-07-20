@@ -51,12 +51,26 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   // only — employees must never see org-wide headcount, payroll, or expense
   // totals. Scoping to `userId` makes every aggregate resolve to one person.
   const branchScope: string | null | undefined = isPrivileged ? (selectedBranch ?? caller?.branchId ?? null) : null;
-  const userBranch = isPrivileged
+  // Typed loosely (as the original inferred shape) because `userBranch` is spread
+  // into many different model `where` clauses (payroll/expense/leave/...).
+  const userBranch: any = isPrivileged
     ? (branchScope ? { user: { branchId: branchScope } } : {})
     : (userId ? { userId } : {});
-  const branchWhere = isPrivileged
+  const branchWhere: any = isPrivileged
     ? (branchScope ? { branchId: branchScope } : {})
     : (userId ? { id: userId } : {});
+
+  // ── Multi-tenancy (SaaS): layer an optional tenant scope on top of branch. ──
+  // tenantId is null in single-tenant deployments, so these merges are no-ops and
+  // behaviour is unchanged until Tenant rows exist + `prisma db push` is run.
+  const tenantId = await getSelectedTenantId(caller);
+  if (tenantId) {
+    const userTenant = { user: { tenantId } };
+    userBranch.user
+      ? (userBranch.user = { ...userBranch.user, tenantId })
+      : Object.assign(userBranch, userTenant);
+    branchWhere.tenantId = tenantId;
+  }
 
   const headcount = await prisma.user.count({ where: branchWhere });
   const pendingLeaves = await prisma.leaveRequest.count({ where: { status: 'Pending', ...userBranch } });
@@ -538,8 +552,14 @@ export async function getAttendanceLogs(caller: Caller | null) {
 export async function getAttendanceAdminStats(caller?: Caller | null) {
   const isPrivileged = caller?.isAdmin || caller?.isCEO;
   const branchScope = isPrivileged ? await getSelectedBranchId() : null;
-  const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
-  const branchWhere = branchScope ? { branchId: branchScope } : {};
+  const userBranch: any = branchScope ? { user: { branchId: branchScope } } : {};
+  const branchWhere: any = branchScope ? { branchId: branchScope } : {};
+  // Multi-tenancy: scope to the active tenant when one is set (no-op otherwise).
+  const tenantId = await getSelectedTenantId(caller);
+  if (tenantId) {
+    userBranch.user ? (userBranch.user = { ...userBranch.user, tenantId }) : Object.assign(userBranch, { user: { tenantId } });
+    branchWhere.tenantId = tenantId;
+  }
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const onShift = await prisma.attendance.count({ where: { date: { gte: today }, clockOut: null, ...userBranch } });
   const lateArrivals = await prisma.attendance.count({ where: { date: { gte: today }, status: 'Late', ...userBranch } });
@@ -1455,6 +1475,42 @@ export async function getSelectedBranchId(): Promise<string | null> {
   const { cookies } = await import('next/headers');
   const value = (await cookies()).get('ems_branch')?.value;
   return value && value !== 'all' ? value : null;
+}
+
+/**
+ * Multi-tenancy (SaaS) — resolves the active tenant.
+ *
+ * Resolution order: explicit `ems_tenant` cookie (set when a user switches
+ * org in a multi-tenant deployment) → the caller's own `tenantId`. Returns
+ * `null` when the deployment is single-tenant (the default today), which keeps
+ * every query's behaviour identical to before. Activate by adding `Tenant` rows
+ * and setting `User.tenantId`, then run `prisma db push`.
+ */
+export async function getSelectedTenantId(caller?: Caller | null): Promise<string | null> {
+  const { cookies } = await import('next/headers');
+  const cookie = (await cookies()).get('ems_tenant')?.value;
+  if (cookie && cookie !== 'all') return cookie;
+  return caller?.tenantId ?? null;
+}
+
+/**
+ * Returns a Prisma `where` fragment that scopes a query to the active tenant,
+ * or `{}` when no tenant is active (single-tenant). Use for models that carry a
+ * direct `tenantId` (User, Branch) — for user-related models pass the result
+ * inside `{ user: ... }` exactly like the existing `userBranch` pattern.
+ *
+ *   prisma.user.count({ where: { ...tenantWhere } })
+ *   prisma.payroll.aggregate({ where: { ...userBranch, ...tenantUserWhere } })
+ */
+export async function tenantWhere(caller?: Caller | null): Promise<Record<string, unknown>> {
+  const tenantId = await getSelectedTenantId(caller);
+  return tenantId ? { tenantId } : {};
+}
+
+/** Tenant-aware `user`-relation fragment (for payroll/expense/leave/etc.). */
+export async function tenantUserWhere(caller?: Caller | null): Promise<Record<string, unknown>> {
+  const tenantId = await getSelectedTenantId(caller);
+  return tenantId ? { user: { tenantId } } : {};
 }
 
 // ───────────────────────────────────────────────────────────────────────────

@@ -36,6 +36,9 @@ model User {
   // ── Bangladesh localization (Phase B) ──
   branchId    String?
   branch      Branch?      @relation("BranchMembers", fields: [branchId], references: [id])
+  // ── Multi-tenancy (SaaS): soft opt-in. Null = legacy single-tenant behaviour. ──
+  tenantId    String?
+  tenant      Tenant?      @relation("TenantMembers", fields: [tenantId], references: [id])
   nid         String?      // National ID — stored AES-256-GCM encrypted at rest (app layer: prefix "nid:v1:iv:tag:ct"). Plaintext legacy rows are still readable.
   nidMasked   String?      // Display-safe mask (e.g. ***-**1234) derived at write time
   bloodGroup  String?      // A+, B-, O+, etc.
@@ -126,6 +129,21 @@ model Department {
   updatedAt DateTime @updatedAt
 }
 
+// ── Multi-tenancy (SaaS): an organization/account that owns isolated data. ──
+// Soft opt-in — existing single-tenant installs have no Tenant rows and all
+// users have tenantId = null, which preserves today's behaviour exactly.
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique // subdomain / account key, e.g. "acme"
+  plan      String   @default("Free") // Free, Pro, Enterprise — drives feature gating
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   User[]   @relation("TenantMembers")
+  branches  Branch[] @relation("TenantBranches")
+}
+
 // ── Multi-branch / multi-location (Bangladesh businesses are often multi-site) ──
 model Branch {
   id       String   @id @default(cuid())
@@ -133,6 +151,8 @@ model Branch {
   city     String
   address  String?
   timezone String   @default("Asia/Dhaka")
+  tenantId String?
+  tenant   Tenant?  @relation("TenantBranches", fields: [tenantId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   members     User[]            @relation("BranchMembers")
