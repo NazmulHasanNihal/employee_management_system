@@ -12,6 +12,19 @@ import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/ui/badge';
 
+interface OnboardingTask {
+  id: string;
+  title: string;
+  isCompleted: boolean;
+  category: string;
+  userId: string;
+}
+
+interface UserOption {
+  id: string;
+  name: string;
+}
+
 export default function OnboardingClientPage() {
   const { user } = useUser();
   const isAdmin = user.role === 'Admin' || user.role === 'HR Manager';
@@ -29,7 +42,7 @@ export default function OnboardingClientPage() {
     { enabled: !!targetUserId }
   );
 
-  const [localTasks, setLocalTasks] = useState<any[]>([]);
+  const [localTasks, setLocalTasks] = useState<OnboardingTask[]>([]);
 
   useEffect(() => {
     if (serverTasks) setLocalTasks(serverTasks);
@@ -60,7 +73,7 @@ export default function OnboardingClientPage() {
       toast.success('Offboarding triggered', 'Employee terminated and IT ticket created.');
       setOffboardUserId('');
     },
-    onError: (err) => toast.error('Offboarding failed', err.message),
+    onError: (err: { message: string }) => toast.error('Offboarding failed', err.message),
   });
 
   const triggerProbation = trpc.workflows.triggerProbationPlan.useMutation({
@@ -68,12 +81,12 @@ export default function OnboardingClientPage() {
       utils.workflows.getOnboardingTasks.invalidate();
       toast.success('Probation plan initialized', '30 / 60 / 90 day check-ins created.');
     },
-    onError: (err) => toast.error('Failed', err.message),
+    onError: (err: { message: string }) => toast.error('Failed', err.message),
   });
 
   const finalizeSeverance = trpc.workflows.finalizeSeverance.useMutation({
-    onSuccess: (data: any) => toast.success('Severance released', data?.message),
-    onError: (err) => toast.error('Severance failed', err.message),
+    onSuccess: (data: { message?: string }) => toast.success('Severance released', data?.message),
+    onError: (err: { message: string }) => toast.error('Severance failed', err.message),
   });
 
   const handleAddTask = (e: React.FormEvent) => {
@@ -118,7 +131,7 @@ export default function OnboardingClientPage() {
                     className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
                     <option value={user.id}>Myself</option>
-                    {users?.map((u: any) => (
+                    {users?.map((u: UserOption) => (
                       <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
                   </select>
@@ -155,7 +168,7 @@ export default function OnboardingClientPage() {
                         className="h-4 w-4 rounded border-[var(--border-hairline)] text-[var(--brand)] focus:ring-[var(--brand)]"
                       />
                       <span className={`text-sm font-medium ${task.isCompleted ? 'text-[var(--emerald)] line-through' : 'text-[var(--text-main)]'}`}>
-                        {task.task}
+                         {task.title}
                       </span>
                     </div>
                   ))}
@@ -210,8 +223,8 @@ export default function OnboardingClientPage() {
                   >
                     <option value="">Select someone…</option>
                     {users
-                      ?.filter((u: any) => u.id !== user.id && u.status !== 'Terminated')
-                      .map((u: any) => (
+                      ?.filter((u: { id: string; status?: string }) => u.id !== user.id && u.status !== 'Terminated')
+                      .map((u: { id: string; name: string; department?: string }) => (
                         <option key={u.id} value={u.id}>{u.name} ({u.department})</option>
                       ))}
                   </select>
@@ -238,7 +251,7 @@ export default function OnboardingClientPage() {
                     className="ledger-input h-10 flex-1 rounded-xl px-3 text-sm outline-none"
                   >
                     <option value="">Select Terminated Employee…</option>
-                    {users?.filter((u: any) => u.status === 'Terminated').map((u: any) => (
+                    {users?.filter((u: { status?: string }) => u.status === 'Terminated').map((u: { id: string; name: string }) => (
                       <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
                   </select>

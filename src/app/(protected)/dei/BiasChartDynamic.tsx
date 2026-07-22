@@ -9,6 +9,6 @@ const BiasChart = dynamic(() => import("./BiasChart"), {
   ),
 });
 
-export default function BiasChartDynamic(props: any) {
+export default function BiasChartDynamic(props: { analysis: { group: string; avgSalary: number; deviation: number; biasFlag: boolean }[]; globalAvg: number }) {
   return <BiasChart {...props} />;
 }

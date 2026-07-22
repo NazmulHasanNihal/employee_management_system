@@ -16,7 +16,7 @@ export default async function DEIPage() {
   const audit = await q.biasAudit();
   const analysisData = audit?.analysis || [];
   const globalAvg = audit?.overallAvgSalary || 0;
-  const totalFlags = analysisData.filter((a: any) => a.biasFlag).length;
+  const totalFlags = analysisData.filter((a: { biasFlag: boolean }) => a.biasFlag).length;
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -63,7 +63,7 @@ export default async function DEIPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {analysisData.map((group: any) => (
+        {analysisData.map((group: { group: string; headcount: number; avgSalary: number; deviation: number; biasFlag: boolean }) => (
           <Card key={group.group} className={group.biasFlag ? 'border-[var(--rose)]/40' : ''}>
             <CardContent>
               <div className="mb-8 flex items-start justify-between">

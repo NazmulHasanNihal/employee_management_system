@@ -3,7 +3,6 @@ import { GraduationCap } from 'lucide-react';
 import { PageHeader } from '@/components/PageHeader';
 import { getTrainingCatalog, getComplianceTraining } from '@/server/queries';
 import { getCaller } from '@/lib/auth';
-import { getServerT } from '@/lib/i18n-server';
 import { TrainingClient } from '@/components/training/TrainingClient';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +10,6 @@ export const dynamic = 'force-dynamic';
 export default async function TrainingPage() {
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
-  const t = await getServerT();
   const [catalog, compliance] = await Promise.all([
     getTrainingCatalog(caller),
     getComplianceTraining(caller),

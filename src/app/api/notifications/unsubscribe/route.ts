@@ -3,7 +3,7 @@ import { logError } from '@/lib/logger';
 import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const caller = await getCaller();
     if (!caller) {
@@ -18,9 +18,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, user: updatedUser });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Unsubscribe Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

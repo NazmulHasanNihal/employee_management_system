@@ -20,10 +20,8 @@ export function logError(message: string, error?: unknown, extra?: Record<string
       extra: { message, ...extra },
     });
   } else if (error !== undefined) {
-    // eslint-disable-next-line no-console
     console.error(message, error);
   } else {
-    // eslint-disable-next-line no-console
     console.error(message);
   }
 }
@@ -32,10 +30,8 @@ export function logWarn(message: string, error?: unknown) {
   if (isProd) {
     Sentry.captureMessage(message, 'warning');
   } else if (error !== undefined) {
-    // eslint-disable-next-line no-console
     console.warn(message, error);
   } else {
-    // eslint-disable-next-line no-console
     console.warn(message);
   }
 }

@@ -21,19 +21,19 @@ export class MutationError extends Error {
   }
 }
 
-export function classifyError(error: any): MutationError {
-  const msg = String(error?.message ?? error ?? 'Unknown error');
-  if (/Unauthorized|not have permission|admins only/i.test(msg)) {
-    return new MutationError('UNAUTHORIZED', msg, error);
+export function classifyError(error: unknown): MutationError {
+  const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+  if (/Unauthorized|not have permission|admins only/i.test(message)) {
+    return new MutationError('UNAUTHORIZED', message, error);
   }
-  if (/Invalid|required|must be|expected/i.test(msg)) {
-    return new MutationError('VALIDATION', msg, error);
+  if (/Invalid|required|must be|expected/i.test(message)) {
+    return new MutationError('VALIDATION', message, error);
   }
-  if (/not found|does not exist/i.test(msg)) {
-    return new MutationError('NOT_FOUND', msg, error);
+  if (/not found|does not exist/i.test(message)) {
+    return new MutationError('NOT_FOUND', message, error);
   }
-  if (/already|conflict|unique/i.test(msg)) {
-    return new MutationError('CONFLICT', msg, error);
+  if (/already|conflict|unique/i.test(message)) {
+    return new MutationError('CONFLICT', message, error);
   }
-  return new MutationError('UNKNOWN', msg, error);
+  return new MutationError('UNKNOWN', message, error);
 }

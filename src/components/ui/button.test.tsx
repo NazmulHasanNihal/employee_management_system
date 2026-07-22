@@ -19,7 +19,9 @@ describe('Button', () => {
 
   it('applies the danger variant class', () => {
     render(<Button variant="danger">Delete</Button>);
-    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('btn-danger');
+    const btn = screen.getByRole('button', { name: 'Delete' });
+    expect(btn).toHaveClass('text-[var(--rose)]');
+    expect(btn).toHaveClass('border');
   });
 
   it('is disabled when the disabled prop is set', () => {

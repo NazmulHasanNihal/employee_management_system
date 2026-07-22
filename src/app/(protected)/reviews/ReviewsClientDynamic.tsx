@@ -9,6 +9,6 @@ const ReviewsClient = dynamic(() => import("./ReviewsClient"), {
   ),
 });
 
-export default function ReviewsClientDynamic(props: any) {
+export default function ReviewsClientDynamic(props: { scores: { subject: string; A: number; B: number; fullMark: number }[]; reviews: { id: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[]; canReview?: boolean; employees?: { id: string; name: string; designation: string }[] }) {
   return <ReviewsClient {...props} />;
 }

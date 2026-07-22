@@ -12,7 +12,7 @@ interface Upcoming {
   id: string;
   name: string;
   kind: 'birthday' | 'anniversary';
-  date: string;
+  date: Date;
   tenureYears?: number;
   avatarUrl?: string | null;
 }
@@ -27,7 +27,7 @@ interface History {
   id: string;
   kind: string;
   message: string;
-  sentAt: string;
+  sentAt: Date;
 }
 
 interface EngagementIslandProps {
@@ -41,12 +41,12 @@ const KIND_ICON = { birthday: Cake, anniversary: CalendarHeart, festival: PartyP
 
 export default function EngagementIsland({ initialRules, initialHistory, initialUpcoming, canManage }: EngagementIslandProps) {
   const [rules, setRules] = useState<Rule[]>(initialRules);
-  const [upcoming, setUpcoming] = useState<Upcoming[]>(initialUpcoming);
-  const [history, setHistory] = useState<History[]>(initialHistory);
+  const [upcoming] = useState<Upcoming[]>(initialUpcoming);
+  const [history] = useState<History[]>(initialHistory);
 
   const setRuleActive = trpc.engagement.setRuleActive.useMutation({
-    onSuccess: (u: any) => {
-      setRules((prev) => prev.map((r) => (r.id === (u as any).id ? (u as Rule) : r)));
+    onSuccess: (u: Rule) => {
+      setRules((prev) => prev.map((r) => (r.id === u.id ? u : r)));
       trpc.useUtils().engagement.greetings.invalidate();
     },
   });
@@ -135,7 +135,7 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
   );
 }
 
-function UpcomingCard({ title, icon: Icon, color, items }: { title: string; icon: any; color: string; items: Upcoming[] }) {
+function UpcomingCard({ title, icon: Icon, color, items }: { title: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string; items: Upcoming[] }) {
   const ring = color === 'rose' ? 'border-[var(--rose)]/30' : 'border-[var(--brand)]/30';
   const iconColor = color === 'rose' ? 'text-[var(--rose)]' : 'text-[var(--brand-strong)]';
   return (

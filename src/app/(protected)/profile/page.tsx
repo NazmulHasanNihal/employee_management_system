@@ -27,6 +27,7 @@ import {
   BioSection,
   EmploymentSection,
   IdentitySection,
+  type ProfileUser,
 } from '@/components/profile/EditableSections';
 import { SkillsManager } from '@/components/profile/SkillsManager';
 import { DocumentVault } from '@/components/profile/DocumentVault';
@@ -119,7 +120,7 @@ export default async function ProfilePage() {
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Badge variant="brand">{user.department || 'Unassigned'}</Badge>
-                <Badge variant={employmentBadge as any}>{user.employmentType || 'Full-Time'}</Badge>
+                <Badge variant={employmentBadge}>{user.employmentType || 'Full-Time'}</Badge>
                 <StatusPill
                   status={user.status === 'active' ? 'success' : user.status === 'Terminated' ? 'error' : 'pending'}
                   label={user.status || 'active'}
@@ -143,34 +144,34 @@ export default async function ProfilePage() {
               <CardTitle>Contact Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <ContactSection user={user as any} countries={countries.map((c: any) => c.name)} />
+              <ContactSection user={user as ProfileUser} countries={countries} />
             </CardContent>
           </Card>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
               <CardHeader><CardTitle>Emergency Contact</CardTitle></CardHeader>
-              <CardContent><EmergencySection user={user as any} /></CardContent>
+              <CardContent>              <EmergencySection user={user as ProfileUser} /></CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle>Employment</CardTitle></CardHeader>
-              <CardContent><EmploymentSection user={user as any} managerName={manager?.name} branchName={branch?.name ?? null} branches={branches} managers={managers} /></CardContent>
+              <CardContent><EmploymentSection user={user as ProfileUser} managerName={manager?.name} branchName={branch?.name ?? null} branches={branches} managers={managers} /></CardContent>
             </Card>
           </div>
 
           <Card>
             <CardHeader><CardTitle>Social Links</CardTitle></CardHeader>
-            <CardContent><SocialSection user={user as any} /></CardContent>
+              <CardContent><SocialSection user={user as ProfileUser} /></CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>About</CardTitle></CardHeader>
-            <CardContent><BioSection user={user as any} /></CardContent>
+              <CardContent><BioSection user={user as ProfileUser} /></CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>Bangladesh Identity</CardTitle></CardHeader>
-            <CardContent><IdentitySection user={user as any} /></CardContent>
+            <CardContent><IdentitySection user={user as ProfileUser} /></CardContent>
           </Card>
         </div>
       </div>
@@ -182,7 +183,7 @@ export default async function ProfilePage() {
             <CardTitle className="flex items-center gap-2"><Zap size={16} className="text-[var(--amber)]" /> Skills</CardTitle>
           </CardHeader>
           <CardContent>
-            <SkillsManager initialSkills={skills.map((s: any) => ({ id: s.id, skill: s.skill, level: s.level }))} />
+            <SkillsManager initialSkills={skills.map((s: { id: string; skill: string; level: number }) => ({ id: s.id, skill: s.skill, level: s.level }))} />
           </CardContent>
         </Card>
 
@@ -191,7 +192,7 @@ export default async function ProfilePage() {
             <CardTitle className="flex items-center gap-2"><FileText size={16} className="text-[var(--brand-strong)]" /> Document Vault</CardTitle>
           </CardHeader>
           <CardContent>
-            <DocumentVault documents={documents.map((d: any) => ({ id: d.id, title: d.title, url: d.url, type: d.type, createdAt: d.createdAt }))} />
+            <DocumentVault documents={documents.map((d: { id: string; title: string; url: string; type: string; createdAt: Date }) => ({ id: d.id, title: d.title, url: d.url, type: d.type, createdAt: d.createdAt }))} />
           </CardContent>
         </Card>
 
@@ -254,7 +255,7 @@ export default async function ProfilePage() {
                 icon={<Sparkles size={22} />}
               />
             ) : (
-              <ReviewsRadarIsland scores={reviews.scores as any} />
+              <ReviewsRadarIsland scores={reviews.scores} />
             )}
           </CardContent>
         </Card>
@@ -264,7 +265,7 @@ export default async function ProfilePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
           <CardContent className="pt-5">
-            <CombatStatsIsland user={user as any} />
+            <CombatStatsIsland user={user as ProfileUser} />
           </CardContent>
         </Card>
         <Card>

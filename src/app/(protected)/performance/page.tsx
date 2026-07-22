@@ -1,9 +1,8 @@
 import React from 'react';
-import { Target, TrendingUp, Star, Plus, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Target, TrendingUp, Star } from 'lucide-react';
 import { q } from '@/server/queries';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { StatusPill } from '@/components/ui/status-pill';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { getServerT } from '@/lib/i18n-server';
@@ -15,6 +14,7 @@ export const dynamic = 'force-dynamic';
 export default async function PerformancePage() {
   const t = await getServerT();
   const [objectives, reviews, readiness] = await Promise.all([q.objectives(), q.reviews(), q.promotionReadiness()]);
+  const typedReviews = reviews as { id: string; userId: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[];
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -58,7 +58,7 @@ export default async function PerformancePage() {
           </div>
 
           <div className="space-y-4">
-            {reviews?.map((rev: any) => {
+            {typedReviews?.map((rev: { id: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }) => {
               const isExceeds = String(rev.rating).includes('Exceeds');
               return (
                 <div key={rev.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--brand)]/40">

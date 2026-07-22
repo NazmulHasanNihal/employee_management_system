@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Briefcase } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { q } from '@/server/queries';
 import { requireAdmin } from '@/lib/auth';
 import { getServerT } from '@/lib/i18n-server';

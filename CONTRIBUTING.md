@@ -26,7 +26,7 @@ pnpm ts-node prisma/seed.ts
 ## Workflow
 1. Create a branch off `main`: `git checkout -b feat/short-description`.
 2. Make your change. Keep mutations going through
-   `executeServerMutation` (see `docs/adr-server-actions-vs-rest.md`).
+   `executeServerMutation` (see `README.md` → Architecture).
 3. Run the local gates before pushing:
    ```bash
    pnpm exec tsc --noEmit

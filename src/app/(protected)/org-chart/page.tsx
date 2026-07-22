@@ -29,7 +29,7 @@ export default async function OrgChartPage() {
     );
   }
 
-  const tree = (await getOrgTree()) as any;
+  const tree = await getOrgTree();
 
   return (
     <div className="flex h-full flex-col space-y-6">

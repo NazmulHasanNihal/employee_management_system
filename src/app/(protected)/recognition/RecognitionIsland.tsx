@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Zap, Flame } from 'lucide-react';
+import { Flame } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 const CATEGORIES = ['Appreciation', 'Teamwork', 'Leadership', 'Innovation', 'Customer Love'];
 
@@ -27,7 +26,7 @@ export default function RecognitionIsland() {
     },
   });
 
-  const colleagues = (users || []).filter((u: any) => u.id !== user?.id);
+  const colleagues = (users || []).filter((u: { id: string }) => u.id !== user?.id);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +45,7 @@ export default function RecognitionIsland() {
           className="ledger-input flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none"
         >
           <option value="">Select a champion...</option>
-          {colleagues.map((c: any) => (
+          {colleagues.map((c: { id: string; name: string; designation?: string }) => (
             <option key={c.id} value={c.id}>{c.name} ({c.designation || 'Staff'})</option>
           ))}
         </select>

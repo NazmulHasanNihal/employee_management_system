@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { logError } from '@/lib/logger';
 import { requireCronSecret } from '@/lib/validation';
 import { prisma } from '@/lib/prisma';
-import webpush from 'web-push';
+import webpush, { type PushSubscription } from 'web-push';
 
 /**
  * GET /api/cron/greetings
@@ -53,7 +53,7 @@ export async function GET(req: Request) {
         const dob = new Date(u.dateOfBirth);
         if (dob.getMonth() !== now.getMonth() || dob.getDate() !== now.getDate()) continue;
         const msg = birthdayRule.messageTemplate.replace('{name}', u.name);
-        await sendGreeting('birthday', u.id, u.name, msg, u.pushSub as any);
+        await sendGreeting('birthday', u.id, u.name, msg, u.pushSub as Record<string, unknown> | null);
         summary.birthdays++;
       }
     }
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
         if (jd.getMonth() !== now.getMonth() || jd.getDate() !== now.getDate()) continue;
         const years = now.getFullYear() - jd.getFullYear();
         const msg = anniversaryRule.messageTemplate.replace('{name}', u.name).replace('{years}', String(years));
-        await sendGreeting('anniversary', u.id, u.name, msg, u.pushSub as any);
+        await sendGreeting('anniversary', u.id, u.name, msg, u.pushSub as Record<string, unknown> | null);
         summary.anniversaries++;
       }
     }
@@ -84,20 +84,21 @@ export async function GET(req: Request) {
         const users = await prisma.user.findMany({ where: { status: 'active' }, select: { id: true, name: true, pushSub: true } });
         const msg = festivalRule.messageTemplate.replace('{holiday}', h.name);
         for (const u of users) {
-          await sendGreeting('festival', u.id, u.name, msg, u.pushSub as any);
+          await sendGreeting('festival', u.id, u.name, msg, u.pushSub as Record<string, unknown> | null);
         }
         summary.festivals++;
       }
     }
 
     return NextResponse.json({ ok: true, date: now.toISOString(), summary });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Greeting cron error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-async function sendGreeting(kind: string, userId: string | null, userName: string, message: string, pushSub: any) {
+async function sendGreeting(kind: string, userId: string | null, userName: string, message: string, pushSub: Record<string, unknown> | null) {
   // Idempotency: one greeting per kind+user per day.
   const today = new Date();
   const dayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -116,7 +117,7 @@ async function sendGreeting(kind: string, userId: string | null, userName: strin
 
   if (pushSub && process.env.VAPID_PRIVATE_KEY) {
     try {
-      await webpush.sendNotification(pushSub, JSON.stringify({ title: 'EMS Greetings', body: message, url: link }));
+      await webpush.sendNotification(pushSub as unknown as PushSubscription, JSON.stringify({ title: 'EMS Greetings', body: message, url: link }));
     } catch {
       // Ignore push failures (expired sub etc.) — in-app notification still created.
     }

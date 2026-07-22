@@ -14,7 +14,7 @@ import { logError } from '@/lib/logger';
 export async function runAutomationRules(
   trigger: string,
   ctx: Record<string, unknown>,
-  caller?: { id: string } | null,
+  _caller?: { id: string } | null,
 ): Promise<void> {
   try {
     const rules = await prisma.automationRule.findMany({

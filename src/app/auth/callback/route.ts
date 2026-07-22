@@ -29,7 +29,9 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
     }
   } else if (tokenHash && type) {
-    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: type as any });
+    const validTypes = ['magiclink', 'recovery', 'invite', 'email_change', 'signup', 'password'] as const;
+    const otpType = validTypes.includes(type as typeof validTypes[number]) ? type : 'magiclink';
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: otpType as 'magiclink' | 'recovery' | 'invite' | 'email_change' | 'signup' | 'password' });
     if (error) {
       return NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(error.message)}`);
     }

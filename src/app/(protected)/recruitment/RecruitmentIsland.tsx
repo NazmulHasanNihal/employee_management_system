@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Briefcase, Plus, Building, Target, Users, Send, X, Phone, FileText } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Plus, Building, Target, Users, Send, X, Phone, FileText, Briefcase } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
 
 interface RecruitmentIslandProps {
-  initialJobs: any[];
+  initialJobs: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[];
 }
 
 const STATUS_COLUMNS = ['Applied', 'Interviewing', 'Offered'];
@@ -21,15 +20,12 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
   const [jobTitle, setJobTitle] = useState('');
   const [jobDept, setJobDept] = useState('Engineering');
   const [jobLoc, setJobLoc] = useState('Remote');
-  const [jobType, setJobType] = useState('Full-Time');
   const [jobSkills, setJobSkills] = useState('');
 
   const utils = trpc.useUtils();
-  // Live jobs (seeded with server prop) so create/candidate-status refreshes in place.
-  const { data: jobsData } = trpc.recruitment.getJobs.useQuery(undefined, { initialData: initialJobs as any });
-  const liveJobs = (jobsData as any[] | undefined) ?? initialJobs ?? [];
-  // Local mirror for optimistic drag-and-drop; re-syncs from the live query.
-  const [jobsState, setJobsState] = React.useState<any[]>(liveJobs);
+  const { data: jobsData } = trpc.recruitment.getJobs.useQuery(undefined, { initialData: initialJobs });
+  const liveJobs = React.useMemo(() => (jobsData as { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[] | undefined) ?? initialJobs ?? [], [jobsData, initialJobs]);
+  const [jobsState, setJobsState] = React.useState<{ id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[]>(liveJobs);
   React.useEffect(() => { setJobsState(liveJobs); }, [liveJobs]);
 
   const createJob = trpc.recruitment.createJob.useMutation({
@@ -59,7 +55,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
       if (job.id === jobId) {
         return {
           ...job,
-          candidates: (job.candidates || []).map((cand: any) =>
+          candidates: (job.candidates || []).map((cand: { id: string; name: string; email: string; status: string }) =>
             cand.id === candidateId ? { ...cand, status: newStatus } : cand
           ),
         };
@@ -77,7 +73,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
       title: jobTitle,
       department: jobDept,
       location: jobLoc,
-      type: jobType,
+      type: 'Full-Time',
       description: 'Auto-generated ATS description',
       requiredSkills: skillsArray.length > 0 ? JSON.stringify(skillsArray) : undefined,
     });
@@ -142,7 +138,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
             icon={<Briefcase className="h-5 w-5" />}
           />
         ) : (
-          jobList.map((job: any) => {
+          jobList.map((job: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }) => {
             let reqSkills: string[] = [];
             try { if (job.requiredSkills) reqSkills = JSON.parse(job.requiredSkills); } catch { /* noop */ }
 
@@ -186,7 +182,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                           <h5 className="mb-2 border-b border-[var(--border-hairline)] pb-2 text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">
                             {statusColumn}
                           </h5>
-                          {(job.candidates || []).filter((c: any) => c.status === statusColumn || (statusColumn === 'Offered' && c.status === 'Hired')).map((cand: any) => (
+                          {(job.candidates || []).filter((c: { id: string; name: string; email: string; status: string; phone?: string; resumeUrl?: string }) => c.status === statusColumn || (statusColumn === 'Offered' && c.status === 'Hired')).map((cand: { id: string; name: string; email: string; status: string; phone?: string; resumeUrl?: string }) => (
                             <div
                               key={cand.id}
                               draggable

@@ -4,7 +4,6 @@ import { getChainOfCommand, getTeamTasks, getTeamPerformance, getMyTeam } from '
 import { getServerT } from '@/lib/i18n-server';
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { DeltaBadge } from '@/components/ui/delta-badge';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import TeamTasksBoard from '@/components/team/TeamTasksBoard';
@@ -31,11 +30,11 @@ export default async function TeamPage() {
   // Team-level derived analytics from the per-member performance array.
   const teamSummary = (() => {
     if (performance.length === 0) return { avgCompletion: 0, totalDone: 0, totalBlocked: 0, blockedRate: 0, doneThisWeek: 0 };
-    const totalTasks = performance.reduce((s, m: any) => s + (m.totalTasks || 0), 0);
-    const totalDone = performance.reduce((s, m: any) => s + (m.doneTasks || 0), 0);
-    const totalBlocked = performance.reduce((s, m: any) => s + (m.blockedTasks || 0), 0);
-    const doneThisWeek = performance.reduce((s, m: any) => s + (m.doneThisWeek || 0), 0);
-    const avgCompletion = Math.round(performance.reduce((s: number, m: any) => s + (m.completionRate || 0), 0) / performance.length);
+    const totalTasks = performance.reduce((s, m: { totalTasks: number }) => s + (m.totalTasks || 0), 0);
+    const totalDone = performance.reduce((s, m: { doneTasks: number }) => s + (m.doneTasks || 0), 0);
+    const totalBlocked = performance.reduce((s, m: { blockedTasks: number }) => s + (m.blockedTasks || 0), 0);
+    const doneThisWeek = performance.reduce((s, m: { doneThisWeek: number }) => s + (m.doneThisWeek || 0), 0);
+    const avgCompletion = Math.round(performance.reduce((s: number, m: { completionRate: number }) => s + (m.completionRate || 0), 0) / performance.length);
     const blockedRate = totalTasks > 0 ? Math.round((totalBlocked / totalTasks) * 100) : 0;
     return { avgCompletion, totalDone, totalBlocked, blockedRate, doneThisWeek };
   })();
@@ -159,7 +158,7 @@ export default async function TeamPage() {
           <CardTitle>Task Board</CardTitle>
         </CardHeader>
         <CardContent>
-          <TeamTasksBoard tasks={tasks as any} members={members} isManager={isManager} />
+          <TeamTasksBoard tasks={tasks} members={members} isManager={isManager} />
         </CardContent>
       </Card>
 
@@ -254,7 +253,7 @@ export default async function TeamPage() {
             </Card>
           </div>
           <TeamCompletionChartDynamic
-            data={performance.map((m: any) => ({ name: m.name, completionRate: m.completionRate }))}
+            data={performance.map((m: { name: string; completionRate: number }) => ({ name: m.name, completionRate: m.completionRate }))}
           />
         </>
       )}

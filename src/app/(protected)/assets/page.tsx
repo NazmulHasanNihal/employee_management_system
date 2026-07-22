@@ -8,7 +8,7 @@ import { AssetsClient } from '@/components/assets/AssetsClient';
 
 export const dynamic = 'force-dynamic';
 
-function calculateDepreciation(asset: any) {
+function calculateDepreciation(asset: { purchasePrice: number; purchaseDate: Date; depreciationYears?: number }) {
   if (!asset.purchasePrice || !asset.purchaseDate) return 0;
   const purchaseDate = new Date(asset.purchaseDate);
   const now = new Date();
@@ -23,9 +23,9 @@ export default async function AssetsPage() {
   const assets = await getAssets();
 
   const totalAssets = assets.length;
-  const totalValue = assets.reduce((acc: number, curr: any) => acc + (curr.purchasePrice || 0), 0);
+  const totalValue = assets.reduce((acc: number, curr: { purchasePrice?: number }) => acc + (curr.purchasePrice || 0), 0);
   const currentFleetValue = assets.reduce(
-    (acc: number, curr: any) => acc + calculateDepreciation(curr),
+    (acc: number, curr: { purchasePrice: number; purchaseDate: Date; depreciationYears?: number }) => acc + calculateDepreciation(curr),
     0
   );
 

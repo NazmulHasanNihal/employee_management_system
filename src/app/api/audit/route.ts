@@ -3,7 +3,7 @@ import { logError } from '@/lib/logger';
 import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(req: Request) {
+export async function GET(_req: Request) {
   try {
     const caller = await getCaller();
     if (!caller || !caller.isAdmin) {
@@ -16,9 +16,10 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ events });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Audit Fetch Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

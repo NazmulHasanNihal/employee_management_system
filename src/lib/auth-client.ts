@@ -3,21 +3,30 @@ import { createClient } from '@/lib/supabase/client';
 
 export const authClient = {
   useSession: () => {
-    const [session, setSession] = useState<{ user: any } | null>(null);
+    interface SessionUser {
+      id: string;
+      email?: string;
+      name: string;
+      role: string;
+      department: string;
+      designation: string;
+    }
+    const [session, setSession] = useState<{ user: SessionUser | null } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
       const supabase = createClient();
       
-      const formatUser = (user: any) => {
-        if (!user) return null;
+      const formatUser = (user: unknown): SessionUser | null => {
+        if (!user || typeof user !== 'object') return null;
+        const u = user as Record<string, unknown>;
         return {
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || 'User',
-          role: user.user_metadata?.role || 'Employee',
-          department: user.user_metadata?.department || 'Engineering',
-          designation: user.user_metadata?.designation || 'Employee'
+          id: String(u.id || ''),
+          email: u.email as string | undefined,
+          name: ((u.user_metadata as Record<string, unknown> | undefined)?.name as string | undefined) || 'User',
+          role: ((u.user_metadata as Record<string, unknown> | undefined)?.role as string | undefined) || 'Employee',
+          department: ((u.user_metadata as Record<string, unknown> | undefined)?.department as string | undefined) || 'Engineering',
+          designation: ((u.user_metadata as Record<string, unknown> | undefined)?.designation as string | undefined) || 'Employee'
         };
       };
 

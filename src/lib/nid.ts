@@ -22,15 +22,16 @@ const NID_CIPHER_PREFIX = 'nid:v1:';
 
 function getNidKey(): Buffer {
   const secret =
+    process.env.NID_ENCRYPTION_KEY ||
     process.env.INVITE_SECRET ||
     process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret) {
-    // Dev-only fallback. In production INVITE_SECRET (or the service-role key)
-    // MUST be set or encryption is not meaningful.
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('NID_ENCRYPTION_KEY must be set in production');
+    }
     return crypto.createHash('sha256').update('insecure-dev-nid-key-change-me').digest();
   }
-  // Derive a stable 32-byte key from the secret (HKDF-lite via SHA-256).
   return crypto.createHash('sha256').update(`ems-nid:${secret}`).digest();
 }
 

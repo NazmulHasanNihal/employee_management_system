@@ -5,7 +5,6 @@ import { getCaller } from '@/lib/auth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/EmptyState';
 import FeedbackIsland, { FeedbackMarkReviewedButton } from './FeedbackIsland';
 
 export const dynamic = 'force-dynamic';
@@ -65,7 +64,7 @@ export default async function FeedbackPage() {
                     Inbox is completely empty.
                   </div>
                 ) : (
-                  allFeedback.map((fb: any) => (
+                  allFeedback.map((fb: { id: string; type: string; status: string; content: string; anonymous: boolean; createdAt: Date; category?: string; authorName?: string }) => (
                     <div key={fb.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--rose)]/30">
                       <div className="mb-3 flex items-start justify-between">
                         <div className="flex items-center gap-2">

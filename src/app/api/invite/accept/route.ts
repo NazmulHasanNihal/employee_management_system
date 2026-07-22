@@ -4,9 +4,16 @@ import { verifyInviteToken } from '@/lib/invite';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { prisma } from '@/lib/prisma';
 import { parseApiBody, inviteAcceptSchema } from '@/lib/validation';
+import { rateLimit, provisionKey } from '@/lib/ratelimit';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const rl = await rateLimit(provisionKey(undefined, ip), { max: 5, windowMs: 60 * 60 * 1000 });
+    if (!rl.success) {
+      return NextResponse.json({ error: 'Too many attempts. Try again later.' }, { status: 429 });
+    }
+
     const parsed = await parseApiBody(req, inviteAcceptSchema);
     if ('res' in parsed) return parsed.res;
     const { token, password } = parsed.data;
@@ -39,8 +46,9 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Invite accept failed:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

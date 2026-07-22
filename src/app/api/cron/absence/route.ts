@@ -87,8 +87,9 @@ export async function GET(req: Request) {
       date: dayStart.toISOString(),
       markedAbsent: created,
     });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Absence cron error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

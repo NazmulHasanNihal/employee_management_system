@@ -1,7 +1,6 @@
 import React from 'react';
-import { ShieldCheck, FileText, Fingerprint, CheckCircle, File, Clock, Download, Upload, HardDrive } from 'lucide-react';
+import { ShieldCheck, FileText, Fingerprint, CheckCircle, File, Clock, Download, HardDrive } from 'lucide-react';
 import { q } from '@/server/queries';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
@@ -20,8 +19,8 @@ function formatSize(bytes?: number | null) {
 export default async function DocumentsPage() {
   const documents = await q.documents();
 
-  const pendingDocs = (documents || []).filter((d: any) => d.status === 'PENDING');
-  const completedDocs = (documents || []).filter((d: any) => d.status !== 'PENDING');
+  const pendingDocs = (documents || []).filter((d: { status: string }) => d.status === 'PENDING');
+  const completedDocs = (documents || []).filter((d: { status: string }) => d.status !== 'PENDING');
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -42,7 +41,7 @@ export default async function DocumentsPage() {
             <Fingerprint size={16} /> Action Required (Awaiting Signature)
           </h3>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {pendingDocs.map((doc: any) => (
+            {pendingDocs.map((doc: { id: string; title: string; createdAt: Date }) => (
               <div key={doc.id} className="relative overflow-hidden rounded-2xl border border-[var(--rose)]/40 bg-[var(--bg-panel)] p-6 transition-colors">
                 <div className="mb-4 flex justify-between items-start">
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] text-[var(--rose)]">
@@ -74,7 +73,7 @@ export default async function DocumentsPage() {
           />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {completedDocs.map((doc: any) => (
+            {completedDocs.map((doc: { id: string; title: string; signed: boolean; type: string; category: string; size?: number; createdAt: Date; url: string }) => (
               <div key={doc.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-colors hover:border-[var(--brand)]/30">
                 <div className="mb-4 flex justify-between items-start">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${doc.signed ? 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]/30' : 'bg-[var(--bg-hover)] text-[var(--text-muted)] border-[var(--border-hairline)]'}`}>

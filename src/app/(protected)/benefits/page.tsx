@@ -1,8 +1,8 @@
 import React from 'react';
-import { HeartHandshake, Shield, Sparkles, Gem, Activity, Landmark, TrendingUp, AlertCircle, Clock } from 'lucide-react';
+import { HeartHandshake, Sparkles, Gem, Activity, Landmark, TrendingUp, AlertCircle, Clock } from 'lucide-react';
 import { q } from '@/server/queries';
 import { getServerT } from '@/lib/i18n-server';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
@@ -19,9 +19,8 @@ export default async function BenefitsPage() {
   ]);
 
   const equityGrants = equity || [];
-  const equityData = equityGrants[0];
-  const vestedValue = equityGrants.reduce((sum: number, g: any) => sum + (g.vestedShares * g.currentStrikePrice), 0);
-  const totalValue = equityGrants.reduce((sum: number, g: any) => sum + (g.totalShares * g.currentStrikePrice), 0);
+  const vestedValue = equityGrants.reduce((sum: number, g: { vestedShares: number; currentStrikePrice: number }) => sum + (g.vestedShares * g.currentStrikePrice), 0);
+  const totalValue = equityGrants.reduce((sum: number, g: { totalShares: number; currentStrikePrice: number }) => sum + (g.totalShares * g.currentStrikePrice), 0);
 
   const benefitIcon = (name: string) => {
     const n = name.toLowerCase();
@@ -95,7 +94,7 @@ export default async function BenefitsPage() {
                   <div className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                     <div>
                       <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Total Grant Options</p>
-                      <p className="text-lg font-bold text-[var(--text-main)]">{equityGrants.reduce((s: number, g: any) => s + g.totalShares, 0).toLocaleString()}</p>
+                       <p className="text-lg font-bold text-[var(--text-main)]">{equityGrants.reduce((s: number, g: { totalShares: number }) => s + g.totalShares, 0).toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Total Potential Value</p>
@@ -103,7 +102,7 @@ export default async function BenefitsPage() {
                     </div>
                   </div>
 
-                  {equityGrants.map((g: any) => (
+                  {equityGrants.map((g: { id: string; totalShares: number; vestedShares: number; currentStrikePrice: number; grantDate: Date }) => (
                     <div key={g.id} className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                       <div>
                         <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Vested Shares</p>
@@ -136,7 +135,7 @@ export default async function BenefitsPage() {
           </h3>
 
           <div className="grid grid-cols-1 gap-4">
-            {benefits?.map((eb: any) => (
+            {benefits?.map((eb: { id: string; status: string; benefit: { id: string; name: string; description?: string; provider?: string } }) => (
               <div key={eb.id} className="flex flex-col justify-between gap-4 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--emerald)]/30 md:flex-row md:items-center">
                 <div className="flex items-start gap-4">
                   <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${benefitVariant(eb.benefit.name) === 'rose' ? 'bg-[var(--rose-soft)] text-[var(--rose)] border-[var(--rose)]/30' : benefitVariant(eb.benefit.name) === 'sky' ? 'bg-[var(--sky-soft)] text-[var(--sky)] border-[var(--sky)]/30' : 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]/30'}`}>

@@ -4,14 +4,20 @@ import React from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+
+interface AnalysisItem {
+  group: string;
+  avgSalary: number;
+  deviation: number;
+  biasFlag: boolean;
+}
 
 interface BiasChartProps {
-  analysis: any[];
+  analysis: AnalysisItem[];
   globalAvg: number;
 }
 
-export default function BiasChart({ analysis, globalAvg }: BiasChartProps) {
+export default function BiasChart({ analysis, globalAvg: _globalAvg }: BiasChartProps) {
   const data = (analysis || []).map((g) => ({
     group: g.group,
     avgSalary: Math.round(g.avgSalary),
@@ -38,9 +44,9 @@ export default function BiasChart({ analysis, globalAvg }: BiasChartProps) {
               borderRadius: 12,
               color: 'var(--text-main)',
             }}
-            formatter={(value: any, name: string) => {
-              if (name === 'avgSalary') return [`৳${value.toLocaleString()}`, 'Avg Salary'];
-              return [`${value}%`, 'Deviation'];
+            formatter={(value: number | string, name: string) => {
+              if (name === 'avgSalary') return [`৳${Number(value).toLocaleString()}`, 'Avg Salary'];
+              return [`${Number(value)}%`, 'Deviation'];
             }}
           />
           <Bar dataKey="avgSalary" radius={[6, 6, 0, 0]}>

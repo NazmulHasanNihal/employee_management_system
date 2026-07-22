@@ -88,12 +88,6 @@ export default function SettingsClientPage() {
     );
   }
 
-  const FLAG_COLORS: Record<string, string> = {
-    maintenanceMode: 'var(--rose)',
-    debugLogging: 'var(--brand)',
-    strictAuth: 'var(--emerald)',
-    autoProvision: 'var(--amber)',
-  };
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">

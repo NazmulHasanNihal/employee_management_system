@@ -25,7 +25,7 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
   // Live presence: managers get real-time punch updates from other employees.
   const socket = useRealtimePresence({
     room: 'attendance',
-    onMessage: (data) => {
+    onMessage: (data: { type?: string; userId?: string }) => {
       if (data?.type === 'punch') {
         // Someone else punched — refresh the manager's live stats + logs.
         utils.attendance.getAdminStats.invalidate();

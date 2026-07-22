@@ -1,6 +1,6 @@
 import { Megaphone } from 'lucide-react';
 import { getCaller } from '@/lib/auth';
-import { getNews, getDepartments } from '@/server/queries';
+import { getNews, getDepartments, type NewsItem, type Department } from '@/server/queries';
 import { PageHeader } from '@/components/PageHeader';
 import AnnouncementsFeed from '@/components/announcements/AnnouncementsFeed';
 
@@ -15,7 +15,7 @@ export default async function AnnouncementsPage() {
         subtitle="Company-wide broadcasts, team updates, and critical alerts."
         icon={<Megaphone className="h-5 w-5" />}
       />
-      <AnnouncementsFeed news={news as any} departments={departments as any} />
+      <AnnouncementsFeed news={news as NewsItem[]} departments={departments as Department[]} />
     </div>
   );
 }

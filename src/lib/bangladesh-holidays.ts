@@ -96,25 +96,32 @@ export function getBangladeshHolidays(years?: number[]): BangladeshHoliday[] {
  * yet (the schema field exists but the migration/db push is pending).
  */
 export async function seedBangladeshHolidays(
-  prisma: { holiday: { upsert: (args: any) => Promise<any> } },
+  prisma: {
+    holiday: {
+      upsert: (args: {
+        where: { date: Date };
+        create: { date: Date; name: string; nameBn: string; type: string; isTentative?: boolean };
+        update: { name: string; nameBn: string; type: string; isTentative?: boolean };
+      }) => Promise<{ id: string }>;
+    };
+  },
   holidays: BangladeshHoliday[] = BANGLADESH_HOLIDAYS
 ): Promise<number> {
   let count = 0;
   for (const h of holidays) {
     const date = new Date(h.date + 'T00:00:00Z');
-    const data: any = {
+    const data = {
       date,
       name: h.name,
       nameBn: h.nameBn,
       type: h.type,
     };
-    // Only set isTentative when the caller's schema supports it. We attempt it
-    // and let the seed script catch/ignore a missing-column error gracefully.
-    if (h.tentative !== undefined) data.isTentative = h.tentative;
+    const createData = h.tentative !== undefined ? { ...data, isTentative: h.tentative } : data;
+    const updateData = { name: h.name, nameBn: h.nameBn, type: h.type, ...(h.tentative !== undefined ? { isTentative: h.tentative } : {}) };
     await prisma.holiday.upsert({
       where: { date },
-      create: data,
-      update: { name: h.name, nameBn: h.nameBn, type: h.type, ...(h.tentative !== undefined ? { isTentative: h.tentative } : {}) },
+      create: createData,
+      update: updateData,
     });
     count++;
   }

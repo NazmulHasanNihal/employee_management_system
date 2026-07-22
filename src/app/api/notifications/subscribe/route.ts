@@ -13,19 +13,20 @@ export async function POST(req: Request) {
 
     const parsed = await parseApiBody(req, webPushSchema);
     if ('res' in parsed) return parsed.res;
-    const subscription = parsed.data.subscription as any;
+    const subscription = parsed.data.subscription as unknown;
 
     const updatedUser = await prisma.user.update({
       where: { id: caller.id },
       data: {
-        pushSub: subscription,
+        pushSub: subscription as any,
       },
     });
 
     return NextResponse.json({ success: true, user: updatedUser });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Subscribe Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

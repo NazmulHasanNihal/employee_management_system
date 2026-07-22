@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-oxc';
 
 // Component tests (K) run in jsdom with React Testing Library.
 //   pnpm test:component   (after `pnpm install` pulls in the new devDeps)

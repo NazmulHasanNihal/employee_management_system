@@ -204,6 +204,8 @@ model Expense {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
+
+  @@index([userId, status])
 }
 
 model Penalty {
@@ -239,6 +241,9 @@ model LeaveRequest {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+
+  @@index([userId, status])
+  @@index([status])
 }
 
 // ── Bangladesh leave types (B3) ──
@@ -361,6 +366,9 @@ model Ticket {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   replies   TicketReply[]
   createdAt DateTime @default(now())
+
+  @@index([userId, status])
+  @@index([status])
 }
 
 model TicketReply {
@@ -484,6 +492,9 @@ model CalendarEvent {
   status          String    @default("Pending") // Pending, InProgress, Done, Cancelled
   reminderMinutes Int       @default(30)
   createdAt       DateTime  @default(now())
+
+  @@index([date])
+  @@index([creatorId])
 }
 
 model TeamTask {

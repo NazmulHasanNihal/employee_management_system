@@ -31,7 +31,32 @@ export interface PfRow {
   providentFund: number;
 }
 
-export function toPfCsv(payrolls: any[]): (string | number)[][] {
+export interface PfCsvRow {
+  user?: { name?: string; id?: string; baseSalary?: number };
+  month: string;
+  year: number;
+  baseSalary?: number;
+  providentFund: number;
+}
+
+export interface GratuityCsvRow {
+  user?: { name?: string; id?: string; baseSalary?: number };
+  month: string;
+  year: number;
+  baseSalary?: number;
+  gratuityAccrued: number;
+}
+
+export interface FestivalBonusCsvRow {
+  user?: { name?: string; id?: string };
+  year: number;
+  occasion: string;
+  baseSalarySnapshot: number;
+  amount: number;
+  status: string;
+}
+
+export function toPfCsv(payrolls: PfCsvRow[]): (string | number)[][] {
   const header = ['Employee', 'Employee ID', 'Month', 'Year', 'Basic Salary (BDT)', 'Provident Fund (BDT)'];
   const body = payrolls.map((p) => [
     p.user?.name || 'N/A',
@@ -44,7 +69,7 @@ export function toPfCsv(payrolls: any[]): (string | number)[][] {
   return [header, ...body];
 }
 
-export function toGratuityCsv(payrolls: any[]): (string | number)[][] {
+export function toGratuityCsv(payrolls: GratuityCsvRow[]): (string | number)[][] {
   const header = ['Employee', 'Employee ID', 'Month', 'Year', 'Basic Salary (BDT)', 'Gratuity Accrued (BDT)'];
   const body = payrolls.map((p) => [
     p.user?.name || 'N/A',
@@ -57,7 +82,7 @@ export function toGratuityCsv(payrolls: any[]): (string | number)[][] {
   return [header, ...body];
 }
 
-export function toFestivalBonusCsv(festivalBonuses: any[]): (string | number)[][] {
+export function toFestivalBonusCsv(festivalBonuses: FestivalBonusCsvRow[]): (string | number)[][] {
   const header = ['Employee', 'Employee ID', 'Year', 'Occasion', 'Basic Salary (BDT)', 'Festival Bonus (BDT)', 'Status'];
   const body = festivalBonuses.map((f) => [
     f.user?.name || 'N/A',

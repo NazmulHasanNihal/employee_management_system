@@ -13,14 +13,14 @@ export default async function GridPage() {
 
   return (
     <PresenceGrid
-      employees={(employees as any[]).map((e) => ({
+      employees={employees.map((e) => ({
         id: e.id,
         name: e.name,
         role: e.role,
         department: e.department,
         designation: e.designation,
       }))}
-      active={(active as any[]).map((a) => ({ id: a.id }))}
+      active={active.map((a) => ({ id: a.id }))}
     />
   );
 }

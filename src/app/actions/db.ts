@@ -2,11 +2,10 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import * as Sentry from '@sentry/nextjs';
-import { logError, logWarn } from '@/lib/logger';
+import { logError } from '@/lib/logger';
 import { MutationError, classifyError } from '@/lib/mutation-error';
 import { runAutomationRules } from '@/server/automation';
 import { prisma } from '@/lib/prisma';
-import { createClient } from '@/lib/supabase/server';
 import webpush from 'web-push';
 import { canModifyUser } from '@/lib/hierarchy';
 import { getCaller, type Caller } from '@/lib/auth';
@@ -48,6 +47,16 @@ function canCreateNews(caller: Caller | null): boolean {
 function callerTenantWhere(caller: Caller | null): { tenantId: string } | Record<string, never> {
   const tenantId = caller?.tenantId ?? null;
   return tenantId ? { tenantId } : {};
+}
+
+function withTenantUserScope(caller: Caller | null): Record<string, unknown> {
+  const tenantId = caller?.tenantId ?? null;
+  return tenantId ? { user: { tenantId } } : {};
+}
+
+function mergeWhere<T extends Record<string, unknown>>(base: T, extra: Record<string, unknown>): T {
+  if (Object.keys(extra).length === 0) return base;
+  return { ...base, ...extra };
 }
 
 // Resolve a leave request's `type` string to its canonical LeaveType.category.
@@ -135,23 +144,23 @@ export async function runQuery(
     // ── DASHBOARD (Enhanced) ──
     if (path === 'dashboard.getStats') {
       const headcount = await prisma.user.count({ where: tenantWhere });
-      const pendingApps = await prisma.leaveRequest.count({ where: { status: 'Pending' } });
-      const totalPayrollResult = await prisma.payroll.aggregate({ _sum: { totalAmount: true } });
+      const pendingApps = await prisma.leaveRequest.count({ where: mergeWhere({ status: 'Pending' }, withTenantUserScope(caller)) });
+      const totalPayrollResult = await prisma.payroll.aggregate({ where: withTenantUserScope(caller), _sum: { totalAmount: true } });
       const today = new Date(); today.setHours(0, 0, 0, 0);
-      const presentToday = await prisma.attendance.count({ where: { date: { gte: today } } });
+      const presentToday = await prisma.attendance.count({ where: mergeWhere({ date: { gte: today } }, withTenantUserScope(caller)) });
       const activeToday = headcount > 0 ? `${Math.round((presentToday / headcount) * 100)}%` : '0%';
       return { headcount, pendingApps, activeToday, totalPayroll: totalPayrollResult._sum.totalAmount || 0 };
     }
 
     if (path === 'dashboard.getFullStats') {
       const headcount = await prisma.user.count({ where: tenantWhere });
-      const pendingLeaves = await prisma.leaveRequest.count({ where: { status: 'Pending' } });
-      const approvedLeaves = await prisma.leaveRequest.count({ where: { status: 'Approved' } });
-      const rejectedLeaves = await prisma.leaveRequest.count({ where: { status: 'Rejected' } });
-      const totalPayrollResult = await prisma.payroll.aggregate({ _sum: { totalAmount: true } });
-      const totalExpenseResult = await prisma.expense.aggregate({ _sum: { amount: true } });
-      const pendingExpenses = await prisma.expense.count({ where: { status: 'PENDING' } });
-      const openTickets = await prisma.ticket.count({ where: { status: 'Open' } });
+      const pendingLeaves = await prisma.leaveRequest.count({ where: mergeWhere({ status: 'Pending' }, withTenantUserScope(caller)) });
+      const approvedLeaves = await prisma.leaveRequest.count({ where: mergeWhere({ status: 'Approved' }, withTenantUserScope(caller)) });
+      const rejectedLeaves = await prisma.leaveRequest.count({ where: mergeWhere({ status: 'Rejected' }, withTenantUserScope(caller)) });
+      const totalPayrollResult = await prisma.payroll.aggregate({ where: withTenantUserScope(caller), _sum: { totalAmount: true } });
+      const totalExpenseResult = await prisma.expense.aggregate({ where: mergeWhere({}, withTenantUserScope(caller)), _sum: { amount: true } });
+      const pendingExpenses = await prisma.expense.count({ where: mergeWhere({ status: 'PENDING' }, withTenantUserScope(caller)) });
+      const openTickets = await prisma.ticket.count({ where: mergeWhere({ status: 'Open' }, withTenantUserScope(caller)) });
 
       // Attendance for the last 7 days
       const attendanceTrend = [];
@@ -162,7 +171,7 @@ export async function runQuery(
         const nextDay = new Date(day);
         nextDay.setDate(nextDay.getDate() + 1);
         const count = await prisma.attendance.count({
-          where: { date: { gte: day, lt: nextDay } }
+          where: mergeWhere({ date: { gte: day, lt: nextDay } }, withTenantUserScope(caller))
         });
         attendanceTrend.push({
           day: day.toLocaleDateString('en', { weekday: 'short' }),
@@ -182,7 +191,7 @@ export async function runQuery(
       const departmentBreakdown = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
 
       // Leave breakdown by type
-      const allLeaves = await prisma.leaveRequest.findMany({ select: { type: true } });
+      const allLeaves = await prisma.leaveRequest.findMany({ where: withTenantUserScope(caller), select: { type: true } });
       const leaveTypeMap: Record<string, number> = {};
       allLeaves.forEach(l => {
         leaveTypeMap[l.type] = (leaveTypeMap[l.type] || 0) + 1;
@@ -190,10 +199,10 @@ export async function runQuery(
       const leaveBreakdown = Object.entries(leaveTypeMap).map(([type, count]) => ({ type, count }));
 
       // Task stats
-      const totalTasks = await prisma.teamTask.count();
-      const doneTasks = await prisma.teamTask.count({ where: { status: 'Done' } });
-      const inProgressTasks = await prisma.teamTask.count({ where: { status: 'InProgress' } });
-      const blockedTasks = await prisma.teamTask.count({ where: { status: 'Blocked' } });
+      const totalTasks = await prisma.teamTask.count({ where: withTenantUserScope(caller) });
+      const doneTasks = await prisma.teamTask.count({ where: mergeWhere({ status: 'Done' }, withTenantUserScope(caller)) });
+      const inProgressTasks = await prisma.teamTask.count({ where: mergeWhere({ status: 'InProgress' }, withTenantUserScope(caller)) });
+      const blockedTasks = await prisma.teamTask.count({ where: mergeWhere({ status: 'Blocked' }, withTenantUserScope(caller)) });
 
       // Recent hires (last 30 days)
       const thirtyDaysAgo = new Date();
@@ -221,7 +230,7 @@ export async function runQuery(
       });
 
       // Expense breakdown by category
-      const allExpenses = await prisma.expense.findMany({ select: { category: true, amount: true, status: true } });
+      const allExpenses = await prisma.expense.findMany({ where: withTenantUserScope(caller), select: { category: true, amount: true, status: true } });
       const expenseCatMap: Record<string, number> = {};
       allExpenses.forEach(e => {
         expenseCatMap[e.category] = (expenseCatMap[e.category] || 0) + e.amount;
@@ -229,7 +238,7 @@ export async function runQuery(
       const expenseBreakdown = Object.entries(expenseCatMap).map(([category, amount]) => ({ category, amount: Math.round(amount) }));
 
       const today = new Date(); today.setHours(0, 0, 0, 0);
-      const presentToday = await prisma.attendance.count({ where: { date: { gte: today } } });
+      const presentToday = await prisma.attendance.count({ where: mergeWhere({ date: { gte: today } }, withTenantUserScope(caller)) });
       const attendanceRate = headcount > 0 ? Math.round((presentToday / headcount) * 100) : 0;
 
       return {
@@ -312,14 +321,26 @@ export async function runQuery(
     if (path === 'registry.getAll' || path === 'registry.searchEmployees') {
       return await prisma.user.findMany({
         where: callerTenantWhere(caller),
-        include: { manager: true },
+        select: {
+          id: true, name: true, email: true, role: true,
+          department: true, designation: true, avatarUrl: true,
+          status: true, isOnboarded: true, managerId: true,
+          manager: { select: { id: true, name: true, role: true } },
+        },
         orderBy: { name: 'asc' },
       });
     }
 
     // ── ORG CHART ──
     if (path === 'orgchart.getOrgData' || path === 'orgchart.getTree' || path === 'team.getOrgChart') {
-      const users = await prisma.user.findMany({ where: callerTenantWhere(caller) });
+      const users = await prisma.user.findMany({
+        where: callerTenantWhere(caller),
+        select: {
+          id: true, name: true, email: true, role: true,
+          department: true, designation: true, avatarUrl: true,
+          managerId: true, status: true, isOnboarded: true,
+        },
+      });
       // Build tree from flat list
       const userMap: any = {};
       users.forEach(u => userMap[u.id] = { ...u, children: [] });
@@ -362,7 +383,7 @@ export async function runQuery(
     // ── TEAM (Enhanced - Chain of Command) ──
     if (path === 'team.getMyTeam') {
       if (isAdmin || isCEO) {
-        const directReports = await prisma.user.findMany();
+        const directReports = await prisma.user.findMany({ where: tenantWhere });
         return { teamId: 'all', directReports };
       }
       const directReports = await prisma.user.findMany({ where: { managerId: userId } });
@@ -433,6 +454,7 @@ export async function runQuery(
       // Employees see tasks assigned to them
       if (isAdmin || isCEO) {
         return await prisma.teamTask.findMany({
+          where: withTenantUserScope(caller),
           include: { assignee: { select: { id: true, name: true, avatarUrl: true, designation: true } }, assigner: { select: { id: true, name: true } } },
           orderBy: { createdAt: 'desc' }
         });
@@ -459,7 +481,7 @@ export async function runQuery(
       // Get team members (direct reports or peers)
       let memberIds: string[] = [];
       if (isAdmin || isCEO) {
-        memberIds = (await prisma.user.findMany({ select: { id: true } })).map(u => u.id);
+        memberIds = (await prisma.user.findMany({ where: tenantWhere, select: { id: true } })).map(u => u.id);
       } else {
         memberIds = (await prisma.user.findMany({ where: { managerId: userId }, select: { id: true } })).map(u => u.id);
         memberIds.push(userId);
@@ -495,7 +517,7 @@ export async function runQuery(
     // ── ATTENDANCE ──
     if (path === 'attendance.getLogs') {
       if (isAdmin) {
-        const logs = await prisma.attendance.findMany({ include: { user: true }, orderBy: { date: 'desc' }, take: 100 });
+        const logs = await prisma.attendance.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { date: 'desc' }, take: 100 });
         return logs.map(l => ({ ...l, userName: l.user.name }));
       }
       const logs = await prisma.attendance.findMany({ where: { userId }, include: { user: true }, orderBy: { date: 'desc' }, take: 50 });
@@ -503,17 +525,17 @@ export async function runQuery(
     }
     if (path === 'attendance.getAdminStats') {
       const today = new Date(); today.setHours(0, 0, 0, 0);
-      const onShift = await prisma.attendance.count({ where: { date: { gte: today }, clockOut: null } });
-      const lateArrivals = await prisma.attendance.count({ where: { date: { gte: today }, status: 'Late' } });
-      const absent = await prisma.attendance.count({ where: { date: { gte: today }, status: 'Absent' } });
-      const totalEmployees = await prisma.user.count();
+      const onShift = await prisma.attendance.count({ where: mergeWhere({ date: { gte: today }, clockOut: null }, withTenantUserScope(caller)) });
+      const lateArrivals = await prisma.attendance.count({ where: mergeWhere({ date: { gte: today }, status: 'Late' }, withTenantUserScope(caller)) });
+      const absent = await prisma.attendance.count({ where: mergeWhere({ date: { gte: today }, status: 'Absent' }, withTenantUserScope(caller)) });
+      const totalEmployees = await prisma.user.count({ where: tenantWhere });
       return { onShift, lateArrivals, absent, totalEmployees };
     }
 
     // ── LEAVE ──
     if (path === 'leave.getRequests') {
       if (isAdmin) {
-        return await prisma.leaveRequest.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
+        return await prisma.leaveRequest.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { createdAt: 'desc' } });
       }
       return await prisma.leaveRequest.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
     }
@@ -521,7 +543,7 @@ export async function runQuery(
     // ── PAYROLL ──
     if (path === 'payroll.getPayrolls') {
       if (isAdmin) {
-        return await prisma.payroll.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
+        return await prisma.payroll.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { createdAt: 'desc' } });
       }
       return await prisma.payroll.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
     }
@@ -529,18 +551,18 @@ export async function runQuery(
     if (path === 'payroll.getStructures') return await prisma.salaryStructure.findMany({ orderBy: { createdAt: 'desc' } });
     if (path === 'payroll.getFestivalBonuses') {
       if (isAdmin || isCEO) {
-        return await prisma.festivalBonus.findMany({ include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+        return await prisma.festivalBonus.findMany({ where: withTenantUserScope(caller), include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
       }
       return await prisma.festivalBonus.findMany({ where: { userId }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
     }
     if (path === 'payroll.getPayments') {
-      if (isAdmin || isCEO) return await prisma.payment.findMany({ include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin || isCEO) return await prisma.payment.findMany({ where: withTenantUserScope(caller), include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
       return await prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
     }
     if (path === 'payroll.getAdminStats') {
-      const totalPayroll = await prisma.payroll.aggregate({ _sum: { totalAmount: true } });
-      const employeeCount = await prisma.user.count();
-      const lastRun = await prisma.payroll.findFirst({ orderBy: { createdAt: 'desc' } });
+      const totalPayroll = await prisma.payroll.aggregate({ where: withTenantUserScope(caller), _sum: { totalAmount: true } });
+      const employeeCount = await prisma.user.count({ where: tenantWhere });
+      const lastRun = await prisma.payroll.findFirst({ where: withTenantUserScope(caller), orderBy: { createdAt: 'desc' } });
       return {
         totalYTD: totalPayroll._sum.totalAmount || 0,
         employeeCount,
@@ -551,42 +573,42 @@ export async function runQuery(
 
     // ── EXPENSES ──
     if (path === 'expenses.getAll' || path === 'expenses.getMyExpenses') {
-      if (isAdmin) return await prisma.expense.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin) return await prisma.expense.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { createdAt: 'desc' } });
       return await prisma.expense.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
     }
     if (path === 'expenses.getPenalties') {
-      if (isAdmin) return await prisma.penalty.findMany({ include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin) return await prisma.penalty.findMany({ where: withTenantUserScope(caller), include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
       return await prisma.penalty.findMany({ where: { userId }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
     }
 
     // ── ASSETS ──
-    if (path === 'assets.getAssets') return await prisma.asset.findMany({ include: { user: true } });
+    if (path === 'assets.getAssets') return await prisma.asset.findMany({ where: withTenantUserScope(caller), include: { user: true } });
 
     // ── HELPDESK ──
     if (path === 'helpdesk.getTickets') {
-      if (isAdmin) return await prisma.ticket.findMany({ include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin) return await prisma.ticket.findMany({ where: withTenantUserScope(caller), include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
       return await prisma.ticket.findMany({ where: { userId }, include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
     }
 
     // ── APPLICATIONS (Leave Requests for Admin) ──
     if (path === 'applications.list') {
-      return await prisma.leaveRequest.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
+      return await prisma.leaveRequest.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { createdAt: 'desc' } });
     }
 
     // ── DEPARTMENTS ──
     if (path === 'departments.getDepartments') return await prisma.department.findMany();
 
     // ── BRANCHES ──
-    if (path === 'branch.list') return await prisma.branch.findMany({ orderBy: { name: 'asc' } });
+    if (path === 'branch.list') return await prisma.branch.findMany({ where: tenantWhere, orderBy: { name: 'asc' } });
 
     // ── AUDIT ──
     if (path === 'audit.getLogs') {
       const events = await prisma.event.findMany({ orderBy: { timestamp: 'desc' }, take: 100 });
-      // Event actorId is a string, let's fetch the users to map them
-      const userIds = [...new Set(events.map(e => e.actorId))];
-      const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, role: true } });
-      const userMap = users.reduce((acc: any, u) => { acc[u.id] = u; return acc; }, {});
-      return events.map(e => ({ ...e, actorName: userMap[e.actorId]?.name || 'System', actorRole: userMap[e.actorId]?.role || 'N/A' }));
+      const tenantUsers = await prisma.user.findMany({ where: tenantWhere, select: { id: true, name: true, role: true } });
+      const userMap = tenantUsers.reduce<Record<string, { id: string; name: string; role: string }>>((acc, u) => { acc[u.id] = u; return acc; }, {});
+      return events
+        .filter(e => userMap[e.actorId])
+        .map(e => ({ ...e, actorName: userMap[e.actorId]?.name || 'System', actorRole: userMap[e.actorId]?.role || 'N/A' }));
     }
 
     // ── NOTIFICATIONS ──
@@ -597,7 +619,7 @@ export async function runQuery(
 
     // ── ENGAGEMENT (recent events) ──
     if (path === 'engagement.getRecent') {
-      const recentUsers = await prisma.user.findMany({ orderBy: { createdAt: 'desc' }, take: 5, select: { name: true, createdAt: true, designation: true } });
+      const recentUsers = await prisma.user.findMany({ where: tenantWhere, orderBy: { createdAt: 'desc' }, take: 5, select: { name: true, createdAt: true, designation: true } });
       return recentUsers.map(u => ({ name: u.name, type: 'New Hire', date: u.createdAt }));
     }
 
@@ -689,11 +711,11 @@ export async function runQuery(
       const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
       const dayEnd = new Date(date); dayEnd.setHours(23, 59, 59, 999);
       const assignments = await prisma.shiftAssignment.findMany({
-        where: { date: { gte: dayStart, lte: dayEnd } },
+        where: mergeWhere({ date: { gte: dayStart, lte: dayEnd } }, withTenantUserScope(caller)),
         include: { user: { select: { name: true, role: true, avatarUrl: true } }, shift: true, team: true },
         orderBy: { createdAt: 'asc' }
       });
-      return assignments.map((a: any) => ({
+      return assignments.map((a) => ({
         id: a.id,
         shiftId: a.shiftId,
         userId: a.userId,
@@ -710,6 +732,7 @@ export async function runQuery(
     if (path === 'shifts.getTeams') {
       if (!isAdmin && !isCEO) return [];
       return await prisma.team.findMany({
+        where: withTenantUserScope(caller),
         orderBy: { name: 'asc' },
         include: { lead: { select: { name: true } }, branch: true },
       });
@@ -736,6 +759,7 @@ export async function runQuery(
         orderBy: { createdAt: 'desc' }
       }).then((reviews: any[]) => reviews.map((r: any) => ({
         id: r.id,
+        userId: r.userId,
         reviewPeriod: r.reviewPeriod,
         rating: r.rating,
         comments: r.comments,
@@ -747,6 +771,7 @@ export async function runQuery(
     if (path === 'calibration.getSessions') {
       if (!isAdmin && !isCEO) return [];
       return prisma.calibrationSession.findMany({
+        where: { createdBy: { tenantId: caller?.tenantId ?? '' } },
         include: { createdBy: { select: { name: true } }, entries: { include: { user: { select: { name: true } } } } },
         orderBy: { createdAt: 'desc' },
       });
@@ -786,7 +811,7 @@ export async function runQuery(
       const history = isPriv ? await prisma.greetingLog.findMany({ where: { sentAt: { gte: since } }, orderBy: { sentAt: 'desc' }, take: 50 }) : [];
       const now = new Date();
       const in30 = new Date(); in30.setDate(in30.getDate() + 30);
-      const users = await prisma.user.findMany({ where: { status: 'active', OR: [{ dateOfBirth: { not: null } }, { joinDate: { not: null } }] }, select: { id: true, name: true, dateOfBirth: true, joinDate: true, avatarUrl: true } });
+      const users = await prisma.user.findMany({ where: mergeWhere({ status: 'active', OR: [{ dateOfBirth: { not: null } }, { joinDate: { not: null } }] }, tenantWhere), select: { id: true, name: true, dateOfBirth: true, joinDate: true, avatarUrl: true } });
       const upcoming: any[] = [];
       for (const u of users) {
         if (u.dateOfBirth) {
@@ -860,7 +885,7 @@ export async function runQuery(
     if (path === 'presence.getActive') {
       const since = new Date(Date.now() - 5 * 60 * 1000); // 5 min window
       const active = await prisma.user.findMany({
-        where: { lastSeen: { gte: since }, status: 'active' },
+        where: mergeWhere({ lastSeen: { gte: since }, status: 'active' }, tenantWhere),
         select: { id: true, name: true, lastSeen: true, avatarUrl: true, department: true }
       });
       return active;
@@ -890,10 +915,11 @@ export async function runQuery(
     // ── RECOGNITION ──
     if (path === 'recognition.getRecentKudos') {
       return await prisma.kudo.findMany({
+        where: withTenantUserScope(caller),
         include: { sender: { select: { name: true, avatarUrl: true } }, receiver: { select: { name: true } } },
         orderBy: { createdAt: 'desc' },
         take: 30
-      }).then((kudos: any[]) => kudos.map((k: any) => ({
+      }).then((kudos) => kudos.map((k) => ({
         id: k.id,
         message: k.message,
         senderName: k.sender?.name || 'Anonymous',
@@ -907,9 +933,10 @@ export async function runQuery(
     if (path === 'feedback.getAllFeedback') {
       if (!isAdmin && !isCEO) return [];
       return await prisma.feedback.findMany({
+        where: withTenantUserScope(caller),
         include: { author: { select: { name: true } } },
         orderBy: { createdAt: 'desc' }
-      }).then((fb: any[]) => fb.map((f: any) => ({
+      }).then((fb) => fb.map((f) => ({
         id: f.id,
         content: f.content,
         type: f.type,
@@ -944,7 +971,7 @@ export async function runQuery(
       const now = new Date();
       const soon = new Date(); soon.setDate(now.getDate() + 30);
       return await prisma.certification.findMany({
-        where: { expiryDate: { gte: now, lte: soon } },
+        where: mergeWhere({ expiryDate: { gte: now, lte: soon } }, withTenantUserScope(caller)),
         include: { user: { select: { name: true, department: true } } },
         orderBy: { expiryDate: 'asc' }
       });
@@ -983,7 +1010,7 @@ export async function runQuery(
       if (!isAdmin && !isCEO) return { analysis: [], overallAvgSalary: 0 };
       // Group users by department and compare average baseSalary.
       const users = await prisma.user.findMany({
-        where: { baseSalary: { not: null }, department: { not: null } },
+        where: mergeWhere({ baseSalary: { not: null }, department: { not: null } }, tenantWhere),
         select: { department: true, baseSalary: true }
       });
       const groups: Record<string, number[]> = {};
@@ -1044,7 +1071,7 @@ export async function runQuery(
 
     // ── HELPDESK ──
     if (path === 'helpdesk.getTickets') {
-      if (isAdmin) return await prisma.ticket.findMany({ include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin) return await prisma.ticket.findMany({ where: withTenantUserScope(caller), include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
       if (!userId) return [];
       return await prisma.ticket.findMany({ where: { userId }, include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
     }
@@ -1070,7 +1097,7 @@ export async function runQuery(
       const WORKING_DAYS = 30;
 
       const users = await prisma.user.findMany({
-        where: { status: 'active' },
+        where: mergeWhere({ status: 'active' }, tenantWhere),
         select: { id: true, baseSalary: true, createdAt: true },
       });
 
@@ -1110,9 +1137,10 @@ export async function runQuery(
     }
 
     return [];
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError(`Error executing ${path}:`, error);
-    throw new Error(error.message);
+    throw new Error(message);
   }
 }
 
@@ -1127,6 +1155,7 @@ async function runMutation(path: string, input: any) {
     const isAdmin = caller?.isAdmin ?? false;
     const isCEO = caller?.isCEO ?? false;
     const userId = caller?.id;
+    const tenantWhere = callerTenantWhere(caller);
 
     // ── PROFILE (Self) ──
     if (path === 'profile.updateMyProfile') {
@@ -1153,9 +1182,9 @@ async function runMutation(path: string, input: any) {
     // ── REGISTRY ──
     if (path === 'registry.createEmployee') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      // Strip privileged fields that a client must never self-assign.
       const { isOwner, role, status, ...safeData } = input || {};
-      return await prisma.user.create({ data: safeData as any });
+      const tenantId = caller?.tenantId || undefined;
+      return await prisma.user.create({ data: { ...safeData, tenantId } as any });
     }
     if (path === 'registry.updateEmployee') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
@@ -1327,7 +1356,7 @@ async function runMutation(path: string, input: any) {
         logError('Leave automation failed (non-fatal):', autoErr);
       }
       // Notify all admins
-      const admins = await prisma.user.findMany({ where: { role: { in: ['Admin', 'HR Manager'] } } });
+      const admins = await prisma.user.findMany({ where: mergeWhere({ role: { in: ['Admin', 'HR Manager'] } }, tenantWhere) });
       for (const admin of admins) {
         await prisma.notification.create({
           data: {
@@ -1475,6 +1504,11 @@ async function runMutation(path: string, input: any) {
 
     // ── NOTIFICATIONS ──
     if (path === 'notifications.markRead') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      const notification = await prisma.notification.findUnique({ where: { id: input.id } });
+      if (!notification || notification.userId !== userId) {
+        throw new MutationError('NOT_FOUND', 'Notification not found');
+      }
       return await prisma.notification.update({ where: { id: input.id }, data: { read: true } });
     }
     if (path === 'notifications.markAllRead') {
@@ -1542,9 +1576,9 @@ async function runMutation(path: string, input: any) {
       // Send notifications
       let targetUsers;
       if (input.category === 'Team' && input.targetTeam) {
-        targetUsers = await prisma.user.findMany({ where: { department: input.targetTeam, NOT: { id: userId } } });
+        targetUsers = await prisma.user.findMany({ where: mergeWhere({ department: input.targetTeam, NOT: { id: userId } }, tenantWhere) });
       } else {
-        targetUsers = await prisma.user.findMany({ where: { NOT: { id: userId } } });
+        targetUsers = await prisma.user.findMany({ where: mergeWhere({ NOT: { id: userId } }, tenantWhere) });
       }
 
       const priorityLabel = input.priority === 'Emergency' ? '🚨 EMERGENCY' : input.priority === 'High' ? '⚠️ HIGH PRIORITY' : '';
@@ -1701,7 +1735,7 @@ async function runMutation(path: string, input: any) {
 
       // Notify team if team event
       if (input.targetTeam) {
-        const teamMembers = await prisma.user.findMany({ where: { department: input.targetTeam, NOT: { id: userId } } });
+        const teamMembers = await prisma.user.findMany({ where: mergeWhere({ department: input.targetTeam, NOT: { id: userId } }, tenantWhere) });
         for (const member of teamMembers) {
           await prisma.notification.create({
             data: {
@@ -1777,9 +1811,11 @@ async function runMutation(path: string, input: any) {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       const dateStr = input?.startDate || new Date().toISOString();
       const date = new Date(dateStr);
-      const shifts = await prisma.shift.findMany();
+      const shifts = await prisma.shift.findMany({
+        where: { branch: { tenantId: caller?.tenantId ?? '' } },
+      });
       if (shifts.length === 0) throw new Error('No shifts configured');
-      const employees = await prisma.user.findMany({ where: { status: 'active', role: { not: 'CEO' } } });
+      const employees = await prisma.user.findMany({ where: mergeWhere({ status: 'active', role: { not: 'CEO' } }, tenantWhere) });
       if (employees.length === 0) return { success: true, assigned: 0 };
       // Simple round-robin heuristic across the active shifts.
       let i = 0;
@@ -1951,12 +1987,12 @@ async function runMutation(path: string, input: any) {
       try { requiredSkills = job.requiredSkills ? JSON.parse(job.requiredSkills) : []; } catch { requiredSkills = []; }
       const reqLower = requiredSkills.map((s: string) => s.toLowerCase());
       const candidates = await prisma.user.findMany({
-        where: { status: 'active', id: { not: userId } },
+        where: mergeWhere({ status: 'active', id: { not: userId } }, tenantWhere),
         include: { skills: true }
       });
       const matches = candidates
-        .map((u: any) => {
-          const userSkills = u.skills.map((s: any) => s.skill.toLowerCase());
+        .map((u) => {
+          const userSkills = u.skills.map((s) => s.skill.toLowerCase());
           const matched = reqLower.filter((r) => userSkills.some((us: string) => us.includes(r)));
           return { id: u.id, name: u.name, department: u.department, matchedSkills: matched };
         })

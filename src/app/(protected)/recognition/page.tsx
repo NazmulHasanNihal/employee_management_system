@@ -1,11 +1,10 @@
-import React from 'react';
-import { Trophy, Award, Heart, Star, Crown } from 'lucide-react';
+import { Award, Star, Heart, Trophy, Crown } from 'lucide-react';
 import { q } from '@/server/queries';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Avatar } from '@/components/ui/avatar';
 import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/EmptyState';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar } from '@/components/ui/avatar';
+import { EmptyState } from '@/components/EmptyState';
 import RecognitionIsland from './RecognitionIsland';
 
 export const dynamic = 'force-dynamic';
@@ -53,7 +52,7 @@ export default async function RecognitionPage() {
               {leaderboard.length === 0 ? (
                 <p className="text-sm text-[var(--text-muted)]">No kudos awarded yet.</p>
               ) : (
-                leaderboard.map((u: any, i: number) => (
+                leaderboard.map((u: { userId: string; name: string; avatarUrl: string | null; count: number }, i: number) => (
                   <div key={u.userId} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--amber-soft)] text-xs font-bold text-[var(--amber)]">{i + 1}</span>
                     <Avatar src={u.avatarUrl} name={u.name} size="sm" />
@@ -85,7 +84,7 @@ export default async function RecognitionPage() {
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {kudos.map((kudo: any) => (
+              {kudos.map((kudo: { id: string; receiverName: string; senderAvatar: string | null; message: string; senderName: string; category: string; createdAt: Date }) => (
                 <div key={kudo.id} className="relative overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-all hover:border-[var(--amber)]/40 hover:shadow-md">
                   <div className="mb-4 flex items-start justify-between">
                     <div>

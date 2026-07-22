@@ -3,16 +3,21 @@
 import React, { useState } from 'react';
 import { Plus, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
-import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+interface Objective {
+  id: string;
+  title: string;
+  status: string;
+  progress: number;
+}
+
 interface PerformanceIslandProps {
-  initialObjectives: any[];
+  initialObjectives: Objective[];
 }
 
 export default function PerformanceIsland({ initialObjectives }: PerformanceIslandProps) {
-  const { user } = useUser();
   const [newTitle, setNewTitle] = useState('');
 
   const utils = trpc.useUtils();
@@ -24,7 +29,6 @@ export default function PerformanceIsland({ initialObjectives }: PerformanceIsla
     onSuccess: () => utils.performance.getObjectives.invalidate(),
   });
 
-  // Prefill the trpc cache so optimistic interactions are consistent with server data.
   trpc.performance.getObjectives.useQuery(undefined, {
     initialData: initialObjectives,
   });
@@ -32,7 +36,7 @@ export default function PerformanceIsland({ initialObjectives }: PerformanceIsla
   const handleAddObjective = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    createObj.mutate({ userId: user.id, title: newTitle });
+    createObj.mutate({ title: newTitle });
     setNewTitle('');
   };
 
@@ -40,12 +44,6 @@ export default function PerformanceIsland({ initialObjectives }: PerformanceIsla
     if (status === 'Completed') return <CheckCircle2 size={14} className="text-[var(--emerald)]" />;
     if (status === 'At Risk') return <AlertCircle size={14} className="text-[var(--rose)]" />;
     return <Clock size={14} className="text-[var(--amber)]" />;
-  };
-
-  const getStatusVariant = (status: string): 'emerald' | 'rose' | 'amber' => {
-    if (status === 'Completed') return 'emerald';
-    if (status === 'At Risk') return 'rose';
-    return 'amber';
   };
 
   return (
@@ -67,7 +65,7 @@ export default function PerformanceIsland({ initialObjectives }: PerformanceIsla
       </form>
 
       <div className="space-y-3">
-        {initialObjectives?.map((obj: any) => (
+        {initialObjectives?.map((obj: Objective) => (
           <div key={obj.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--brand)]/30">
             <div className="mb-4 flex justify-between items-center">
               <span className="font-semibold text-[var(--text-main)] text-sm md:text-base">{obj.title}</span>

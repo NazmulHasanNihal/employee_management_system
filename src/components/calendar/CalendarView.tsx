@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
 
 type ViewMode = 'month' | 'week' | 'agenda';
-type EventType = 'Holiday' | 'Meeting' | 'Payroll' | 'Task' | 'Reminder' | 'Social' | 'General';
+export type EventType = 'Holiday' | 'Meeting' | 'Payroll' | 'Task' | 'Reminder' | 'Social' | 'General';
 type Derived = 'event' | 'holiday' | 'shift' | 'birthday';
 
 const EVENT_TYPE: Record<string, { tone: string; bg: string; icon: any }> = {

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Gift, Cake, CalendarHeart } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import { q } from '@/server/queries';
 import { getServerT } from '@/lib/i18n-server';
 import { PageHeader } from '@/components/PageHeader';
+import EngagementIsland from './EngagementIsland';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,13 +19,11 @@ export default async function EngagementPage() {
         subtitle={t('Celebrate team birthdays, work anniversaries, and festivals together.')}
       />
       <EngagementIsland
-        initialRules={data.rules as any[]}
-        initialHistory={data.history as any[]}
-        initialUpcoming={data.upcoming as any[]}
-        canManage={data.canManage as boolean}
+        initialRules={data.rules}
+        initialHistory={data.history}
+        initialUpcoming={data.upcoming}
+        canManage={data.canManage}
       />
     </div>
   );
 }
-
-import EngagementIsland from './EngagementIsland';

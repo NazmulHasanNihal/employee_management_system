@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 
 interface RealtimeOptions {
   room: string;
-  onMessage?: (data: any) => void;
+  onMessage?: (data: unknown) => void;
 }
 
 interface RealtimeApi {
@@ -30,7 +30,7 @@ interface RealtimeApi {
  */
 export default function useRealtimePresence({ room, onMessage }: RealtimeOptions): RealtimeApi {
   const [connected, setConnected] = useState(false);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<unknown>(null);
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
@@ -44,8 +44,8 @@ export default function useRealtimePresence({ room, onMessage }: RealtimeOptions
     });
 
     channel
-      .on('broadcast', { event: 'msg' }, (payload: any) => {
-        onMessageRef.current?.(payload.payload);
+      .on('broadcast', { event: 'msg' }, (payload: unknown) => {
+        onMessageRef.current?.(payload);
       })
       .subscribe((status: string) => {
         setConnected(status === 'SUBSCRIBED');
@@ -63,16 +63,14 @@ export default function useRealtimePresence({ room, onMessage }: RealtimeOptions
   const send = useCallback((data: unknown) => {
     const channel = channelRef.current;
     if (!channel) return;
-    // Accept either a raw string (legacy callers JSON.stringify first) or an
-    // object (AttendanceClient passes objects) — normalise to an object.
     const payload = typeof data === 'string' ? safeParse(data) : data;
-    channel.send({ type: 'broadcast', event: 'msg', payload });
+    (channel as { send: (msg: unknown) => void }).send({ type: 'broadcast', event: 'msg', payload });
   }, []);
 
   return { send, connected };
 }
 
-function safeParse(s: string): any {
+function safeParse(s: string): unknown {
   try {
     return JSON.parse(s);
   } catch {

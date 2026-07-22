@@ -18,12 +18,12 @@ export default async function HierarchyPage() {
     getDepartments(),
   ]);
 
-  const employeeList = (employees as any[]).map((e) => ({ id: e.id, name: e.name }));
+  const employeeList = employees.map((e) => ({ id: e.id, name: e.name }));
   const deptList = departments.map((d) => ({
     id: d.id,
     name: d.name,
-    budget: (d as any).budget,
-    head: (d as any).head,
+    budget: d.budget ?? null,
+    head: null,
   }));
 
   return (
@@ -41,7 +41,7 @@ export default async function HierarchyPage() {
           icon={<ShieldAlert className="h-6 w-6" />}
         />
       ) : (
-        <HierarchyManager departments={deptList as any} employees={employeeList} />
+        <HierarchyManager departments={deptList} employees={employeeList} />
       )}
     </div>
   );

@@ -73,7 +73,7 @@ export default function AutomationsClientPage() {
 
   const removeMutation = trpc.automations.remove.useMutation({
     onSuccess: (deleted) => {
-      const id = (deleted as any)?.id ?? (deleted as any);
+      const id = deleted?.id ?? deleted;
       if (id) setRules((prev) => prev.filter((r) => r.id !== id));
       utils.automations.list.invalidate();
     },

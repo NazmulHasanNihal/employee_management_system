@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { getFestivalBonuses } from '@/server/queries';
 import { requireAdmin } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
-import { getServerT, getLanguage } from '@/lib/i18n-server';
+import { getLanguage } from '@/lib/i18n-server';
 import { FestivalBonusClient } from '@/components/payroll/FestivalBonusClient';
 
 export const dynamic = 'force-dynamic';
@@ -15,11 +15,10 @@ export const dynamic = 'force-dynamic';
 export default async function FestivalBonusPage() {
   const caller = await requireAdmin();
   const isAdmin = true;
-  const t = await getServerT();
   const lang = await getLanguage();
   const bonuses = await getFestivalBonuses(caller);
 
-  const totalPaid = bonuses.filter((b: any) => b.status === 'PAID').reduce((sum: number, b: any) => sum + (b.amount || 0), 0);
+  const totalPaid = bonuses.filter((b: { status: string }) => b.status === 'PAID').reduce((sum: number, b: { amount?: number }) => sum + (b.amount || 0), 0);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
@@ -47,7 +46,7 @@ export default async function FestivalBonusPage() {
           <CardHeader><CardTitle>Festival Bonus Register</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {bonuses.map((b: any) => (
+              {bonuses.map((b: { id: string; user?: { name: string }; occasion: string; occasionBn?: string; year: number; amount: number; status: string }) => (
                 <div key={b.id} className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                   <div>
                     <p className="font-semibold text-[var(--text-main)]">{b.user?.name || 'Unknown'}</p>

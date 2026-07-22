@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Plus, Lock, SlidersHorizontal, Check, User } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -17,6 +17,27 @@ interface Session {
   reviewPeriod: string;
   status: string;
   createdBy?: { name: string } | null;
+}
+
+interface CalibrationEntry {
+  id: string;
+  sessionId: string;
+  reviewId: string;
+  userId: string;
+  rawScore: number;
+  calibratedScore: number;
+  multiplier: number;
+  note?: string | null;
+  user?: { name: string; department: string } | null;
+}
+
+interface Review {
+  id: string;
+  userId: string;
+  reviewPeriod: string;
+  rating: string;
+  comments: string;
+  reviewerName: string;
 }
 
 interface CalibrationIslandProps {
@@ -37,7 +58,7 @@ export default function CalibrationIsland({ initialSessions }: CalibrationIsland
   const { data: reviews } = trpc.performance.getReviews.useQuery(undefined, { enabled: !!activeId });
 
   const createSession = trpc.performance.createCalibrationSession.useMutation({
-    onSuccess: (s: any) => {
+    onSuccess: (s: Session) => {
       setSessions((prev) => [s, ...prev]);
       setActiveId(s.id);
       setNewSession({ label: '', reviewPeriod: '' });
@@ -50,14 +71,14 @@ export default function CalibrationIsland({ initialSessions }: CalibrationIsland
   });
 
   const lockSession = trpc.performance.lockCalibrationSession.useMutation({
-    onSuccess: (updated: any) => {
-      setSessions((prev) => prev.map((s) => (s.id === (updated as any).id ? (updated as Session) : s)));
+    onSuccess: (updated: Session) => {
+      setSessions((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
       utils.calibration.getSessions.invalidate();
     },
   });
 
   const activeSession = sessions.find((s) => s.id === activeId) || null;
-  const entryMap = new Map((entries as any[] | undefined)?.map((e) => [e.reviewId, e]) || []);
+  const entryMap = new Map((entries as CalibrationEntry[] | undefined)?.map((e) => [e.reviewId, e]) || []);
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[320px_1fr]">
@@ -132,9 +153,9 @@ export default function CalibrationIsland({ initialSessions }: CalibrationIsland
               </div>
             </CardHeader>
             <CardContent>
-              <CalibrationGrid
-                reviews={reviews as any[] | undefined}
-                entryMap={entryMap}
+                <CalibrationGrid
+                  reviews={reviews}
+                  entryMap={entryMap}
                 locked={activeSession.status === 'Locked'}
                 onSave={(reviewId, userId, raw, mult, note) =>
                   addEntry.mutate({ sessionId: activeSession.id, reviewId, userId, rawScore: raw, multiplier: mult, note })
@@ -154,8 +175,8 @@ function CalibrationGrid({
   locked,
   onSave,
 }: {
-  reviews: any[] | undefined;
-  entryMap: Map<string, any>;
+  reviews: Review[] | undefined;
+  entryMap: Map<string, CalibrationEntry>;
   locked: boolean;
   onSave: (reviewId: string, userId: string, raw: number, mult: number, note: string) => void;
 }) {
@@ -177,8 +198,8 @@ function EntryRow({
   locked,
   onSave,
 }: {
-  review: any;
-  entry?: any;
+  review: Review;
+  entry?: CalibrationEntry;
   locked: boolean;
   onSave: (reviewId: string, userId: string, raw: number, mult: number, note: string) => void;
 }) {

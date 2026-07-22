@@ -7,6 +7,7 @@ import { useUser } from '@/components/UserProvider';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
+import type { NewsItem, Department } from '@/server/queries';
 
 type Priority = 'Low' | 'Medium' | 'High' | 'Emergency';
 type Category = 'Universal' | 'Team' | 'Other';
@@ -18,33 +19,15 @@ const PRIORITY_TONE: Record<Priority, { label: string; tone: string }> = {
   Emergency: { label: 'text-[var(--rose)] bg-[var(--rose-soft)]', tone: 'rose' },
 };
 
-const PRIORITY_ICON: Record<Priority, any> = {
+const PRIORITY_ICON: Record<Priority, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   Low: Info, Medium: BellRing, High: AlertTriangle, Emergency: AlertOctagon,
 };
 
-const CATEGORY_ICON: Record<Category, any> = {
+const CATEGORY_ICON: Record<Category, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
   Universal: Globe, Team: Users, Other: Tag,
 };
 
-interface News {
-  id: string;
-  title: string;
-  content: string;
-  priority: Priority;
-  category: Category;
-  targetTeam?: string | null;
-  author: string;
-  authorName?: string;
-  isEdited?: boolean;
-  isPinned?: boolean;
-  createdAt: string;
-  canEdit: boolean;
-  canDelete: boolean;
-}
-
-interface Department { id: string; name: string; }
-
-export default function AnnouncementsFeed({ news, departments }: { news: News[]; departments: Department[] }) {
+export default function AnnouncementsFeed({ news, departments }: { news: NewsItem[]; departments: Department[] }) {
   const { isAdmin, isHR, isCEO, user } = useUser();
   const role = user.role;
   const canPost = isCEO || isAdmin || isHR || role === 'Manager';
@@ -68,8 +51,8 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
 
   const utils = trpc.useUtils();
   // Live feed (seeded with server prop) so create/update/delete refreshes in place.
-  const { data: newsData } = trpc.news.getAll.useQuery(undefined, { initialData: news as any });
-  const liveNews = (newsData as News[] | undefined) ?? news ?? [];
+  const { data: newsData } = trpc.news.getAll.useQuery(undefined, { initialData: news });
+  const liveNews = (newsData as NewsItem[] | undefined) ?? news ?? [];
 
   const createMutation = trpc.news.create.useMutation({
     onSuccess: () => { setTitle(''); setContent(''); setPriority('Medium'); setCategory('Universal'); setTargetTeam(''); setIsPinned(false); setIsSubmitting(false); utils.news.getAll.invalidate(); },
@@ -83,11 +66,11 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
     createMutation.mutate({ title, content, priority, category, targetTeam: category === 'Team' ? targetTeam : null, isPinned });
   };
 
-  const handleEdit = (ann: News) => {
+  const handleEdit = (ann: NewsItem) => {
     setEditingId(ann.id);
     setEditTitle(ann.title);
     setEditContent(ann.content);
-    setEditPriority(ann.priority);
+    setEditPriority(ann.priority as Priority);
   };
 
   const handleSaveEdit = () => {
@@ -131,7 +114,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
         <div className="flex gap-2">
           {(['Universal', 'Team', 'Other'] as Category[]).map((c) => (
             <button key={c} onClick={() => setFilterCategory(filterCategory === c ? null : c)} className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase ${filterCategory === c ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>
-              {React.createElement(CATEGORY_ICON[c], { size: 12 })} {c}
+              {React.createElement(CATEGORY_ICON[c], { className: 'h-3 w-3' })} {c}
             </button>
           ))}
         </div>
@@ -180,22 +163,22 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
                       <div className="mb-3 flex items-start justify-between">
                         <h3 className="text-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
                         <div className="flex items-center gap-2">
-                          <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon size={12} /> {ann.priority}</span>
-                          <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon size={10} /> {ann.category}</span>
+                          <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
+                          <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
                         </div>
                       </div>
                       <p className="whitespace-pre-wrap text-sm text-[var(--text-muted)]">{ann.content}</p>
                       {ann.targetTeam && (
                         <div className="mt-3">
-                          <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users size={10} /> {ann.targetTeam} Team</span>
+                          <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>
                         </div>
                       )}
                       <div className="mt-4 flex items-center justify-between border-t border-[var(--border-hairline)] pt-3 text-[10px] uppercase text-[var(--text-muted)]">
                         <span className="flex items-center gap-2 rounded-full bg-[var(--bg-hover)] px-3 py-1">{ann.author}</span>
                         <div className="flex items-center gap-2">
                           <span>{new Date(ann.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                          {ann.canEdit && <button onClick={() => handleEdit(ann)} className="p-1.5 text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded-lg"><Edit3 size={12} /></button>}
-                          {ann.canDelete && <button onClick={() => handleDelete(ann.id)} className="p-1.5 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded-lg"><Trash2 size={12} /></button>}
+                          {ann.canEdit && <button onClick={() => handleEdit(ann)} className="p-1.5 text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded-lg"><Edit3 className="h-3 w-3" /></button>}
+                          {ann.canDelete && <button onClick={() => handleDelete(ann.id)} className="p-1.5 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded-lg"><Trash2 className="h-3 w-3" /></button>}
                         </div>
                       </div>
                     </>
@@ -231,7 +214,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: News[];
                   <div className="grid grid-cols-2 gap-2">
                     {(['Universal', 'Team', 'Other'] as Category[]).map((c) => (
                       <button key={c} onClick={() => setCategory(c)} className={`flex items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-semibold uppercase ${category === c ? 'border border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>
-                        {React.createElement(CATEGORY_ICON[c], { size: 12 })} {c}
+                        {React.createElement(CATEGORY_ICON[c], { className: 'h-3 w-3' })} {c}
                       </button>
                     ))}
                   </div>

@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Award, AlertTriangle, EyeOff, ShieldCheck, CheckCircle, ShieldAlert, Clock } from 'lucide-react';
+import { ShieldCheck, CheckCircle, Clock, EyeOff, Award, AlertTriangle, ShieldAlert } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface ComplianceIslandProps {
   isAdmin: boolean;
-  initialMyCerts: any[];
-  initialExpiringCerts: any[];
-  initialWhistleblower: any[];
+  initialMyCerts: { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date }[];
+  initialExpiringCerts: { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string } }[];
+  initialWhistleblower: { id: string; report: string; userId: string | null; status: string; assignedTo: string | null; resolution: string | null; createdAt: Date; updatedAt: Date }[];
 }
 
 type Tab = 'CERTS' | 'WHISTLEBLOWER';
@@ -25,12 +25,12 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
 
   const utils = trpc.useUtils();
   // Live lists (seeded with server props) so actions refresh in place.
-  const { data: myCertsData } = trpc.compliance.getMyCertifications.useQuery(undefined, { initialData: initialMyCerts as any });
-  const myCerts = (myCertsData as any[] | undefined) ?? initialMyCerts ?? [];
-  const { data: expiringData } = trpc.compliance.getExpiringCertifications.useQuery(undefined, { initialData: initialExpiringCerts as any });
-  const expiringCerts = (expiringData as any[] | undefined) ?? initialExpiringCerts ?? [];
-  const { data: wbData } = trpc.compliance.getWhistleblowerReports.useQuery(undefined, { initialData: initialWhistleblower as any, enabled: isAdmin });
-  const whistleblower = (wbData as any[] | undefined) ?? initialWhistleblower ?? [];
+  const { data: myCertsData } = trpc.compliance.getMyCertifications.useQuery(undefined, { initialData: initialMyCerts });
+  const myCerts = (myCertsData as { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date }[] | undefined) ?? initialMyCerts ?? [];
+  const { data: expiringData } = trpc.compliance.getExpiringCertifications.useQuery(undefined, { initialData: initialExpiringCerts });
+  const expiringCerts = (expiringData as { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string } }[] | undefined) ?? initialExpiringCerts ?? [];
+  const { data: wbData } = trpc.compliance.getWhistleblowerReports.useQuery(undefined, { initialData: initialWhistleblower, enabled: isAdmin });
+  const whistleblower = (wbData as { id: string; report: string; userId: string | null; status: string; assignedTo: string | null; resolution: string | null; createdAt: Date; updatedAt: Date }[] | undefined) ?? initialWhistleblower ?? [];
 
   const addCert = trpc.compliance.addCertification.useMutation({
     onSuccess: () => {
@@ -89,7 +89,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {myCerts.map((cert: any) => {
+                    {myCerts.map((cert: { id: string; name: string; expiryDate: Date }) => {
                       const daysLeft = Math.ceil((new Date(cert.expiryDate).getTime() - Date.now()) / (1000 * 3600 * 24));
                       const isExpiring = daysLeft <= 30;
                       return (
@@ -125,7 +125,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {expiringCerts.map((cert: any) => (
+                      {expiringCerts.map((cert: { id: string; name: string; expiryDate: Date; user?: { name: string; department: string } }) => (
                         <div key={cert.id} className="flex items-center justify-between gap-4 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-4">
                           <div className="flex-1">
                             <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
@@ -199,7 +199,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
           {isAdmin && whistleblower.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-[var(--text-main)]">Received Reports</h3>
-              {whistleblower.map((r: any) => (
+              {whistleblower.map((r: { id: string; report: string; createdAt: Date; status: string }) => (
                 <div key={r.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                   <p className="text-sm text-[var(--text-main)]">{r.report}</p>
                   <p className="mt-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{new Date(r.createdAt).toLocaleDateString()} — {r.status}</p>

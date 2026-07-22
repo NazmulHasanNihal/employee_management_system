@@ -27,7 +27,7 @@ export default async function LeavePage() {
         subtitle={t('Bangladesh leave balances, accruals, and request tracking.')}
         icon={<Umbrella className="h-5 w-5" />}
       />
-      <LeaveClient initialRequests={requests} initialBalance={balance} leaveTypes={leaveTypes as any} isAdmin={isAdmin} lang={lang} />
+      <LeaveClient initialRequests={requests} initialBalance={balance} leaveTypes={leaveTypes} isAdmin={isAdmin} lang={lang} />
     </div>
   );
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Activity } from 'lucide-react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 

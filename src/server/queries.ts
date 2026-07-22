@@ -17,8 +17,88 @@ import { prisma } from '@/lib/prisma';
 import { getCaller, type Caller } from '@/lib/auth';
 import { computeBdLeaveBalance } from '@/server/leaveBalance';
 import { unstable_cache } from 'next/cache';
+import type { Prisma } from '@prisma/client';
 
 export type { Caller };
+
+export interface OrgTree {
+  id: string;
+  name: string;
+  role: string;
+  department: string | null;
+  designation: string | null;
+  avatarUrl: string | null;
+  email: string;
+  managerId: string | null;
+  children: OrgTree[];
+}
+
+export type PayrollWithUser = Prisma.PayrollGetPayload<{ include: { user: true } }>;
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  content: string;
+  priority: string;
+  category: string;
+  targetTeam: string | null;
+  author: string;
+  authorId: string;
+  authorRole: string;
+  authorDesignation: string;
+  isEdited: boolean;
+  isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export interface Department {
+  id: string;
+  name: string;
+  budget?: number | null;
+  headId?: string | null;
+  branchId?: string | null;
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// SHARED TYPES
+// ───────────────────────────────────────────────────────────────────────────
+
+export interface ChainUser {
+  id: string;
+  name: string;
+  role: string;
+  department: string | null;
+  designation: string | null;
+  avatarUrl: string | null;
+  email: string;
+}
+
+export interface DirectReport {
+  id: string;
+  name: string;
+  role: string;
+  department: string | null;
+  designation: string | null;
+  avatarUrl: string | null;
+  email: string;
+  status: string;
+}
+
+export interface SecondLevelReport {
+  managerId: string;
+  managerName: string;
+  reports: DirectReport[];
+}
+
+export interface ChainOfCommand {
+  chain: ChainUser[];
+  directReports: DirectReport[];
+  peers: DirectReport[];
+  secondLevelReports: SecondLevelReport[];
+}
 
 // ───────────────────────────────────────────────────────────────────────────
 // DASHBOARD
@@ -53,9 +133,11 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   const branchScope: string | null | undefined = isPrivileged ? (selectedBranch ?? caller?.branchId ?? null) : null;
   // Typed loosely (as the original inferred shape) because `userBranch` is spread
   // into many different model `where` clauses (payroll/expense/leave/...).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userBranch: any = isPrivileged
     ? (branchScope ? { user: { branchId: branchScope } } : {})
     : (userId ? { userId } : {});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const branchWhere: any = isPrivileged
     ? (branchScope ? { branchId: branchScope } : {})
     : (userId ? { id: userId } : {});
@@ -66,9 +148,11 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   const tenantId = getSelectedTenantId(caller);
   if (tenantId) {
     const userTenant = { user: { tenantId } };
-    userBranch.user
-      ? (userBranch.user = { ...userBranch.user, tenantId })
-      : Object.assign(userBranch, userTenant);
+    if (userBranch.user) {
+      userBranch.user = { ...userBranch.user, tenantId };
+    } else {
+      Object.assign(userBranch, userTenant);
+    }
     branchWhere.tenantId = tenantId;
   }
 
@@ -211,7 +295,6 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   // 12-month headcount + payroll series (oldest → newest) for trend charts.
   // Two bulk queries instead of 24 per-month calls: grab all user creation
   // timestamps once and bucket in JS, and group payroll by month/year.
-  const windowStart = monthBounds(11).start;
   const userCreatedAts = (
     await prisma.user.findMany({
       where: branchWhere,
@@ -326,11 +409,22 @@ export const getEmployees = unstable_cache(
 );
 
 export const getOrgTree = unstable_cache(
-  async () => {
+  async (): Promise<OrgTree> => {
+    interface OrgUser {
+      id: string;
+      name: string;
+      role: string;
+      department: string | null;
+      designation: string | null;
+      avatarUrl: string | null;
+      email: string;
+      managerId: string | null;
+      children: OrgUser[];
+    }
     const users = await prisma.user.findMany();
-    const userMap: any = {};
+    const userMap: Record<string, OrgUser> = {};
     users.forEach((u) => (userMap[u.id] = { ...u, children: [] }));
-    let root: any = null;
+    let root: OrgUser | null = null;
     const isDescendant = (nodeId: string, ancestorId: string): boolean => {
       if (!nodeId || !userMap[nodeId]) return false;
       if (nodeId === ancestorId) return true;
@@ -383,7 +477,7 @@ export async function getEmployeesScoped(caller: Caller | null) {
 // TEAM
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getMyTeam(caller: Caller | null) {
+export async function getMyTeam(caller: Caller | null): Promise<{ teamId: string; directReports: { id: string; name: string; designation: string | null; avatarUrl: string | null }[] }> {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
   const userId = caller?.id;
@@ -392,41 +486,50 @@ export async function getMyTeam(caller: Caller | null) {
   return { teamId: 'my_team', directReports };
 }
 
-export async function getChainOfCommand(caller: Caller | null) {
+export async function getChainOfCommand(caller: Caller | null): Promise<ChainOfCommand> {
   const userId = caller?.id;
   if (!userId || !caller) return { chain: [], directReports: [], peers: [], secondLevelReports: [] };
-  const chain: any[] = [];
-  let currentUser: any = caller;
-  const seenIds = new Set<string>();
-  while (currentUser) {
-    if (seenIds.has(currentUser.id)) break;
-    seenIds.add(currentUser.id);
-    chain.unshift({
-      id: currentUser.id, name: currentUser.name, role: currentUser.role,
-      department: currentUser.department, designation: currentUser.designation,
-      avatarUrl: currentUser.avatarUrl, email: currentUser.email,
-    });
-    if (currentUser.managerId) currentUser = await prisma.user.findUnique({ where: { id: currentUser.managerId } });
-    else break;
+
+  // Collect manager IDs in the upward chain (me -> manager -> ... -> CEO) in
+  // a single pass, then bulk-fetch them all to avoid 1+N queries.
+  const managerIds: string[] = [];
+  let currentId: string | undefined = userId;
+  while (currentId) {
+    if (managerIds.includes(currentId)) break;
+    managerIds.push(currentId);
+    const u = await prisma.user.findUnique({ where: { id: currentId }, select: { managerId: true } });
+    currentId = u?.managerId ?? undefined;
   }
-  const directReports = await prisma.user.findMany({
+
+  const chainUsers = managerIds.length > 0
+    ? await prisma.user.findMany({ where: { id: { in: managerIds } } })
+    : [];
+  const userMap = new Map(chainUsers.map((u) => [u.id, u]));
+  const chain: ChainUser[] = managerIds
+    .map((id) => userMap.get(id))
+    .filter((u): u is NonNullable<typeof u> => !!u)
+    .map((u) => ({
+      id: u.id, name: u.name, role: u.role,
+      department: u.department, designation: u.designation,
+      avatarUrl: u.avatarUrl, email: u.email,
+    }));
+
+  const directReports: DirectReport[] = await prisma.user.findMany({
     where: { managerId: userId },
     select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true },
   });
-  const peers = caller?.managerId
+  const peers: DirectReport[] = caller.managerId
     ? await prisma.user.findMany({
         where: { managerId: caller.managerId, NOT: { id: userId } },
-        select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true },
+        select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true },
       })
     : [];
-  const secondLevelReports: any[] = [];
+  const secondLevelReports: SecondLevelReport[] = [];
   if (directReports.length > 0) {
-    // Single bulk query instead of one `findMany` per direct report (avoids
-    // 1+N). Group the results in JS by `managerId`.
     const reportIds = directReports.map((r) => r.id);
     const subReports = await prisma.user.findMany({
       where: { managerId: { in: reportIds } },
-      select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, managerId: true },
+      select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true, managerId: true },
     });
     const byManager = new Map<string, typeof subReports>();
     for (const s of subReports) {
@@ -451,14 +554,14 @@ export async function getTeamTasks(caller: Caller | null) {
     return prisma.teamTask.findMany({
       include: { assignee: { select: { id: true, name: true, avatarUrl: true, designation: true } }, assigner: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
-    });
+    }).then((tasks) => tasks.map((t) => ({ ...t, status: t.status as 'ToDo' | 'InProgress' | 'Done' | 'Blocked', dueDate: t.dueDate?.toISOString() || null })));
   }
   const directReportIds = (await prisma.user.findMany({ where: { managerId: userId }, select: { id: true } })).map((u) => u.id);
   return prisma.teamTask.findMany({
     where: { OR: [{ assigneeId: userId }, { assignerId: userId }, { assigneeId: { in: directReportIds } }] },
     include: { assignee: { select: { id: true, name: true, avatarUrl: true, designation: true } }, assigner: { select: { id: true, name: true } } },
     orderBy: { createdAt: 'desc' },
-  });
+  }).then((tasks) => tasks.map((t) => ({ ...t, status: t.status as 'ToDo' | 'InProgress' | 'Done' | 'Blocked', dueDate: t.dueDate?.toISOString() || null })));
 }
 
 // Cached wrapper: the rewritten function already uses ~4 bulk queries, but the
@@ -471,7 +574,7 @@ const cachedTeamPerformance = unstable_cache(
   { revalidate: 30, tags: ['team'] }
 );
 
-export async function getTeamPerformance(caller: Caller | null) {
+export async function getTeamPerformance(caller: Caller | null): Promise<{ id: string; name: string; designation: string; department: string; avatarUrl: string | null; totalTasks: number; doneTasks: number; inProgressTasks: number; blockedTasks: number; doneThisWeek: number; completionRate: number; attendanceRate: number }[]> {
   const userId = caller?.id;
   if (!userId) return [];
   const isPrivileged = caller?.isAdmin || caller?.isCEO;
@@ -569,21 +672,23 @@ export async function getAttendanceLogs(caller: Caller | null) {
 export async function getAttendanceAdminStats(caller?: Caller | null) {
   const isPrivileged = caller?.isAdmin || caller?.isCEO;
   const branchScope = isPrivileged ? await getSelectedBranchId() : null;
-  const userBranch: any = branchScope ? { user: { branchId: branchScope } } : {};
-  const branchWhere: any = branchScope ? { branchId: branchScope } : {};
-  // Multi-tenancy: scope to the active tenant when one is set (no-op otherwise).
   const tenantId = getSelectedTenantId(caller);
-  if (tenantId) {
-    userBranch.user ? (userBranch.user = { ...userBranch.user, tenantId }) : Object.assign(userBranch, { user: { tenantId } });
-    branchWhere.tenantId = tenantId;
-  }
+  const userBranch: Prisma.AttendanceWhereInput = branchScope || tenantId
+    ? {
+        ...(branchScope ? { user: { branchId: branchScope } } : {}),
+        ...(tenantId ? { user: { tenantId } } : {}),
+      }
+    : {};
+  const branchWhere = tenantId
+    ? { ...(branchScope ? { branchId: branchScope } : {}), tenantId } as Prisma.UserWhereInput
+    : (branchScope ? { branchId: branchScope } : {});
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const onShift = await prisma.attendance.count({ where: { date: { gte: today }, clockOut: null, ...userBranch } });
   const lateArrivals = await prisma.attendance.count({ where: { date: { gte: today }, status: 'Late', ...userBranch } });
   // Explicit "Absent" records plus shift-assigned employees who haven't punched in yet today.
   const explicitAbsent = await prisma.attendance.count({ where: { date: { gte: today }, status: 'Absent', ...userBranch } });
   const assignedButMissing = await prisma.shiftAssignment.count({
-    where: { date: { gte: today }, ...(branchScope ? { user: { branchId: branchScope } } : {}) },
+    where: { date: { gte: today }, ...(branchScope || tenantId ? { user: { ...(branchScope ? { branchId: branchScope } : {}), ...(tenantId ? { tenantId } : {}) } } : {}) },
   });
   const absent = Math.max(explicitAbsent, assignedButMissing > onShift ? assignedButMissing - onShift : 0);
   const totalEmployees = await prisma.user.count({ where: branchWhere });
@@ -655,7 +760,7 @@ export async function getLeaveBalance(caller: Caller | null) {
 }
 
 /** Active BD leave types used to populate the request form and balance labels. */
-export async function getLeaveTypes() {
+export async function getLeaveTypes(): Promise<{ id: string; name: string; nameBn?: string; category: string; defaultDays: number; isPaid: boolean; applicableGender?: string; isActive: boolean }[]> {
   return prisma.leaveType.findMany({ where: { isActive: true }, orderBy: { category: 'asc' } });
 }
 
@@ -663,7 +768,7 @@ export async function getLeaveTypes() {
 // PAYROLL
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getPayrolls(caller: Caller | null) {
+export async function getPayrolls(caller: Caller | null): Promise<(Prisma.PayrollGetPayload<{ include: { user: true } }>)[]> {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
   const userId = caller?.id;
@@ -734,10 +839,10 @@ export async function getPaymentsForUser(caller: Caller | null) {
 
 export async function getSalesForUser(caller: Caller | null, month?: number, year?: number) {
   const userId = caller?.id;
-  const where: any = { userId };
-  if (month) where.month = month;
-  if (year) where.year = year;
-  return prisma.sale.findMany({ where, orderBy: [{ year: 'desc' }, { month: 'desc' }] });
+  const where: Record<string, unknown> = { userId };
+  if (month) (where as { month?: number }).month = month;
+  if (year) (where as { year?: number }).year = year;
+  return prisma.sale.findMany({ where: where as Prisma.SaleWhereInput, orderBy: [{ year: 'desc' }, { month: 'desc' }] });
 }
 
 export async function getSalesMonthTotal(userId: string, month: number, year: number) {
@@ -840,7 +945,7 @@ export async function getApplications() {
 }
 
 export const getDepartments = unstable_cache(
-  () => prisma.department.findMany(),
+  async (): Promise<Department[]> => prisma.department.findMany(),
   ['departments'],
   { revalidate: 300, tags: ['departments'] }
 );
@@ -853,11 +958,11 @@ export async function getAuditLogs() {
   const events = await prisma.event.findMany({ orderBy: { timestamp: 'desc' }, take: 100 });
   const userIds = [...new Set(events.map((e) => e.actorId))];
   const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, role: true } });
-  const userMap = users.reduce((acc: any, u) => { acc[u.id] = u; return acc; }, {});
-  return events.map((e: any) => ({ ...e, actorName: userMap[e.actorId]?.name || 'System', actorRole: userMap[e.actorId]?.role || 'N/A' }));
+  const userMap = users.reduce<Record<string, { id: string; name: string; role: string }>>((acc, u) => { acc[u.id] = u; return acc; }, {});
+  return events.map((e) => ({ ...e, actorName: userMap[e.actorId]?.name || 'System', actorRole: userMap[e.actorId]?.role || 'N/A' }));
 }
 
-export async function getNews(caller: Caller | null) {
+export async function getNews(caller: Caller | null): Promise<NewsItem[]> {
   const news = await prisma.companyNews.findMany({
     orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
     include: { author: { select: { id: true, name: true, role: true, designation: true } } },
@@ -872,11 +977,11 @@ export async function getNews(caller: Caller | null) {
       if (isAdmin || isCEO) return true;
       return false;
     })
-    .map((n: any) => ({
+    .map((n) => ({
       id: n.id, title: n.title, content: n.content, priority: n.priority, category: n.category,
       targetTeam: n.targetTeam, author: n.authorName, authorId: n.authorId, authorRole: n.author.role,
       authorDesignation: n.author.designation, isEdited: n.isEdited, isPinned: n.isPinned,
-      createdAt: n.createdAt, updatedAt: n.updatedAt,
+      createdAt: n.createdAt.toISOString(), updatedAt: n.updatedAt.toISOString(),
       canEdit: isAdmin || isCEO || n.authorId === caller?.id,
       canDelete: isAdmin || isCEO || n.authorId === caller?.id,
     }));
@@ -900,9 +1005,9 @@ export interface CalendarFeedItem {
   id: string;
   title: string;
   description?: string | null;
-  date: Date;
-  endDate?: Date | null;
-  type: string;
+  date: string;
+  endDate?: string | null;
+  type: import('@/components/calendar/CalendarView').EventType;
   status: string;
   assigneeId?: string | null;
   creatorId?: string | null;
@@ -943,9 +1048,9 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
       id: e.id,
       title: e.title,
       description: e.description,
-      date: e.date,
-      endDate: e.endDate,
-      type: e.type,
+      date: e.date.toISOString(),
+      endDate: e.endDate?.toISOString() || null,
+      type: e.type as import('@/components/calendar/CalendarView').EventType,
       status: e.status,
       assigneeId: e.assigneeId,
       creatorId: e.creatorId,
@@ -956,12 +1061,12 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
   }
 
   for (const h of holidays) {
-    const tentative = (h as any).isTentative === true;
+    const tentative = h.isTentative === true;
     items.push({
       id: `holiday-${h.id}`,
       title: lang === 'bn' && h.nameBn ? h.nameBn : h.name,
       description: `Bangladesh ${h.type} holiday${tentative ? ' (tentative — pending moon sighting / govt notification)' : ''}`,
-      date: h.date,
+      date: h.date.toISOString(),
       type: 'Holiday',
       status: 'Done',
       derived: 'holiday',
@@ -978,19 +1083,19 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
       id: `birthday-${u.id}`,
       title: `${u.name}'s Birthday`,
       description: 'Team birthday',
-      date: nextBday,
+      date: nextBday.toISOString(),
       type: 'Social',
       status: 'Done',
       derived: 'birthday',
     });
   }
 
-  for (const a of shiftAssignments as any[]) {
+  for (const a of shiftAssignments) {
     items.push({
       id: `shift-${a.id}`,
       title: `${a.shift?.name || 'Shift'}: ${a.user?.name || 'Unassigned'}`,
       description: `Shift ${a.shift?.startTime}-${a.shift?.endTime}`,
-      date: a.date,
+      date: a.date.toISOString(),
       type: 'Meeting',
       status: 'Done',
       derived: 'shift',
@@ -1038,7 +1143,7 @@ export async function getShiftAssignments(caller: Caller | null, dateStr?: strin
     include: { user: { select: { name: true, role: true, avatarUrl: true } }, shift: true },
     orderBy: { createdAt: 'asc' },
   });
-  return assignments.map((a: any) => ({
+  return assignments.map((a) => ({
     id: a.id, shiftId: a.shiftId, userId: a.userId,
     userName: a.user?.name || 'Unknown', userRole: a.user?.role || 'Staff', userAvatar: a.user?.avatarUrl || null, date: a.date,
   }));
@@ -1056,7 +1161,7 @@ export async function getObjectives(caller: Caller | null, targetId?: string) {
   return prisma.objective.findMany({ where: { userId: tid }, orderBy: { createdAt: 'desc' } });
 }
 
-export async function getReviews(caller: Caller | null, targetId?: string) {
+export async function getReviews(caller: Caller | null, targetId?: string): Promise<{ id: string; userId: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[]> {
   const userId = caller?.id;
   if (!userId) return [];
   const tid = targetId || userId;
@@ -1064,10 +1169,14 @@ export async function getReviews(caller: Caller | null, targetId?: string) {
   const reviews = await prisma.review.findMany({
     where: { userId: tid }, include: { reviewer: { select: { name: true } } }, orderBy: { createdAt: 'desc' },
   });
-  return reviews.map((r: any) => ({
-    id: r.id, reviewPeriod: r.reviewPeriod, rating: r.rating, comments: r.comments,
+  return reviews.map((r) => ({
+    id: r.id,
+    userId: r.userId,
+    reviewPeriod: r.reviewPeriod,
+    rating: r.rating,
+    comments: r.comments,
     reviewerName: r.reviewer?.name || 'Manager',
-  }));
+  })) as { id: string; userId: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[];
 }
 
 /**
@@ -1089,8 +1198,8 @@ export async function getPromotionReadiness(caller: Caller | null, targetId?: st
     where: { userId: tid, date: { gte: since } },
   });
   const totalAtt = attendance.length || 1;
-  const presentOrLate = attendance.filter((a: any) => a.status === 'Present' || a.status === 'Late').length;
-  const lateCount = attendance.filter((a: any) => a.status === 'Late').length;
+  const presentOrLate = attendance.filter((a) => a.status === 'Present' || a.status === 'Late').length;
+  const lateCount = attendance.filter((a) => a.status === 'Late').length;
   const attendanceRate = (presentOrLate / totalAtt) * 100;
   const punctualityRate = ((presentOrLate - lateCount) / totalAtt) * 100;
 
@@ -1098,18 +1207,18 @@ export async function getPromotionReadiness(caller: Caller | null, targetId?: st
   const tasks = await prisma.teamTask.findMany({
     where: { assigneeId: tid, createdAt: { gte: since } },
   });
-  const completedTasks = tasks.filter((t: any) => t.status === 'Done');
-  const onTimeTasks = completedTasks.filter((t: any) => t.dueDate && t.completedAt && new Date(t.completedAt) <= new Date(t.dueDate));
+  const completedTasks = tasks.filter((t) => t.status === 'Done');
+  const onTimeTasks = completedTasks.filter((t) => t.dueDate && t.completedAt && new Date(t.completedAt) <= new Date(t.dueDate));
   const taskCompletionRate = tasks.length ? (completedTasks.length / tasks.length) * 100 : 70;
   const onTimeRate = completedTasks.length ? (onTimeTasks.length / completedTasks.length) * 100 : 70;
 
   // Objective progress (avg)
   const objectives = await prisma.objective.findMany({ where: { userId: tid } });
-  const avgObjective = objectives.length ? objectives.reduce((s: number, o: any) => s + (o.progress || 0), 0) / objectives.length : 60;
+  const avgObjective = objectives.length ? objectives.reduce((s: number, o) => s + (o.progress || 0), 0) / objectives.length : 60;
 
   // Review scores
   const reviewScores = await prisma.reviewScore.findMany({ where: { userId: tid } });
-  const avgReview = reviewScores.length ? reviewScores.reduce((s: number, r: any) => s + (r.rating || 0), 0) / reviewScores.length : 3;
+  const avgReview = reviewScores.length ? reviewScores.reduce((s: number, r) => s + (r.rating || 0), 0) / reviewScores.length : 3;
 
   const score = Math.round(
     attendanceRate * 0.25 +
@@ -1164,7 +1273,7 @@ export async function getMyReviews(caller: Caller | null) {
     return { subject, A: val, B: val, fullMark: 5 };
   });
   return {
-    reviews: reviews.map((r: any) => ({
+    reviews: reviews.map((r) => ({
       id: r.id, reviewPeriod: r.reviewPeriod, rating: r.rating, comments: r.comments,
       reviewerName: r.reviewer?.name || 'Manager',
     })),
@@ -1173,7 +1282,43 @@ export async function getMyReviews(caller: Caller | null) {
 }
 
 // ── Performance Calibration (P8) ──
-export async function getCalibrationSessions(caller: Caller | null) {
+interface CalibrationSessionRow {
+  id: string;
+  label: string;
+  reviewPeriod: string;
+  status: string;
+  createdById: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: { name: string };
+  entries: Array<{
+    id: string;
+    sessionId: string;
+    reviewId: string;
+    userId: string;
+    rawScore: number;
+    calibratedScore: number;
+    multiplier: number;
+    note: string | null;
+    createdAt: Date;
+    user: { name: string };
+  }>;
+}
+
+interface CalibrationEntryRow {
+  id: string;
+  sessionId: string;
+  reviewId: string;
+  userId: string;
+  rawScore: number;
+  calibratedScore: number;
+  multiplier: number;
+  note: string | null;
+  createdAt: Date;
+  user: { name: string; department: string };
+}
+
+export async function getCalibrationSessions(caller: Caller | null): Promise<CalibrationSessionRow[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   return prisma.calibrationSession.findMany({
     include: { createdBy: { select: { name: true } }, entries: { include: { user: { select: { name: true } } } } },
@@ -1181,7 +1326,7 @@ export async function getCalibrationSessions(caller: Caller | null) {
   });
 }
 
-export async function getCalibrationEntries(caller: Caller | null, sessionId: string) {
+export async function getCalibrationEntries(caller: Caller | null, sessionId: string): Promise<CalibrationEntryRow[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   return prisma.calibrationEntry.findMany({
     where: { sessionId },
@@ -1198,7 +1343,7 @@ export async function getEmployeeBenefits(caller: Caller | null) {
   const userId = caller?.id;
   if (!userId) return [];
   const enrollments = await prisma.benefitEnrollment.findMany({ where: { userId }, include: { benefit: true } });
-  return enrollments.map((e: any) => ({ id: e.id, status: e.status, benefit: e.benefit }));
+  return enrollments.map((e) => ({ id: e.id, status: e.status, benefit: e.benefit }));
 }
 
 export async function getEquityGrants(caller: Caller | null) {
@@ -1216,12 +1361,12 @@ export async function getActiveEnrollmentPeriod() {
 // RECOGNITION / FEEDBACK / DOCUMENTS / COMPLIANCE / RECRUITMENT / DEI
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getRecentKudos() {
+export async function getRecentKudos(): Promise<{ id: string; message: string; category: string; receiverName: string; senderName: string; senderAvatar: string | null; createdAt: Date }[]> {
   const kudos = await prisma.kudo.findMany({
     include: { sender: { select: { name: true, avatarUrl: true } }, receiver: { select: { name: true } } },
     orderBy: { createdAt: 'desc' }, take: 30,
   });
-  return kudos.map((k: any) => ({
+  return kudos.map((k) => ({
     id: k.id, message: k.message, category: k.category || 'Appreciation',
     senderName: k.sender?.name || 'Anonymous', senderAvatar: k.sender?.avatarUrl || null,
     receiverName: k.receiver?.name || 'Team', createdAt: k.createdAt,
@@ -1229,7 +1374,7 @@ export async function getRecentKudos() {
 }
 
 /** Leaderboard: top kudo recipients across the org. */
-export async function getKudoLeaderboard() {
+export async function getKudoLeaderboard(): Promise<{ userId: string; name: string; avatarUrl: string | null; count: number }[]> {
   const agg = await prisma.kudo.groupBy({
     by: ['receiverId'],
     _count: { _all: true },
@@ -1240,8 +1385,8 @@ export async function getKudoLeaderboard() {
     where: { id: { in: agg.map((a) => a.receiverId) } },
     select: { id: true, name: true, avatarUrl: true },
   });
-  const byId = Object.fromEntries(users.map((u: any) => [u.id, u]));
-  return agg.map((a: any) => ({
+  const byId = Object.fromEntries(users.map((u) => [u.id, u]));
+  return agg.map((a) => ({
     userId: a.receiverId,
     count: a._count._all,
     name: byId[a.receiverId]?.name || 'Unknown',
@@ -1252,7 +1397,7 @@ export async function getKudoLeaderboard() {
 export async function getAllFeedback(caller: Caller | null) {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   const fb = await prisma.feedback.findMany({ include: { author: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
-  return fb.map((f: any) => ({
+  return fb.map((f) => ({
     id: f.id, content: f.content, type: f.type, status: f.status, anonymous: f.anonymous,
     authorName: f.anonymous ? 'Anonymous' : (f.author?.name || 'Anonymous'), createdAt: f.createdAt,
   }));
@@ -1266,13 +1411,13 @@ export async function getDocuments(caller: Caller | null, targetId?: string) {
   return prisma.document.findMany({ where: { ownerId: tid }, orderBy: { createdAt: 'desc' } });
 }
 
-export async function getMyCertifications(caller: Caller | null) {
+export async function getMyCertifications(caller: Caller | null): Promise<{ id: string; name: string; expiryDate: Date; userId: string; createdAt: Date }[]> {
   const userId = caller?.id;
   if (!userId) return [];
   return prisma.certification.findMany({ where: { userId }, orderBy: { expiryDate: 'asc' } });
 }
 
-export async function getExpiringCertifications(caller: Caller | null) {
+export async function getExpiringCertifications(caller: Caller | null): Promise<{ id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string } }[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   const now = new Date();
   const soon = new Date(); soon.setDate(now.getDate() + 30);
@@ -1283,7 +1428,7 @@ export async function getExpiringCertifications(caller: Caller | null) {
   });
 }
 
-export async function getWhistleblowerReports(caller: Caller | null) {
+export async function getWhistleblowerReports(caller: Caller | null): Promise<{ id: string; report: string; userId: string | null; status: string; assignedTo: string | null; resolution: string | null; createdAt: Date; updatedAt: Date }[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   return prisma.whistleblowerReport.findMany({ orderBy: { createdAt: 'desc' } });
 }
@@ -1292,13 +1437,13 @@ export async function getCommitteeMembers() {
   return prisma.committeeMember.findMany({ orderBy: [{ isChair: 'desc' }, { role: 'asc' }] });
 }
 
-export async function getJobs(caller: Caller | null) {
+export async function getJobs(caller: Caller | null): Promise<{ id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   const jobs = await prisma.jobRequisition.findMany({ include: { candidates: true }, orderBy: { createdAt: 'desc' } });
-  return jobs.map((j: any) => ({
+  return jobs.map((j) => ({
     id: j.id, title: j.title, department: j.department, location: j.location, type: j.type,
     status: j.status, requiredSkills: j.requiredSkills, description: j.description,
-    candidates: j.candidates.map((c: any) => ({ id: c.id, name: c.name, email: c.email, status: c.status })),
+    candidates: j.candidates.map((c) => ({ id: c.id, name: c.name, email: c.email, status: c.status })),
   }));
 }
 
@@ -1310,10 +1455,11 @@ export async function getBiasAudit(caller: Caller | null) {
   });
   const groups: Record<string, number[]> = {};
   for (const u of users) {
-    const dept = u.department as string;
-    (groups[dept] ||= []).push(u.baseSalary as number);
+    const dept = u.department;
+    if (!dept) continue;
+    (groups[dept] ||= []).push(u.baseSalary);
   }
-  const allSalaries = users.map((u: any) => u.baseSalary as number);
+  const allSalaries = users.map((u) => u.baseSalary).filter((s): s is number => s != null);
   const globalAvg = allSalaries.length ? allSalaries.reduce((a, b) => a + b, 0) / allSalaries.length : 0;
   const analysis = Object.entries(groups).map(([dept, salaries]) => {
     const avg = salaries.reduce((a, b) => a + b, 0) / salaries.length;
@@ -1327,7 +1473,7 @@ export async function getBiasAudit(caller: Caller | null) {
 // PROFILE
 // ───────────────────────────────────────────────────────────────────────────
 
-export async function getSkills(caller: Caller | null, targetId?: string) {
+export async function getSkills(caller: Caller | null, targetId?: string): Promise<{ id: string; userId: string; skill: string; level: number }[]> {
   const userId = caller?.id;
   if (!userId) return [];
   const tid = targetId || userId;

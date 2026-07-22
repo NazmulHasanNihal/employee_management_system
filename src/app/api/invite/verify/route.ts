@@ -12,7 +12,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invite link is invalid or has expired.' }, { status: 401 });
     }
     return NextResponse.json({ email: payload.email, role: payload.role });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

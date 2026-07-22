@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useUser } from '@/components/UserProvider';
 import { updateProfileField, updateProfileBatch } from '@/app/actions/profile';
 
-type ProfileUser = {
+export type ProfileUser = {
   id: string;
   name: string;
   email: string;

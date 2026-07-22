@@ -7,7 +7,7 @@ import { DeltaBadge } from '@/components/ui/delta-badge';
 import { PayrollActions } from '@/components/payroll/PayrollActions';
 import { PayslipCard } from '@/components/payroll/PayslipCard';
 import { PaymentHub } from '@/components/payroll/PaymentHub';
-import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTotal } from '@/server/queries';
+import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTotal, type PayrollWithUser } from '@/server/queries';
 import { getCaller } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
@@ -138,7 +138,7 @@ export default async function PayrollPage() {
           />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {payrolls.map((pay: any) => (
+            {payrolls.map((pay: PayrollWithUser) => (
               <PayslipCard key={pay.id} pay={pay} isAdmin={isAdmin} currentUser={caller} />
             ))}
           </div>

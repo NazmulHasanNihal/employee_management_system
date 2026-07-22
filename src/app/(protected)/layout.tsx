@@ -92,7 +92,7 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   };
 
   // Prefetch notifications on the server so the header badge has no client round-trip.
-  let notifications: any[] = [];
+  let notifications: { id: string; userId: string; message: string; type: string; read: boolean; link?: string | null; createdAt: Date }[] = [];
   try {
     notifications = await prisma.notification.findMany({
       where: { userId: dbUser.id },

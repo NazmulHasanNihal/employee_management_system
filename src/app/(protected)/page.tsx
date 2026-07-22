@@ -4,7 +4,6 @@ import { getDashboardStats, getDashboardMyOverview, getTrainingCompliance } from
 import { PageHeader } from '@/components/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusPill } from '@/components/ui/status-pill';
 import { DeltaBadge } from '@/components/ui/delta-badge';

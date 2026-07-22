@@ -23,7 +23,7 @@ export default async function CalendarPage() {
         subtitle="Holidays, shifts, birthdays, and team schedules — all in one place."
         icon={<CalendarDays className="h-5 w-5" />}
       />
-      <CalendarView events={events as any} teamMembers={teamMembers} departments={departments as any} />
+      <CalendarView events={events} teamMembers={teamMembers} departments={departments} />
     </div>
   );
 }

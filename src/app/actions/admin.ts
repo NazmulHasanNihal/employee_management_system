@@ -1,7 +1,6 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
 import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { createInviteToken } from '@/lib/invite';
@@ -14,7 +13,7 @@ export async function getUserRoleByEmail(email: string) {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     return user?.role || 'Employee';
-  } catch (error) {
+  } catch {
     return 'Employee';
   }
 }
@@ -31,6 +30,7 @@ export interface ProvisionInput {
   joinDate?: string | null;
   baseSalary?: number | null;
   nid?: string | null;
+  tenantId?: string | null;
   // Invite mode: when true, no password is set; a signed invite link is minted
   // and the employee sets their own password. Falls back to forced-create when
   // Supabase invite email transport is unavailable.
@@ -138,6 +138,7 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
     }
 
     // Insert the user into Prisma (Neon Database).
+    const tenantId = data.tenantId || caller?.tenantId || null;
     const newUser = await prisma.user.create({
       data: {
         id: authUserId!,
@@ -155,6 +156,7 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
         nidMasked,
         status: accountStatus,
         isOnboarded: inviteMode ? false : false,
+        tenantId,
       },
     });
 
@@ -171,9 +173,10 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
       inviteToken: inviteMode ? inviteToken : null,
       inviteMode,
     };
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Provisioning failed:', error);
-    return { success: false, error: error.message };
+    return { success: false, error: message };
   }
 }
 

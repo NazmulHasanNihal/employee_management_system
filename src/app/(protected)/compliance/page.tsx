@@ -1,12 +1,9 @@
 import React from 'react';
-import { ShieldAlert, Award, AlertTriangle, EyeOff, ShieldCheck, CheckCircle } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import { q } from '@/server/queries';
 import { getCaller } from '@/lib/auth';
 import { getServerT } from '@/lib/i18n-server';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/EmptyState';
 import ComplianceIsland from './ComplianceIsland';
 
 export const dynamic = 'force-dynamic';

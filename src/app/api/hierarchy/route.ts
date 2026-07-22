@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const impersonateId = searchParams.get('impersonateId');
-    const viewMode = searchParams.get('viewMode') || 'department'; // 'department' or 'squad'
+    const _viewMode = searchParams.get('viewMode') || 'department'; // 'department' or 'squad'
 
     // Only HR / Admin / CEO may impersonate another user's hierarchy.
     const canImpersonate = caller.isHR || caller.isAdmin || caller.isCEO;
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     const targetUser = await prisma.user.findUnique({ where: { id: targetId } });
     if (!targetUser) return NextResponse.json({ error: 'Target not found' }, { status: 404 });
 
-    let users: any[] = [];
+    let users: { id: string; name: string; role: string; department: string | null; designation: string | null; avatarUrl: string | null; managerId: string | null }[] = [];
 
     // HR / Admin / CEO see the entire org.
     if (canImpersonate) {
@@ -64,13 +64,14 @@ export async function GET(req: Request) {
         targetId,
       );
 
-      users = result as any[];
+      users = result as { id: string; name: string; role: string; department: string | null; designation: string | null; avatarUrl: string | null; managerId: string | null }[];
     }
 
     return NextResponse.json({ users });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Hierarchy Fetch Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

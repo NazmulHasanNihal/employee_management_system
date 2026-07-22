@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldQuestion, Send, CheckCircle, EyeOff } from 'lucide-react';
+import { Send, CheckCircle, EyeOff } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 

@@ -34,7 +34,7 @@ export default async function CalibrationPage() {
         title={t('Performance Calibration')}
         subtitle={t('Normalize review scores across the organization per calibration cycle.')}
       />
-      <CalibrationIsland initialSessions={sessions as any[]} />
+      <CalibrationIsland initialSessions={sessions} />
     </div>
   );
 }

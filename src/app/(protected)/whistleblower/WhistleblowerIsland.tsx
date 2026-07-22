@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { EyeOff, Users, UserPlus, Trash2, Crown, CheckCircle2, Search, ChevronRight } from 'lucide-react';
+import { EyeOff, Users, UserPlus, Trash2, Crown, Search, ChevronRight } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +17,7 @@ interface Report {
   status: string;
   assignedTo?: string | null;
   resolution?: string | null;
-  createdAt: string;
+  createdAt: Date;
 }
 interface Member {
   id: string;
@@ -44,24 +44,24 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
 
   // ── Report mutations ──
   const updateStatus = trpc.whistleblower.updateStatus.useMutation({
-    onSuccess: (u: any) => {
-      setReports((prev) => prev.map((r) => (r.id === (u as any).id ? (u as Report) : r)));
+    onSuccess: (u: Report) => {
+      setReports((prev) => prev.map((r) => (r.id === u.id ? u : r)));
       utils.whistleblower.reports.invalidate();
     },
   });
   const assign = trpc.whistleblower.assign.useMutation({
-    onSuccess: (u: any) => {
-      setReports((prev) => prev.map((r) => (r.id === (u as any).id ? (u as Report) : r)));
+    onSuccess: (u: Report) => {
+      setReports((prev) => prev.map((r) => (r.id === u.id ? u : r)));
       utils.whistleblower.reports.invalidate();
     },
   });
 
   // ── Committee mutations ──
   const addMember = trpc.committee.addMember.useMutation({
-    onSuccess: (m: any) => { setMembers((prev) => [...prev, m as Member]); utils.committee.members.invalidate(); setNewMember({ name: '', role: '' }); },
+    onSuccess: (m: Member) => { setMembers((prev) => [...prev, m]); utils.committee.members.invalidate(); setNewMember({ name: '', role: '' }); },
   });
   const removeMember = trpc.committee.removeMember.useMutation({
-    onSuccess: (d: any) => { const id = (d as any)?.id; setMembers((prev) => prev.filter((m) => m.id !== id)); utils.committee.members.invalidate(); },
+    onSuccess: (d: { id: string }) => { setMembers((prev) => prev.filter((m) => m.id !== d.id)); utils.committee.members.invalidate(); },
   });
   const setChair = trpc.committee.setChair.useMutation({
     onSuccess: () => { utils.committee.members.invalidate(); },
