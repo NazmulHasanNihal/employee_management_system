@@ -251,8 +251,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
       {/* Permissions Modal */}
       {editingPermsFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
-            <div className="border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-6">
+          <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
+            <div className="border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]">
                 <ShieldAlert className="h-4 w-4 text-[var(--brand)]" /> Access Control Configuration
               </h3>
@@ -260,7 +260,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 Target: <span className="text-[var(--brand-strong)]">{editingPermsFor.name}</span>
               </p>
             </div>
-            <div className="flex-1 space-y-4 overflow-y-auto p-6">
+            <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
               <p className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-2 text-xs uppercase tracking-wide text-[var(--text-muted)]">
                 <Key className="h-3.5 w-3.5" /> Security Clearances
               </p>
@@ -284,7 +284,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               })}
             </div>
             <div className="flex gap-4 border-t border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
-              <Button variant="ghost" size="md" onClick={() => setEditingPermsFor(null)}>Cancel</Button>
+                  <Button variant="ghost" size="md" onClick={() => setEditingPermsFor(null)} className="touch-target-sm">Cancel</Button>
               <Button variant="primary" size="md" disabled={updatePermsMutation.isPending} onClick={savePermissions}>
                 {updatePermsMutation.isPending ? 'Committing...' : 'Commit Changes'}
               </Button>
@@ -296,19 +296,19 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
       {/* Provision Modal */}
       {isProvisionModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
-            <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-6">
+          <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
+            <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <div>
                 <h3 className="flex items-center gap-2 text-lg font-semibold uppercase tracking-wide text-[var(--text-main)]">
                   <UserPlus className="h-5 w-5 text-[var(--brand)]" /> Provision New User
                 </h3>
                 <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Secure Identity Creation</p>
               </div>
-              <button onClick={() => setIsProvisionModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
+              <button onClick={() => setIsProvisionModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] touch-target-sm">
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <form onSubmit={handleProvisionSubmit} className="flex-1 space-y-4 overflow-y-auto p-6">
+            <form onSubmit={handleProvisionSubmit} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
               {provisionStatus.error && (
                 <div className="rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-3 text-xs text-[var(--rose)]">
                   ERROR: {provisionStatus.error}

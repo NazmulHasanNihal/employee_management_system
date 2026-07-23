@@ -65,10 +65,10 @@ export default function AuditClientPage({ initialEvents }: AuditClientPageProps)
             <TableBody>
               {filteredEvents.map((event: any) => (
                 <TableRow key={event.id}>
-                  <TableCell className="font-mono font-semibold whitespace-nowrap">
+                  <TableCell className="font-mono font-semibold text-xs">
                     {new Date(event.timestamp).toLocaleString()}
                   </TableCell>
-                  <TableCell className="font-mono text-xs text-[var(--text-muted)] whitespace-nowrap">
+                  <TableCell className="font-mono text-xs text-[var(--text-muted)]">
                     {event.hash || event.id}
                   </TableCell>
                   <TableCell>

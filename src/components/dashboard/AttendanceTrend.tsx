@@ -25,7 +25,7 @@ export default function AttendanceTrend({ data }: { data: TrendPoint[] }) {
         <CardTitle>Attendance Trend (7 days)</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full">
+        <div className="h-56 sm:h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <defs>

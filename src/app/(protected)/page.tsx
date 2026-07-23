@@ -128,13 +128,13 @@ export default async function HomePage() {
         icon={<TrendingUp className="h-5 w-5" />}
       />
 
-      <div className={`grid grid-cols-2 gap-4 sm:grid-cols-3 ${trainingCompliance ? 'lg:grid-cols-7' : 'lg:grid-cols-6'}`}>
+      <div className={`grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3`}>
         {statCards.map((s) => (
           <Card key={s.label} className="animate-fade-up">
             <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${s.tone}`}>
               <s.icon className="h-4 w-4" />
             </div>
-            <p className="text-2xl font-semibold text-[var(--text-main)]">{s.value}{s.label === 'Attendance Rate' || s.label === 'Pending Leaves' || s.label === 'Training Compliance' ? '%' : ''}</p>
+            <p className="text-xl sm:text-2xl font-semibold text-[var(--text-main)]">{s.value}{s.label === 'Attendance Rate' || s.label === 'Pending Leaves' || s.label === 'Training Compliance' ? '%' : ''}</p>
             <div className="mt-1 flex items-center gap-2">
               <p className="text-xs text-[var(--text-muted)]">{s.label}</p>
               {typeof s.delta === 'number' && (

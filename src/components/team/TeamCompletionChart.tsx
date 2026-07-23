@@ -30,7 +30,7 @@ export default function TeamCompletionChart({ data }: { data: { name: string; co
         <CardTitle>Task Completion by Member</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-72 w-full">
+        <div className="h-56 sm:h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={sorted} layout="vertical" margin={{ left: 8, right: 24 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" horizontal={false} />

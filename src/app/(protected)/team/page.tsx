@@ -58,29 +58,29 @@ export default async function TeamPage() {
           {chain.chain.length === 0 ? (
             <EmptyState title={t('No reporting chain')} description={t('Your reporting structure will appear here.')} />
           ) : (
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
               {chain.chain.map((person, i) => (
-                <div key={person.id} className="flex items-center gap-3">
+                <div key={person.id} className="flex items-center gap-2 sm:gap-3">
                   <div
-                    className={`flex items-center gap-3 rounded-2xl border p-3 ${
+                    className={`flex items-center gap-2 rounded-2xl border p-2 sm:p-3 ${
                       person.id === caller?.id
                         ? 'border-[var(--brand)]/40 bg-[var(--brand-soft)]'
                         : 'border-[var(--border-hairline)] bg-[var(--bg-hover)]/40'
                     }`}
                   >
-                    <Avatar src={person.avatarUrl} name={person.name} size="md" />
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--text-main)]">
+                    <Avatar src={person.avatarUrl} name={person.name} size="sm" />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs sm:text-sm font-semibold text-[var(--text-main)]">
                         {person.name}
                         {person.id === caller?.id && (
-                          <span className="ml-2 rounded-full bg-[var(--brand-soft)] px-2 py-0.5 text-[9px] font-semibold uppercase text-[var(--brand-strong)]">You</span>
+                          <span className="ml-1 sm:ml-2 rounded-full bg-[var(--brand-soft)] px-1.5 py-0.5 text-[8px] sm:text-[9px] font-semibold uppercase text-[var(--brand-strong)]">You</span>
                         )}
                       </p>
-                      <p className="text-[11px] text-[var(--text-muted)]">{person.designation}</p>
-                      <p className="text-[10px] uppercase text-[var(--brand)]">{person.department}</p>
+                      <p className="hidden sm:block text-[11px] text-[var(--text-muted)]">{person.designation}</p>
+                      <p className="text-[9px] sm:text-[10px] uppercase text-[var(--brand)]">{person.department}</p>
                     </div>
                   </div>
-                  {i < chain.chain.length - 1 && <span className="text-[var(--text-muted)]">→</span>}
+                  {i < chain.chain.length - 1 && <span className="hidden sm:inline text-[var(--text-muted)]">→</span>}
                 </div>
               ))}
             </div>

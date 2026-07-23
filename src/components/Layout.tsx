@@ -188,7 +188,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
       </AnimatePresence>
 
       <motion.aside
-        className={`fixed z-50 flex h-full w-72 flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)] transition-transform duration-300 md:relative md:translate-x-0 ${
+        className={`fixed z-50 flex h-full w-[85vw] max-w-[18rem] flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)] transition-transform duration-300 md:relative md:w-72 md:translate-x-0 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -399,29 +399,29 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-0 md:hidden">
-        {[
-          { path: '/', icon: Home, label: 'Home' },
-          { path: '/team', icon: Users, label: 'Team' },
-          { path: '/attendance', icon: Clock, label: 'Time' },
-          { path: '/leave', icon: Calendar, label: 'Leave' },
-          { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
-        ].map((item) => {
-          const Icon = item.icon;
-          const active = pathname === item.path;
-          return (
-            <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
-              className={`flex h-16 w-16 flex-col items-center justify-center transition-all active:scale-95 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
-              <Icon size={20} />
-              <span className="mt-1 text-[10px] font-medium">{item.label}</span>
-            </Link>
-          );
-        })}
-        <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="flex h-16 w-16 flex-col items-center justify-center text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)]">
-          <Menu size={20} />
-          <span className="mt-1 text-[10px] font-medium">More</span>
-        </button>
-      </div>
+      <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-0 safe-bottom md:hidden">
+         {[
+           { path: '/', icon: Home, label: 'Home' },
+           { path: '/team', icon: Users, label: 'Team' },
+           { path: '/attendance', icon: Clock, label: 'Time' },
+           { path: '/leave', icon: Calendar, label: 'Leave' },
+           { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
+         ].map((item) => {
+           const Icon = item.icon;
+           const active = pathname === item.path;
+           return (
+             <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
+               className={`flex h-16 w-16 flex-col items-center justify-center transition-all active:scale-95 touch-target ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
+               <Icon size={20} />
+               <span className="mt-1 text-[10px] font-medium">{item.label}</span>
+             </Link>
+           );
+         })}
+         <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="flex h-16 w-16 flex-col items-center justify-center text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)] touch-target">
+           <Menu size={20} />
+           <span className="mt-1 text-[10px] font-medium">More</span>
+         </button>
+       </div>
 
       <BottomSheet open={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
         <div className="grid grid-cols-2 gap-2">

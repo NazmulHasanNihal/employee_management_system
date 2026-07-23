@@ -111,10 +111,10 @@ export default function SettingsClientPage() {
                 <table className="w-full min-w-max border-collapse text-left text-sm">
                   <thead className="border border-[var(--border-hairline)] bg-[var(--bg-hover)] text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
                     <tr>
-                      <th className="rounded-tl-xl p-4 pl-6 whitespace-nowrap">{t('Resource Endpoint')}</th>
-                      <th className="p-4 text-center whitespace-nowrap">{t('L4 Admin')}</th>
-                      <th className="p-4 text-center whitespace-nowrap">{t('L3 HR')}</th>
-                      <th className="rounded-tr-xl p-4 pr-6 text-center whitespace-nowrap">{t('L1 Employee')}</th>
+                      <th className="rounded-tl-xl p-4 pl-6">{t('Resource Endpoint')}</th>
+                      <th className="p-4 text-center">{t('L4 Admin')}</th>
+                      <th className="p-4 text-center">{t('L3 HR')}</th>
+                      <th className="rounded-tr-xl p-4 pr-6 text-center">{t('L1 Employee')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border-hairline)] border-x border-b border-[var(--border-hairline)] rounded-b-xl bg-[var(--bg-panel)] text-sm">
@@ -127,14 +127,14 @@ export default function SettingsClientPage() {
                       { m: 'RECRUITMENT (ATS)', a: 'R/W', hr: 'R/W', e: 'None' },
                     ].map((row, i) => (
                       <tr key={i} className="transition-colors hover:bg-[var(--bg-hover)]">
-                        <td className="p-4 pl-6 font-semibold text-[var(--text-main)] whitespace-nowrap">{row.m}</td>
-                        <td className="p-4 text-center whitespace-nowrap">
+                        <td className="p-4 pl-6 font-semibold text-[var(--text-main)]" data-label={t('Resource Endpoint')}>{row.m}</td>
+                        <td className="p-4 text-center" data-label={t('L4 Admin')}>
                           <Badge variant="rose">{row.a}</Badge>
                         </td>
-                        <td className="p-4 text-center whitespace-nowrap">
+                        <td className="p-4 text-center" data-label={t('L3 HR')}>
                           <Badge variant="amber">{row.hr}</Badge>
                         </td>
-                        <td className="p-4 pr-6 text-center whitespace-nowrap">
+                        <td className="p-4 pr-6 text-center" data-label={t('L1 Employee')}>
                           <Badge variant="emerald">{row.e}</Badge>
                         </td>
                       </tr>

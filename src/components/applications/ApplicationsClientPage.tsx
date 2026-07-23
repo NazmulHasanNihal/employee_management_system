@@ -101,47 +101,47 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
               />
             </div>
           ) : (
-            <table className="w-full min-w-max text-left">
-              <thead>
-                <tr className="border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]">
-                  <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Trace ID</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Vector / Type</th>
-                  {isAdmin && <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Origin Entity</th>}
-                  <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]">Payload Details</th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-[var(--text-muted)]">Clearance Status</th>
-                  {isAdmin && <th className="px-6 py-4 text-right text-xs font-semibold text-[var(--text-muted)]">Overrides</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--border-hairline)]">
-                {applicationsList.map((app: any) => (
-                  <tr key={app.id} className="group hover:bg-[var(--bg-hover)]">
-                    <td className="px-6 py-4 text-xs text-[var(--text-muted)]">{app.id.slice(0, 8)}</td>
-                    <td className="px-6 py-4 text-xs font-semibold uppercase text-[var(--text-main)]">{app.type}</td>
-                    {isAdmin && <td className="px-6 py-4 text-xs text-[var(--text-main)]">{app.user?.name}</td>}
-                    <td className="max-w-[300px] truncate px-6 py-4 text-xs italic text-[var(--text-muted)]">"{app.details}"</td>
-                    <td className="px-6 py-4 text-center">
-                      <StatusBadge status={app.status.toUpperCase()} />
-                    </td>
-                    {isAdmin && (
-                      <td className="px-6 py-4 text-right">
-                        {app.status.includes('Pending') ? (
-                          <div className="flex justify-end gap-2">
-                            <button onClick={() => handleUpdate(app.id, 'Approved')} className="flex items-center gap-1 rounded-lg bg-[var(--emerald-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--emerald)] transition-colors hover:bg-[var(--emerald)] hover:text-white" title="Approve">
-                              <Check className="h-3.5 w-3.5" /> Approve
-                            </button>
-                            <button onClick={() => handleUpdate(app.id, 'Rejected')} className="flex items-center gap-1 rounded-lg bg-[var(--rose-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--rose)] transition-colors hover:bg-[var(--rose)] hover:text-white" title="Reject">
-                              <X className="h-3.5 w-3.5" /> Reject
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-[var(--text-muted)]">-</span>
-                        )}
-                      </td>
-                    )}
+              <table className="w-full text-left table-responsive-card">
+                <thead>
+                  <tr className="border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]">
+                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="ID">Trace ID</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Type">Vector / Type</th>
+                    {isAdmin && <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Origin">Origin Entity</th>}
+                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Details">Payload Details</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-[var(--text-muted)]" data-label="Status">Clearance Status</th>
+                    {isAdmin && <th className="px-6 py-4 text-right text-xs font-semibold text-[var(--text-muted)]" data-label="Actions">Overrides</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-hairline)]">
+                  {applicationsList.map((app: any) => (
+                    <tr key={app.id} className="group hover:bg-[var(--bg-hover)]">
+                      <td className="px-6 py-4 text-xs text-[var(--text-muted)]" data-label="ID">{app.id.slice(0, 8)}</td>
+                      <td className="px-6 py-4 text-xs font-semibold uppercase text-[var(--text-main)]" data-label="Type">{app.type}</td>
+                      {isAdmin && <td className="px-6 py-4 text-xs text-[var(--text-main)]" data-label="Origin">{app.user?.name}</td>}
+                      <td className="max-w-[300px] truncate px-6 py-4 text-xs italic text-[var(--text-muted)]" data-label="Details">"{app.details}"</td>
+                      <td className="px-6 py-4 text-center" data-label="Status">
+                        <StatusBadge status={app.status.toUpperCase()} />
+                      </td>
+                      {isAdmin && (
+                        <td className="px-6 py-4 text-right" data-label="Actions">
+                          {app.status.includes('Pending') ? (
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => handleUpdate(app.id, 'Approved')} className="flex items-center gap-1 rounded-lg bg-[var(--emerald-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--emerald)] transition-colors hover:bg-[var(--emerald)] hover:text-white" title="Approve">
+                                <Check className="h-3.5 w-3.5" /> Approve
+                              </button>
+                              <button onClick={() => handleUpdate(app.id, 'Rejected')} className="flex items-center gap-1 rounded-lg bg-[var(--rose-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--rose)] transition-colors hover:bg-[var(--rose)] hover:text-white" title="Reject">
+                                <X className="h-3.5 w-3.5" /> Reject
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-[var(--text-muted)]">-</span>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
           )}
         </div>
       </div>
