@@ -23,25 +23,34 @@ describe('bangladesh-holidays dataset', () => {
 
   it('includes the core fixed national holidays on official dates', () => {
     const byDate = new Map(BANGLADESH_HOLIDAYS.map((h) => [h.date, h]));
-    expect(byDate.get('2026-02-21')?.name).toMatch(/Language Martyrs/i);
-    expect(byDate.get('2026-03-26')?.name).toBe('Independence Day');
+    expect(byDate.get('2026-02-21')?.name).toMatch(/Shahid Dibosh|Language Martyrs/i);
+    expect(byDate.get('2026-03-26')?.name).toMatch(/Independence/i);
     expect(byDate.get('2026-03-17')?.name).toMatch(/Mujibur Rahman/i);
     expect(byDate.get('2026-08-15')?.name).toBe('National Mourning Day');
-    expect(byDate.get('2026-12-16')?.name).toBe('Victory Day');
-    expect(byDate.get('2026-04-14')?.name).toBe('Bengali New Year');
-    expect(byDate.get('2026-05-01')?.name).toBe('May Day');
+    expect(byDate.get('2026-12-16')?.name).toMatch(/Victory Day/i);
+    expect(byDate.get('2026-04-14')?.name).toMatch(/Bengali New Year|Pahela Baishakh/i);
+    expect(byDate.get('2026-05-01')?.name).toMatch(/May Day/i);
+    expect(byDate.get('2026-08-05')?.name).toBe('July Mass Uprising Day');
+    expect(byDate.get('2026-12-25')?.name).toBe('Christmas Day');
   });
 
   it('flags all lunar/religious holidays as tentative', () => {
     const religious = BANGLADESH_HOLIDAYS.filter((h) => h.type === 'Religious');
     expect(religious.length).toBeGreaterThan(0);
-    for (const h of religious) {
-      expect(h.tentative).toBe(true);
+    // Moon-sighted / government-to-confirm holidays must be Tentative.
+    const lunar = religious.filter((h) => !h.isOptional);
+    for (const h of lunar) {
+      expect(h.category).toBe('Tentative');
+    }
+    // Optional religious holidays must be marked Optional.
+    const optional = religious.filter((h) => h.isOptional);
+    for (const h of optional) {
+      expect(h.category).toBe('Optional');
     }
     // Fixed national holidays must NOT be flagged tentative.
     const fixed = BANGLADESH_HOLIDAYS.filter((h) => h.type === 'National');
     for (const h of fixed) {
-      expect(h.tentative).not.toBe(true);
+      expect(h.category).not.toBe('Tentative');
     }
   });
 
@@ -69,14 +78,14 @@ describe('bangladesh-holidays dataset', () => {
       },
     };
     const data: BangladeshHoliday[] = [
-      { date: '2026-03-26', name: 'Independence Day', nameBn: 'স্বাধীনতা দিবস', type: 'National' },
-      { date: '2026-03-22', name: 'Eid-ul-Fitr', nameBn: 'ঈদ-উল-ফিতর', type: 'Religious', tentative: true },
+      { date: '2026-03-26', name: 'Independence Day', nameBn: 'স্বাধীনতা দিবস', type: 'National', category: 'Fixed', year: 2026 },
+      { date: '2026-03-22', name: 'Eid-ul-Fitr', nameBn: 'ঈদ-উল-ফিতর', type: 'Religious', category: 'Tentative', tentative: true, year: 2026 },
     ];
     const count = await seedBangladeshHolidays(fakePrisma as any, data);
     expect(count).toBe(2);
     expect(calls).toHaveLength(2);
     // Upsert key is the unique date, not an id.
     expect(calls[0].where).toEqual({ date: new Date('2026-03-26T00:00:00Z') });
-    expect(calls[1].create.isTentative).toBe(true);
+    expect(calls[1].create.category).toBe('Tentative');
   });
 });

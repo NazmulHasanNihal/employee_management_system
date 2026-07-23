@@ -94,10 +94,10 @@ export default async function RecognitionPage() {
                     <Avatar src={kudo.senderAvatar} name={kudo.senderName} size="sm" className="ring-1 ring-[var(--amber)]/30" />
                   </div>
 
-                  <div className="relative mb-4 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
-                    <Heart size={16} className="absolute right-4 top-4 text-[var(--rose)]/40" />
-                    <p className="pr-8 text-sm italic leading-relaxed text-[var(--text-main)]">&ldquo;{kudo.message}&rdquo;</p>
-                  </div>
+                   <div className="relative mb-4 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
+                     <Heart size={16} className="absolute right-4 top-4 text-[var(--rose)]/40" />
+                     <p className="pr-8 text-sm italic leading-relaxed text-[var(--text-main)] line-clamp-3">&ldquo;{kudo.message}&rdquo;</p>
+                   </div>
 
                   <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-4 mt-auto">
                     <div>

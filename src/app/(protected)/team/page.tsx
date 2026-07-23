@@ -93,14 +93,14 @@ export default async function TeamPage() {
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {chain.directReports.map((r) => (
-                  <div key={r.id} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
-                    <Avatar src={r.avatarUrl} name={r.name} size="md" />
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[var(--text-main)]">{r.name}</p>
-                      <p className="text-[11px] text-[var(--text-muted)]">{r.designation}</p>
-                      <p className="text-[10px] uppercase text-[var(--brand)]">{r.department}</p>
-                    </div>
-                  </div>
+                   <div key={r.id} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
+                     <Avatar src={r.avatarUrl} name={r.name} size="md" />
+                     <div className="min-w-0">
+                       <p className="truncate text-sm font-semibold text-[var(--text-main)]">{r.name}</p>
+                       <p className="truncate text-[11px] text-[var(--text-muted)]">{r.designation}</p>
+                       <p className="truncate text-[10px] uppercase text-[var(--brand)]">{r.department}</p>
+                     </div>
+                   </div>
                 ))}
               </div>
             </div>

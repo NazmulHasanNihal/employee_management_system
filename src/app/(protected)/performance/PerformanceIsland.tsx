@@ -68,7 +68,7 @@ export default function PerformanceIsland({ initialObjectives }: PerformanceIsla
         {initialObjectives?.map((obj: Objective) => (
           <div key={obj.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--brand)]/30">
             <div className="mb-4 flex justify-between items-center">
-              <span className="font-semibold text-[var(--text-main)] text-sm md:text-base">{obj.title}</span>
+              <span className="truncate font-semibold text-[var(--text-main)] text-sm md:text-base">{obj.title}</span>
               <div className="flex items-center gap-1.5">
                 {getStatusIcon(obj.status)}
                 <span className="text-xs">{obj.status}</span>

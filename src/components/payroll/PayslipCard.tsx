@@ -142,7 +142,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
                 Generated: {new Date(pay.createdAt).toLocaleDateString()}
               </p>
               {isAdmin && pay.user && (
-                <p className="text-xs mt-1 text-[var(--text-muted)]">Employee: {pay.user.name}</p>
+                <p className="truncate text-xs mt-1 text-[var(--text-muted)]">Employee: {pay.user.name}</p>
               )}
             </div>
           </div>

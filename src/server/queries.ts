@@ -1045,16 +1045,16 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
   }
 
   for (const h of holidays) {
-    const tentative = h.isTentative === true;
+    const isTentative = h.category === 'Tentative';
     items.push({
       id: `holiday-${h.id}`,
       title: lang === 'bn' && h.nameBn ? h.nameBn : h.name,
-      description: `Bangladesh ${h.type} holiday${tentative ? ' (tentative — pending moon sighting / govt notification)' : ''}`,
+      description: `Bangladesh ${h.type} holiday${isTentative ? ' (tentative — pending moon sighting / govt notification)' : ''}`,
       date: h.date.toISOString(),
       type: 'Holiday',
       status: 'Done',
       derived: 'holiday',
-      isTentative: tentative,
+      isTentative,
     });
   }
 

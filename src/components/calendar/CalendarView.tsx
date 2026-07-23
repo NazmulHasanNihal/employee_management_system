@@ -295,10 +295,10 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                     return (
                       <div key={event.id} className={`group flex items-start gap-4 rounded-2xl border p-4 ${config.bg} border-[var(--border-hairline)]`}>
                         <div className={`rounded-xl p-2.5 ${config.tone}`}><TypeIcon size={18} /></div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="text-sm font-semibold text-[var(--text-main)]">{event.title}</h4>
+                         <div className="min-w-0 flex-1">
+                           <div className="flex items-start justify-between">
+                             <div>
+                               <h4 className="truncate text-sm font-semibold text-[var(--text-main)]">{event.title}</h4>
                               <p className="mt-1 text-[10px] uppercase text-[var(--text-muted)]">{new Date(event.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })} · {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                             <div className="flex items-center gap-2">

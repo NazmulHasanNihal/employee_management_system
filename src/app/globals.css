@@ -679,7 +679,11 @@ img, svg, video, canvas { max-width: 100%; height: auto; }
 .recharts-wrapper, .recharts-responsive-container { max-width: 100%; }
 
 /* ── Prevent content from forcing horizontal scroll ── */
-.prose, .rich-text { max-width: 100%; overflow-wrap: break-word; word-wrap: break-word; }
+.prose, .rich-text, p, span, div, h1, h2, h3, h4, h5, h6 {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
 table { table-layout: auto; }
 th, td { overflow-wrap: break-word; word-wrap: break-word; word-break: break-word; }
 

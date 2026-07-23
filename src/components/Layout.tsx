@@ -373,7 +373,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
                   <div className="border-b border-[var(--border-hairline)] px-4 py-3">
                     <p className="text-sm font-semibold text-[var(--text-main)]">{user.name}</p>
                     <p className="text-xs text-[var(--text-muted)]">{user.email}</p>
-                    <p className="mt-1 text-[11px] font-medium text-[var(--brand)]">{user.department} • {user.designation}</p>
+                     <p className="mt-1 text-[11px] font-medium text-[var(--brand)] truncate">{user.department} • {user.designation}</p>
                   </div>
                   <div className="py-1">
                     <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">

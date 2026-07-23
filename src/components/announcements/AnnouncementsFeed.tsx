@@ -160,14 +160,14 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                     </div>
                   ) : (
                     <>
-                      <div className="mb-3 flex items-start justify-between">
-                        <h3 className="text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
+                       <div className="mb-3 flex items-start justify-between">
+                         <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
                         <div className="flex items-center gap-2">
                           <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
                           <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
                         </div>
                       </div>
-                      <p className="whitespace-pre-wrap text-sm text-[var(--text-muted)]">{ann.content}</p>
+                       <p className="mt-1 text-xs text-[var(--text-muted)] line-clamp-3">{ann.content}</p>
                       {ann.targetTeam && (
                         <div className="mt-3">
                           <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>

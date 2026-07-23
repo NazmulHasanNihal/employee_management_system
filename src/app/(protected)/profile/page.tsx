@@ -217,6 +217,7 @@ export default async function ProfilePage() {
                 <LeaveBar label="Sick Leave" used={leaveBalance.Sick?.used || 0} total={leaveBalance.Sick?.total || 0} color="var(--amber)" />
                 <LeaveBar label="Casual" used={leaveBalance.Casual?.used || 0} total={leaveBalance.Casual?.total || 0} color="var(--sky)" />
                 <LeaveBar label="Festival" used={leaveBalance.Festival?.used || 0} total={leaveBalance.Festival?.total || 0} color="var(--brand-strong)" />
+                <LeaveBar label="Optional Religious" used={leaveBalance.Optional?.used || 0} total={leaveBalance.Optional?.total || 0} color="var(--violet)" />
               </>
             ) : (
               <p className="text-sm text-[var(--text-muted)]">Unavailable</p>

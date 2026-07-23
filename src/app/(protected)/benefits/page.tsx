@@ -142,8 +142,8 @@ export default async function BenefitsPage() {
                     {benefitIcon(eb.benefit.name)}
                   </div>
                   <div>
-                    <h4 className="text-base md:text-lg font-semibold text-[var(--text-main)]">{eb.benefit.name}</h4>
-                    <p className="mt-1 text-sm text-[var(--text-muted)]">{eb.benefit.description}</p>
+                     <h4 className="text-base md:text-lg font-semibold text-[var(--text-main)]">{eb.benefit.name}</h4>
+                     <p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-2">{eb.benefit.description}</p>
                     <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[var(--brand-strong)]">
                       Provider: {eb.benefit.provider || 'Internal'}
                     </p>

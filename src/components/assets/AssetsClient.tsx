@@ -173,14 +173,14 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                     <Badge variant={statusVariant as any}>{asset.status}</Badge>
                   </div>
 
-                  <h4 className="text-lg font-semibold text-[var(--text-main)]">{asset.name}</h4>
+                   <h4 className="truncate text-lg font-semibold text-[var(--text-main)]">{asset.name}</h4>
 
-                  <div className="rounded-2xl bg-[var(--bg-hover)] p-4">
-                    <p className="text-xs text-[var(--text-muted)]">Assigned Personnel</p>
-                    <p className="text-sm font-semibold text-[var(--text-main)]">
-                      {asset.user?.name || <span className="italic text-[var(--amber)]">Unassigned (Inventory)</span>}
-                    </p>
-                  </div>
+                   <div className="rounded-2xl bg-[var(--bg-hover)] p-4">
+                     <p className="text-xs text-[var(--text-muted)]">Assigned Personnel</p>
+                     <p className="truncate text-sm font-semibold text-[var(--text-main)]">
+                       {asset.user?.name || <span className="italic text-[var(--amber)]">Unassigned (Inventory)</span>}
+                     </p>
+                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>

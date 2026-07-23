@@ -327,15 +327,15 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
                       <Receipt className="h-6 w-6" />
                     </div>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h4 className="text-base font-semibold text-[var(--text-main)]">
-                          {formatCurrency(exp.amount, 'BDT', 'en')}
-                        </h4>
-                        <StatusBadge status={exp.status} />
-                        <Badge variant="secondary">{exp.category}</Badge>
-                      </div>
-                      <p className="mt-1 text-sm italic text-[var(--text-muted)]">"{exp.description}"</p>
+                     <div>
+                       <div className="flex flex-wrap items-center gap-2">
+                         <h4 className="text-base font-semibold text-[var(--text-main)]">
+                           {formatCurrency(exp.amount, 'BDT', 'en')}
+                         </h4>
+                         <StatusBadge status={exp.status} />
+                         <Badge variant="secondary">{exp.category}</Badge>
+                       </div>
+                       <p className="mt-1 text-sm italic text-[var(--text-muted)] line-clamp-2">"{exp.description}"</p>
                       {isAdmin && (
                         <p className="mt-1 text-xs text-[var(--brand-strong)]">Claimant: {exp.user?.name}</p>
                       )}

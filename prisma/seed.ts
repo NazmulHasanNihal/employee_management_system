@@ -41,6 +41,8 @@ async function main() {
   await prisma.festivalBonus.deleteMany();
   await prisma.branchRelations.deleteMany();
   await prisma.branch.deleteMany();
+  await prisma.employeeOptionalHoliday.deleteMany();
+  await prisma.festivalWorkLog.deleteMany();
 
   // Due to relation constraints, we must clear manager relationships before deleting users.
   await prisma.user.updateMany({ data: { managerId: null, proxyId: null } });
@@ -99,9 +101,10 @@ async function main() {
     { name: 'Casual Leave', nameBn: 'ঐচ্ছিক ছুটি', category: 'Casual', defaultDays: 10, isPaid: true },
     { name: 'Earned Leave', nameBn: 'অর্জিত ছুটি', category: 'Earned', defaultDays: 14, isPaid: true },
     { name: 'Sick Leave', nameBn: 'অসুস্থতা ছুটি', category: 'Sick', defaultDays: 14, isPaid: true },
-    { name: 'Festival Leave', nameBn: 'উৎসব ছুটি', category: 'Festival', defaultDays: 2, isPaid: true },
+    { name: 'Festival Leave', nameBn: 'উৎসব ছুটি', category: 'Festival', defaultDays: 11, isPaid: true },
     { name: 'Maternity Leave', nameBn: 'মাতৃত্বকালীন ছুটি', category: 'Maternity', defaultDays: 112, isPaid: true, applicableGender: 'Female' },
     { name: 'Paternity Leave', nameBn: 'পিতৃত্বকালীন ছুটি', category: 'Paternity', defaultDays: 2, isPaid: true, applicableGender: 'Male' },
+    { name: 'Optional Religious Holiday', nameBn: 'ঐচ্ছিক ধর্মীয় ছুটি', category: 'Optional', defaultDays: 3, isPaid: true },
   ];
   await prisma.leaveType.createMany({ data: leaveTypes });
 
@@ -126,11 +129,13 @@ async function main() {
   for (const h of getBangladeshHolidays()) {
     await prisma.holiday.create({
       data: {
-        date: new Date(h.date),
+        date: new Date(h.date + 'T00:00:00Z'),
         name: h.name,
         nameBn: h.nameBn,
         type: h.type,
-        isTentative: h.tentative ?? false,
+        category: h.category,
+        isOptional: h.isOptional ?? false,
+        year: h.year,
       },
     });
   }

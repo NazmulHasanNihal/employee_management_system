@@ -134,7 +134,7 @@ export default async function HomePage() {
             <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${s.tone}`}>
               <s.icon className="h-4 w-4" />
             </div>
-            <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{s.value}{s.label === 'Attendance Rate' || s.label === 'Pending Leaves' || s.label === 'Training Compliance' ? '%' : ''}</p>
+            <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{s.value}</p>
             <div className="mt-1 flex items-center gap-2">
               <p className="text-xs text-[var(--text-muted)]">{s.label}</p>
               {typeof s.delta === 'number' && (

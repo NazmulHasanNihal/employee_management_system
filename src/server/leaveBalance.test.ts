@@ -27,18 +27,21 @@ describe('BD leave balance (approved-policy model)', () => {
     expect(bal.Casual.total).toBe(10);
     expect(bal.Earned.total).toBe(14);
     expect(bal.Sick.total).toBe(14);
-    expect(bal.Festival.total).toBe(2);
+    expect(bal.Festival.total).toBe(11);
+    expect(bal.Optional.total).toBe(3);
     expect(bal.Maternity.total).toBe(112);
   });
 
   it('caps remaining at 0 and reflects usage', () => {
     const bal = computeBdLeaveBalance({
       createdAt,
-      usedByCategory: { Casual: 10, Earned: 4 },
+      usedByCategory: { Casual: 10, Earned: 4, Festival: 1 },
       gender: 'Male',
     });
     expect(bal.Casual.remaining).toBe(0);
     expect(bal.Earned.remaining).toBe(10);
+    expect(bal.Festival.remaining).toBe(10);
+    expect(bal.Optional.total).toBe(3);
     expect(bal.Paternity.total).toBe(2);
     expect(bal.Maternity).toBeUndefined();
   });

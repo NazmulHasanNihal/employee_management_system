@@ -119,6 +119,10 @@ model User {
   calibrationSessions  CalibrationSession[]  @relation("CalibrationCreator")
   calibrationEntries   CalibrationEntry[]
 
+  // Bangladesh leave / holiday compliance (B3)
+  optionalHolidaySelections EmployeeOptionalHoliday[]
+  festivalWorkLogs           FestivalWorkLog[]
+
   // Performance indexes: managerId (org-chart / chain-of-command / team
   // lookups), branchId + tenantId (tenant/branch-scoped queries), nid lookups.
   @@index([managerId])
@@ -187,13 +191,52 @@ model BranchRelations {
 
 // ── Bangladesh public/govt holidays (seeded; verify official dates before use) ──
 model Holiday {
-  id        String   @id @default(cuid())
-  date      DateTime @unique
-  name      String
-  nameBn    String?
-  type      String   @default("Public") // Public, Religious, National, Festival
-  isTentative Boolean @default(false) // true for moon-sighted / govt-to-confirm dates
-  createdAt DateTime @default(now())
+  id                        String   @id @default(cuid())
+  date                      DateTime @unique
+  name                      String
+  nameBn                    String?
+  type                      String   @default("Public") // Public, Religious, National, Festival
+  category                   String   @default("Fixed") // Fixed | Tentative | Optional
+  year                      Int      @default(2026)
+  isOptional                Boolean  @default(false) // true if employee can elect this as 1 of 3 optional holidays
+  createdAt                 DateTime @default(now())
+  optionalSelections        EmployeeOptionalHoliday[]
+  festivalWorkLogs          FestivalWorkLog[]
+}
+
+// ── Employee optional religious holiday selections ──
+// Bangladesh Labour Act allows up to 3 optional religious holidays per year.
+// This model tracks which optional holidays each employee selected.
+model EmployeeOptionalHoliday {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  holidayId       String
+  holiday         Holiday   @relation(fields: [holidayId], references: [id], onDelete: Cascade)
+  selectedAt      DateTime  @default(now())
+  leaveYear       Int       // e.g. 2026
+  substituteTaken  Boolean   @default(false) // true if employee was required to work and took substitute
+
+  @@unique([userId, holidayId, leaveYear])
+  @@index([userId, leaveYear])
+}
+
+// ── Festival work compensation log ──
+// When an employee is required to work on a festival day, the EMS must log
+// 1 substitute holiday + 2 compensatory holiday allowances with full pay.
+model FestivalWorkLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  holidayId       String
+  holiday         Holiday   @relation(fields: [holidayId], references: [id], onDelete: Cascade)
+  workedDate      DateTime
+  substituteDate  DateTime? // scheduled substitute holiday
+  compensatoryDays Int     @default(2) // statutory 2 compensatory holidays
+  isCompensated    Boolean  @default(false) // true when compensatory days have been granted
+  createdAt       DateTime @default(now())
+
+  @@index([userId, workedDate])
 }
 
 model Expense {
@@ -256,7 +299,7 @@ model LeaveType {
   id              String  @id @default(cuid())
   name            String  @unique
   nameBn          String? // Bangla label, e.g. "ঐচ্ছিক ছুটি"
-  category        String  // Casual | Earned | Sick | Festival | Maternity | Paternity
+  category        String  // Casual | Earned | Sick | Festival | Maternity | Paternity | Optional
   defaultDays     Int     @default(0) // statutory entitlement per year
   isPaid          Boolean @default(true)
   applicableGender String? // null = all, "Female" | "Male"

@@ -150,10 +150,10 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
                         <MessageSquare className="h-4 w-4" />
                       </div>
-                      <div>
-                        <p className="text-xs text-[var(--text-muted)]">Ticket #{ticket.id.slice(0, 6)}</p>
-                        <h4 className="text-lg font-semibold text-[var(--text-main)]">{ticket.subject}</h4>
-                      </div>
+                     <div>
+                       <p className="text-xs text-[var(--text-muted)]">Ticket #{ticket.id.slice(0, 6)}</p>
+                       <h4 className="truncate text-lg font-semibold text-[var(--text-main)]">{ticket.subject}</h4>
+                     </div>
                     </div>
                     <Badge variant={getPriorityVariant(ticket.priority) as any}>
                       {getPriorityIcon(ticket.priority)} {ticket.priority} Priority

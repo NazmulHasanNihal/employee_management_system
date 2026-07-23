@@ -226,7 +226,7 @@ async function main() {
     const date = new Date(h.date + 'T00:00:00Z');
     const existing = await prisma.holiday.findUnique({ where: { date } });
     if (!existing) {
-      await prisma.holiday.create({ data: { date, name: h.name, nameBn: h.nameBn, type: h.type, isTentative: h.tentative ?? false } });
+      await prisma.holiday.create({ data: { date, name: h.name, nameBn: h.nameBn, type: h.type, category: h.category, isOptional: h.isOptional ?? false, year: h.year } });
       holidayCount++;
     }
   }

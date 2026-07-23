@@ -147,7 +147,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                 <div className="flex flex-col lg:flex-row">
                   <div className="w-full border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-8 lg:w-1/3 lg:border-b-0 lg:border-r">
                     <Badge variant="emerald" className="mb-4">Status: {job.status}</Badge>
-                     <h3 className="mb-2 text-fluid-2xl font-extrabold leading-tight text-[var(--text-main)]">{job.title}</h3>
+                     <h3 className="mb-2 truncate text-fluid-2xl font-extrabold leading-tight text-[var(--text-main)]">{job.title}</h3>
                     <div className="mb-6 space-y-2">
                       <p className="flex items-center gap-2 text-xs text-[var(--text-muted)]"><Building size={14} /> {job.department}</p>
                       <p className="flex items-center gap-2 text-xs text-[var(--text-muted)]"><Target size={14} /> {job.location}</p>
@@ -189,10 +189,10 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                               onDragStart={(e) => handleDragStart(e, cand.id, job.id)}
                               className="cursor-grab rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-3 transition-colors hover:border-[var(--emerald)]/30 active:cursor-grabbing"
                             >
-                              <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                  <h5 className="text-xs font-semibold text-[var(--text-main)]">{cand.name}</h5>
-                                  <p className="mt-1 truncate text-[9px] text-[var(--text-muted)]">{cand.email}</p>
+                               <div className="flex items-start justify-between gap-2">
+                                 <div className="min-w-0">
+                                   <h5 className="truncate text-xs font-semibold text-[var(--text-main)]">{cand.name}</h5>
+                                   <p className="mt-1 truncate text-[9px] text-[var(--text-muted)]">{cand.email}</p>
                                   {cand.phone && <p className="mt-0.5 flex items-center gap-1 text-[9px] text-[var(--text-muted)]"><Phone size={9} /> {cand.phone}</p>}
                                 </div>
                                 {cand.resumeUrl && (

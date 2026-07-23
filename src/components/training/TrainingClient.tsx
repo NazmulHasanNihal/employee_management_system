@@ -87,7 +87,7 @@ export function TrainingClient({ catalog, compliance, isAdmin }: Props) {
                     <h3 className="font-semibold text-[var(--text-main)]">{course.title}</h3>
                     {course.titleBn && <p className="text-xs text-[var(--text-muted)]">{course.titleBn}</p>}
                   </div>
-                  <p className="text-xs text-[var(--text-muted)]">{course.description}</p>
+                  <p className="text-xs text-[var(--text-muted)] line-clamp-2">{course.description}</p>
                   <p className="text-[10px] uppercase text-[var(--text-muted)]">{course.durationHours}h · {enrollment ? `Your progress ${enrollment.progress}%` : 'Not enrolled'}</p>
 
                   {enrollment ? (

@@ -1,10 +1,15 @@
 // Bangladesh Labour Act (2006) leave accrual — illustrative, not legal advice.
 // Casual: 10 days/yr (1/day per month, non-cumulative beyond year)
-// Earned/Annual: ~1 day per 18 worked days (commonly ~14-16/yr after 1 yr)
+// Earned/Annual: 1 day per 18 worked days (~14-16/yr after 1 yr)
 // Sick: 14 days/yr
-// Maternity: 112 days (female, after qualifying service) — tracked separately
-// Festival: 2 per yr (Bangladesh commonly grants 2 festival bonuses/leave)
+// Festival: 11 days/yr (national + religious festival block)
+// Maternity: 16 weeks / 112 days (female, up to 2 children)
 // Paternity: 2 days (common organisational policy)
+// Optional Religious: up to 3 days/yr (employee elects from approved list)
+//
+// Festival work compensation (BLA): if employee is required to work on a
+// festival day, they receive 1 substitute holiday + 2 compensatory holidays
+// with full pay, logged via FestivalWorkLog.
 //
 // P1 — Tightened to an APPROVED-POLICY-shaped model (carry-forward + leave-year
 // reset). The numbers are config-driven constants grouped in LEAVE_POLICY so
@@ -20,7 +25,8 @@ export type LeaveCategory =
   | 'Sick'
   | 'Festival'
   | 'Maternity'
-  | 'Paternity';
+  | 'Paternity'
+  | 'Optional';
 
 export interface LeaveBucket {
   total: number;
@@ -37,12 +43,13 @@ export interface LeaveBucket {
  */
 export const LEAVE_POLICY = {
   leaveYearStart: { month: 0, day: 1 }, // Jan 1 (month is 0-indexed)
-  casual: { perYear: 10, accruesPerMonth: true, carryForward: 0 }, // casual does not carry forward
-  earned: { perYear: 14, carryForward: 30 }, // up to 30 earned days carried forward
-  sick: { perYear: 14, carryForward: 0 }, // sick does not carry forward
-  festival: { perYear: 2, carryForward: 0 },
-  maternity: { perYear: 112, carryForward: 0, minServiceMonths: 0 },
+  casual: { perYear: 10, accruesPerMonth: true, carryForward: 0 }, // 10 days, non-cumulative
+  earned: { perYear: 14, carryForward: 30 }, // 1 day per 18 worked days, up to 30 carried forward
+  sick: { perYear: 14, carryForward: 0 }, // 14 days, non-cumulative
+  festival: { perYear: 11, carryForward: 0 }, // 11 festival days (national + religious)
+  maternity: { perYear: 112, carryForward: 0, minServiceMonths: 0 }, // 16 weeks / 112 days
   paternity: { perYear: 2, carryForward: 0, minServiceMonths: 0 },
+  optional: { perYear: 3, carryForward: 0 }, // up to 3 optional religious holidays per year
 } as const;
 
 /** Returns the start (ms) of the current leave year given the policy. */
@@ -114,6 +121,7 @@ export function computeBdLeaveBalance(opts: LeaveBalancePolicyInput): Record<str
     opts.gender === 'Male' && monthsEmployed >= policy.paternity.minServiceMonths
       ? policy.paternity.perYear
       : 0;
+  const optionalTotal = policy.optional.perYear;
 
   const used = (t: string) => opts.usedByCategory[t] || 0;
   const bucket = (total: number, t: string): LeaveBucket => ({
@@ -128,7 +136,30 @@ export function computeBdLeaveBalance(opts: LeaveBalancePolicyInput): Record<str
     Earned: bucket(earnedTotal, 'Earned'),
     Sick: bucket(sickTotal, 'Sick'),
     Festival: bucket(festivalTotal, 'Festival'),
+    Optional: bucket(optionalTotal, 'Optional'),
     ...(maternityTotal ? { Maternity: bucket(maternityTotal, 'Maternity') } : {}),
     ...(paternityTotal ? { Paternity: bucket(paternityTotal, 'Paternity') } : {}),
+  };
+}
+
+/**
+ * Computes festival work compensation owed under Bangladesh Labour Act.
+ * When an employee is required to work on a festival day, they receive:
+ *   1 substitute holiday + 2 compensatory holidays (full pay).
+ *
+ * @param workLogs Array of FestivalWorkLog entries for the employee in the current leave year.
+ * @returns Object with substitute and compensatory days owed/remaining.
+ */
+export function computeFestivalCompensation(workLogs: { substituteDate: Date | null; compensatoryDays: number; isCompensated: boolean }[]): { substituteOwed: number; substituteTaken: number; compensatoryOwed: number; compensatoryTaken: number } {
+  const substituteOwed = workLogs.length;
+  const substituteTaken = workLogs.filter((w) => w.substituteDate !== null).length;
+  const compensatoryOwed = workLogs.reduce((sum, w) => sum + w.compensatoryDays, 0);
+  const compensatoryTaken = workLogs.filter((w) => w.isCompensated).reduce((sum, w) => sum + w.compensatoryDays, 0);
+
+  return {
+    substituteOwed,
+    substituteTaken,
+    compensatoryOwed,
+    compensatoryTaken,
   };
 }

@@ -202,7 +202,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     <UserCircle className="h-6 w-6" />
                   </div>
                   <div>
-                     <h4 className="max-w-[10rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
+                     <h4 className="max-w-[14rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
                     <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{emp.designation || 'Staff'}</p>
                   </div>
                 </div>
@@ -212,7 +212,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               <div className="mb-6 flex-1 space-y-3">
                 <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
                   <Briefcase className="h-3.5 w-3.5" />
-                  <span>{emp.department || 'No Department Assigned'}</span>
+                  <span className="truncate">{emp.department || 'No Department Assigned'}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
                   <Mail className="h-3.5 w-3.5" />
@@ -220,7 +220,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
                   <Phone className="h-3.5 w-3.5" />
-                  <span className="font-mono text-xs">{emp.phone || '+1 (555) 000-0000'}</span>
+                  <span className="truncate font-mono text-xs">{emp.phone || '+1 (555) 000-0000'}</span>
                 </div>
               </div>
 
