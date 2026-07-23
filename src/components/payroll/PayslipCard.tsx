@@ -149,7 +149,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           <div className="text-left md:text-right flex flex-col justify-between h-full">
             <div>
               <p className="text-[10px] uppercase tracking-widest mb-1 text-[var(--text-muted)]">Net Transfer</p>
-              <p className="text-2xl font-bold text-[var(--emerald)]">
+               <p className="text-fluid-2xl font-bold text-[var(--emerald)]">
                 {sym}{net.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>

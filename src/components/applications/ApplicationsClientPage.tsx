@@ -118,7 +118,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                       <td className="px-6 py-4 text-xs text-[var(--text-muted)]" data-label="ID">{app.id.slice(0, 8)}</td>
                       <td className="px-6 py-4 text-xs font-semibold uppercase text-[var(--text-main)]" data-label="Type">{app.type}</td>
                       {isAdmin && <td className="px-6 py-4 text-xs text-[var(--text-main)]" data-label="Origin">{app.user?.name}</td>}
-                      <td className="max-w-[300px] truncate px-6 py-4 text-xs italic text-[var(--text-muted)]" data-label="Details">"{app.details}"</td>
+                       <td className="max-w-xs truncate px-6 py-4 text-xs italic text-[var(--text-muted)]" data-label="Details">"{app.details}"</td>
                       <td className="px-6 py-4 text-center" data-label="Status">
                         <StatusBadge status={app.status.toUpperCase()} />
                       </td>

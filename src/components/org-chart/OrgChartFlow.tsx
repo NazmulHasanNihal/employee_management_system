@@ -78,7 +78,7 @@ export default function OrgChartFlow({ tree }: { tree: TreeNode }) {
   const { nodes, edges } = useMemo(() => getNodesAndEdges(tree, 250, 50), [tree]);
 
   return (
-    <div className="h-full min-h-[70vh] flex-1 overflow-hidden rounded-3xl border border-[var(--border-hairline)]" style={{ background: 'var(--bg-app)' }}>
+    <div className="h-full min-h-[min(70vh,50rem)] flex-1 overflow-hidden rounded-3xl border border-[var(--border-hairline)]" style={{ background: 'var(--bg-app)' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}

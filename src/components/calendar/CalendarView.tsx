@@ -216,7 +216,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
           {viewMode === 'month' && (
             <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
               <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-2xl font-semibold text-[var(--text-main)]">{monthName} {currentYear}</h3>
+                <h3 className="text-fluid-2xl font-semibold text-[var(--text-main)]">{monthName} {currentYear}</h3>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" onClick={() => navigateMonth(-1)}><ChevronLeft className="h-3.5 w-3.5" /> Prev</Button>
                   <Button variant="outline" size="sm" onClick={() => { setCurrentDate(new Date()); setSelectedDay(null); }}>Today</Button>
@@ -265,7 +265,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                   const isToday = day.getDate() === todayDate && day.getMonth() === todayMonth && day.getFullYear() === todayYear;
                   const dayEvents = events.filter((e) => { const d = safeDate(e.date); return !!d && d.getDate() === day.getDate() && d.getMonth() === day.getMonth() && d.getFullYear() === day.getFullYear(); });
                   return (
-                    <div key={i} className={`min-h-[200px] rounded-2xl border p-3 ${isToday ? 'border-[var(--brand)]/50 bg-[var(--brand-soft)]' : 'border-[var(--border-hairline)] bg-[var(--bg-hover)]/40'}`}>
+                     <div key={i} className={`min-h-48 rounded-2xl border p-3 ${isToday ? 'border-[var(--brand)]/50 bg-[var(--brand-soft)]' : 'border-[var(--border-hairline)] bg-[var(--bg-hover)]/40'}`}>
                       <div className="mb-3 text-center">
                         <p className="text-[9px] uppercase text-[var(--text-muted)]">{day.toLocaleDateString('en', { weekday: 'short' })}</p>
                         <p className={`text-lg font-bold ${isToday ? 'text-[var(--brand-strong)]' : 'text-[var(--text-main)]'}`}>{day.getDate()}</p>
@@ -336,7 +336,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
           <div className="relative overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
             <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Wallet className="h-3.5 w-3.5 text-[var(--emerald)]" /> Next Payroll</h4>
             <div className="flex items-end gap-3">
-              {nextPayday !== null ? (<><span className="text-4xl font-bold text-[var(--text-main)]">{nextPayday}</span><span className="mb-1 text-sm uppercase text-[var(--text-muted)]">Days</span></>) : (<span className="text-sm uppercase text-[var(--text-muted)]">No upcoming payroll</span>)}
+              {nextPayday !== null ? (<><span className="text-fluid-4xl font-bold text-[var(--text-main)]">{nextPayday}</span><span className="mb-1 text-sm uppercase text-[var(--text-muted)]">Days</span></>) : (<span className="text-sm uppercase text-[var(--text-muted)]">No upcoming payroll</span>)}
             </div>
           </div>
 
@@ -396,7 +396,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
             </div>
           </div>
 
-          <div className="flex min-h-[300px] flex-1 flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
+           <div className="flex min-h-72 flex-1 flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><CalendarCheck2 className="h-3.5 w-3.5 text-[var(--text-muted)]" /> {selectedDay ? `${monthName} ${selectedDay}` : 'Upcoming'}</h4>
               {selectedDay && <button onClick={() => setSelectedDay(null)} className="text-[10px] uppercase text-[var(--brand)] hover:underline">Clear</button>}

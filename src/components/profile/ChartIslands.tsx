@@ -9,12 +9,12 @@ import { CombatStats as CombatStatsImpl } from './CombatStats';
 
 const ReviewsRadar = dynamic(() => Promise.resolve({ default: ReviewsRadarImpl }), {
   ssr: false,
-  loading: () => <div className="h-[260px] animate-pulse rounded-xl bg-[var(--bg-hover)]" />,
+  loading: () => <div className="h-64 animate-pulse rounded-xl bg-[var(--bg-hover)]" />,
 });
 
 const CombatStats = dynamic(() => Promise.resolve({ default: CombatStatsImpl }), {
   ssr: false,
-  loading: () => <div className="h-[220px] animate-pulse rounded-xl bg-[var(--bg-hover)]" />,
+  loading: () => <div className="h-56 animate-pulse rounded-xl bg-[var(--bg-hover)]" />,
 });
 
 export function ReviewsRadarIsland({ scores }: { scores: RadarScore[] }) {

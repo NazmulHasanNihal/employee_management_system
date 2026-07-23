@@ -50,7 +50,7 @@ export default async function PayrollPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 {t('Total Payroll YTD')}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {formatCurrency(adminStats.totalYTD, 'BDT', 'en')}
               </p>
               <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-muted)]">
@@ -65,7 +65,7 @@ export default async function PayrollPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 Monthly Run-Rate
               </p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {formatCurrency(adminStats.monthlyRunRate, 'BDT', 'en')}
               </p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">
@@ -79,7 +79,7 @@ export default async function PayrollPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 {t('Last Run')}
               </p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {adminStats.lastRunMonth}
               </p>
               <p className="mt-1 inline-flex items-center gap-1 text-xs text-[var(--emerald)]">

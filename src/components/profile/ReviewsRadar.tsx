@@ -20,13 +20,13 @@ export interface RadarScore {
 export function ReviewsRadar({ scores }: { scores: RadarScore[] }) {
   if (!scores || scores.length === 0) {
     return (
-      <div className="flex h-[260px] items-center justify-center text-sm text-[var(--text-muted)]">
+      <div className="flex h-64 items-center justify-center text-sm text-[var(--text-muted)]">
         No review scores yet.
       </div>
     );
   }
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={scores} outerRadius="75%">
           <PolarGrid stroke="var(--border-hairline)" />

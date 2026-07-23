@@ -170,7 +170,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
               {reportSubmitted ? (
                 <div className="py-16 text-center">
                   <ShieldCheck size={64} className="mx-auto mb-6 opacity-80 text-[var(--rose)]" />
-                  <h4 className="mb-2 text-2xl font-extrabold uppercase tracking-wide text-[var(--text-main)]">Transmission Secure</h4>
+                   <h4 className="mb-2 text-fluid-2xl font-extrabold uppercase tracking-wide text-[var(--text-main)]">Transmission Secure</h4>
                   <p className="text-sm text-[var(--text-muted)]">Your disclosure has been encrypted and successfully routed.</p>
                 </div>
               ) : (

@@ -74,11 +74,11 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
         <CardContent className="space-y-4">
           <div className="rounded-2xl bg-[var(--brand-soft)] p-4">
             <p className="text-[10px] uppercase tracking-wide text-[var(--brand-strong)]">This Month</p>
-            <p className="text-2xl font-bold text-[var(--text-main)]">{formatCurrency(salesThisMonth, 'BDT', 'en')}</p>
+            <p className="text-fluid-2xl font-bold text-[var(--text-main)]">{formatCurrency(salesThisMonth, 'BDT', 'en')}</p>
           </div>
           <div className="rounded-2xl bg-[var(--bg-hover)] p-4">
             <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Last Month</p>
-            <p className="text-2xl font-bold text-[var(--text-main)]">{formatCurrency(salesLastMonth, 'BDT', 'en')}</p>
+            <p className="text-fluid-2xl font-bold text-[var(--text-main)]">{formatCurrency(salesLastMonth, 'BDT', 'en')}</p>
           </div>
         </CardContent>
       </Card>

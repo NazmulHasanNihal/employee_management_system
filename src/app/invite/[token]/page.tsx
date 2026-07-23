@@ -90,7 +90,7 @@ export default function InvitePage() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
               <Mail size={22} />
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+            <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
               Accept invitation
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">

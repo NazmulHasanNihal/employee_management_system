@@ -40,9 +40,9 @@ export default async function DEIPage() {
           <div>
             <p className="mb-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Global Audit Status</p>
             {totalFlags === 0 ? (
-              <h3 className="text-3xl font-extrabold text-[var(--text-main)]">No Systemic Bias Detected</h3>
+               <h3 className="text-fluid-3xl font-extrabold text-[var(--text-main)]">No Systemic Bias Detected</h3>
             ) : (
-              <h3 className="text-3xl font-extrabold text-[var(--text-main)]">{totalFlags} Discrepancy Flags Found</h3>
+               <h3 className="text-fluid-3xl font-extrabold text-[var(--text-main)]">{totalFlags} Discrepancy Flags Found</h3>
             )}
           </div>
         </div>
@@ -51,7 +51,7 @@ export default async function DEIPage() {
           <p className="mb-1 flex items-center justify-center gap-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)] md:justify-end">
             <DollarSign size={12} /> Global Base Salary Average
           </p>
-          <p className="text-3xl font-bold tracking-tight text-[var(--text-main)]">
+          <p className="text-fluid-3xl font-bold tracking-tight text-[var(--text-main)]">
             {formatCurrency(globalAvg, 'BDT', 'en')}
           </p>
         </div>
@@ -68,7 +68,7 @@ export default async function DEIPage() {
             <CardContent>
               <div className="mb-8 flex items-start justify-between">
                 <div>
-                  <h3 className="mb-2 text-2xl font-extrabold text-[var(--text-main)]">{group.group}</h3>
+                   <h3 className="mb-2 text-fluid-2xl font-extrabold text-[var(--text-main)]">{group.group}</h3>
                   <div className="flex items-center gap-2 rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-3 py-1.5 text-[10px] uppercase tracking-wide text-[var(--text-muted)] w-fit">
                     <Users size={12} /> Headcount: {group.headcount}
                   </div>

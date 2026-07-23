@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 const ReviewsClient = dynamic(() => import("./ReviewsClient"), {
   ssr: false,
   loading: () => (
-    <div className="h-[400px] animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+    <div className="h-96 animate-pulse rounded-xl bg-[var(--bg-hover)]" />
   ),
 });
 

@@ -42,14 +42,14 @@ export default async function AssetsPage() {
           <Card>
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Fleet Size</p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">{totalAssets}</p>
+               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{totalAssets}</p>
               <p className="text-sm text-[var(--text-muted)]">Units</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Original Value</p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
             </CardContent>
@@ -57,7 +57,7 @@ export default async function AssetsPage() {
           <Card>
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Current Book Value</p>
-              <p className="mt-2 text-3xl font-semibold text-[var(--rose)]">
+               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--rose)]">
                 ${currentFleetValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
             </CardContent>

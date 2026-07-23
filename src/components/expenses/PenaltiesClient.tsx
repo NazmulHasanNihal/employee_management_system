@@ -33,13 +33,13 @@ export function PenaltiesClient({ initialPenalties, isAdmin }: PenaltiesClientPr
         <Card>
           <CardContent>
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Unpaid Penalties</p>
-            <p className="mt-2 text-3xl font-semibold text-[var(--rose)]">{formatCurrency(totalUnpaid, 'BDT', 'en')}</p>
+            <p className="mt-2 text-fluid-3xl font-semibold text-[var(--rose)]">{formatCurrency(totalUnpaid, 'BDT', 'en')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent>
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Records</p>
-            <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">{penalties.length}</p>
+            <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{penalties.length}</p>
           </CardContent>
         </Card>
       </div>

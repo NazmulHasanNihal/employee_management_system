@@ -98,7 +98,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[200px] flex-1 max-w-[400px]">
+        <div className="relative w-full max-w-sm md:max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
             type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
@@ -161,7 +161,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                   ) : (
                     <>
                       <div className="mb-3 flex items-start justify-between">
-                        <h3 className="text-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
+                        <h3 className="text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
                         <div className="flex items-center gap-2">
                           <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
                           <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>

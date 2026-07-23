@@ -11,7 +11,7 @@ export default function SetupPage() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--rose-soft)] text-[var(--rose)]">
               <AlertCircle size={22} />
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+             <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
               Setup incomplete
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">

@@ -54,7 +54,7 @@ export default function PresenceGrid({ employees, active }: { employees: Employe
     <div className="flex h-full flex-col space-y-6 pb-20 md:pb-0">
       <div className="flex items-end justify-between border-b border-[var(--border-hairline)] pb-4">
         <div>
-          <h2 className="flex items-center gap-2 text-2xl font-semibold text-[var(--text-main)]">
+          <h2 className="flex items-center gap-2 text-fluid-xl font-semibold text-[var(--text-main)]">
             <Network className="h-6 w-6 text-[var(--brand)]" /> The Grid
           </h2>
           <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Spatial Presence & Telemetry</p>

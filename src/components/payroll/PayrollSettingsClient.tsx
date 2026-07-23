@@ -180,7 +180,7 @@ export function PayrollSettingsClient({ heads, structures }: PayrollSettingsClie
 
 function EmptyStateLocal() {
   return (
-    <div className="flex h-full min-h-[16rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
+    <div className="flex h-full min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
       <Layers className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
       <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Active Matrices</h3>
     </div>

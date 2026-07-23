@@ -34,8 +34,9 @@ export function TrainingClient({ catalog, compliance, isAdmin }: Props) {
             {compliance.length === 0 ? (
               <p className="text-sm text-[var(--text-muted)]">No compliance enrollments yet.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+               <div className="overflow-x-auto">
+                 <div className="table-responsive-md md:table-responsive-card">
+                   <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[var(--border-hairline)] text-left text-[10px] uppercase text-[var(--text-muted)]">
                       <th className="py-2 pr-4">Employee</th>
@@ -47,20 +48,21 @@ export function TrainingClient({ catalog, compliance, isAdmin }: Props) {
                   <tbody>
                     {compliance.map((e: any) => (
                       <tr key={e.id} className="border-b border-[var(--border-hairline)]">
-                        <td className="py-2 pr-4 font-medium text-[var(--text-main)]">{e.user?.name || 'N/A'}</td>
-                        <td className="py-2 pr-4 text-[var(--text-muted)]">{e.course?.title}</td>
-                        <td className="py-2 pr-4">
+                         <td className="py-2 pr-4 font-medium text-[var(--text-main)]" data-label="Employee">{e.user?.name || 'N/A'}</td>
+                         <td className="py-2 pr-4 text-[var(--text-muted)]" data-label="Course">{e.course?.title}</td>
+                         <td className="py-2 pr-4" data-label="Progress">
                           <div className="h-1.5 w-24 overflow-hidden rounded-full bg-[var(--bg-hover)]">
                             <div className="h-full rounded-full bg-[var(--brand)]" style={{ width: `${e.progress}%` }} />
                           </div>
                         </td>
-                        <td className="py-2">
+                         <td className="py-2" data-label="Status">
                           <Badge variant={e.status === 'Completed' ? 'emerald' : 'amber'}>{e.status}</Badge>
                         </td>
                       </tr>
                     ))}
-                  </tbody>
-                </table>
+                   </tbody>
+                 </table>
+                </div>
               </div>
             )}
           </CardContent>

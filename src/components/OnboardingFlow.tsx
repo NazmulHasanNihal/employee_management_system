@@ -105,7 +105,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
             <Rocket className="text-[var(--brand)]" size={32} />
           </div>
-          <h1 className="mb-1 text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+          <h1 className="mb-1 text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
             {t('Welcome to the Platform')}
           </h1>
           <p className="text-sm text-[var(--text-muted)]">

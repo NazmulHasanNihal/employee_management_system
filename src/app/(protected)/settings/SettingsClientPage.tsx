@@ -107,8 +107,9 @@ export default function SettingsClientPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-max border-collapse text-left text-sm">
+               <div className="overflow-x-auto">
+                 <div className="table-responsive-md md:table-responsive-card">
+                   <table className="w-full border-collapse text-left text-sm">
                   <thead className="border border-[var(--border-hairline)] bg-[var(--bg-hover)] text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
                     <tr>
                       <th className="rounded-tl-xl p-4 pl-6">{t('Resource Endpoint')}</th>
@@ -139,10 +140,11 @@ export default function SettingsClientPage() {
                         </td>
                       </tr>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
+                   </tbody>
+                 </table>
+               </div>
+             </div>
+           </CardContent>
           </Card>
         </div>
 

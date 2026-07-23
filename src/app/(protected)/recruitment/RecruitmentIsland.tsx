@@ -147,7 +147,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                 <div className="flex flex-col lg:flex-row">
                   <div className="w-full border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-8 lg:w-1/3 lg:border-b-0 lg:border-r">
                     <Badge variant="emerald" className="mb-4">Status: {job.status}</Badge>
-                    <h3 className="mb-2 text-2xl font-extrabold leading-tight text-[var(--text-main)]">{job.title}</h3>
+                     <h3 className="mb-2 text-fluid-2xl font-extrabold leading-tight text-[var(--text-main)]">{job.title}</h3>
                     <div className="mb-6 space-y-2">
                       <p className="flex items-center gap-2 text-xs text-[var(--text-muted)]"><Building size={14} /> {job.department}</p>
                       <p className="flex items-center gap-2 text-xs text-[var(--text-muted)]"><Target size={14} /> {job.location}</p>
@@ -175,7 +175,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                       {STATUS_COLUMNS.map((statusColumn) => (
                         <div
                           key={statusColumn}
-                          className="flex min-h-[150px] flex-col gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3"
+                           className="flex min-h-36 flex-col gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3"
                           onDragOver={(e) => e.preventDefault()}
                           onDrop={(e) => handleDrop(e, job.id, statusColumn)}
                         >

@@ -19,13 +19,13 @@ export default function ErrorBoundary({
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 px-4 text-center">
+      <div className="flex flex-col items-center justify-center min-h-[min(60vh,50rem)] space-y-6 px-4 text-center">
       <div className="ledger-card flex flex-col items-center rounded-2xl p-8 shadow-[var(--shadow-lg)]">
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--rose-soft)] text-[var(--rose)]">
           <ShieldAlert className="h-8 w-8" strokeWidth={1.75} />
         </div>
 
-        <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+        <h2 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
           Something went wrong
         </h2>
         <p className="mt-2 max-w-md text-sm text-[var(--text-muted)]">

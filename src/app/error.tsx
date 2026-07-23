@@ -25,7 +25,7 @@ export default function RootErrorBoundary({
           <ShieldAlert className="h-8 w-8" strokeWidth={1.75} />
         </div>
 
-        <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+        <h2 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
           Something went wrong
         </h2>
         <p className="mt-2 max-w-md text-sm text-[var(--text-muted)]">

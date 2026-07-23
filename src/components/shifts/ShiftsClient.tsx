@@ -427,7 +427,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
         )}
 
         {(!shifts || shifts.length === 0) && (
-          <div className="flex min-h-[16rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
+          <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
             <CalendarDays className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
             <h3 className="text-sm font-semibold text-[var(--text-muted)]">No shifts configured in the system.</h3>
           </div>

@@ -88,7 +88,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
         <Card>
           <CardContent>
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Pending</p>
-            <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+            <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
               {formatCurrency(totalPending, 'BDT', 'en')}
             </p>
           </CardContent>
@@ -96,7 +96,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
         <Card>
           <CardContent>
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Reimbursed</p>
-            <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+            <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
               {formatCurrency(totalApproved, 'BDT', 'en')}
             </p>
           </CardContent>

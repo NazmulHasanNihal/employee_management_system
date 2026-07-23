@@ -202,7 +202,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     <UserCircle className="h-6 w-6" />
                   </div>
                   <div>
-                    <h4 className="max-w-[150px] truncate text-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
+                     <h4 className="max-w-[10rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
                     <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{emp.designation || 'Staff'}</p>
                   </div>
                 </div>

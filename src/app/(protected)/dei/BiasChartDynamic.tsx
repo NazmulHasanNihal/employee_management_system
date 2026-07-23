@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 const BiasChart = dynamic(() => import("./BiasChart"), {
   ssr: false,
   loading: () => (
-    <div className="h-[300px] animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+    <div className="h-80 animate-pulse rounded-xl bg-[var(--bg-hover)]" />
   ),
 });
 

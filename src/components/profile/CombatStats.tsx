@@ -25,7 +25,7 @@ export function CombatStats({ user }: { user: any }) {
       <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
         <Shield size={15} className="text-[var(--brand-strong)]" /> Combat Stats
       </h4>
-      <div className="min-h-[220px] w-full flex-1">
+      <div className="min-h-56 w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={data} outerRadius="72%">
             <PolarGrid stroke="var(--border-hairline)" />

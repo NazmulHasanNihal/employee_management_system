@@ -206,7 +206,7 @@ export default function ReviewsClient({
         />
       ) : (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Card className="flex h-[500px] flex-col">
+          <Card className="flex min-h-[30rem] flex-col">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity size={18} className="text-[var(--brand)]" /> Competency Radar

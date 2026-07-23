@@ -186,7 +186,7 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
               {isScanning && <div className="absolute inset-0 animate-pulse bg-[var(--brand-soft)]" />}
               <div className="relative z-10 mb-8 text-center">
                 <p className="text-sm uppercase tracking-wide text-[var(--text-muted)]">Local Server Time</p>
-                <h3 className="font-mono text-4xl font-bold tracking-widest text-[var(--text-main)]">
+                <h3 className="font-mono text-fluid-4xl font-bold tracking-widest text-[var(--text-main)]">
                   {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
                 </h3>
                 <p className="mt-2 text-xs uppercase text-[var(--brand-strong)]">SYS_SYNC_OK</p>

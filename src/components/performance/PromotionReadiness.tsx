@@ -46,7 +46,7 @@ export function PromotionReadiness({ data }: Props) {
               />
             </svg>
             <div className="absolute text-center">
-              <p className="text-2xl font-bold text-[var(--text-main)]">{data.score}</p>
+               <p className="text-fluid-2xl font-bold text-[var(--text-main)]">{data.score}</p>
               <p className="text-[9px] uppercase text-[var(--text-muted)]">Score</p>
             </div>
           </div>

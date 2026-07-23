@@ -33,7 +33,7 @@ export default async function FestivalBonusPage() {
         <Card>
           <CardContent>
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Bonus Paid</p>
-            <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">{formatCurrency(totalPaid, 'BDT', 'en')}</p>
+            <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{formatCurrency(totalPaid, 'BDT', 'en')}</p>
             <p className="mt-1 text-xs text-[var(--text-muted)]">{bonuses.length} record(s)</p>
           </CardContent>
         </Card>

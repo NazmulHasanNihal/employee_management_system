@@ -125,7 +125,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                 <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                   {row.icon} {row.label}
                 </p>
-                <p className="mt-2 text-3xl font-semibold text-[var(--text-main)]">
+                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                   {String(remaining).padStart(2, '0')}
                 </p>
                 <p className="text-sm text-[var(--text-muted)]">Available · {used} used of {total}</p>
@@ -142,16 +142,16 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="grid grid-cols-3 gap-4 lg:col-span-2">
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
-              <p className="text-2xl font-bold text-[var(--emerald)]">{leaveAnalytics.approvalRate}%</p>
+                <p className="text-fluid-2xl font-bold text-[var(--emerald)]">{leaveAnalytics.approvalRate}%</p>
               <p className="text-[10px] uppercase text-[var(--text-muted)]">Approval Rate</p>
               <DeltaBadge value={leaveAnalytics.approvalRate} label="approved" goodWhen="up" className="mt-1" />
             </div>
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
-              <p className="text-2xl font-bold text-[var(--amber)]">{leaveAnalytics.pending}</p>
+                <p className="text-fluid-2xl font-bold text-[var(--amber)]">{leaveAnalytics.pending}</p>
               <p className="text-[10px] uppercase text-[var(--text-muted)]">Pending</p>
             </div>
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
-              <p className="text-2xl font-bold text-[var(--rose)]">{leaveAnalytics.rejected}</p>
+                <p className="text-fluid-2xl font-bold text-[var(--rose)]">{leaveAnalytics.rejected}</p>
               <p className="text-[10px] uppercase text-[var(--text-muted)]">Rejected</p>
             </div>
           </div>
@@ -220,12 +220,12 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
             </CardHeader>
             <CardContent className="flex-1">
               {(!requests || requests.length === 0) ? (
-                <div className="flex min-h-[12rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
+                <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
                   <Umbrella className="mb-3 h-8 w-8 text-[var(--text-muted)]" />
                   <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Leave History</h3>
                 </div>
               ) : (
-                <div className="max-h-[525px] space-y-3 overflow-y-auto">
+                <div className="max-h-[30rem] space-y-3 overflow-y-auto">
                   {requests.map((req: any) => {
                     const cat = leaveTypes.find((l) => l.name === req.type)?.category || req.type;
                     return (

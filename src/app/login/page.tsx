@@ -120,7 +120,7 @@ export default function LoginPage() {
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-[var(--shadow-sm)]">
               {requiresTwoFactor ? <KeyRound size={22} /> : <Lock size={22} />}
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">
+             <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
               {requiresTwoFactor ? 'Two-Factor Authentication' : (loginType === 'admin' ? 'Admin Sign In' : 'Welcome Back')}
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">

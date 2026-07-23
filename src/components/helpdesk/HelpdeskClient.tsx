@@ -136,7 +136,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
         </h2>
 
         {(!tickets || tickets.length === 0) ? (
-          <div className="flex min-h-[16rem] flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
+          <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
             <LifeBuoy className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
             <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Active Tickets</h3>
           </div>
