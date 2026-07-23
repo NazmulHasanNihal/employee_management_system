@@ -9,7 +9,7 @@ export default async function AnnouncementsPage() {
   const [news, departments] = await Promise.all([getNews(caller), getDepartments()]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
         title="Company News"
         subtitle="Company-wide broadcasts, team updates, and critical alerts."

@@ -104,7 +104,7 @@ export default function OnboardingClientPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6 lg:px-8 animate-fade-up">
       <PageHeader
         title="HR Workflows"
         subtitle="Automated onboarding checklists and offboarding protocols."

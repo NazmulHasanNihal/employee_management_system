@@ -30,7 +30,7 @@ export function Avatar({
   const fallback = (
     <div
       className={`flex items-center justify-center bg-[var(--brand-soft)] border border-[var(--brand)]/30 text-[var(--brand)] font-mono font-bold ${radius} ${className}`}
-      style={{ width: size, height: size, fontSize: size * 0.4 }}
+      style={{ width: size, height: size, fontSize: Math.max(10, size * 0.4) }}
       aria-hidden
     >
       {initials(name)}

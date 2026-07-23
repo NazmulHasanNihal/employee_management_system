@@ -207,7 +207,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </button>
         </div>
 
-        <nav id="primary-navigation" aria-label="Primary" className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
+        <nav id="primary-navigation" aria-label="Primary" className="custom-scrollbar flex-1 overflow-y-auto px-2 py-3 md:px-3 md:py-4">
           {navCategories.map((category) => {
             const filteredItems = category.items.filter(canSee);
             if (filteredItems.length === 0) return null;
@@ -251,81 +251,80 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           })}
         </nav>
 
-        <div className="border-t border-[var(--border-hairline)] p-4">
+        <div className="border-t border-[var(--border-hairline)] p-3 md:p-4">
           <Link href="/profile" prefetch className="flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-[var(--bg-hover)]">
             <Avatar src={user.avatarUrl} name={user.name} size="sm" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-[var(--text-main)]">{user.name}</p>
-              <p className="truncate text-xs text-[var(--text-muted)]">{user.designation || user.role}</p>
+              <p className="truncate text-[11px] text-[var(--text-muted)]">{user.designation || user.role}</p>
             </div>
           </Link>
         </div>
       </motion.aside>
 
-      <main id="main-content" className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
-        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--bg-panel)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-main)] focus:shadow-lg">Skip to content</a>
-        {isOffline && (
-          <div role="status" aria-live="polite" className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
-            <div className="flex items-center gap-2">
-              <Activity size={14} className="animate-pulse" />
-              <span>Offline — {offlineQueue} operations queued</span>
-            </div>
-            <span className="opacity-80">Awaiting connection…</span>
-          </div>
-        )}
+       <main id="main-content" className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
+         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--bg-panel)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-main)] focus:shadow-lg">Skip to content</a>
+         {isOffline && (
+           <div role="status" aria-live="polite" className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
+             <div className="flex items-center gap-2">
+               <Activity size={14} className="animate-pulse" />
+               <span>Offline — {offlineQueue} operations queued</span>
+             </div>
+             <span className="opacity-80">Awaiting connection…</span>
+           </div>
+         )}
 
-        <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 md:px-8">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 md:hidden">
-              <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
-                <Menu size={20} />
-              </button>
-            </div>
-          </div>
+         <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 md:px-6">
+           <div className="flex items-center gap-3">
+             <div className="flex items-center gap-2 md:hidden">
+               <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="touch-target -ml-1 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]">
+                 <Menu size={22} />
+               </button>
+             </div>
+           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            <button
-              aria-label="Open command palette"
-              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-              className="hidden items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] sm:flex"
-            >
-              <Command size={13} /> <span>⌘K</span>
-            </button>
+           <div className="flex items-center gap-2 md:gap-3">
+             <button
+               aria-label="Open command palette"
+               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+               className="hidden items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] sm:flex min-h-[36px]"
+             >
+               <Command size={14} /> <span className="hidden sm:inline">⌘K</span>
+             </button>
 
-            <button
-              aria-label="Toggle language"
-              onClick={() => {
-                const next = language === 'en' ? 'bn' : 'en';
-                setLanguage(next);
-                // Persist to a cookie so Server Components can localize too.
-                document.cookie = `ems_lang=${next}; path=/; max-age=31536000; samesite=lax`;
-                router.refresh();
-              }}
-              className="rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
-            >
-              {language === 'en' ? 'ENG' : 'বাংলা'}
-            </button>
+             <button
+               aria-label="Toggle language"
+               onClick={() => {
+                 const next = language === 'en' ? 'bn' : 'en';
+                 setLanguage(next);
+                 document.cookie = `ems_lang=${next}; path=/; max-age=31536000; samesite=lax`;
+                 router.refresh();
+               }}
+               className="touch-target flex items-center justify-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] sm:px-3"
+             >
+               {language === 'en' ? 'ENG' : 'বাংলা'}
+             </button>
 
-            <BranchSwitcher lang={language} />
+             <BranchSwitcher lang={language} />
 
-            <button aria-label="Toggle theme" onClick={toggleTheme} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
-              {mounted && resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+             <button aria-label="Toggle theme" onClick={toggleTheme} className="touch-target flex items-center justify-center rounded-xl p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]">
+               {mounted && resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+             </button>
 
-            <div className="relative" ref={notificationsRef}>
-              <button
-                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
-                aria-expanded={showNotifications}
-                onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
-                className="relative rounded-lg p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]"
-              >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--rose)] text-[8px] font-bold text-white">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </button>
+             <div className="relative" ref={notificationsRef}>
+               <button
+                 aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+                 aria-expanded={showNotifications}
+                 onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
+                 className="touch-target relative flex items-center justify-center rounded-xl p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]"
+               >
+                 <Bell size={18} />
+                 {unreadCount > 0 && (
+                   <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--rose)] text-[8px] font-bold text-white">
+                     {unreadCount > 9 ? '9+' : unreadCount}
+                   </span>
+                 )}
+               </button>
 
               {showNotifications && (
                 <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-lg">
@@ -394,34 +393,34 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </div>
         </header>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto p-4 pb-24 md:p-8 md:pb-8">
+        <div className="custom-scrollbar flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {children}
         </div>
       </main>
 
       <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-0 safe-bottom md:hidden">
          {[
-           { path: '/', icon: Home, label: 'Home' },
-           { path: '/team', icon: Users, label: 'Team' },
-           { path: '/attendance', icon: Clock, label: 'Time' },
-           { path: '/leave', icon: Calendar, label: 'Leave' },
-           { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
-         ].map((item) => {
-           const Icon = item.icon;
-           const active = pathname === item.path;
-           return (
-             <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
-               className={`flex h-16 w-16 flex-col items-center justify-center transition-all active:scale-95 touch-target ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
-               <Icon size={20} />
-               <span className="mt-1 text-[10px] font-medium">{item.label}</span>
-             </Link>
-           );
-         })}
-         <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="flex h-16 w-16 flex-col items-center justify-center text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)] touch-target">
-           <Menu size={20} />
-           <span className="mt-1 text-[10px] font-medium">More</span>
-         </button>
-       </div>
+            { path: '/', icon: Home, label: 'Home' },
+            { path: '/team', icon: Users, label: 'Team' },
+            { path: '/attendance', icon: Clock, label: 'Time' },
+            { path: '/leave', icon: Calendar, label: 'Leave' },
+            { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
+          ].map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.path;
+            return (
+              <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
+                className={`touch-target flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
+                <Icon size={20} className="shrink-0" />
+                <span className="text-[9px] font-medium leading-tight">{item.label}</span>
+              </Link>
+            );
+          })}
+          <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="touch-target flex flex-1 flex-col items-center justify-center gap-0.5 text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)]">
+            <Menu size={20} className="shrink-0" />
+            <span className="text-[9px] font-medium leading-tight">More</span>
+          </button>
+        </div>
 
       <BottomSheet open={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
         <div className="grid grid-cols-2 gap-2">

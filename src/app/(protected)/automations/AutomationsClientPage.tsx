@@ -257,13 +257,13 @@ export default function AutomationsClientPage() {
           <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
             <Workflow size={16} className="text-[var(--brand-strong)]" /> Active Logic Matrix
           </h3>
-          <div className="relative">
+          <div className="relative w-full sm:w-64">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search rules…"
-              className="w-64 pl-9"
+              className="w-full pl-9"
             />
           </div>
         </div>

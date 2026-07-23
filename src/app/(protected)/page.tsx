@@ -121,7 +121,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
         title={t('Dashboard')}
         subtitle={caller ? `${t('Welcome back')}, ${caller.name}` : t('Organization overview')}

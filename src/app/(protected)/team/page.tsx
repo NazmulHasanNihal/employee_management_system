@@ -40,7 +40,7 @@ export default async function TeamPage() {
   })();
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
         title={t('My Team')}
         subtitle={t('Chain of command, tasks, and team performance.')}

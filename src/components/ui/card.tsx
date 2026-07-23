@@ -5,7 +5,7 @@ export function Card({ className, children, ...props }: React.HTMLAttributes<HTM
   return (
     <div
       className={cn(
-        'ledger-card rounded-2xl p-5 sm:p-6 transition-[border-color,transform,box-shadow] duration-200 ease-out',
+        'ledger-card rounded-2xl p-4 sm:p-6 transition-[border-color,transform,box-shadow] duration-200 ease-out min-w-0',
         className
       )}
       {...props}

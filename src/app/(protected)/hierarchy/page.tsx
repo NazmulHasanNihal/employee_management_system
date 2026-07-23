@@ -27,7 +27,7 @@ export default async function HierarchyPage() {
   }));
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8">
+    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
         title={t('Restructure Sandbox')}
         subtitle={t('Configure operational units, budgets, and leadership.')}
