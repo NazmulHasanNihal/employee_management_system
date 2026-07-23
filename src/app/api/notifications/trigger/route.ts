@@ -4,6 +4,7 @@ import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import webpush from 'web-push';
 import { parseApiBody, notifySchema } from '@/lib/validation';
+import { sendIntegrationNotification } from '@/lib/integrations';
 
 export async function POST(req: Request) {
   try {
@@ -36,6 +37,13 @@ export async function POST(req: Request) {
     const payload = JSON.stringify({ title, body, url });
 
     await webpush.sendNotification(user.pushSub as any, payload);
+
+    await sendIntegrationNotification({
+      title: `Notification sent to ${user.name}`,
+      body: `${title}: ${body}`,
+      url: url || undefined,
+      color: 'blue',
+    });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

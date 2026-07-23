@@ -126,24 +126,24 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
         {step === 1 && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
-              <input value={form.name} onChange={(e) => update('name', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Your full name" />
-              {errors.name && <p className="text-[10px] text-[var(--alert-red)]">{errors.name}</p>}
+              <label htmlFor="onboarding-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
+              <input id="onboarding-name" value={form.name} onChange={(e) => update('name', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Your full name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'onboarding-name-error' : undefined} />
+              {errors.name && <p id="onboarding-name-error" className="text-[10px] text-[var(--rose)]">{errors.name}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Phone Number</label>
-              <input value={form.phone} onChange={(e) => update('phone', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" />
-              {errors.phone && <p className="text-[10px] text-[var(--alert-red)]">{errors.phone}</p>}
+              <label htmlFor="onboarding-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Phone Number</label>
+              <input id="onboarding-phone" value={form.phone} onChange={(e) => update('phone', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? 'onboarding-phone-error' : undefined} />
+              {errors.phone && <p id="onboarding-phone-error" className="text-[10px] text-[var(--rose)]">{errors.phone}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">National ID (NID)</label>
-              <input value={form.nid} onChange={(e) => update('nid', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" />
-              {errors.nid && <p className="text-[10px] text-[var(--alert-red)]">{errors.nid}</p>}
+              <label htmlFor="onboarding-nid" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">National ID (NID)</label>
+              <input id="onboarding-nid" value={form.nid} onChange={(e) => update('nid', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" aria-invalid={Boolean(errors.nid)} aria-describedby={errors.nid ? 'onboarding-nid-error' : undefined} />
+              {errors.nid && <p id="onboarding-nid-error" className="text-[10px] text-[var(--rose)]">{errors.nid}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Blood Group</label>
-                <select value={form.bloodGroup} onChange={(e) => update('bloodGroup', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                <label htmlFor="onboarding-blood" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Blood Group</label>
+                <select id="onboarding-blood" value={form.bloodGroup} onChange={(e) => update('bloodGroup', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
                   <option value="">Select</option>
                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map((b) => (
                     <option key={b} value={b}>{b}</option>
@@ -151,8 +151,8 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Gender</label>
-                <select value={form.gender} onChange={(e) => update('gender', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                <label htmlFor="onboarding-gender" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Gender</label>
+                <select id="onboarding-gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
                   <option value="">Select</option>
                   {['Male', 'Female', 'Non-Binary', 'Prefer Not to Say'].map((g) => (
                     <option key={g} value={g}>{g}</option>
@@ -163,14 +163,14 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
             {requiresPassword && (
               <div className="grid grid-cols-2 gap-4 border-t border-[var(--border-hairline)] pt-4 mt-2">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Set Password</label>
-                  <input type="password" value={form.password} onChange={(e) => update('password', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" />
-                  {errors.password && <p className="text-[10px] text-[var(--alert-red)]">{errors.password}</p>}
+                  <label htmlFor="onboarding-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Set Password</label>
+                  <input id="onboarding-password" type="password" value={form.password} onChange={(e) => update('password', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'onboarding-password-error' : undefined} />
+                  {errors.password && <p id="onboarding-password-error" className="text-[10px] text-[var(--rose)]">{errors.password}</p>}
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Confirm Password</label>
-                  <input type="password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" />
-                  {errors.confirmPassword && <p className="text-[10px] text-[var(--alert-red)]">{errors.confirmPassword}</p>}
+                  <label htmlFor="onboarding-confirm-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Confirm Password</label>
+                  <input id="onboarding-confirm-password" type="password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.confirmPassword)} aria-describedby={errors.confirmPassword ? 'onboarding-confirm-password-error' : undefined} />
+                  {errors.confirmPassword && <p id="onboarding-confirm-password-error" className="text-[10px] text-[var(--rose)]">{errors.confirmPassword}</p>}
                 </div>
               </div>
             )}
@@ -182,17 +182,18 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
         {step === 2 && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Address</label>
-              <input value={form.address} onChange={(e) => update('address', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Street, City" />
+              <label htmlFor="onboarding-address" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Address</label>
+              <input id="onboarding-address" value={form.address} onChange={(e) => update('address', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Street, City" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'onboarding-address-error' : undefined} />
+              {errors.address && <p id="onboarding-address-error" className="text-[10px] text-[var(--rose)]">{errors.address}</p>}
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Name</label>
-              <input value={form.emergencyContactName} onChange={(e) => update('emergencyContactName', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Next of kin" />
+              <label htmlFor="onboarding-emergency-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Name</label>
+              <input id="onboarding-emergency-name" value={form.emergencyContactName} onChange={(e) => update('emergencyContactName', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Next of kin" />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Phone</label>
-              <input value={form.emergencyContactPhone} onChange={(e) => update('emergencyContactPhone', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" />
-              {errors.emergencyContactPhone && <p className="text-[10px] text-[var(--alert-red)]">{errors.emergencyContactPhone}</p>}
+              <label htmlFor="onboarding-emergency-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Phone</label>
+              <input id="onboarding-emergency-phone" value={form.emergencyContactPhone} onChange={(e) => update('emergencyContactPhone', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.emergencyContactPhone)} aria-describedby={errors.emergencyContactPhone ? 'onboarding-emergency-phone-error' : undefined} />
+              {errors.emergencyContactPhone && <p id="onboarding-emergency-phone-error" className="text-[10px] text-[var(--rose)]">{errors.emergencyContactPhone}</p>}
             </div>
             <ButtonRow onBack={back} onNext={next} step={step} loading={loading} />
           </div>

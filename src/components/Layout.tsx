@@ -7,6 +7,7 @@ import { useLinkStatus } from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { PwaInstallPrompt } from '@/components/PwaInstallPrompt';
+import BottomSheet from '@/components/BottomSheet';
 import {
   LayoutDashboard, Users, Clock, FileText, Landmark,
   Settings, ShieldCheck, Bell, Megaphone, Calendar,
@@ -30,6 +31,8 @@ import { BranchSwitcher } from '@/components/BranchSwitcher';
 import { Avatar } from '@/components/ui/avatar';
 import { trpc } from '@/lib/trpc/client';
 import { navCategories } from '@/components/nav-config';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { SkipLinks } from './SkipLinks';
 
 interface LayoutUser {
   id: string;
@@ -45,7 +48,7 @@ interface LayoutUser {
 export { navCategories } from '@/components/nav-config';
 
 /** Prefetching nav link — loads the next section before the click. */
-function NavLink({ item, active, onClick }: { item: any; active: boolean; onClick?: () => void }) {
+function NavLink({ item, active, onClick, t }: { item: any; active: boolean; onClick?: () => void; t?: (key: string) => string }) {
   const Icon = item.icon;
   const status = useLinkStatus();
   return (
@@ -68,7 +71,7 @@ function NavLink({ item, active, onClick }: { item: any; active: boolean; onClic
         />
       )}
       <Icon size={17} className={`transition-colors duration-200 ${active ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)] group-hover:text-[var(--text-main)]'}`} />
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{t?.(item.label) || item.label}</span>
       {status.pending && <span className="ml-auto h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--brand)]" />}
     </Link>
   );
@@ -86,10 +89,14 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = React.useState(false);
   const t = useTranslation(language);
 
   const notificationsRef = React.useRef<HTMLDivElement>(null);
   const profileRef = React.useRef<HTMLDivElement>(null);
+
+  useFocusTrap(showNotifications, notificationsRef as React.RefObject<HTMLElement>);
+  useFocusTrap(showProfileMenu, profileRef as React.RefObject<HTMLElement>);
 
   React.useEffect(() => {
     if (!showNotifications && !showProfileMenu) return;
@@ -165,7 +172,9 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
     !(i.hideForContractor && isContractor);
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)] transition-colors duration-300 md:flex-row">
+    <>
+      <SkipLinks />
+      <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-app)] transition-colors duration-300 md:flex-row">
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
@@ -198,7 +207,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </button>
         </div>
 
-        <nav aria-label="Primary" className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
+        <nav id="primary-navigation" aria-label="Primary" className="custom-scrollbar flex-1 overflow-y-auto px-3 py-4">
           {navCategories.map((category) => {
             const filteredItems = category.items.filter(canSee);
             if (filteredItems.length === 0) return null;
@@ -231,7 +240,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
                     >
                       <div className="mt-1 flex flex-col gap-0.5">
                         {filteredItems.map((item) => (
-                          <NavLink key={item.label} item={item} active={pathname === item.path} onClick={() => setIsMobileMenuOpen(false)} />
+                          <NavLink key={item.label} item={item} active={pathname === item.path} onClick={() => setIsMobileMenuOpen(false)} t={t} />
                         ))}
                       </div>
                     </motion.div>
@@ -253,9 +262,10 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </motion.aside>
 
-      <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
+      <main id="main-content" className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
+        <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--bg-panel)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-main)] focus:shadow-lg">Skip to content</a>
         {isOffline && (
-          <div className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
+          <div role="status" aria-live="polite" className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
             <div className="flex items-center gap-2">
               <Activity size={14} className="animate-pulse" />
               <span>Offline — {offlineQueue} operations queued</span>
@@ -389,9 +399,10 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-2 md:hidden">
+      <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-0 md:hidden">
         {[
           { path: '/', icon: Home, label: 'Home' },
+          { path: '/team', icon: Users, label: 'Team' },
           { path: '/attendance', icon: Clock, label: 'Time' },
           { path: '/leave', icon: Calendar, label: 'Leave' },
           { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
@@ -400,21 +411,48 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           const active = pathname === item.path;
           return (
             <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
-              className={`flex h-full w-16 flex-col items-center justify-center transition-colors ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
+              className={`flex h-16 w-16 flex-col items-center justify-center transition-all active:scale-95 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
               <Icon size={20} />
               <span className="mt-1 text-[10px] font-medium">{item.label}</span>
             </Link>
           );
         })}
-        <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="flex h-full w-16 flex-col items-center justify-center text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
+        <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="flex h-16 w-16 flex-col items-center justify-center text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)]">
           <Menu size={20} />
-          <span className="mt-1 text-[10px] font-medium">Menu</span>
+          <span className="mt-1 text-[10px] font-medium">More</span>
         </button>
       </div>
+
+      <BottomSheet open={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
+        <div className="grid grid-cols-2 gap-2">
+          {navCategories.map((cat) => (
+            <div key={cat.title} className="col-span-2 px-2 pt-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{t(cat.title)}</p>
+            </div>
+          ))}
+          {navCategories.flatMap((cat) => cat.items).map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                prefetch
+                onClick={() => setIsBottomSheetOpen(false)}
+                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${active ? 'bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
+              >
+                <Icon size={18} />
+                <span>{t(item.label)}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </BottomSheet>
 
       <CommandPalette />
       <ToastContainer />
       <PwaInstallPrompt />
     </div>
+    </>
   );
 }

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
 
 interface RecruitmentIslandProps {
-  initialJobs: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[];
+  initialJobs: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string | null; description: string | null; candidates: { id: string; name: string; email: string; status: string }[] }[];
 }
 
 const STATUS_COLUMNS = ['Applied', 'Interviewing', 'Offered'];
@@ -24,8 +24,8 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
 
   const utils = trpc.useUtils();
   const { data: jobsData } = trpc.recruitment.getJobs.useQuery(undefined, { initialData: initialJobs });
-  const liveJobs = React.useMemo(() => (jobsData as { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[] | undefined) ?? initialJobs ?? [], [jobsData, initialJobs]);
-  const [jobsState, setJobsState] = React.useState<{ id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[]>(liveJobs);
+  const liveJobs = React.useMemo(() => (jobsData as { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string | null; description: string | null; candidates: { id: string; name: string; email: string; status: string }[] }[] | undefined) ?? initialJobs ?? [], [jobsData, initialJobs]);
+  const [jobsState, setJobsState] = React.useState<{ id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string | null; description: string | null; candidates: { id: string; name: string; email: string; status: string }[] }[]>(liveJobs);
   React.useEffect(() => { setJobsState(liveJobs); }, [liveJobs]);
 
   const createJob = trpc.recruitment.createJob.useMutation({
@@ -138,7 +138,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
             icon={<Briefcase className="h-5 w-5" />}
           />
         ) : (
-          jobList.map((job: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }) => {
+          jobList.map((job: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string | null; description: string | null; candidates: { id: string; name: string; email: string; status: string }[] }) => {
             let reqSkills: string[] = [];
             try { if (job.requiredSkills) reqSkills = JSON.parse(job.requiredSkills); } catch { /* noop */ }
 

@@ -29,7 +29,7 @@ export function Avatar({
   const normalizedSrc = toPublicAvatarUrl(src);
   const fallback = (
     <div
-      className={`flex items-center justify-center bg-[var(--ledger-blue)]/20 border border-[var(--ledger-blue)]/30 text-[var(--ledger-blue)] font-mono font-bold ${radius} ${className}`}
+      className={`flex items-center justify-center bg-[var(--brand-soft)] border border-[var(--brand)]/30 text-[var(--brand)] font-mono font-bold ${radius} ${className}`}
       style={{ width: size, height: size, fontSize: size * 0.4 }}
       aria-hidden
     >

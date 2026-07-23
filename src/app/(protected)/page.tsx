@@ -50,7 +50,17 @@ export default async function HomePage() {
     }
   }
 
-  const statCards = [
+  interface StatCard {
+    label: string;
+    value: string | number;
+    icon: React.ComponentType<{ className?: string }>;
+    tone: string;
+    delta?: number;
+    deltaLabel?: string;
+    goodWhen: 'up' | 'down';
+  }
+
+  const statCards: StatCard[] = [
     ...(isAdmin
       ? [{
           label: t('Headcount'),
@@ -81,15 +91,6 @@ export default async function HomePage() {
       goodWhen: 'down' as const,
     },
     {
-      label: t('Open Tickets'),
-      value: stats.openTickets,
-      icon: Ticket,
-      tone: 'text-[var(--rose)] bg-[var(--rose-soft)]',
-      delta: undefined,
-      deltaLabel: undefined,
-      goodWhen: 'down' as const,
-    },
-    {
       label: isAdmin ? t('Payroll (Me)') : t('My Payroll'),
       value: currency(stats.totalPayroll),
       icon: DollarSign,
@@ -115,8 +116,6 @@ export default async function HomePage() {
       value: `${trainingCompliance.pct}%`,
       icon: GraduationCap,
       tone: 'text-[var(--violet, var(--brand))] bg-[var(--brand-soft)]',
-      delta: undefined,
-      deltaLabel: undefined,
       goodWhen: 'up' as const,
     });
   }
@@ -135,7 +134,7 @@ export default async function HomePage() {
             <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl ${s.tone}`}>
               <s.icon className="h-4 w-4" />
             </div>
-            <p className="text-2xl font-semibold text-[var(--text-main)]">{s.value}</p>
+            <p className="text-2xl font-semibold text-[var(--text-main)]">{s.value}{s.label === 'Attendance Rate' || s.label === 'Pending Leaves' || s.label === 'Training Compliance' ? '%' : ''}</p>
             <div className="mt-1 flex items-center gap-2">
               <p className="text-xs text-[var(--text-muted)]">{s.label}</p>
               {typeof s.delta === 'number' && (

@@ -45,12 +45,12 @@ export interface NewsItem {
   author: string;
   authorId: string;
   authorRole: string;
-  authorDesignation: string;
+  authorDesignation: string | null;
   isEdited: boolean;
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
-  canEdit: boolean;
+  canEdit?: boolean;
   canDelete: boolean;
 }
 
@@ -490,47 +490,31 @@ export async function getChainOfCommand(caller: Caller | null): Promise<ChainOfC
   const userId = caller?.id;
   if (!userId || !caller) return { chain: [], directReports: [], peers: [], secondLevelReports: [] };
 
-  // Collect manager IDs in the upward chain (me -> manager -> ... -> CEO) in
-  // a single pass, then bulk-fetch them all to avoid 1+N queries.
-  const managerIds: string[] = [];
+  const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true } });
+  const userMap = new Map(allUsers.map((u) => [u.id, u]));
+
+  const chain: ChainUser[] = [];
   let currentId: string | undefined = userId;
   while (currentId) {
-    if (managerIds.includes(currentId)) break;
-    managerIds.push(currentId);
-    const u = await prisma.user.findUnique({ where: { id: currentId }, select: { managerId: true } });
-    currentId = u?.managerId ?? undefined;
+    const u = userMap.get(currentId);
+    if (!u) break;
+    if (chain.some((c) => c.id === u.id)) break;
+    chain.push({ id: u.id, name: u.name, role: u.role, department: u.department, designation: u.designation, avatarUrl: u.avatarUrl, email: u.email });
+    currentId = u.managerId ?? undefined;
   }
 
-  const chainUsers = managerIds.length > 0
-    ? await prisma.user.findMany({ where: { id: { in: managerIds } } })
-    : [];
-  const userMap = new Map(chainUsers.map((u) => [u.id, u]));
-  const chain: ChainUser[] = managerIds
-    .map((id) => userMap.get(id))
-    .filter((u): u is NonNullable<typeof u> => !!u)
-    .map((u) => ({
-      id: u.id, name: u.name, role: u.role,
-      department: u.department, designation: u.designation,
-      avatarUrl: u.avatarUrl, email: u.email,
-    }));
-
-  const directReports: DirectReport[] = await prisma.user.findMany({
-    where: { managerId: userId },
-    select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true },
-  });
+  const directReports: DirectReport[] = allUsers
+    .filter((u) => u.managerId === userId)
+    .map((u) => ({ id: u.id, name: u.name, role: u.role, department: u.department, designation: u.designation, avatarUrl: u.avatarUrl, email: u.email, status: u.status }));
   const peers: DirectReport[] = caller.managerId
-    ? await prisma.user.findMany({
-        where: { managerId: caller.managerId, NOT: { id: userId } },
-        select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true },
-      })
+    ? allUsers
+        .filter((u) => u.managerId === caller.managerId && u.id !== userId)
+        .map((u) => ({ id: u.id, name: u.name, role: u.role, department: u.department, designation: u.designation, avatarUrl: u.avatarUrl, email: u.email, status: u.status }))
     : [];
   const secondLevelReports: SecondLevelReport[] = [];
   if (directReports.length > 0) {
     const reportIds = directReports.map((r) => r.id);
-    const subReports = await prisma.user.findMany({
-      where: { managerId: { in: reportIds } },
-      select: { id: true, name: true, role: true, department: true, designation: true, avatarUrl: true, email: true, status: true, managerId: true },
-    });
+    const subReports = allUsers.filter((u) => u.managerId && reportIds.includes(u.managerId));
     const byManager = new Map<string, typeof subReports>();
     for (const s of subReports) {
       const key = s.managerId as string;
@@ -574,7 +558,7 @@ const cachedTeamPerformance = unstable_cache(
   { revalidate: 30, tags: ['team'] }
 );
 
-export async function getTeamPerformance(caller: Caller | null): Promise<{ id: string; name: string; designation: string; department: string; avatarUrl: string | null; totalTasks: number; doneTasks: number; inProgressTasks: number; blockedTasks: number; doneThisWeek: number; completionRate: number; attendanceRate: number }[]> {
+export async function getTeamPerformance(caller: Caller | null): Promise<{ id: string; name: string; designation: string | null; department: string | null; avatarUrl: string | null; totalTasks: number; doneTasks: number; inProgressTasks: number; blockedTasks: number; doneThisWeek: number; completionRate: number; attendanceRate: number }[]> {
   const userId = caller?.id;
   if (!userId) return [];
   const isPrivileged = caller?.isAdmin || caller?.isCEO;
@@ -760,7 +744,7 @@ export async function getLeaveBalance(caller: Caller | null) {
 }
 
 /** Active BD leave types used to populate the request form and balance labels. */
-export async function getLeaveTypes(): Promise<{ id: string; name: string; nameBn?: string; category: string; defaultDays: number; isPaid: boolean; applicableGender?: string; isActive: boolean }[]> {
+export async function getLeaveTypes(): Promise<{ id: string; name: string; nameBn: string | null; category: string; defaultDays: number; isPaid: boolean; applicableGender: string | null; isActive: boolean }[]> {
   return prisma.leaveType.findMany({ where: { isActive: true }, orderBy: { category: 'asc' } });
 }
 
@@ -1301,7 +1285,7 @@ interface CalibrationSessionRow {
     multiplier: number;
     note: string | null;
     createdAt: Date;
-    user: { name: string };
+    user: { name: string; department: string | null };
   }>;
 }
 
@@ -1315,13 +1299,13 @@ interface CalibrationEntryRow {
   multiplier: number;
   note: string | null;
   createdAt: Date;
-  user: { name: string; department: string };
+  user: { name: string; department: string | null };
 }
 
 export async function getCalibrationSessions(caller: Caller | null): Promise<CalibrationSessionRow[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   return prisma.calibrationSession.findMany({
-    include: { createdBy: { select: { name: true } }, entries: { include: { user: { select: { name: true } } } } },
+    include: { createdBy: { select: { name: true } }, entries: { include: { user: { select: { name: true, department: true } } } } },
     orderBy: { createdAt: 'desc' },
   });
 }
@@ -1417,7 +1401,7 @@ export async function getMyCertifications(caller: Caller | null): Promise<{ id: 
   return prisma.certification.findMany({ where: { userId }, orderBy: { expiryDate: 'asc' } });
 }
 
-export async function getExpiringCertifications(caller: Caller | null): Promise<{ id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string } }[]> {
+export async function getExpiringCertifications(caller: Caller | null): Promise<{ id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string | null } }[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   const now = new Date();
   const soon = new Date(); soon.setDate(now.getDate() + 30);
@@ -1437,7 +1421,7 @@ export async function getCommitteeMembers() {
   return prisma.committeeMember.findMany({ orderBy: [{ isChair: 'desc' }, { role: 'asc' }] });
 }
 
-export async function getJobs(caller: Caller | null): Promise<{ id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string; description: string; candidates: { id: string; name: string; email: string; status: string }[] }[]> {
+export async function getJobs(caller: Caller | null): Promise<{ id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string | null; description: string | null; candidates: { id: string; name: string; email: string; status: string }[] }[]> {
   if (!caller?.isAdmin && !caller?.isCEO) return [];
   const jobs = await prisma.jobRequisition.findMany({ include: { candidates: true }, orderBy: { createdAt: 'desc' } });
   return jobs.map((j) => ({
@@ -1457,7 +1441,7 @@ export async function getBiasAudit(caller: Caller | null) {
   for (const u of users) {
     const dept = u.department;
     if (!dept) continue;
-    (groups[dept] ||= []).push(u.baseSalary);
+    (groups[dept] ||= []).push(u.baseSalary!);
   }
   const allSalaries = users.map((u) => u.baseSalary).filter((s): s is number => s != null);
   const globalAvg = allSalaries.length ? allSalaries.reduce((a, b) => a + b, 0) / allSalaries.length : 0;

@@ -32,8 +32,8 @@ export default function PayrollTrend({ data }: { data: { month: string; payroll:
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
               <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />
-              <YAxis tickLine={false} axisLine={false} tick={axisTick} width={56} tickFormatter={(v: number) => `৳${Math.round(v / 1000)}k`} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatCurrency(v, "BDT", "en"), "Payroll"]} />
+              <YAxis tickLine={false} axisLine={false} tick={axisTick} width={56} tickFormatter={(v: number | undefined) => `৳${Math.round((v ?? 0) / 1000)}k`} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => [formatCurrency(value ?? 0, "BDT", "en"), "Payroll"] as [string, string]} />
               <Area type="monotone" dataKey="payroll" stroke="var(--sky)" strokeWidth={2} fill="url(#payrollFill)" />
             </AreaChart>
           </ResponsiveContainer>

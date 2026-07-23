@@ -34,6 +34,7 @@ import { DocumentVault } from '@/components/profile/DocumentVault';
 import { DelegationSettings } from '@/components/profile/DelegationSettings';
 import { SprintHeatmap } from '@/components/profile/SprintHeatmap';
 import { ReviewsRadarIsland, CombatStatsIsland } from '@/components/profile/ChartIslands';
+import { TwoFactorSettings } from '@/components/TwoFactorSettings';
 
 function maskSalary() {
   return '••••••••';
@@ -172,6 +173,15 @@ export default async function ProfilePage() {
           <Card>
             <CardHeader><CardTitle>Bangladesh Identity</CardTitle></CardHeader>
             <CardContent><IdentitySection user={user as ProfileUser} /></CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck size={16} className="text-[var(--brand-strong)]" /> Security</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TwoFactorSettings />
+            </CardContent>
           </Card>
         </div>
       </div>

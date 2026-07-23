@@ -145,7 +145,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
           }, 1500);
         }
       } else {
-        setProvisionStatus({ loading: false, error: res.error, success: false, inviteToken: null });
+        setProvisionStatus({ loading: false, error: res.error ?? null, success: false, inviteToken: null });
       }
     } catch (err: any) {
       setProvisionStatus({ loading: false, error: err.message, success: false, inviteToken: null });
@@ -232,7 +232,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   >
                     <Settings className="mr-1 inline h-3 w-3" /> Access
                   </button>
-                  {canModifyUser({ role: user.role, designation: user.designation, isOwner }, emp) && (
+                  {canModifyUser({ role: user.role, designation: user.designation ?? undefined, isOwner }, { role: emp.role, designation: emp.designation ?? undefined, isOwner: emp.isOwner }) && (
                     <button
                       onClick={() => handleDelete(emp.id)}
                       disabled={deleteStatus.loading}

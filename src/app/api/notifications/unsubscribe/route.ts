@@ -13,8 +13,9 @@ export async function POST(_req: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: caller.id },
       data: {
-        pushSub: null, // Clear subscription
-      },
+        pushSub: null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
     });
 
     return NextResponse.json({ success: true, user: updatedUser });

@@ -36,7 +36,7 @@ export default function TeamCompletionChart({ data }: { data: { name: string; co
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" horizontal={false} />
               <XAxis type="number" domain={[0, 100]} tickLine={false} axisLine={false} tick={axisTick} />
               <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={axisTick} width={92} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v}%`, "Completion"]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [`${v ?? 0}%`, "Completion"] as [string, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
               <Bar dataKey="completionRate" radius={[0, 6, 6, 0]}>
                 {sorted.map((_, i) => (
                   <Cell key={i} fill={PALETTE[i % PALETTE.length]} />

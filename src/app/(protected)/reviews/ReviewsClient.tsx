@@ -28,7 +28,7 @@ interface ReviewItem {
 interface EmployeeOption {
   id: string;
   name: string;
-  designation?: string;
+  designation?: string | null;
 }
 
 const REVIEW_DIMENSIONS = [

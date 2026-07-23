@@ -72,7 +72,7 @@ export function ExpenseBreakdownDonut({ data }: { data: { category: string; amou
   return (
     <CardShell title="Expenses by Category">
       <PieChart>
-        <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`৳${v}`, ""]} />
+        <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => [`৳${value ?? 0}`, ""] as [string, string]} />
         <Pie data={data} dataKey="amount" nameKey="category" innerRadius="55%" outerRadius="80%" paddingAngle={2}>
           {data.map((_, i) => (
             <Cell key={i} fill={PALETTE[i % PALETTE.length]} stroke="var(--bg-panel)" />

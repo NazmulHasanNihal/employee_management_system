@@ -137,9 +137,9 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
             <EmptyState title="No news found" description={searchQuery || filterPriority || filterCategory ? 'Try adjusting your filters.' : 'No broadcasts have been posted yet.'} icon={<Megaphone className="h-6 w-6" />} />
           ) : (
             filtered.map((ann) => {
-              const pConfig = PRIORITY_TONE[ann.priority] || PRIORITY_TONE.Medium;
-              const PriorityIcon = PRIORITY_ICON[ann.priority] || Info;
-              const CatIcon = CATEGORY_ICON[ann.category] || Tag;
+              const pConfig = PRIORITY_TONE[ann.priority as Priority] || PRIORITY_TONE.Medium;
+              const PriorityIcon = PRIORITY_ICON[ann.priority as Priority] || Info;
+              const CatIcon = CATEGORY_ICON[ann.category as Category] || Tag;
               const isEditing = editingId === ann.id;
               return (
                 <div key={ann.id} className={`relative overflow-hidden rounded-2xl border-l-4 bg-[var(--bg-panel)] p-6 shadow-sm ${pConfig.tone.includes('rose') ? 'border-l-[var(--rose)]' : pConfig.tone.includes('amber') ? 'border-l-[var(--amber)]' : 'border-l-[var(--brand)]'}`}>

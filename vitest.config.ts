@@ -17,6 +17,13 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
+      include: ['src/lib/**/*.ts', 'src/server/**/*.ts', 'src/app/actions/**/*.ts'],
+      exclude: ['src/lib/translations.ts', 'src/lib/twofactor.test.ts'],
+    },
   },
   resolve: {
     alias: {

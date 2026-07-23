@@ -55,10 +55,10 @@ export default function AttendanceTrend({ data }: { data: TrendPoint[] }) {
                   color: 'var(--text-main)',
                   fontSize: 12,
                 }}
-                formatter={(value: number, name: string) => [
-                  name === 'rate' ? `${value}%` : value,
+                formatter={(value: any, name: any) => [
+                  name === 'rate' ? `${value ?? 0}%` : value ?? 0,
                   name === 'rate' ? 'Rate' : 'Present',
-                ]}
+                ] as [string | number, string]}
               />
               <Area
                 type="monotone"

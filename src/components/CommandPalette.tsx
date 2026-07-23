@@ -60,6 +60,28 @@ export default function CommandPalette() {
     }
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const dialog = e.currentTarget as HTMLElement;
+      const focusable = dialog.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    const dialog = listRef.current?.closest('[role="dialog"]');
+    dialog?.addEventListener("keydown", handleTab as any);
+    return () => dialog?.removeEventListener("keydown", handleTab as any);
+  }, [open]);
+
   const handleCommand = useCallback((cmd: string) => {
     const parts = cmd.trim().split(" ");
     const action = parts[0]?.toLowerCase();
@@ -158,13 +180,14 @@ export default function CommandPalette() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Command palette"
+      aria-labelledby="cmd-title"
       className="fixed inset-0 z-[100] flex animate-in items-start justify-center bg-black/80 pt-32 fade-in duration-200"
       onMouseDown={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
     >
-      <div className="flex max-h-[70vh] w-full max-w-2xl flex-col border border-[var(--ledger-blue)] shadow-[0_0_20px_rgba(0,195,255,0.2)]">
-        <div className="flex items-center gap-3 border-b border-[var(--ledger-blue)]/30 p-4">
-          <Terminal className="animate-pulse text-[var(--ledger-blue)]" size={20} />
+      <div className="flex max-h-[70vh] w-full max-w-2xl flex-col border border-[var(--brand)] shadow-[0_0_20px_color-mix(in_srgb,var(--brand)_30%,transparent)]">
+        <div className="flex items-center gap-3 border-b border-[var(--brand)]/30 p-4">
+          <Terminal className="animate-pulse text-[var(--brand)]" size={20} />
+          <h2 id="cmd-title" className="sr-only">Command palette</h2>
           <input
             ref={inputRef}
             role="combobox"
@@ -193,7 +216,7 @@ export default function CommandPalette() {
               onClick={() => handleSelect(res)}
               className={`flex w-full items-center justify-between border-l-2 p-3 text-left font-mono text-sm transition-all ${
                 i === selected
-                  ? "border-[var(--ledger-blue)] bg-[var(--ledger-blue)]/10 text-[var(--text-main)]"
+                  ? "border-[var(--brand)] bg-[var(--brand)]/10 text-[var(--text-main)]"
                   : "border-transparent text-[var(--text-muted)] hover:bg-white/5"
               }`}
             >
@@ -201,11 +224,11 @@ export default function CommandPalette() {
                 {res.icon}
                 {res.label}
               </span>
-              {i === selected && <CornerDownLeft size={12} className="text-[var(--ledger-blue)]" />}
+              {i === selected && <CornerDownLeft size={12} className="text-[var(--brand)]" />}
             </button>
           ))}
         </div>
-        <div className="flex justify-between border-t border-[var(--ledger-blue)]/30 bg-[var(--bg-void)] p-2 text-xs font-mono text-[var(--text-muted)]">
+        <div className="flex justify-between border-t border-[var(--brand)]/30 bg-[var(--bg-app)] p-2 text-xs font-mono text-[var(--text-muted)]">
           <span>EMS COMMAND CENTER v1.0</span>
           <span>Type to search · &uarr;&darr; navigate · &crarr; select · ESC close</span>
         </div>

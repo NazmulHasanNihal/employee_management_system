@@ -54,7 +54,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
   });
 
   const addReply = trpc.helpdesk.addReply.useMutation({
-    onSuccess: (_data, variables) => {
+    onSuccess: (_data: any, variables: any) => {
       setReplyTexts((prev) => ({ ...prev, [variables.ticketId]: '' }));
       utils.helpdesk.getTickets.invalidate();
     },

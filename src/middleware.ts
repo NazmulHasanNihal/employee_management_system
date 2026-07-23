@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { isIpAllowed, getClientIp, isAdminRoute, createIpDenyResponse } from '@/lib/ip-allowlist'
 
 export async function middleware(request: NextRequest) {
   try {
@@ -66,6 +67,17 @@ export async function middleware(request: NextRequest) {
     // enforce their own authorization internally.
     if (request.nextUrl.pathname.startsWith('/api/cron')) {
       return supabaseResponse;
+    }
+
+    // ── IP allowlist for admin routes ───────────────────────────────────────
+    // When ADMIN_IP_ALLOWLIST is set, only requests from allowed IPs/CIDRs
+    // can access admin-protected routes. Non-admin routes are unaffected.
+    // This is an extra layer of protection for privileged operations.
+    if (user && isAdminRoute(request.nextUrl.pathname)) {
+      const clientIp = getClientIp(request);
+      if (!isIpAllowed(clientIp)) {
+        return createIpDenyResponse();
+      }
     }
 
     // ── CSRF / cross-origin protection for state-changing requests ──────────

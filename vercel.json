@@ -7,6 +7,14 @@
     {
       "path": "/api/cron/absence",
       "schedule": "30 23 * * *"
+    },
+    {
+      "path": "/api/cron/backup-verify",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/backup-trigger",
+      "schedule": "0 2 * * *"
     }
   ]
 }

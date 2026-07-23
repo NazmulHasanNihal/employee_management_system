@@ -54,7 +54,7 @@ export default function AutomationsClientPage() {
   }, [list]);
 
   const createMutation = trpc.automations.create.useMutation({
-    onSuccess: (created) => {
+    onSuccess: (created: any) => {
       if (created) setRules((prev) => [created as AutomationRule, ...prev]);
       setShowBuilder(false);
       setNewRule({ name: '', description: '', trigger: '', action: '', status: 'Active' });
@@ -63,7 +63,7 @@ export default function AutomationsClientPage() {
   });
 
   const toggleMutation = trpc.automations.toggle.useMutation({
-    onSuccess: (updated) => {
+    onSuccess: (updated: any) => {
       if (updated) {
         setRules((prev) => prev.map((r) => (r.id === (updated as AutomationRule).id ? (updated as AutomationRule) : r)));
       }
@@ -72,7 +72,7 @@ export default function AutomationsClientPage() {
   });
 
   const removeMutation = trpc.automations.remove.useMutation({
-    onSuccess: (deleted) => {
+    onSuccess: (deleted: any) => {
       const id = deleted?.id ?? deleted;
       if (id) setRules((prev) => prev.filter((r) => r.id !== id));
       utils.automations.list.invalidate();

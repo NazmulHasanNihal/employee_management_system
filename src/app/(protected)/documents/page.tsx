@@ -73,7 +73,7 @@ export default async function DocumentsPage() {
           />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {completedDocs.map((doc: { id: string; title: string; signed: boolean; type: string; category: string; size?: number; createdAt: Date; url: string }) => (
+            {completedDocs.map((doc: { id: string; title: string; signed: boolean; type: string; category: string; size: number | null; createdAt: Date; url: string }) => (
               <div key={doc.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-colors hover:border-[var(--brand)]/30">
                 <div className="mb-4 flex justify-between items-start">
                   <div className={`flex h-10 w-10 items-center justify-center rounded-xl border ${doc.signed ? 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]/30' : 'bg-[var(--bg-hover)] text-[var(--text-muted)] border-[var(--border-hairline)]'}`}>

@@ -44,10 +44,10 @@ export default function BiasChart({ analysis, globalAvg: _globalAvg }: BiasChart
               borderRadius: 12,
               color: 'var(--text-main)',
             }}
-            formatter={(value: number | string, name: string) => {
-              if (name === 'avgSalary') return [`৳${Number(value).toLocaleString()}`, 'Avg Salary'];
-              return [`${Number(value)}%`, 'Deviation'];
-            }}
+            formatter={((value: number | string | undefined, name: string) => {
+              if (name === 'avgSalary') return [`৳${Number(value ?? 0).toLocaleString()}`, 'Avg Salary'];
+              return [`${Number(value ?? 0)}%`, 'Deviation'];
+            }) as any}
           />
           <Bar dataKey="avgSalary" radius={[6, 6, 0, 0]}>
             {data.map((d, i) => (

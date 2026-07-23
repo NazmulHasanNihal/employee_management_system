@@ -1200,7 +1200,7 @@ async function runMutation(path: string, input: any) {
       const targetUser = await prisma.user.findUnique({ where: { id: input.id } });
       const freshCaller = caller ? await prisma.user.findUnique({ where: { id: caller.id } }) : null;
       if (!targetUser) throw new Error('User not found');
-      if (!freshCaller || !canModifyUser(freshCaller, targetUser)) {
+      if (!freshCaller || !canModifyUser({ role: freshCaller.role, designation: freshCaller.designation ?? undefined, isOwner: freshCaller.isOwner }, { role: targetUser.role, designation: targetUser.designation ?? undefined, isOwner: targetUser.isOwner })) {
         throw new Error('Unauthorized: You do not have permission to remove this user.');
       }
       
@@ -1519,14 +1519,14 @@ async function runMutation(path: string, input: any) {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       return await prisma.user.update({
         where: { id: userId },
-        data: { pushSub: input.subscription }
+        data: { pushSub: null as any },
       });
     }
     if (path === 'notifications.removePushSub') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       return await prisma.user.update({
         where: { id: userId },
-        data: { pushSub: null }
+        data: { pushSub: null as any }
       });
     }
 

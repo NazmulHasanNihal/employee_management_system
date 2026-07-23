@@ -47,6 +47,8 @@ model User {
   baseSalary  Float?       // Monthly base salary used by payroll engine
   lastSeen    DateTime?    // Last activity timestamp, used for presence
   isOnline    Boolean      @default(false) // Derived presence flag
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String? // Encrypted TOTP secret at rest (prefix "totp:v1:iv:tag:ct")
 
   // ── Profile (Phase 3): rich editable identity / contact / employment info ──
   phone                String?

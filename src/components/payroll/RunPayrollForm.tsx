@@ -23,7 +23,7 @@ function RunPreview({ month }: { month: string }) {
       <div className="flex justify-between text-[var(--text-muted)]"><span>Cycle:</span> <span className="text-white">{data?.month} {data?.year}</span></div>
       <div className="flex justify-between text-[var(--text-muted)]"><span>Total Employees:</span> <span className="text-white">{data?.employeeCount ?? 0}</span></div>
       <div className="flex justify-between text-[var(--text-muted)]"><span>Total Worked Hours:</span> <span className="text-white">{data?.totalHours ?? 0} h</span></div>
-      <div className="flex justify-between text-[var(--text-muted)] border-t border-white/10 pt-2 font-bold text-lg"><span>Estimated Net Pay:</span> <span className="text-[var(--verify-green)]">{formatCurrency(data?.estimatedNetTotal ?? 0, 'BDT', 'en')}</span></div>
+      <div className="flex justify-between text-[var(--text-muted)] border-t border-white/10 pt-2 font-bold text-lg"><span>Estimated Net Pay:</span> <span className="text-[var(--emerald)]">{formatCurrency(data?.estimatedNetTotal ?? 0, 'BDT', 'en')}</span></div>
     </div>
   );
 }
@@ -37,7 +37,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
   const [month, setMonth] = useState('July 2026');
 
   const runAutomatedPayroll = trpc.payroll.runAutomatedPayroll.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       onSuccess();
     }
   });
@@ -46,18 +46,18 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
   const prevStep = () => setStep(s => s - 1);
 
   return (
-    <Card className="bg-black/40 backdrop-blur-lg border-[var(--verify-green)]/30 shadow-[0_0_25px_rgba(0,255,0,0.1)] animate-in slide-in-from-top-4 mb-6">
+    <Card className="bg-black/40 backdrop-blur-lg border-[var(--emerald)]/30 shadow-[0_0_25px_color-mix(in_srgb,var(--emerald)_30%,transparent)] animate-in slide-in-from-top-4 mb-6">
       <CardContent className="p-6">
         <div className="mb-6 border-b border-white/10 pb-4 flex justify-between items-center">
           <div>
             <h3 className="text-lg font-mono font-bold text-white flex items-center gap-2 uppercase tracking-widest">
-              <Cpu size={20} className="text-[var(--verify-green)]" /> Disbursement Wizard
+              <Cpu size={20} className="text-[var(--emerald)]" /> Disbursement Wizard
             </h3>
             <p className="text-xs font-mono text-[var(--text-muted)] mt-1">Step {step} of 3</p>
           </div>
           <div className="flex gap-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className={`h-2 w-8 rounded-full ${step >= i ? 'bg-[var(--verify-green)] shadow-[0_0_10px_var(--verify-green)]' : 'bg-white/10'}`} />
+              <div key={i} className={`h-2 w-8 rounded-full ${step >= i ? 'bg-[var(--emerald)] shadow-[0_0_10px_var(--emerald)]' : 'bg-white/10'}`} />
             ))}
           </div>
         </div>
@@ -69,11 +69,11 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
               <Label className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Billing Cycle (Month)</Label>
               <Input 
                 type="text" required value={month} onChange={e => setMonth(e.target.value)}
-                className="bg-black/40 border-white/10 text-white focus:border-[var(--verify-green)]"
+                className="bg-black/40 border-white/10 text-white focus:border-[var(--emerald)]"
               />
             </div>
             <div className="flex justify-end">
-              <Button onClick={nextStep} className="bg-[var(--verify-green)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)]">Next</Button>
+              <Button onClick={nextStep} className="bg-[var(--emerald)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--emerald)]">Next</Button>
             </div>
           </div>
         )}
@@ -84,7 +84,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
             <RunPreview month={month} />
             <div className="flex justify-between">
               <Button variant="outline" onClick={prevStep} className="font-mono bg-transparent border-white/20 text-white hover:bg-white/10">Back</Button>
-              <Button onClick={nextStep} className="bg-[var(--verify-green)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)]">Confirm & Proceed</Button>
+              <Button onClick={nextStep} className="bg-[var(--emerald)] text-black px-6 font-mono font-bold uppercase tracking-widest hover:bg-[var(--emerald)]">Confirm & Proceed</Button>
             </div>
           </div>
         )}
@@ -99,7 +99,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
               <Button 
                 disabled={runAutomatedPayroll.isPending} 
                 onClick={() => runAutomatedPayroll.mutate({ month })}
-                className="bg-[var(--verify-green)] text-black px-8 py-6 rounded-lg text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--verify-green)] hover:shadow-[0_0_15px_var(--verify-green)] transition-all"
+                className="bg-[var(--emerald)] text-black px-8 py-6 rounded-lg text-xs font-mono font-bold uppercase tracking-widest hover:bg-[var(--emerald)] hover:shadow-[0_0_15px_var(--emerald)] transition-all"
               >
                 {runAutomatedPayroll.isPending ? 'Processing...' : 'Authorize Disbursement'}
               </Button>

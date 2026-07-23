@@ -37,7 +37,7 @@ export default function LeaveExpenseTrend({ leave, expense }: Props) {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
                   <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
                   <YAxis tickLine={false} axisLine={false} tick={axisTick} width={32} allowDecimals={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v, "Requests"]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [v ?? 0, "Requests"] as [number, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                     {leave.map((_, i) => (
                       <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
@@ -54,8 +54,8 @@ export default function LeaveExpenseTrend({ leave, expense }: Props) {
                 <BarChart data={expense} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
                   <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
-                  <YAxis tickLine={false} axisLine={false} tick={axisTick} width={48} tickFormatter={(v: number) => `৳${Math.round(v / 1000)}k`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [formatCurrency(v, "BDT", "en"), "Expenses"]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
+                  <YAxis tickLine={false} axisLine={false} tick={axisTick} width={48} tickFormatter={(v: number | undefined) => `৳${Math.round((v ?? 0) / 1000)}k`} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [formatCurrency(v ?? 0, "BDT", "en"), "Expenses"] as [string, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                     {expense.map((_, i) => (
                       <Cell key={i} fill={PALETTE[i % PALETTE.length]} />

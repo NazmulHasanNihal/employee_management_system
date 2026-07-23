@@ -135,7 +135,7 @@ export default async function BenefitsPage() {
           </h3>
 
           <div className="grid grid-cols-1 gap-4">
-            {benefits?.map((eb: { id: string; status: string; benefit: { id: string; name: string; description?: string; provider?: string } }) => (
+            {benefits?.map((eb: { id: string; status: string; benefit: { id: string; name: string; description: string | null; provider: string | null } }) => (
               <div key={eb.id} className="flex flex-col justify-between gap-4 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--emerald)]/30 md:flex-row md:items-center">
                 <div className="flex items-start gap-4">
                   <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border ${benefitVariant(eb.benefit.name) === 'rose' ? 'bg-[var(--rose-soft)] text-[var(--rose)] border-[var(--rose)]/30' : benefitVariant(eb.benefit.name) === 'sky' ? 'bg-[var(--sky-soft)] text-[var(--sky)] border-[var(--sky)]/30' : 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]/30'}`}>

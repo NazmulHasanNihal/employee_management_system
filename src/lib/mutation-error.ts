@@ -7,7 +7,7 @@
  */
 
 export class MutationError extends Error {
-  code: 'UNAUTHORIZED' | 'VALIDATION' | 'NOT_FOUND' | 'CONFLICT' | 'UNKNOWN';
+  code: 'UNAUTHORIZED' | 'VALIDATION' | 'NOT_FOUND' | 'CONFLICT' | 'RATE_LIMIT' | 'AUTH_FAILED' | 'UNKNOWN';
   cause?: unknown;
   constructor(
     code: MutationError['code'],

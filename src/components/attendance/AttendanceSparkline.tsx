@@ -22,7 +22,7 @@ export default function AttendanceSparkline({ data }: { data: { day: string; rat
               <stop offset="100%" stopColor="var(--emerald)" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [`${v}%`, "Present"]} />
+          <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => [`${value ?? 0}%`, "Present"] as [string, string]} />
           <Area type="monotone" dataKey="rate" stroke="var(--emerald)" strokeWidth={2} fill="url(#attendSpark)" />
         </AreaChart>
       </ResponsiveContainer>

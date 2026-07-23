@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 interface ComplianceIslandProps {
   isAdmin: boolean;
   initialMyCerts: { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date }[];
-  initialExpiringCerts: { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string } }[];
+  initialExpiringCerts: { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string | null } }[];
   initialWhistleblower: { id: string; report: string; userId: string | null; status: string; assignedTo: string | null; resolution: string | null; createdAt: Date; updatedAt: Date }[];
 }
 
@@ -28,7 +28,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
   const { data: myCertsData } = trpc.compliance.getMyCertifications.useQuery(undefined, { initialData: initialMyCerts });
   const myCerts = (myCertsData as { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date }[] | undefined) ?? initialMyCerts ?? [];
   const { data: expiringData } = trpc.compliance.getExpiringCertifications.useQuery(undefined, { initialData: initialExpiringCerts });
-  const expiringCerts = (expiringData as { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string } }[] | undefined) ?? initialExpiringCerts ?? [];
+  const expiringCerts = (expiringData as { id: string; name: string; expiryDate: Date; userId: string; createdAt: Date; user?: { name: string; department: string | null } }[] | undefined) ?? initialExpiringCerts ?? [];
   const { data: wbData } = trpc.compliance.getWhistleblowerReports.useQuery(undefined, { initialData: initialWhistleblower, enabled: isAdmin });
   const whistleblower = (wbData as { id: string; report: string; userId: string | null; status: string; assignedTo: string | null; resolution: string | null; createdAt: Date; updatedAt: Date }[] | undefined) ?? initialWhistleblower ?? [];
 
@@ -125,13 +125,13 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {expiringCerts.map((cert: { id: string; name: string; expiryDate: Date; user?: { name: string; department: string } }) => (
-                        <div key={cert.id} className="flex items-center justify-between gap-4 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-4">
-                          <div className="flex-1">
-                            <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-                              {cert.user.name}
-                              <Badge variant="rose">Critical</Badge>
-                            </h4>
+                        {expiringCerts.map((cert: { id: string; name: string; expiryDate: Date; user?: { name: string; department: string | null } }) => (
+                         <div key={cert.id} className="flex items-center justify-between gap-4 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-4">
+                           <div className="flex-1">
+                             <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+                               {cert.user?.name}
+                               <Badge variant="rose">Critical</Badge>
+                             </h4>
                             <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{cert.name}</p>
                           </div>
                           <div className="shrink-0 text-right">

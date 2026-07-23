@@ -70,7 +70,7 @@ export function PushNotificationManager() {
       {subscription ? (
         <button 
           onClick={unsubscribeFromPush}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--verify-green)]/10 text-[var(--verify-green)] border border-[var(--verify-green)]/30 text-xs font-mono font-bold hover:bg-[var(--verify-green)] hover:text-black transition-all"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--emerald)]/10 text-[var(--emerald)] border border-[var(--emerald)]/30 text-xs font-mono font-bold hover:bg-[var(--emerald)] hover:text-black transition-all"
         >
           <Bell size={14} /> Notifications On
         </button>

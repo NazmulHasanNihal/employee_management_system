@@ -22,11 +22,19 @@ const bengaliSans = Noto_Sans_Bengali({
 import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LangSync } from "@/components/LangSync";
+import WebVitals from "@/components/WebVitals";
 
 export const metadata: Metadata = {
-  title: "OpsHub",
+  title: {
+    default: "OpsHub — Enterprise Operations Hub",
+    template: "%s · OpsHub",
+  },
   description: "Enterprise Operations Hub — HR, payroll, attendance and team management",
-  manifest: "/manifest.json"
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/icon-192.png",
+  },
 };
 
 export const viewport = {
@@ -54,6 +62,7 @@ export default function RootLayout({
         >
           <PostHogProvider>
             <LangSync />
+            <WebVitals />
             {children}
           </PostHogProvider>
         </ThemeProvider>

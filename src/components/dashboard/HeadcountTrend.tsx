@@ -26,7 +26,7 @@ export default function HeadcountTrend({ data }: { data: { month: string; headco
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
               <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />
               <YAxis tickLine={false} axisLine={false} tick={axisTick} width={40} allowDecimals={false} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: number) => [v, "Headcount"]} />
+              <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [v ?? 0, "Headcount"] as [number, string]} />
               <Line type="monotone" dataKey="headcount" stroke="var(--brand)" strokeWidth={2} dot={{ r: 2, fill: "var(--brand)" }} />
             </LineChart>
           </ResponsiveContainer>

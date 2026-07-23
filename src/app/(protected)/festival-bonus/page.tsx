@@ -46,7 +46,7 @@ export default async function FestivalBonusPage() {
           <CardHeader><CardTitle>Festival Bonus Register</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {bonuses.map((b: { id: string; user?: { name: string }; occasion: string; occasionBn?: string; year: number; amount: number; status: string }) => (
+              {bonuses.map((b: { id: string; user?: { name: string }; occasion: string; occasionBn: string | null; year: number; amount: number; status: string }) => (
                 <div key={b.id} className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                   <div>
                     <p className="font-semibold text-[var(--text-main)]">{b.user?.name || 'Unknown'}</p>

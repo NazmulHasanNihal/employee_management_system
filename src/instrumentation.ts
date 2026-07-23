@@ -13,6 +13,12 @@ export function register() {
       dsn,
       tracesSampleRate: 1.0,
       debug: false,
+      ignoreErrors: [
+        'Network request failed',
+        'Failed to fetch',
+        'Load failed',
+        /^4\d\d$/,
+      ],
     });
   }
 
@@ -21,6 +27,12 @@ export function register() {
       dsn,
       tracesSampleRate: 1.0,
       debug: false,
+      ignoreErrors: [
+        'Network request failed',
+        'Failed to fetch',
+        'Load failed',
+        /^4\d\d$/,
+      ],
     });
   }
 }
