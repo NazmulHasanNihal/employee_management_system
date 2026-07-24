@@ -17,13 +17,19 @@ export function EmptyState({ title, description, actionText, onAction, icon, cla
     <div
       role="status"
       className={cn(
-        'flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)]/50 p-12 text-center animate-scale-in',
+        'flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)]/60 p-10 text-center animate-scale-in',
         className
       )}
     >
-      {icon && <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--bg-hover)] text-[var(--text-muted)]">{icon}</div>}
-      <h3 className="text-lg font-semibold text-[var(--text-main)]">{title}</h3>
-      {description && <p className="max-w-md text-sm text-[var(--text-muted)]">{description}</p>}
+      {icon && (
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
+          {icon}
+        </div>
+      )}
+      <div className="space-y-1">
+        <h3 className="text-lg font-bold text-[var(--text-main)]">{title}</h3>
+        {description && <p className="max-w-sm text-sm text-[var(--text-muted)] leading-relaxed">{description}</p>}
+      </div>
       {actionText && (
         <button
           type="button"

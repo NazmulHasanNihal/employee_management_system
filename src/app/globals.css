@@ -140,6 +140,10 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  background-image:
+    radial-gradient(1200px 800px at 100% -20%, color-mix(in srgb, var(--brand) 6%, transparent), transparent 60%),
+    radial-gradient(1000px 600px at 0% 0%, color-mix(in srgb, var(--sky) 4%, transparent), transparent 55%);
+  background-attachment: fixed;
 }
 
 /* Bengali font when Bangla is active (a11y: correct glyph shaping + native feel) */
@@ -171,12 +175,15 @@ html[lang="bn"] {
     background-color: var(--bg-app);
     border: 1px solid var(--border-hairline);
     color: var(--text-main);
-    transition: border-color 0.15s var(--ease-out), box-shadow 0.15s var(--ease-out);
+    transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
   }
   .ledger-input:focus {
     border-color: var(--brand);
     outline: none;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
+  }
+  .ledger-input:hover:not(:disabled) {
+    border-color: var(--border-strong);
   }
 
   .btn-primary {
@@ -240,13 +247,34 @@ html[lang="bn"] {
   }
   .page-title {
     font-weight: 800;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     font-size: 1.75rem;
     line-height: 2.1rem;
     color: var(--text-main);
   }
   @media (min-width: 768px) { .page-title { font-size: 2.1rem; line-height: 2.4rem; } }
   .page-subtitle { margin-top: 0.35rem; font-size: 0.9rem; color: var(--text-muted); }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.875rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-hairline);
+  }
+  .panel-header-title {
+    font-size: 1rem;
+    font-weight: 630;
+    letter-spacing: -0.01em;
+    color: var(--text-main);
+  }
+  .panel-header-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 450;
+  }
 
   .ledger-accent {
     position: absolute;
@@ -262,9 +290,9 @@ html[lang="bn"] {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-hairline);
     box-shadow: var(--shadow-sm);
-    transition: border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+    transition: border-color 0.25s var(--ease-out), transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
   }
-  .ledger-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+  .ledger-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); transform: translateY(-1px); }
 
   /* ── Motion: shimmer skeleton ── */
   .skeleton-shimmer {
@@ -425,10 +453,21 @@ h3 { font-size: 1.05rem; line-height: 1.3rem; font-weight: 650; }
 }
 
 /* 7. Tables: allow header/cell text to wrap on small screens to avoid forcing
-      ultra-wide rows; keep horizontal scroll as the fallback (ui/table already
-      wraps in overflow-x-auto). */
-table { font-variant-numeric: tabular-nums; }
+       ultra-wide rows; keep horizontal scroll as the fallback (ui/table already
+       wraps in overflow-x-auto). */
+table { font-variant-numeric: tabular-nums; border-collapse: separate; border-spacing: 0; }
 th, td { white-space: normal; }
+thead th {
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background-color: var(--bg-hover);
+  border-bottom: 1px solid var(--border-hairline);
+}
+tbody tr { transition: background-color 0.15s ease; }
+tbody tr:hover { background-color: color-mix(in srgb, var(--bg-hover) 50%, transparent); }
 @media (max-width: 639px) {
   /* On phones, let cells wrap so the scroll area is the last resort. */
   .table-cell, td, th { white-space: normal; }

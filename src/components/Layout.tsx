@@ -188,13 +188,13 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
       </AnimatePresence>
 
       <motion.aside
-        className={`fixed z-50 flex h-full w-[85vw] max-w-[18rem] flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)] transition-transform duration-300 md:relative md:w-72 md:translate-x-0 ${
+        className={`fixed z-50 flex h-full w-[85vw] max-w-[18rem] flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)]/95 backdrop-blur-xl transition-transform duration-300 md:relative md:w-72 md:translate-x-0 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between border-b border-[var(--border-hairline)] p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-sm">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-md shadow-[var(--brand)]/20">
               <LinkIcon size={18} />
             </div>
             <div>
@@ -202,30 +202,31 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               <p className="text-[10px] font-medium tracking-wide text-[var(--text-muted)]">Workspace</p>
             </div>
           </div>
-          <button aria-label="Close menu" className="text-[var(--text-muted)] hover:text-[var(--text-main)] md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+          <button aria-label="Close menu" className="text-[var(--text-muted)] hover:text-[var(--text-main)] md:hidden rounded-lg p-1" onClick={() => setIsMobileMenuOpen(false)}>
             <X size={20} />
           </button>
         </div>
 
         <nav id="primary-navigation" aria-label="Primary" className="custom-scrollbar flex-1 overflow-y-auto px-2 py-3 md:px-3 md:py-4">
-          {navCategories.map((category) => {
+          {navCategories.map((category, catIdx) => {
             const filteredItems = category.items.filter(canSee);
             if (filteredItems.length === 0) return null;
             const isOpen = openCategories[category.title] ?? false;
             const categoryActive = filteredItems.some((i) => pathname === i.path);
 
             return (
-              <div key={category.title} className="mb-2">
+              <div key={category.title} className={catIdx > 0 ? 'mt-3' : ''}>
+                {catIdx > 0 && <div className="mx-3 mb-2 h-px bg-[var(--border-hairline)]" />}
                 <button
                   aria-expanded={isOpen}
                   onClick={() => toggleCategory(category.title)}
                   className="mb-1 flex w-full items-center justify-between px-3 text-left"
                 >
-                  <span className={`text-[11px] font-semibold uppercase tracking-wider transition-colors ${categoryActive ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)]'}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${categoryActive ? 'text-[var(--brand-strong)]' : 'text-[var(--text-muted)]'}`}>
                     {t(category.title)}
                   </span>
                   <motion.div initial={false} animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                    <ChevronDown size={14} className="text-[var(--text-muted)]" />
+                    <ChevronDown size={13} className="text-[var(--text-muted)]" />
                   </motion.div>
                 </button>
 
@@ -274,63 +275,63 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
            </div>
          )}
 
-         <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 md:px-6">
-           <div className="flex items-center gap-3">
-             <div className="flex items-center gap-2 md:hidden">
-               <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="touch-target -ml-1 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]">
-                 <Menu size={22} />
-               </button>
-             </div>
-           </div>
+        <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)]/90 backdrop-blur-md px-4 md:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:hidden">
+              <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="touch-target -ml-1 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]">
+                <Menu size={22} />
+              </button>
+            </div>
+          </div>
 
-           <div className="flex items-center gap-2 md:gap-3">
-             <button
-               aria-label="Open command palette"
-               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-                className="hidden items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] sm:flex min-h-9"
-             >
-               <Command size={14} /> <span className="hidden sm:inline">⌘K</span>
-             </button>
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <button
+              aria-label="Open command palette"
+              onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+              className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)]"
+            >
+              <Command size={14} /> <span className="hidden md:inline">Command</span>
+            </button>
 
-             <button
-               aria-label="Toggle language"
-               onClick={() => {
-                 const next = language === 'en' ? 'bn' : 'en';
-                 setLanguage(next);
-                 document.cookie = `ems_lang=${next}; path=/; max-age=31536000; samesite=lax`;
-                 router.refresh();
-               }}
-               className="touch-target flex items-center justify-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] sm:px-3"
-             >
-               {language === 'en' ? 'ENG' : 'বাংলা'}
-             </button>
+            <button
+              aria-label="Toggle language"
+              onClick={() => {
+                const next = language === 'en' ? 'bn' : 'en';
+                setLanguage(next);
+                document.cookie = `ems_lang=${next}; path=/; max-age=31536000; samesite=lax`;
+                router.refresh();
+              }}
+              className="touch-target flex items-center justify-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)] sm:px-3"
+            >
+              {language === 'en' ? 'ENG' : 'বাংলা'}
+            </button>
 
-             <BranchSwitcher lang={language} />
+            <BranchSwitcher lang={language} />
 
-             <button aria-label="Toggle theme" onClick={toggleTheme} className="touch-target flex items-center justify-center rounded-xl p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]">
-               {mounted && resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-             </button>
+            <button aria-label="Toggle theme" onClick={toggleTheme} className="touch-target flex items-center justify-center rounded-xl p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]">
+              {mounted && resolvedTheme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
 
-             <div className="relative" ref={notificationsRef}>
-               <button
-                 aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
-                 aria-expanded={showNotifications}
-                 onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
-                 className="touch-target relative flex items-center justify-center rounded-xl p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]"
-               >
-                 <Bell size={18} />
-                 {unreadCount > 0 && (
-                   <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--rose)] text-[8px] font-bold text-white">
-                     {unreadCount > 9 ? '9+' : unreadCount}
-                   </span>
-                 )}
-               </button>
+            <div className="relative" ref={notificationsRef}>
+              <button
+                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+                aria-expanded={showNotifications}
+                onClick={() => { setShowNotifications(!showNotifications); setShowProfileMenu(false); }}
+                className="touch-target relative flex items-center justify-center rounded-xl p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)]"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--rose)] text-[8px] font-bold text-white ring-2 ring-[var(--bg-panel)]">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
 
               {showNotifications && (
-                <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-lg">
+                <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl">
                   <div className="flex items-center justify-between border-b border-[var(--border-hairline)] px-4 py-3">
                     <span className="text-xs font-semibold text-[var(--text-main)]">Alerts ({unreadCount})</span>
-                    <button onClick={markAllRead} className="text-xs font-medium text-[var(--brand)] hover:underline">Mark all read</button>
+                    <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] hover:underline">Mark all read</button>
                   </div>
                   <div className="custom-scrollbar max-h-72 overflow-y-auto">
                     {notifications.length === 0 ? (
@@ -343,10 +344,10 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
                           tabIndex={0}
                           onClick={() => { if (n.link) router.push(n.link); if (!n.read) markRead(n.id); setShowNotifications(false); }}
                           onKeyDown={(e) => { if (e.key === 'Enter') { if (n.link) router.push(n.link); setShowNotifications(false); } }}
-                          className={`cursor-pointer border-b border-[var(--border-hairline)] px-4 py-3 text-sm transition-colors hover:bg-[var(--bg-hover)] ${!n.read ? 'border-l-2 border-l-[var(--brand)] bg-[var(--brand-soft)]' : ''}`}
+                          className={`cursor-pointer border-b border-[var(--border-hairline)] px-4 py-3 text-sm transition-colors hover:bg-[var(--bg-hover)] ${!n.read ? 'border-l-2 border-l-[var(--brand)] bg-[var(--brand-soft)]/60' : ''}`}
                         >
                           <div className="flex items-start justify-between gap-2">
-                            <p className="text-[var(--text-main)]">{n.message}</p>
+                            <p className="text-[var(--text-main)] font-medium">{n.message}</p>
                             {!n.read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--brand)]" />}
                           </div>
                           <p className="mt-1 text-[11px] text-[var(--text-muted)]">{new Date(n.createdAt).toLocaleString()}</p>
@@ -369,21 +370,21 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-lg">
+                <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl">
                   <div className="border-b border-[var(--border-hairline)] px-4 py-3">
-                    <p className="text-sm font-semibold text-[var(--text-main)]">{user.name}</p>
+                    <p className="text-sm font-bold text-[var(--text-main)]">{user.name}</p>
                     <p className="text-xs text-[var(--text-muted)]">{user.email}</p>
-                     <p className="mt-1 text-[11px] font-medium text-[var(--brand)] truncate">{user.department} • {user.designation}</p>
+                     <p className="mt-1 text-[11px] font-medium text-[var(--brand)] truncate">{user.department} · {user.designation}</p>
                   </div>
                   <div className="py-1">
-                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
-                      <UserCircle size={16} /> {t('My Profile')}
+                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
+                      <UserCircle size={16} className="text-[var(--text-muted)]" /> {t('My Profile')}
                     </button>
-                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
-                      <Settings size={16} /> {t('Settings')}
+                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
+                      <Settings size={16} className="text-[var(--text-muted)]" /> {t('Settings')}
                     </button>
                     <div className="my-1 border-t border-[var(--border-hairline)]" />
-                    <button onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[var(--rose)] transition-colors hover:bg-[var(--rose-soft)]">
+                    <button onClick={handleLogout} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--rose)] transition-colors hover:bg-[var(--rose-soft)]">
                       <LogOut size={16} /> {t('Sign Out')}
                     </button>
                   </div>
@@ -398,27 +399,29 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] px-0 safe-bottom md:hidden">
-         {[
-            { path: '/', icon: Home, label: 'Home' },
-            { path: '/team', icon: Users, label: 'Team' },
-            { path: '/attendance', icon: Clock, label: 'Time' },
-            { path: '/leave', icon: Calendar, label: 'Leave' },
-            { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
+       <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)]/85 backdrop-blur-lg px-0 safe-bottom md:hidden">
+          {[
+             { path: '/', icon: Home, label: 'Home' },
+             { path: '/team', icon: Users, label: 'Team' },
+             { path: '/attendance', icon: Clock, label: 'Time' },
+             { path: '/leave', icon: Calendar, label: 'Leave' },
+             { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
           ].map((item) => {
             const Icon = item.icon;
             const active = pathname === item.path;
             return (
               <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
-                className={`touch-target flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)]'}`}>
-                <Icon size={20} className="shrink-0" />
-                <span className="text-[9px] font-medium leading-tight">{item.label}</span>
+                className={`touch-target flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>
+                <div className={`relative flex items-center justify-center ${active ? 'after:absolute after:-bottom-1 after:h-1 after:w-4 after:rounded-full after:bg-[var(--brand)] after:content-[""]' : ''}`}>
+                  <Icon size={20} className="shrink-0" />
+                </div>
+                <span className="text-[9px] font-semibold leading-tight">{item.label}</span>
               </Link>
             );
           })}
           <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="touch-target flex flex-1 flex-col items-center justify-center gap-0.5 text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)]">
             <Menu size={20} className="shrink-0" />
-            <span className="text-[9px] font-medium leading-tight">More</span>
+            <span className="text-[9px] font-semibold leading-tight">More</span>
           </button>
         </div>
 
