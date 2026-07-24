@@ -206,7 +206,7 @@ async function computeDashboardStats(caller: Caller | null, selectedBranch: stri
   });
 
   const upcomingEvents = await prisma.calendarEvent.findMany({
-    where: { date: { gte: new Date() } }, orderBy: { date: 'asc' }, take: 5,
+    where: { date: { gte: new Date() }, status: { not: 'Done' } }, orderBy: { date: 'asc' }, take: 5,
     select: { title: true, date: true, type: true },
   });
 

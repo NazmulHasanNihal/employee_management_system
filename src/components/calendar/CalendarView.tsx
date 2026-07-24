@@ -123,6 +123,17 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
     });
   }, [events, filterType, filterStatus, filterDerived, selectedDay, currentMonth, currentYear]);
 
+  const upcomingEvents = useMemo(() => {
+    const isFuture = (e: CalEvent) => {
+      const d = safeDate(e.date);
+      return !!d && d >= new Date(new Date().setHours(0, 0, 0, 0));
+    };
+    return filteredEvents.filter((e) => {
+      if (e.derived !== 'event') return isFuture(e);
+      return e.status !== 'Done' && isFuture(e);
+    });
+  }, [filteredEvents]);
+
   const weekDays = useMemo(() => {
     const sow = new Date(currentDate);
     sow.setDate(sow.getDate() - sow.getDay());
@@ -402,10 +413,10 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
               {selectedDay && <button onClick={() => setSelectedDay(null)} className="text-[10px] uppercase text-[var(--brand)] hover:underline">Clear</button>}
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto">
-              {filteredEvents.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-8 text-center text-[10px] uppercase text-[var(--text-muted)]">{selectedDay ? 'No events for this date.' : 'No events found'}</div>
+              {upcomingEvents.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-8 text-center text-[10px] uppercase text-[var(--text-muted)]">{selectedDay ? 'No events for this date.' : 'No upcoming events'}</div>
               ) : (
-                filteredEvents.map((event) => {
+                upcomingEvents.map((event) => {
                   const config = EVENT_TYPE[event.type] || EVENT_TYPE.General;
                   const TypeIcon = config.icon;
                   return (
