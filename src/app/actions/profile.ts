@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 /**
  * profile.ts — Server actions for the rich (Phase 3) profile page.
  *
@@ -103,6 +105,7 @@ export async function updateProfileField(field: string, value: unknown) {
     where: { id: caller.id },
     data: { [field]: normalized },
   });
+  revalidatePath('/registry');
   return { ok: true };
 }
 
@@ -134,9 +137,10 @@ export async function updateProfileBatch(
     }
     data[key] = val === '' ? null : val;
   }
-  if (Object.keys(data).length === 0) return { ok: true };
+   if (Object.keys(data).length === 0) return { ok: true };
 
   await prisma.user.update({ where: { id: caller.id }, data });
+  revalidatePath('/registry');
   return { ok: true };
 }
 
@@ -185,6 +189,7 @@ export async function updateAvatarUrl(url: string) {
     where: { id: caller.id },
     data: { avatarUrl: url },
   });
+  revalidatePath('/registry');
   return { ok: true };
 }
 

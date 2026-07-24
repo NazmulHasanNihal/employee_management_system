@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X, Trash2 } from 'lucide-react';
+import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X, Trash2, MapPin, Calendar, Globe, Heart, Link2, Activity, Shield, Fingerprint } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { provisionEmployeeAccount } from '@/app/actions/admin';
@@ -11,6 +11,8 @@ import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
+import { StatusPill } from '@/components/ui/status-pill';
+import { formatDate, formatCurrency } from '@/lib/format';
 
 const PERMISSIONS_LIST = [
   { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Hardware inventory & software licenses' },
@@ -29,6 +31,38 @@ interface Employee {
   phone?: string | null;
   permissions?: string | null;
   isOwner?: boolean;
+  avatarUrl?: string | null;
+  status?: string;
+  isOnboarded?: boolean;
+  employmentType?: string;
+  joinDate?: Date | null;
+  baseSalary?: number | null;
+  bloodGroup?: string | null;
+  religion?: string | null;
+  dateOfBirth?: Date | null;
+  gender?: string | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhone?: string | null;
+  bio?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
+  twitter?: string | null;
+  website?: string | null;
+  nidMasked?: string | null;
+  lastSeen?: Date | null;
+  isOnline?: boolean;
+  twoFactorEnabled?: boolean;
+  managerId?: string | null;
+  branchId?: string | null;
+  manager?: {
+    id: string;
+    name: string;
+    role: string;
+    designation?: string | null;
+  } | null;
 }
 
 interface Branch {
@@ -41,6 +75,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
   const { user, isAdmin, isOwner } = useUser();
   const [filter, setFilter] = useState('');
   const [editingPermsFor, setEditingPermsFor] = useState<Employee | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
   const [provisionForm, setProvisionForm] = useState({
     email: '', password: '', name: '', department: '', role: 'Employee', designation: '',
@@ -50,11 +85,9 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
   const [deleteStatus, setDeleteStatus] = useState<{ loading: boolean; error: string | null }>({ loading: false, error: null });
 
   const utils = trpc.useUtils();
-  // Live directory (seeded with server prop) so permission/delete refreshes in place.
   const { data: employeesData } = trpc.registry.getAll.useQuery(undefined, { initialData: employees as any });
   const liveEmployees = (employeesData as Employee[] | undefined) ?? employees ?? [];
 
-  // Manager options for the richer provision form.
   const managerOptions = liveEmployees.filter((e) => e.role === 'Manager' || e.role === 'Admin' || e.role === 'HR Manager');
 
   const updatePermsMutation = trpc.registry.updatePermissions.useMutation({
@@ -154,7 +187,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
   const filteredList = filter.trim()
     ? list.filter((emp) =>
-        [emp.name, emp.email, emp.department, emp.role]
+        [emp.name, emp.email, emp.department, emp.role, emp.designation]
           .filter(Boolean)
           .some((f) => f!.toLowerCase().includes(filter.toLowerCase()))
       )
@@ -162,6 +195,18 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
   const roleVariant = (role: string): any =>
     role === 'Admin' ? 'rose' : role === 'HR Manager' ? 'brand' : 'secondary';
+
+  const openProfile = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    utils.registry.getAll.invalidate();
+  };
+
+  const roleLabel = (status?: string) => {
+    if (!status) return 'Unknown';
+    if (status === 'active' || status === 'Active') return 'Active';
+    if (status === 'Terminated') return 'Terminated';
+    return status;
+  };
 
   return (
     <div className="space-y-6">
@@ -195,21 +240,23 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredList.map((emp) => (
-            <div key={emp.id} className="flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
+            <button
+              key={emp.id}
+              onClick={() => openProfile(emp)}
+              className="flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
+            >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
-                    <UserCircle className="h-6 w-6" />
-                  </div>
+                  <Avatar src={emp.avatarUrl} name={emp.name} size="lg" />
                   <div>
-                     <h4 className="max-w-[14rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
+                     <h4 className="max-w-[12rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
                     <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{emp.designation || 'Staff'}</p>
                   </div>
                 </div>
                 <Badge variant={roleVariant(emp.role)}>{emp.role}</Badge>
               </div>
 
-              <div className="mb-6 flex-1 space-y-3">
+              <div className="mb-4 flex-1 space-y-2.5">
                 <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
                   <Briefcase className="h-3.5 w-3.5" />
                   <span className="truncate">{emp.department || 'No Department Assigned'}</span>
@@ -218,14 +265,24 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   <Mail className="h-3.5 w-3.5" />
                   <span className="truncate font-mono text-xs">{emp.email}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
-                  <Phone className="h-3.5 w-3.5" />
-                  <span className="truncate font-mono text-xs">{emp.phone || '+1 (555) 000-0000'}</span>
-                </div>
+                {emp.phone && (
+                  <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span className="truncate font-mono text-xs">{emp.phone}</span>
+                  </div>
+                )}
+                {emp.isOnline !== undefined && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Activity className="h-3.5 w-3.5 text-[var(--text-muted)]" />
+                    <span className={emp.isOnline ? 'text-[var(--emerald)]' : 'text-[var(--text-muted)]'}>
+                      {emp.isOnline ? 'Online' : 'Offline'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {isAdmin && (
-                <div className="flex gap-2 border-t border-[var(--border-hairline)] pt-4">
+                <div className="flex gap-2 border-t border-[var(--border-hairline)] pt-4" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setEditingPermsFor(emp)}
                     className="flex-1 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] py-2.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)] transition-colors hover:border-[var(--brand)]/30 hover:text-[var(--brand)]"
@@ -243,8 +300,190 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   )}
                 </div>
               )}
-            </div>
+            </button>
           ))}
+        </div>
+      )}
+
+      {/* Profile Modal */}
+      {selectedEmployee && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setSelectedEmployee(null)}>
+          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4 sm:p-6">
+              <div className="flex items-center gap-4">
+                <Avatar src={selectedEmployee.avatarUrl} name={selectedEmployee.name} size="xl" />
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--text-main)]">{selectedEmployee.name}</h3>
+                  <p className="text-xs text-[var(--text-muted)]">{selectedEmployee.designation || 'Staff'} · {selectedEmployee.department || 'No Department'}</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <Badge variant={roleVariant(selectedEmployee.role)}>{selectedEmployee.role}</Badge>
+                    {selectedEmployee.status && (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.status === 'active' || selectedEmployee.status === 'Active' ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : selectedEmployee.status === 'Terminated' ? 'bg-[var(--rose-soft)] text-[var(--rose)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
+                        {selectedEmployee.status}
+                      </span>
+                    )}
+                    {selectedEmployee.isOnline !== undefined && (
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.isOnline ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${selectedEmployee.isOnline ? 'bg-[var(--emerald)]' : 'bg-[var(--text-muted)]'}`} />
+                        {selectedEmployee.isOnline ? 'Online' : 'Offline'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setSelectedEmployee(null)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] touch-target-sm">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Contact</p>
+                    <div className="mt-2 space-y-2">
+                      {selectedEmployee.email && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-main)]">
+                          <Mail className="h-4 w-4 text-[var(--text-muted)]" />
+                          <span className="truncate">{selectedEmployee.email}</span>
+                        </div>
+                      )}
+                      {selectedEmployee.phone && (
+                        <div className="flex items-center gap-2 text-sm text-[var(--text-main)]">
+                          <Phone className="h-4 w-4 text-[var(--text-muted)]" />
+                          <span>{selectedEmployee.phone}</span>
+                        </div>
+                      )}
+                      {(selectedEmployee.address || selectedEmployee.city || selectedEmployee.country) && (
+                        <div className="flex items-start gap-2 text-sm text-[var(--text-main)]">
+                          <MapPin className="h-4 w-4 text-[var(--text-muted)]" />
+                          <span className="truncate">{[selectedEmployee.address, selectedEmployee.city, selectedEmployee.country].filter(Boolean).join(', ')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact</p>
+                    <div className="mt-2 space-y-1 text-sm text-[var(--text-main)]">
+                      <p>{selectedEmployee.emergencyContactName || '—'}</p>
+                      <p className="font-mono text-xs text-[var(--text-muted)]">{selectedEmployee.emergencyContactPhone || '—'}</p>
+                    </div>
+                  </div>
+                  {selectedEmployee.manager && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Reports To</p>
+                      <p className="mt-2 text-sm font-medium text-[var(--text-main)]">{selectedEmployee.manager.name}</p>
+                      <p className="text-xs text-[var(--text-muted)]">{selectedEmployee.manager.designation || selectedEmployee.manager.role}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Employment</p>
+                    <div className="mt-2 space-y-2 text-sm text-[var(--text-main)]">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-[var(--text-muted)]" />
+                        <span>{selectedEmployee.employmentType || '—'}</span>
+                      </div>
+                      {selectedEmployee.joinDate && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-[var(--text-muted)]" />
+                          <span>Joined {formatDate(selectedEmployee.joinDate)}</span>
+                        </div>
+                      )}
+                      {selectedEmployee.branchId && (
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-[var(--text-muted)]" />
+                          <span>{branches.find(b => b.id === selectedEmployee.branchId)?.name || 'Branch assigned'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Personal</p>
+                    <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-[var(--text-main)]">
+                      {selectedEmployee.dateOfBirth && (
+                        <div>
+                          <span className="text-[var(--text-muted)]">DOB</span>
+                          <p className="font-medium">{formatDate(selectedEmployee.dateOfBirth)}</p>
+                        </div>
+                      )}
+                      {selectedEmployee.gender && (
+                        <div>
+                          <span className="text-[var(--text-muted)]">Gender</span>
+                          <p className="font-medium">{selectedEmployee.gender}</p>
+                        </div>
+                      )}
+                      {selectedEmployee.bloodGroup && (
+                        <div>
+                          <span className="text-[var(--text-muted)]">Blood</span>
+                          <p className="font-medium flex items-center gap-1"><Heart className="h-3 w-3 text-[var(--rose)]" />{selectedEmployee.bloodGroup}</p>
+                        </div>
+                      )}
+                      {selectedEmployee.religion && (
+                        <div>
+                          <span className="text-[var(--text-muted)]">Religion</span>
+                          <p className="font-medium">{selectedEmployee.religion}</p>
+                        </div>
+                      )}
+                    </div>
+                    {selectedEmployee.bio && (
+                      <p className="mt-2 text-sm text-[var(--text-muted)] italic line-clamp-3">{selectedEmployee.bio}</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Social</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedEmployee.linkedin && (
+                        <a href={selectedEmployee.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
+                          LinkedIn
+                        </a>
+                      )}
+                      {selectedEmployee.github && (
+                        <a href={selectedEmployee.github} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
+                          GitHub
+                        </a>
+                      )}
+                      {selectedEmployee.twitter && (
+                        <a href={selectedEmployee.twitter} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
+                          Twitter
+                        </a>
+                      )}
+                      {selectedEmployee.website && (
+                        <a href={selectedEmployee.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
+                          Website
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  {isAdmin && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Admin Info</p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {selectedEmployee.twoFactorEnabled !== undefined && (
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.twoFactorEnabled ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : 'bg-[var(--rose-soft)] text-[var(--rose)]'}`}>
+                            <Shield className="h-3 w-3" /> 2FA {selectedEmployee.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        )}
+                        {selectedEmployee.nidMasked && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-[10px] font-mono uppercase tracking-wide text-[var(--text-muted)]">
+                            <Fingerprint className="h-3 w-3" /> {selectedEmployee.nidMasked}
+                          </span>
+                        )}
+                        {selectedEmployee.lastSeen && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-[10px] font-medium text-[var(--text-muted)]">
+                            Last seen {formatDate(selectedEmployee.lastSeen)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4 sm:p-6">
+              <Button variant="ghost" size="md" onClick={() => setSelectedEmployee(null)}>Close</Button>
+            </div>
+          </div>
         </div>
       )}
 
