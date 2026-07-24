@@ -50,7 +50,6 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
   const [searchQuery, setSearchQuery] = useState('');
 
   const utils = trpc.useUtils();
-  // Live feed (seeded with server prop) so create/update/delete refreshes in place.
   const { data: newsData } = trpc.news.getAll.useQuery(undefined, { initialData: news });
   const liveNews = (newsData as NewsItem[] | undefined) ?? news ?? [];
 
@@ -94,6 +93,9 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
     return true;
   });
 
+  const pinnedNews = filtered.filter(n => n.isPinned);
+  const regularNews = filtered.filter(n => !n.isPinned);
+
   return (
     <div className="space-y-6">
       {/* Filters */}
@@ -136,56 +138,117 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
           {filtered.length === 0 ? (
             <EmptyState title="No news found" description={searchQuery || filterPriority || filterCategory ? 'Try adjusting your filters.' : 'No broadcasts have been posted yet.'} icon={<Megaphone className="h-6 w-6" />} />
           ) : (
-            filtered.map((ann) => {
-              const pConfig = PRIORITY_TONE[ann.priority as Priority] || PRIORITY_TONE.Medium;
-              const PriorityIcon = PRIORITY_ICON[ann.priority as Priority] || Info;
-              const CatIcon = CATEGORY_ICON[ann.category as Category] || Tag;
-              const isEditing = editingId === ann.id;
-              return (
-                <div key={ann.id} className={`relative overflow-hidden rounded-2xl border-l-4 bg-[var(--bg-panel)] p-6 shadow-sm ${pConfig.tone.includes('rose') ? 'border-l-[var(--rose)]' : pConfig.tone.includes('amber') ? 'border-l-[var(--amber)]' : 'border-l-[var(--brand)]'}`}>
-                  {ann.isPinned && <div className="absolute right-3 top-3"><Pin className="h-3.5 w-3.5 text-[var(--amber)]" /></div>}
-                  {isEditing ? (
-                    <div className="space-y-3">
-                      <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
-                      <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
-                      <div className="flex gap-2">
-                        {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
-                          <button key={p} onClick={() => setEditPriority(p)} className={`rounded-lg border px-3 py-1 text-[10px] font-semibold uppercase ${editPriority === p ? `${PRIORITY_TONE[p].label} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p}</button>
-                        ))}
+            <>
+              {pinnedNews.length > 0 && (
+                <div className="space-y-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Pinned</p>
+                  {pinnedNews.map((ann) => {
+                    const pConfig = PRIORITY_TONE[ann.priority as Priority] || PRIORITY_TONE.Medium;
+                    const PriorityIcon = PRIORITY_ICON[ann.priority as Priority] || Info;
+                    const CatIcon = CATEGORY_ICON[ann.category as Category] || Tag;
+                    const isEditing = editingId === ann.id;
+                    return (
+                      <div key={ann.id} className={`relative overflow-hidden rounded-2xl border-l-4 bg-[var(--bg-panel)] p-6 shadow-sm ${pConfig.tone.includes('rose') ? 'border-l-[var(--rose)]' : pConfig.tone.includes('amber') ? 'border-l-[var(--amber)]' : 'border-l-[var(--brand)]'}`}>
+                        {ann.isPinned && <div className="absolute right-3 top-3"><Pin className="h-3.5 w-3.5 text-[var(--amber)]" /></div>}
+                        {isEditing ? (
+                          <div className="space-y-3">
+                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
+                            <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
+                            <div className="flex gap-2">
+                              {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
+                                <button key={p} onClick={() => setEditPriority(p)} className={`rounded-lg border px-3 py-1 text-[10px] font-semibold uppercase ${editPriority === p ? `${PRIORITY_TONE[p].label} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p}</button>
+                              ))}
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
+                              <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> Save</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="mb-3 flex items-start justify-between">
+                              <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
+                              <div className="flex items-center gap-2">
+                                <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
+                                <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
+                              </div>
+                            </div>
+                            <p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-3">{ann.content}</p>
+                            {ann.targetTeam && (
+                              <div className="mt-3">
+                                <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>
+                              </div>
+                            )}
+                            <div className="mt-4 flex items-center justify-between border-t border-[var(--border-hairline)] pt-3 text-[10px] uppercase text-[var(--text-muted)]">
+                              <span className="flex items-center gap-2 rounded-full bg-[var(--bg-hover)] px-3 py-1">{ann.author}</span>
+                              <div className="flex items-center gap-2">
+                                <span>{new Date(ann.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                {ann.canEdit && <button onClick={() => handleEdit(ann)} className="p-1.5 text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded-lg"><Edit3 className="h-3 w-3" /></button>}
+                                {ann.canDelete && <button onClick={() => handleDelete(ann.id)} className="p-1.5 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded-lg"><Trash2 className="h-3 w-3" /></button>}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
-                        <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> Save</Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                       <div className="mb-3 flex items-start justify-between">
-                         <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
-                        <div className="flex items-center gap-2">
-                          <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
-                          <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
-                        </div>
-                      </div>
-                       <p className="mt-1 text-xs text-[var(--text-muted)] line-clamp-3">{ann.content}</p>
-                      {ann.targetTeam && (
-                        <div className="mt-3">
-                          <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>
-                        </div>
-                      )}
-                      <div className="mt-4 flex items-center justify-between border-t border-[var(--border-hairline)] pt-3 text-[10px] uppercase text-[var(--text-muted)]">
-                        <span className="flex items-center gap-2 rounded-full bg-[var(--bg-hover)] px-3 py-1">{ann.author}</span>
-                        <div className="flex items-center gap-2">
-                          <span>{new Date(ann.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                          {ann.canEdit && <button onClick={() => handleEdit(ann)} className="p-1.5 text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded-lg"><Edit3 className="h-3 w-3" /></button>}
-                          {ann.canDelete && <button onClick={() => handleDelete(ann.id)} className="p-1.5 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded-lg"><Trash2 className="h-3 w-3" /></button>}
-                        </div>
-                      </div>
-                    </>
-                  )}
+                    );
+                  })}
                 </div>
-              );
-            })
+              )}
+              {regularNews.length > 0 && (
+                <div className="space-y-4">
+                  {pinnedNews.length > 0 && <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Recent Updates</p>}
+                  {regularNews.map((ann) => {
+                    const pConfig = PRIORITY_TONE[ann.priority as Priority] || PRIORITY_TONE.Medium;
+                    const PriorityIcon = PRIORITY_ICON[ann.priority as Priority] || Info;
+                    const CatIcon = CATEGORY_ICON[ann.category as Category] || Tag;
+                    const isEditing = editingId === ann.id;
+                    return (
+                      <div key={ann.id} className={`relative overflow-hidden rounded-2xl border-l-4 bg-[var(--bg-panel)] p-6 shadow-sm ${pConfig.tone.includes('rose') ? 'border-l-[var(--rose)]' : pConfig.tone.includes('amber') ? 'border-l-[var(--amber)]' : 'border-l-[var(--brand)]'}`}>
+                        {isEditing ? (
+                          <div className="space-y-3">
+                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
+                            <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
+                            <div className="flex gap-2">
+                              {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
+                                <button key={p} onClick={() => setEditPriority(p)} className={`rounded-lg border px-3 py-1 text-[10px] font-semibold uppercase ${editPriority === p ? `${PRIORITY_TONE[p].label} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p}</button>
+                              ))}
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
+                              <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> Save</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="mb-3 flex items-start justify-between">
+                              <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
+                              <div className="flex items-center gap-2">
+                                <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
+                                <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
+                              </div>
+                            </div>
+                            <p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-3">{ann.content}</p>
+                            {ann.targetTeam && (
+                              <div className="mt-3">
+                                <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>
+                              </div>
+                            )}
+                            <div className="mt-4 flex items-center justify-between border-t border-[var(--border-hairline)] pt-3 text-[10px] uppercase text-[var(--text-muted)]">
+                              <span className="flex items-center gap-2 rounded-full bg-[var(--bg-hover)] px-3 py-1">{ann.author}</span>
+                              <div className="flex items-center gap-2">
+                                <span>{new Date(ann.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                {ann.canEdit && <button onClick={() => handleEdit(ann)} className="p-1.5 text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded-lg"><Edit3 className="h-3 w-3" /></button>}
+                                {ann.canDelete && <button onClick={() => handleDelete(ann.id)} className="p-1.5 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded-lg"><Trash2 className="h-3 w-3" /></button>}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
 
