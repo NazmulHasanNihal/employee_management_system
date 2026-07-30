@@ -16,8 +16,13 @@
     "test:e2e:staging": "dotenv -e .env.staging -- playwright test",
     "test:component": "vitest run --config vitest.component.config.ts",
     "test:load": "k6 run load-tests/baseline.js",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "ts-node prisma/seed.ts",
     "postinstall": "prisma generate"
   },
+
   "dependencies": {
     "@base-ui/react": "^1.6.0",
     "@hello-pangea/dnd": "^18.0.1",

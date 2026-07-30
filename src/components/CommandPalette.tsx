@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Terminal, X, Search, Activity, User, Briefcase, Command, CornerDownLeft } from "lucide-react";
+import { Terminal, X, Search, Activity, User, Briefcase, Command, CornerDownLeft, Clock, Calendar, Receipt } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "@/lib/toast";
@@ -122,18 +122,32 @@ export default function CommandPalette() {
     }
 
     if (!q) {
-      // Default suggestions: a few popular destinations + commands. Only items
-      // the current user may access are shown.
+      // Default suggestions: a few popular destinations + quick actions + commands.
       return [
-        ...visibleNav.slice(0, 5).map((item) => ({
+        {
+          icon: <Clock size={14} className="text-[var(--brand)]" />,
+          label: "Quick Action: Clock In / View Attendance",
+          action: () => { router.push("/attendance"); setOpen(false); },
+        },
+        {
+          icon: <Calendar size={14} className="text-[var(--brand)]" />,
+          label: "Quick Action: Apply for Leave",
+          action: () => { router.push("/leave"); setOpen(false); },
+        },
+        {
+          icon: <Receipt size={14} className="text-[var(--brand)]" />,
+          label: "Quick Action: Submit Expense Claim",
+          action: () => { router.push("/expenses"); setOpen(false); },
+        },
+        ...visibleNav.slice(0, 4).map((item) => ({
           icon: React.createElement(item.icon, { size: 14 }),
           label: `Go to ${item.label}`,
-          action: () => router.push(item.path),
+          action: () => { router.push(item.path); setOpen(false); },
         })),
-        { icon: <Activity size={14} />, label: "Type /theme to toggle light / dark" },
-        { icon: <Terminal size={14} />, label: "Type /macro eom to run the EOM routine" },
+        { icon: <Activity size={14} />, label: "Type /theme to toggle light / dark mode", action: () => handleCommand("/theme") },
       ];
     }
+
 
     // Free-text search over the visible nav index (label match; fallback prefix).
     const lower = q.toLowerCase();

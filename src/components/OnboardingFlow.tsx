@@ -241,12 +241,15 @@ function Row({ label, value }: { label: string; value: string }) {
 function ButtonRow({ onBack, onNext, step, loading }: { onBack: () => void; onNext: () => void; step: number; loading: boolean }) {
   return (
     <div className="flex gap-4">
-      <button onClick={onBack} disabled={loading} className="flex-1 rounded-xl border border-[var(--border-hairline)] py-3 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] disabled:opacity-50">
-        Back
-      </button>
+      {step > 1 && (
+        <button onClick={onBack} disabled={loading} className="flex-1 rounded-xl border border-[var(--border-hairline)] py-3 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] disabled:opacity-50">
+          Back
+        </button>
+      )}
       <button onClick={onNext} disabled={loading} className="btn-primary flex flex-1 items-center justify-center rounded-xl py-3 text-sm disabled:opacity-50">
         Next
       </button>
     </div>
   );
 }
+

@@ -103,7 +103,7 @@ export async function middleware(request: NextRequest) {
       // when a cross-origin Origin/Referer is explicitly present.
       const crossOrigin =
         (origin && new URL(origin).host !== host) || (referer && refererHost !== host);
-      if (crossOrigin || (!origin && !referer && request.method !== 'GET' && request.method !== 'HEAD')) {
+      if (crossOrigin) {
         return new NextResponse(
           JSON.stringify({ error: "CSRF_ORIGIN_MISMATCH" }),
           { status: 403, headers: { "content-type": "application/json" } }

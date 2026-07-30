@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
 import { trpc } from '@/lib/trpc/client';
 
 export function PushNotificationManager() {
@@ -66,7 +65,7 @@ export function PushNotificationManager() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" title={message || undefined}>
       {subscription ? (
         <button 
           onClick={unsubscribeFromPush}
@@ -85,3 +84,4 @@ export function PushNotificationManager() {
     </div>
   );
 }
+

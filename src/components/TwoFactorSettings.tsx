@@ -143,6 +143,7 @@ export function TwoFactorSettings() {
         <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
           <p className="mb-2 text-sm font-medium text-[var(--text-main)]">1. Scan this QR code in your authenticator app</p>
           <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(setupData.otpAuthUri)}`}
               alt="2FA QR code"

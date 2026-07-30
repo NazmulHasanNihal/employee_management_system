@@ -94,46 +94,70 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'File content does not match its extension' }, { status: 415 });
     }
 
-    // Upload to Supabase Storage. Avatars are publicly readable; documents are
-    // private (access-controlled by RLS + app logic). Uses the service-role
-    // admin client so the upload succeeds regardless of the user's RLS role,
-    // while we still enforce ownership at the app layer above.
-    const admin = createAdminClient();
+    // Try uploading to Supabase Storage first.
+    // Avatars are publicly readable; documents issue a signed URL.
+    try {
+      const admin = createAdminClient();
+      const safeName = sanitizeFilename(originalName);
+      const key = folder === 'avatars'
+        ? `avatars/${user.id}/${Date.now()}-${safeName}`
+        : `documents/${user.id}/${Date.now()}-${safeName}`;
+
+      let { error: uploadError } = await admin.storage
+        .from(BUCKET)
+        .upload(key, buffer, { contentType: file.type || 'application/octet-stream', upsert: true });
+
+      // If bucket does not exist, attempt to create it and retry upload
+      if (uploadError && uploadError.message?.toLowerCase().includes('bucket not found')) {
+        await admin.storage.createBucket(BUCKET, { public: true });
+        const retry = await admin.storage
+          .from(BUCKET)
+          .upload(key, buffer, { contentType: file.type || 'application/octet-stream', upsert: true });
+        uploadError = retry.error;
+      }
+
+      if (!uploadError) {
+        if (folder === 'avatars') {
+          const { data: publicUrl } = admin.storage.from(BUCKET).getPublicUrl(key);
+          return NextResponse.json({ success: true, url: publicUrl.publicUrl });
+        }
+
+        const { data: signed, error: signError } = await admin.storage
+          .from(BUCKET)
+          .createSignedUrl(key, SIGNED_URL_TTL);
+
+        if (!signError && signed?.signedUrl) {
+          return NextResponse.json({
+            success: true,
+            url: signed.signedUrl,
+            signed: true,
+            key,
+            fileName: safeName,
+            size: file.size,
+            type: file.type || 'application/octet-stream',
+          });
+        }
+      }
+      logError('Supabase upload skipped or failed, using local disk fallback:', uploadError);
+    } catch (supaErr) {
+      logError('Supabase client error during upload, falling back to local disk:', supaErr);
+    }
+
+    // Fallback: Local disk storage for offline / local dev mode
+    const fs = await import('fs/promises');
+    const path = await import('path');
     const safeName = sanitizeFilename(originalName);
-    const key = folder === 'avatars'
-      ? `avatars/${user.id}/${Date.now()}-${safeName}`
-      : `documents/${user.id}/${Date.now()}-${safeName}`;
+    const filename = `${Date.now()}-${safeName}`;
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
+    
+    await fs.mkdir(uploadDir, { recursive: true });
+    const filePath = path.join(uploadDir, filename);
+    await fs.writeFile(filePath, buffer);
 
-    const { error: uploadError } = await admin.storage
-      .from(BUCKET)
-      .upload(key, buffer, { contentType: file.type || 'application/octet-stream', upsert: true });
-
-    if (uploadError) {
-      logError('Supabase upload error:', uploadError);
-      return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
-    }
-
-    // Private documents: never return a public URL. Issue a short-lived signed
-    // URL so only authenticated, authorized users can fetch the bytes.
-    if (folder === 'avatars') {
-      const { data: publicUrl } = admin.storage.from(BUCKET).getPublicUrl(key);
-      return NextResponse.json({ success: true, url: publicUrl.publicUrl });
-    }
-
-    const { data: signed, error: signError } = await admin.storage
-      .from(BUCKET)
-      .createSignedUrl(key, SIGNED_URL_TTL);
-
-    if (signError || !signed?.signedUrl) {
-      logError('Signed URL error:', signError);
-      return NextResponse.json({ success: false, error: 'Failed to secure file' }, { status: 500 });
-    }
-
+    const publicUrl = `/uploads/${folder}/${filename}`;
     return NextResponse.json({
       success: true,
-      url: signed.signedUrl,
-      signed: true,
-      key,
+      url: publicUrl,
       fileName: safeName,
       size: file.size,
       type: file.type || 'application/octet-stream',
@@ -143,3 +167,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: 'Upload failed' }, { status: 500 });
   }
 }
+

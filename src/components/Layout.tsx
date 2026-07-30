@@ -285,6 +285,15 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-2">
+            <Link
+              href="/attendance"
+              aria-label="Quick Clock-in / Attendance"
+              className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[var(--brand)]/30 bg-[var(--brand-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-strong)] transition-all hover:bg-[var(--brand)] hover:text-white"
+            >
+              <Clock size={14} />
+              <span>Attendance</span>
+            </Link>
+
             <button
               aria-label="Open command palette"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
@@ -292,6 +301,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
             >
               <Command size={14} /> <span className="hidden md:inline">Command</span>
             </button>
+
 
             <button
               aria-label="Toggle language"
