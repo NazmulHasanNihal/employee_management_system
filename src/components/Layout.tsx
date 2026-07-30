@@ -161,8 +161,13 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
   const [openCategories, setOpenCategories] = React.useState<Record<string, boolean>>({
     'Core System': true,
     'Time & Attendance': true,
+    'Finance & Assets': true,
     'Talent & Culture': true,
+    'Operations': true,
+    'Administration': true,
+    'System Security': true,
   });
+
   const toggleCategory = (cat: string) => setOpenCategories((prev) => ({ ...prev, [cat]: !prev[cat] }));
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
@@ -285,34 +290,41 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-2">
-            <Link
-              href="/attendance"
-              aria-label="Quick Clock-in / Attendance"
-              className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[var(--brand)]/30 bg-[var(--brand-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-strong)] transition-all hover:bg-[var(--brand)] hover:text-white"
-            >
-              <Clock size={14} />
-              <span>{t('Attendance')}</span>
-            </Link>
-
-            {isAdmin && (
-              <Link
-                href="/registry"
-                aria-label="Add New Member"
-                className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--emerald)] transition-all hover:bg-[var(--emerald)] hover:text-white"
+            {/* Universal Section Navigation Dropdown */}
+            <div className="relative flex items-center">
+              <select
+                value={pathname}
+                onChange={(e) => {
+                  if (e.target.value) router.push(e.target.value);
+                }}
+                className="ledger-input rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand)] max-w-[150px] sm:max-w-[190px] md:max-w-[220px] truncate"
+                aria-label="Jump to Section Dropdown"
               >
-                <UserPlus size={14} />
-                <span>+ Add Member</span>
-              </Link>
-            )}
-
-
-
+                <option value="" disabled>
+                  📍 {t('Jump to Section')}...
+                </option>
+                {navCategories.map((cat) => {
+                  const items = cat.items.filter(canSee);
+                  if (items.length === 0) return null;
+                  return (
+                    <optgroup key={cat.title} label={t(cat.title)}>
+                      {items.map((item) => (
+                        <option key={item.path} value={item.path}>
+                          {t(item.label)}
+                        </option>
+                      ))}
+                    </optgroup>
+                  );
+                })}
+              </select>
+            </div>
 
             <button
               aria-label="Open command palette"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)]"
             >
+
               <Command size={14} /> <span className="hidden md:inline">Command</span>
             </button>
 

@@ -327,8 +327,10 @@ export const translations: Record<string, Record<string, string>> = {
     'Search': 'অনুসন্ধান',
     'Notification': 'বিজ্ঞপ্তি',
     'All Read': 'সব পড়া হয়েছে',
+    'Jump to Section': 'সেকশনে যান',
   }
 };
+
 
 
 export function useTranslation(language: 'en' | 'bn') {

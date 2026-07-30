@@ -1271,23 +1271,39 @@ export async function getObjectives(caller: Caller | null, targetId?: string) {
   return prisma.objective.findMany({ where: { userId: tid }, orderBy: { createdAt: 'desc' } });
 }
 
-export async function getReviews(caller: Caller | null, targetId?: string): Promise<{ id: string; userId: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[]> {
+export async function getReviews(caller: Caller | null, targetId?: string): Promise<any[]> {
   const userId = caller?.id;
   if (!userId) return [];
-  const tid = targetId || userId;
-  if (tid !== userId && !caller?.isAdmin && !caller?.isCEO) return [];
+
+  const isAdmin = caller?.isAdmin ?? false;
+  const isHR = caller?.isHR ?? false;
+  const isCEO = caller?.isCEO ?? false;
+
+  const filter = (isAdmin || isHR || isCEO) && !targetId
+    ? {}
+    : { userId: targetId || userId };
+
   const reviews = await prisma.review.findMany({
-    where: { userId: tid }, include: { reviewer: { select: { name: true } } }, orderBy: { createdAt: 'desc' },
+    where: filter,
+    include: {
+      user: { select: { name: true, department: true } },
+      reviewer: { select: { name: true } },
+    },
+    orderBy: { createdAt: 'desc' },
   });
+
   return reviews.map((r) => ({
     id: r.id,
     userId: r.userId,
+    userName: r.user?.name || 'Employee',
+    department: r.user?.department || 'Staff',
     reviewPeriod: r.reviewPeriod,
     rating: r.rating,
     comments: r.comments,
-    reviewerName: r.reviewer?.name || 'Manager',
-  })) as { id: string; userId: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[];
+    reviewerName: r.reviewer?.name || 'Manager / HR',
+  }));
 }
+
 
 /**
  * getPromotionReadiness — composite promotion-score engine.

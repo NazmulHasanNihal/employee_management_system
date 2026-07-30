@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, TrendingUp, Star } from 'lucide-react';
-import { q } from '@/server/queries';
+import { q, getEmployeeOptions } from '@/server/queries';
+import { getCaller } from '@/lib/auth';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
@@ -13,8 +14,18 @@ export const dynamic = 'force-dynamic';
 
 export default async function PerformancePage() {
   const t = await getServerT();
-  const [objectives, reviews, readiness] = await Promise.all([q.objectives(), q.reviews(), q.promotionReadiness()]);
-  const typedReviews = reviews as { id: string; userId: string; reviewPeriod: string; rating: string; comments: string; reviewerName: string }[];
+  const caller = await getCaller();
+  const isAdmin = caller?.isAdmin ?? false;
+  const isHR = caller?.isHR ?? false;
+
+  const [objectives, reviews, readiness, employees] = await Promise.all([
+    q.objectives(),
+    q.reviews(),
+    q.promotionReadiness(),
+    (isAdmin || isHR) ? getEmployeeOptions(caller) : Promise.resolve([]),
+  ]);
+  const typedReviews = reviews as any[];
+
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -34,7 +45,8 @@ export default async function PerformancePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <PerformanceIsland initialObjectives={objectives} />
+              <PerformanceIsland initialObjectives={objectives} employees={employees} isPrivileged={isAdmin || isHR} />
+
 
               {(!objectives || objectives.length === 0) && (
                 <EmptyState

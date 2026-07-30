@@ -1203,8 +1203,10 @@ async function runMutation(path: string, input: any) {
     const caller = await getCaller();
     const isAdmin = caller?.isAdmin ?? false;
     const isCEO = caller?.isCEO ?? false;
+    const isHR = caller?.isHR ?? false;
     const userId = caller?.id;
     const tenantWhere = callerTenantWhere(caller);
+
 
     // ── PROFILE (Self) ──
     if (path === 'profile.updateMyProfile') {
@@ -1486,7 +1488,27 @@ async function runMutation(path: string, input: any) {
       return record;
     }
 
+    if (path === 'performance.submitReview') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: Only HR, Managers, and Admins can submit performance reviews.');
+      }
+      const { targetUserId, reviewPeriod, rating, comments } = input || {};
+      if (!targetUserId || !comments) {
+        throw new Error('Target employee selection and review comments are required.');
+      }
+      return await prisma.review.create({
+        data: {
+          userId: targetUserId,
+          reviewerId: userId!,
+          reviewPeriod: reviewPeriod || 'Q1 2026',
+          rating: rating || 'Meets Expectations',
+          comments,
+        },
+      });
+    }
+
     // ── LEAVE ──
+
     if (path === 'leave.submitRequest') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       const start = new Date(input.startDate);
