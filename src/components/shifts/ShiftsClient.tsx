@@ -113,47 +113,35 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
-            <CalendarRange className="h-5 w-5" />
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="w-auto"
+        />
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={autoGenerate.isPending}
+              onClick={() => autoGenerate.mutate({ startDate: selectedDate })}
+            >
+              {autoGenerate.isPending ? <BrainCircuit className="h-4 w-4 animate-pulse" /> : <Zap className="h-4 w-4" />}
+              {autoGenerate.isPending ? 'AI Computing...' : 'Auto-Fill Roster'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowAssignForm((s) => !s)}>
+              <Plus className="h-4 w-4" /> Assign
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setShowTeamPanel((s) => !s)}>
+              <Users className="h-4 w-4" /> Teams
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { setShowShiftEditor((s) => !s); if (!showShiftEditor) { setEditingShiftId(null); setShiftDraft({ id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, recurringDays: [], branchId: '' }); } }}>
+              <CalendarRange className="h-4 w-4" /> {showShiftEditor ? 'Close Editor' : 'New Shift'}
+            </Button>
           </div>
-          <div>
-            <h1 className="page-title">Shift Roster</h1>
-            <p className="page-subtitle">Intelligent workforce scheduling, teams &amp; work assignment.</p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-auto"
-          />
-          {isAdmin && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={autoGenerate.isPending}
-                onClick={() => autoGenerate.mutate({ startDate: selectedDate })}
-              >
-                {autoGenerate.isPending ? <BrainCircuit className="h-4 w-4 animate-pulse" /> : <Zap className="h-4 w-4" />}
-                {autoGenerate.isPending ? 'AI Computing...' : 'Auto-Fill Roster'}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowAssignForm((s) => !s)}>
-                <Plus className="h-4 w-4" /> Assign
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowTeamPanel((s) => !s)}>
-                <Users className="h-4 w-4" /> Teams
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => { setShowShiftEditor((s) => !s); if (!showShiftEditor) { setEditingShiftId(null); setShiftDraft({ id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, recurringDays: [], branchId: '' }); } }}>
-                <CalendarRange className="h-4 w-4" /> {showShiftEditor ? 'Close Editor' : 'New Shift'}
-              </Button>
-            </div>
-          )}
-        </div>
+        )}
       </div>
 
       {showTeamPanel && isAdmin && (
