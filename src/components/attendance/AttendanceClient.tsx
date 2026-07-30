@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Clock, MapPin, Fingerprint, Activity, Power, Users, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Clock, MapPin, Fingerprint, Activity, Power, Users, CheckCircle2, XCircle, AlertTriangle, UserPlus, Edit3, X, Search, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import useRealtimePresence from '@/lib/useRealtimePresence';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,27 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { DeltaBadge } from '@/components/ui/delta-badge';
 import AttendanceSparklineDynamic from '@/components/attendance/AttendanceSparklineDynamic';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { toast } from '@/lib/toast';
+
+interface EmployeeOption {
+  id: string;
+  name: string;
+  email: string;
+  department: string | null;
+  designation: string | null;
+  avatarUrl: string | null;
+  role: string;
+}
 
 interface AttendanceClientProps {
   initialLogs: any[];
   adminStats: any | null;
+  initialEmployees?: EmployeeOption[];
   isAdmin: boolean;
   userId?: string | null;
 }
 
-export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: AttendanceClientProps) {
+export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [], isAdmin, userId }: AttendanceClientProps) {
   const [logs, setLogs] = useState<any[]>(initialLogs || []);
   const utils = trpc.useUtils();
 
@@ -28,7 +40,6 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
     onMessage: (data: unknown) => {
       const payload = data as { type?: string; userId?: string };
       if (payload?.type === 'punch') {
-        // Someone else punched — refresh the manager's live stats + logs.
         utils.attendance.getAdminStats.invalidate();
         utils.attendance.getLogs.invalidate();
       }
@@ -42,6 +53,7 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
       socket.send({ type: 'punch', userId });
       setClockedIn(true);
       setScanComplete(true);
+      toast.success('Clock In Recorded', 'Your attendance session has started.');
       setTimeout(() => setScanComplete(false), 3000);
     },
   });
@@ -52,6 +64,20 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
       utils.attendance.getAdminStats.invalidate();
       socket.send({ type: 'punch', userId });
       setClockedIn(false);
+      toast.success('Clock Out Recorded', 'Your shift session has ended.');
+    },
+  });
+
+  const recordManualEntryMutation = trpc.attendance.recordManualEntry.useMutation({
+    onSuccess: () => {
+      utils.attendance.getLogs.invalidate();
+      utils.attendance.getAdminStats.invalidate();
+      socket.send({ type: 'punch', userId });
+      setIsModalOpen(false);
+      toast.success('Attendance Entry Saved', 'The employee attendance record has been updated.');
+    },
+    onError: (err: any) => {
+      toast.error('Failed to Save Entry', err?.message || 'An error occurred.');
     },
   });
 
@@ -61,6 +87,22 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
   const [currentTime, setCurrentTime] = useState(new Date());
   const [location, setLocation] = useState<string | null>(null);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
+
+  // HR / Admin Manual Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [employeeQuery, setEmployeeQuery] = useState('');
+  const [selectedEmpId, setSelectedEmpId] = useState('');
+  const [entryDate, setEntryDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [clockInTime, setClockInTime] = useState('09:00');
+  const [clockOutTime, setClockOutTime] = useState('17:00');
+  const [entryStatus, setEntryStatus] = useState('Present');
+  const [hrNote, setHrNote] = useState('');
+
+  // Fetch employees list if not provided
+  const { data: fetchedEmployees } = trpc.attendance.getEmployees.useQuery(undefined, {
+    enabled: isAdmin && initialEmployees.length === 0,
+  });
+  const employeeList: EmployeeOption[] = initialEmployees.length > 0 ? initialEmployees : (fetchedEmployees as EmployeeOption[]) || [];
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -115,6 +157,40 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
     }, 2000);
   };
 
+  const handleOpenAddModal = (existingLog?: any) => {
+    if (existingLog) {
+      setSelectedEmpId(existingLog.userId || '');
+      setEntryDate(new Date(existingLog.date).toISOString().split('T')[0]);
+      setClockInTime(existingLog.clockIn ? new Date(existingLog.clockIn).toTimeString().slice(0, 5) : '09:00');
+      setClockOutTime(existingLog.clockOut ? new Date(existingLog.clockOut).toTimeString().slice(0, 5) : '17:00');
+      setEntryStatus(existingLog.status || 'Present');
+      setHrNote(existingLog.location || 'HR Manual Verification');
+    } else {
+      setSelectedEmpId(employeeList[0]?.id || '');
+      setEntryDate(new Date().toISOString().split('T')[0]);
+      setClockInTime('09:00');
+      setClockOutTime('17:00');
+      setEntryStatus('Present');
+      setHrNote('HR Authorized Manual Entry');
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSaveManualEntry = () => {
+    if (!selectedEmpId) {
+      toast.error('Validation Error', 'Please select an employee');
+      return;
+    }
+    recordManualEntryMutation.mutate({
+      targetUserId: selectedEmpId,
+      date: entryDate,
+      clockInTime: entryStatus === 'Absent' ? undefined : clockInTime,
+      clockOutTime: entryStatus === 'Absent' ? undefined : clockOutTime,
+      status: entryStatus,
+      note: hrNote,
+    });
+  };
+
   const handleDownloadPDF = async () => {
     try {
       if (!logs) return;
@@ -126,7 +202,7 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
         clockOut: log.clockOut ? new Date(log.clockOut).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : '--:--',
       }));
 
-      const res = await fetch('http://localhost:8080/api/reports/attendance-pdf', {
+      const res = await fetch('/api/reports/attendance-pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(records),
@@ -150,6 +226,12 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
   const stats = adminStats || { onShift: 0, lateArrivals: 0, absent: 0, totalEmployees: 0, presentRate: 0, absenteeismRate: 0, onShiftPct: 0, attendanceTrend: [] };
   const onShiftPct = stats.totalEmployees > 0 ? Math.round((stats.onShift / stats.totalEmployees) * 100) : (stats.onShiftPct || 0);
 
+  const filteredEmployees = employeeList.filter((emp) =>
+    emp.name.toLowerCase().includes(employeeQuery.toLowerCase()) ||
+    (emp.department && emp.department.toLowerCase().includes(employeeQuery.toLowerCase())) ||
+    emp.email.toLowerCase().includes(employeeQuery.toLowerCase())
+  );
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -159,13 +241,21 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
           </div>
           <div>
             <h1 className="page-title">Time &amp; Attendance</h1>
-            <p className="page-subtitle">Biometric authorization and geo-location terminal.</p>
+            <p className="page-subtitle">Biometric authorization, geo-location, and HR record management.</p>
           </div>
         </div>
         {isAdmin && (
-          <Button variant="outline" size="sm" onClick={handleDownloadPDF}>
-            Generate PDF Report
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => handleOpenAddModal()}
+              className="btn-primary flex items-center gap-2 rounded-xl text-xs font-semibold"
+            >
+              <UserPlus size={16} /> Record Employee Attendance
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="rounded-xl">
+              Generate PDF Report
+            </Button>
+          </div>
         )}
       </div>
 
@@ -297,8 +387,15 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
         <div className="lg:col-span-2">
           <Card className="flex h-full flex-col">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[var(--brand-strong)]" /> Attendance Log
+              <CardTitle className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-[var(--brand-strong)]" /> Attendance Log
+                </span>
+                {isAdmin && (
+                  <span className="text-xs font-normal text-[var(--text-muted)]">
+                    HR / Admin Override Enabled
+                  </span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
@@ -312,8 +409,8 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
                     <TableHead>Clock Out</TableHead>
                     {isAdmin && <TableHead title="Late minutes">Late</TableHead>}
                     {isAdmin && <TableHead title="Overtime minutes">OT</TableHead>}
-                    {isAdmin && <TableHead title="Night-shift minutes">Night</TableHead>}
                     {isAdmin && <TableHead title="Geo-fence verification">Geo</TableHead>}
+                    {isAdmin && <TableHead className="text-right">Manage</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -336,7 +433,6 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
                       </TableCell>
                       {isAdmin && <TableCell className="text-[var(--text-muted)]">{log.lateMinutes ? `${log.lateMinutes}m` : '—'}</TableCell>}
                       {isAdmin && <TableCell className="text-[var(--text-muted)]">{log.overtimeMinutes ? `${Math.floor(log.overtimeMinutes / 60)}h${log.overtimeMinutes % 60}m` : '—'}</TableCell>}
-                      {isAdmin && <TableCell className="text-[var(--text-muted)]">{log.nightMinutes ? `${Math.floor(log.nightMinutes / 60)}h${log.nightMinutes % 60}m` : '—'}</TableCell>}
                       {isAdmin && (
                         <TableCell>
                           {log.geoVerified === undefined ? '—' : log.geoVerified ? (
@@ -346,12 +442,23 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
                           )}
                         </TableCell>
                       )}
+                      {isAdmin && (
+                        <TableCell className="text-right">
+                          <button
+                            onClick={() => handleOpenAddModal(log)}
+                            className="rounded-lg p-1.5 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-hover)] hover:text-[var(--brand)]"
+                            title="Edit In/Out Entry"
+                          >
+                            <Edit3 size={15} />
+                          </button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                   {(!logs || logs.length === 0) && (
                     <TableRow>
                       <TableCell colSpan={isAdmin ? 9 : 5} className="py-8 text-center text-xs text-[var(--text-muted)]">
-                        No logs found in archive. Clock in to start recording.
+                        No logs found in archive. HR/Admin can record entries using the top button.
                       </TableCell>
                     </TableRow>
                   )}
@@ -361,6 +468,142 @@ export function AttendanceClient({ initialLogs, adminStats, isAdmin, userId }: A
           </Card>
         </div>
       </div>
+
+      {/* HR / Admin Attendance Entry Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-lg rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
+              <div className="flex items-center gap-2">
+                <UserPlus size={20} className="text-[var(--brand)]" />
+                <h3 className="text-base font-bold text-[var(--text-main)]">HR / Admin Attendance Record Entry</h3>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Employee Selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Select Employee</label>
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-3 text-[var(--text-muted)]" />
+                  <input
+                    type="text"
+                    placeholder="Filter employee list..."
+                    value={employeeQuery}
+                    onChange={(e) => setEmployeeQuery(e.target.value)}
+                    className="ledger-input w-full rounded-xl pl-9 pr-3 py-2 text-xs mb-2"
+                  />
+                </div>
+                <select
+                  value={selectedEmpId}
+                  onChange={(e) => setSelectedEmpId(e.target.value)}
+                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                >
+                  <option value="">Select Employee...</option>
+                  {filteredEmployees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name} ({emp.department || emp.role} · {emp.designation || 'Staff'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date Selection */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Attendance Date</label>
+                <input
+                  type="date"
+                  value={entryDate}
+                  onChange={(e) => setEntryDate(e.target.value)}
+                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                />
+              </div>
+
+              {/* Status Selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Status</label>
+                <div className="flex gap-2">
+                  {['Present', 'Late', 'Absent'].map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setEntryStatus(st)}
+                      className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-all border ${
+                        entryStatus === st
+                          ? st === 'Present'
+                            ? 'bg-[var(--emerald-soft)] text-[var(--emerald)] border-[var(--emerald)]'
+                            : st === 'Late'
+                              ? 'bg-[var(--amber-soft)] text-[var(--amber)] border-[var(--amber)]'
+                              : 'bg-[var(--rose-soft)] text-[var(--rose)] border-[var(--rose)]'
+                          : 'border-[var(--border-hairline)] bg-[var(--bg-app)] text-[var(--text-muted)]'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Time Pickers (if not Absent) */}
+              {entryStatus !== 'Absent' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">In Time</label>
+                    <input
+                      type="time"
+                      value={clockInTime}
+                      onChange={(e) => setClockInTime(e.target.value)}
+                      className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Out Time</label>
+                    <input
+                      type="time"
+                      value={clockOutTime}
+                      onChange={(e) => setClockOutTime(e.target.value)}
+                      className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* HR Verification Note */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">HR Verification Note / Reason</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Verified In/Out by HR Admin"
+                  value={hrNote}
+                  onChange={(e) => setHrNote(e.target.value)}
+                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 rounded-xl border border-[var(--border-hairline)] py-2.5 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveManualEntry}
+                disabled={recordManualEntryMutation.isPending}
+                className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50"
+              >
+                {recordManualEntryMutation.isPending ? 'Saving...' : 'Save Attendance Record'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

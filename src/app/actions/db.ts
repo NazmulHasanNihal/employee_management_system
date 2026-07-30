@@ -798,7 +798,25 @@ export async function runQuery(
       })));
     }
 
+    if (path === 'attendance.getEmployees') {
+      if (!isAdmin && !isCEO) return [];
+      return prisma.user.findMany({
+        where: mergeWhere({ status: 'active' }, tenantWhere),
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          department: true,
+          designation: true,
+          avatarUrl: true,
+          role: true,
+        },
+        orderBy: { name: 'asc' },
+      });
+    }
+
     // ── CALIBRATION / TRAINING / WHISTLEBLOWER / ENGAGEMENT (queries) ──
+
     if (path === 'calibration.getSessions') {
       if (!isAdmin && !isCEO) return [];
       return prisma.calibrationSession.findMany({
@@ -1354,6 +1372,118 @@ async function runMutation(path: string, input: any) {
         data.lateMinutes = result.lateMinutes;
       }
       return await prisma.attendance.update({ where: { id: record.id }, data });
+    }
+    if (path === 'attendance.recordManualEntry') {
+      if (!isAdmin && !isCEO) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: Only HR and Admin personnel can manage employee attendance records.');
+      }
+      const { targetUserId, date, clockInTime, clockOutTime, status: reqStatus, location, note } = input || {};
+      if (!targetUserId) throw new Error('Employee selection is required');
+
+      const baseDate = date ? new Date(date) : new Date();
+      const startOfDay = new Date(baseDate); startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(baseDate); endOfDay.setHours(23, 59, 59, 999);
+
+      let clockInDate: Date | null = null;
+      if (clockInTime) {
+        if (typeof clockInTime === 'string' && clockInTime.includes(':')) {
+          const [h, m] = clockInTime.split(':').map((n: string) => parseInt(n, 10));
+          clockInDate = new Date(startOfDay);
+          clockInDate.setHours(h, m, 0, 0);
+        } else {
+          clockInDate = new Date(clockInTime);
+        }
+      }
+
+      let clockOutDate: Date | null = null;
+      if (clockOutTime) {
+        if (typeof clockOutTime === 'string' && clockOutTime.includes(':')) {
+          const [h, m] = clockOutTime.split(':').map((n: string) => parseInt(n, 10));
+          clockOutDate = new Date(startOfDay);
+          clockOutDate.setHours(h, m, 0, 0);
+        } else {
+          clockOutDate = new Date(clockOutTime);
+        }
+      }
+
+      const assignment = await prisma.shiftAssignment.findFirst({
+        where: { userId: targetUserId, date: { gte: startOfDay, lte: endOfDay } },
+        include: { shift: true },
+      });
+      const shift = assignment?.shift;
+
+      let workedMinutes = 0;
+      let overtimeMinutes = 0;
+      let nightMinutes = 0;
+      let lateMinutes = 0;
+      let computedStatus = reqStatus || 'Present';
+
+      if (clockInDate && shift) {
+        const result = computeAttendance({
+          clockIn: clockInDate,
+          clockOut: clockOutDate,
+          shift: {
+            startTime: shift.startTime,
+            endTime: shift.endTime,
+            graceMinutes: shift.graceMinutes,
+            breakMinutes: shift.breakMinutes,
+            isNightShift: shift.isNightShift,
+          },
+        });
+        workedMinutes = result.workedMinutes;
+        overtimeMinutes = result.overtimeMinutes;
+        nightMinutes = result.nightMinutes;
+        lateMinutes = result.lateMinutes;
+        if (!reqStatus) computedStatus = result.status;
+      } else if (clockInDate && clockOutDate) {
+        const diffMs = clockOutDate.getTime() - clockInDate.getTime();
+        workedMinutes = Math.max(0, Math.round(diffMs / 60000));
+        if (!reqStatus && clockInDate.getHours() >= 10) {
+          computedStatus = 'Late';
+          lateMinutes = (clockInDate.getHours() - 9) * 60 + clockInDate.getMinutes();
+        }
+      }
+
+      if (reqStatus === 'Absent') {
+        clockInDate = null;
+        clockOutDate = null;
+        workedMinutes = 0;
+        overtimeMinutes = 0;
+        lateMinutes = 0;
+        computedStatus = 'Absent';
+      }
+
+      const existingRecord = await prisma.attendance.findFirst({
+        where: { userId: targetUserId, date: { gte: startOfDay, lte: endOfDay } },
+      });
+
+      const recordPayload = {
+        userId: targetUserId,
+        date: startOfDay,
+        status: computedStatus,
+        clockIn: clockInDate,
+        clockOut: clockOutDate,
+        location: location || note || 'HR / Admin Entry',
+        lateMinutes,
+        workedMinutes,
+        overtimeMinutes,
+        nightMinutes,
+        geoVerified: true,
+      };
+
+      let record;
+      if (existingRecord) {
+        record = await prisma.attendance.update({
+          where: { id: existingRecord.id },
+          data: recordPayload,
+        });
+      } else {
+        record = await prisma.attendance.create({
+          data: recordPayload,
+        });
+      }
+      try { revalidateTag('attendance'); } catch { /* ignore outside request */ }
+      return record;
     }
 
     // ── LEAVE ──

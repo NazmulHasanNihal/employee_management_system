@@ -810,9 +810,31 @@ export async function getActiveAttendanceSession(caller: Caller | null) {
   return prisma.attendance.findFirst({ where: { userId, date: { gte: today }, clockOut: null }, orderBy: { clockIn: 'desc' } });
 }
 
+export async function getEmployeeOptions(caller: Caller | null) {
+  const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  if (!isAdmin && !isCEO) return [];
+  const branchScope = await getSelectedBranchId();
+  const userBranch = branchScope ? { branchId: branchScope } : {};
+  return prisma.user.findMany({
+    where: { ...userBranch, status: 'active' },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      department: true,
+      designation: true,
+      avatarUrl: true,
+      role: true,
+    },
+    orderBy: { name: 'asc' },
+  });
+}
+
 // ───────────────────────────────────────────────────────────────────────────
 // LEAVE
 // ───────────────────────────────────────────────────────────────────────────
+
 
 export async function getLeaveRequests(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
