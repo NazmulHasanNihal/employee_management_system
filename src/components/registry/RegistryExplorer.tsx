@@ -224,10 +224,11 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             <Download className="h-4 w-4" /> Export
           </Button>
           {isAdmin && (
-            <Button variant="primary" size="md" onClick={() => setIsProvisionModalOpen(true)}>
-              <UserPlus className="h-4 w-4" /> Provision
+            <Button variant="primary" size="md" onClick={() => setIsProvisionModalOpen(true)} className="rounded-xl flex items-center gap-2 font-semibold">
+              <UserPlus className="h-4 w-4" /> + Add New Member
             </Button>
           )}
+
         </div>
       </div>
 
@@ -539,9 +540,9 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <div>
                 <h3 className="flex items-center gap-2 text-lg font-semibold uppercase tracking-wide text-[var(--text-main)]">
-                  <UserPlus className="h-5 w-5 text-[var(--brand)]" /> Provision New User
+                  <UserPlus className="h-5 w-5 text-[var(--brand)]" /> + Add New Employee Member
                 </h3>
-                <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Secure Identity Creation</p>
+                <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Provision Member Credentials & System Profile</p>
               </div>
               <button onClick={() => setIsProvisionModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] touch-target-sm">
                 <X className="h-5 w-5" />
@@ -554,8 +555,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
               )}
               {provisionStatus.success && !provisionStatus.inviteToken && (
-                <div className="flex items-center gap-2 rounded-xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] p-3 text-xs text-[var(--emerald)]">
-                  <Check className="h-3.5 w-3.5" /> Identity provisioned — account is active.
+                <div className="flex items-center gap-2 rounded-xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] p-3 text-xs font-semibold text-[var(--emerald)]">
+                  <Check className="h-4 w-4" /> Member account created successfully! They can log in immediately.
                 </div>
               )}
               {provisionStatus.success && provisionStatus.inviteToken && (
@@ -573,23 +574,55 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   }}>Copy Link</Button>
                 </div>
               )}
-              <div className="space-y-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
-                <label className="flex items-center gap-2 text-xs text-[var(--text-main)]">
-                  <input
-                    type="checkbox"
-                    checked={provisionForm.invite}
-                    onChange={(e) => setProvisionForm({ ...provisionForm, invite: e.target.checked })}
-                    className="h-4 w-4 rounded accent-[var(--brand)]"
-                  />
-                  Send invite link (employee sets own password) — recommended
-                </label>
+
+              {/* Mode Selection Tabs */}
+              <div className="space-y-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Creation Mode</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setProvisionForm({ ...provisionForm, invite: false })}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all ${
+                      !provisionForm.invite
+                        ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)] shadow-sm'
+                        : 'border-[var(--border-hairline)] bg-[var(--bg-app)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                    }`}
+                  >
+                    <span>Set Login Password</span>
+                    <span className="text-[10px] font-normal opacity-80 mt-0.5">Immediate Login Access</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProvisionForm({ ...provisionForm, invite: true })}
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all ${
+                      provisionForm.invite
+                        ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)] shadow-sm'
+                        : 'border-[var(--border-hairline)] bg-[var(--bg-app)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                    }`}
+                  >
+                    <span>Send Invite Link</span>
+                    <span className="text-[10px] font-normal opacity-80 mt-0.5">Self-Registration</span>
+                  </button>
+                </div>
+
                 {!provisionForm.invite && (
-                  <div className="space-y-1">
-                    <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Initial Password (min 8 chars)</label>
-                    <input type="password" required value={provisionForm.password} onChange={(e) => setProvisionForm({ ...provisionForm, password: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="(min 8 chars)" />
+                  <div className="space-y-1.5 pt-2">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-strong)]">Member Login Password (min 8 chars)</label>
+                    <input
+                      type="password"
+                      required
+                      value={provisionForm.password}
+                      onChange={(e) => setProvisionForm({ ...provisionForm, password: e.target.value })}
+                      className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono border-[var(--brand)]/40"
+                      placeholder="Enter password for initial login..."
+                    />
+                    <p className="text-[11px] text-[var(--text-muted)]">
+                      The employee will use their email and this password to log in right away.
+                    </p>
                   </div>
                 )}
               </div>
+
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>

@@ -291,13 +291,45 @@ export const translations: Record<string, Record<string, string>> = {
     'Access Denied': 'অ্যাক্সেস নিষিদ্ধ',
     'Not signed in': 'সাইন ইন করা হয়নি',
     "We couldn't load your profile. Please sign in and try again.": 'আমরা আপনার প্রোফাইল লোড করতে পারিনি। অনুগ্রহ করে সাইন ইন করে আবার চেষ্টা করুন।',
-    'ATS Systems require HR Authorization Clearance.': 'এটিএস সিস্টেমের জন্য এইচআর কর্তৃপক্ষের অনুমোদন প্রয়োজন।',
     'Objective Tracker (OKRs)': 'উদ্দেশ্য ট্র্যাকার (OKR)',
     'Define your first objective to start tracking progress against your key results.': 'আপনার মূল ফলাফলের বিপরীতে অগ্রগতি ট্র্যাক করতে প্রথম উদ্দেশ্য নির্ধারণ করুন।',
     'Reporting Chain': 'রিপোর্টিং চেইন',
     'Direct Reports': 'সরাসরি রিপোর্ট',
+    
+    // Comprehensive Module & Action Strings (Bengali)
+    'Present': 'উপস্থিত',
+    'Late': 'বিলম্ব',
+    'Absent': 'অনুপস্থিত',
+    'Pending': 'অপেক্ষমাণ',
+    'Approved': 'অনুমোদিত',
+    'Rejected': 'প্রত্যাখ্যাত',
+    'Active': 'সক্রিয়',
+    'Record Employee Attendance': 'কর্মীর উপস্থিতি এন্ট্রি দিন',
+    'Generate PDF Report': 'পিডিএফ রিপোর্ট তৈরি করুন',
+    'Local Server Time': 'লোকাল সার্ভার সময়',
+    'Live Office Status': 'লাইভ অফিস সেশন',
+    'Currently On-Shift': 'বর্তমানে শিফটে কর্মরত',
+    'Present Rate': 'উপস্থিতির হার',
+    'Late Arrivals': 'বিলম্বে আগমন',
+    'Absenteeism Rate': 'অনুপস্থিতির হার',
+    'Attendance Log': 'উপস্থিতির লগ',
+    'HR / Admin Override Enabled': 'এইচআর / অ্যাডমিন ওভাররাইড চালু আছে',
+    'HR / Admin Attendance Record Entry': 'এইচআর / অ্যাডমিন উপস্থিতি এন্ট্রি ফরম',
+    'Select Employee': 'কর্মী নির্বাচন করুন',
+    'Attendance Date': 'উপস্থিতির তারিখ',
+    'Status': 'অবস্থা',
+    'In Time': 'প্রবেশের সময়',
+    'Out Time': 'প্রস্থানের সময়',
+    'HR Verification Note / Reason': 'এইচআর সত্যতা নোট / কারণ',
+    'Save Attendance Record': 'উপস্থিতি রেকর্ড সংরক্ষণ করুন',
+    'Cancel': 'বাতিল',
+    'Filter employee list...': 'কর্মী তালিকা ফিল্টার করুন...',
+    'Search': 'অনুসন্ধান',
+    'Notification': 'বিজ্ঞপ্তি',
+    'All Read': 'সব পড়া হয়েছে',
   }
 };
+
 
 export function useTranslation(language: 'en' | 'bn') {
   return function t(key: string): string {

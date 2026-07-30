@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { Cpu, Activity, Database, Lock, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Cpu, Activity, Database, Lock, Clock, MapPin, Navigation, Save, Check } from 'lucide-react';
 import { useUser } from '@/components/UserProvider';
 import { useAppStore } from '@/lib/store';
 import { useTranslation } from '@/lib/translations';
@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/lib/toast';
 
 type FlagKey = 'maintenanceMode' | 'debugLogging' | 'strictAuth' | 'autoProvision';
 
@@ -27,24 +28,35 @@ export default function SettingsClientPage() {
   const t = useTranslation(language);
 
   const { data: savedFlags } = trpc.settings.getSystemSettings.useQuery();
-  const [flags, setFlags] = React.useState<Record<FlagKey, boolean>>(DEFAULT_FLAGS);
-  const [loaded, setLoaded] = React.useState(false);
+  const setSettingMutation = trpc.settings.setSystemSetting.useMutation();
 
-  // Office hours (admin/HR configurable)
-  const [officeStart, setOfficeStart] = React.useState('09:00');
-  const [officeEnd, setOfficeEnd] = React.useState('17:00');
-  const [officeGrace, setOfficeGrace] = React.useState(10);
-  const [officeTimezone, setOfficeTimezone] = React.useState('Asia/Dhaka');
-  const [savingOffice, setSavingOffice] = React.useState(false);
-  const [officeSaved, setOfficeSaved] = React.useState(false);
+  const [flags, setFlags] = useState<Record<FlagKey, boolean>>(DEFAULT_FLAGS);
+  const [loaded, setLoaded] = useState(false);
 
-  React.useEffect(() => {
+  // Office hours
+  const [officeStart, setOfficeStart] = useState('09:00');
+  const [officeEnd, setOfficeEnd] = useState('17:00');
+  const [officeGrace, setOfficeGrace] = useState(10);
+  const [officeTimezone, setOfficeTimezone] = useState('Asia/Dhaka');
+  const [savingOffice, setSavingOffice] = useState(false);
+  const [officeSaved, setOfficeSaved] = useState(false);
+
+  // Office Geo-Fence (50 meters)
+  const [officeLat, setOfficeLat] = useState('23.8103');
+  const [officeLng, setOfficeLng] = useState('90.4125');
+  const [officeRadius, setOfficeRadius] = useState(50);
+  const [savingGeo, setSavingGeo] = useState(false);
+  const [geoSaved, setGeoSaved] = useState(false);
+  const [detectingGps, setDetectingGps] = useState(false);
+
+  useEffect(() => {
     if (savedFlags && !loaded) {
       const next = { ...DEFAULT_FLAGS };
       (Object.keys(DEFAULT_FLAGS) as FlagKey[]).forEach((k) => {
         if (savedFlags[k] !== undefined) next[k] = savedFlags[k] === 'true';
       });
       setFlags(next);
+
       if (savedFlags.officeHours) {
         try {
           const oh = JSON.parse(savedFlags.officeHours);
@@ -54,6 +66,16 @@ export default function SettingsClientPage() {
           if (oh.timezone) setOfficeTimezone(oh.timezone);
         } catch { /* ignore */ }
       }
+
+      if (savedFlags.officeGeo) {
+        try {
+          const geo = JSON.parse(savedFlags.officeGeo);
+          if (geo.lat != null) setOfficeLat(String(geo.lat));
+          if (geo.lng != null) setOfficeLng(String(geo.lng));
+          if (typeof geo.radiusMeters === 'number') setOfficeRadius(geo.radiusMeters);
+        } catch { /* ignore */ }
+      }
+
       setLoaded(true);
     }
   }, [savedFlags, loaded]);
@@ -61,25 +83,82 @@ export default function SettingsClientPage() {
   const handleToggle = (key: FlagKey) => {
     const value = !flags[key];
     setFlags((prev) => ({ ...prev, [key]: value }));
-    // Persist immediately.
-    trpc.settings.setSystemSetting.useMutation().mutate({ key, value: String(value) });
+    setSettingMutation.mutate({ key, value: String(value) });
   };
 
   const saveOfficeHours = () => {
     setSavingOffice(true);
     setOfficeSaved(false);
-    trpc.settings.setSystemSetting.useMutation().mutate(
+    setSettingMutation.mutate(
       { key: 'officeHours', value: JSON.stringify({ start: officeStart, end: officeEnd, graceMinutes: officeGrace, timezone: officeTimezone }) },
       {
-        onSuccess: () => { setSavingOffice(false); setOfficeSaved(true); setTimeout(() => setOfficeSaved(false), 2500); },
-        onError: () => { setSavingOffice(false); },
+        onSuccess: () => {
+          setSavingOffice(false);
+          setOfficeSaved(true);
+          toast.success('Office Hours Saved', 'Standard working hours updated.');
+          setTimeout(() => setOfficeSaved(false), 2500);
+        },
+        onError: (err: any) => {
+          setSavingOffice(false);
+          toast.error('Save Failed', err?.message || 'Failed to save');
+        },
+
       }
+    );
+  };
+
+  const saveGeoFence = () => {
+    setSavingGeo(true);
+    setGeoSaved(false);
+    const latNum = parseFloat(officeLat);
+    const lngNum = parseFloat(officeLng);
+    if (isNaN(latNum) || isNaN(lngNum)) {
+      toast.error('Invalid Coordinates', 'Please enter valid numbers for latitude and longitude.');
+      setSavingGeo(false);
+      return;
+    }
+
+    setSettingMutation.mutate(
+      { key: 'officeGeo', value: JSON.stringify({ lat: latNum, lng: lngNum, radiusMeters: Number(officeRadius) || 50 }) },
+      {
+        onSuccess: () => {
+          setSavingGeo(false);
+          setGeoSaved(true);
+          toast.success('Office Geo-Fence Saved', `Target location updated (${officeRadius}m radius).`);
+          setTimeout(() => setGeoSaved(false), 2500);
+        },
+        onError: (err: any) => {
+          setSavingGeo(false);
+          toast.error('Save Failed', err?.message || 'Failed to save');
+        },
+
+      }
+    );
+  };
+
+  const detectCurrentGpsLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('GPS Not Supported', 'Geolocation is not supported by your browser.');
+      return;
+    }
+    setDetectingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setOfficeLat(pos.coords.latitude.toFixed(6));
+        setOfficeLng(pos.coords.longitude.toFixed(6));
+        setDetectingGps(false);
+        toast.success('GPS Location Detected', `Lat: ${pos.coords.latitude.toFixed(4)}, Lng: ${pos.coords.longitude.toFixed(4)}`);
+      },
+      (err) => {
+        setDetectingGps(false);
+        toast.error('GPS Error', err.message || 'Unable to retrieve location');
+      },
+      { enableHighAccuracy: true }
     );
   };
 
   if (!user) return null;
 
-  // Protect route
   if (!isAdmin) {
     return (
       <div className="flex h-full flex-1 items-center justify-center">
@@ -87,7 +166,6 @@ export default function SettingsClientPage() {
       </div>
     );
   }
-
 
   return (
     <div className="space-y-8 animate-fade-up max-w-7xl mx-auto">
@@ -107,44 +185,119 @@ export default function SettingsClientPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-               <div className="overflow-x-auto">
-                 <div className="table-responsive-md md:table-responsive-card">
-                   <table className="w-full border-collapse text-left text-sm">
-                  <thead className="border border-[var(--border-hairline)] bg-[var(--bg-hover)] text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
-                    <tr>
-                      <th className="rounded-tl-xl p-4 pl-6">{t('Resource Endpoint')}</th>
-                      <th className="p-4 text-center">{t('L4 Admin')}</th>
-                      <th className="p-4 text-center">{t('L3 HR')}</th>
-                      <th className="rounded-tr-xl p-4 pr-6 text-center">{t('L1 Employee')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border-hairline)] border-x border-b border-[var(--border-hairline)] rounded-b-xl bg-[var(--bg-panel)] text-sm">
-                    {[
-                      { m: 'PAYROLL (Read/Write)', a: 'R/W/D', hr: 'R/W', e: 'R (Self)' },
-                      { m: 'ATTENDANCE (Clock)', a: 'R/W/D', hr: 'R/W', e: 'R/W (Self)' },
-                      { m: 'LEAVE (Approvals)', a: 'R/W', hr: 'R/W', e: 'None' },
-                      { m: 'AUDIT (Immutable)', a: 'R (Immutable)', hr: 'None', e: 'None' },
-                      { m: 'DEI (Intelligence)', a: 'R', hr: 'R', e: 'None' },
-                      { m: 'RECRUITMENT (ATS)', a: 'R/W', hr: 'R/W', e: 'None' },
-                    ].map((row, i) => (
-                      <tr key={i} className="transition-colors hover:bg-[var(--bg-hover)]">
-                        <td className="p-4 pl-6 font-semibold text-[var(--text-main)]" data-label={t('Resource Endpoint')}>{row.m}</td>
-                        <td className="p-4 text-center" data-label={t('L4 Admin')}>
-                          <Badge variant="rose">{row.a}</Badge>
-                        </td>
-                        <td className="p-4 text-center" data-label={t('L3 HR')}>
-                          <Badge variant="amber">{row.hr}</Badge>
-                        </td>
-                        <td className="p-4 pr-6 text-center" data-label={t('L1 Employee')}>
-                          <Badge variant="emerald">{row.e}</Badge>
-                        </td>
+              <div className="overflow-x-auto">
+                <div className="table-responsive-md md:table-responsive-card">
+                  <table className="w-full border-collapse text-left text-sm">
+                    <thead className="border border-[var(--border-hairline)] bg-[var(--bg-hover)] text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
+                      <tr>
+                        <th className="rounded-tl-xl p-4 pl-6">{t('Resource Endpoint')}</th>
+                        <th className="p-4 text-center">{t('L4 Admin')}</th>
+                        <th className="p-4 text-center">{t('L3 HR')}</th>
+                        <th className="rounded-tr-xl p-4 pr-6 text-center">{t('L1 Employee')}</th>
                       </tr>
-                    ))}
-                   </tbody>
-                 </table>
-               </div>
-             </div>
-           </CardContent>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--border-hairline)] border-x border-b border-[var(--border-hairline)] rounded-b-xl bg-[var(--bg-panel)] text-sm">
+                      {[
+                        { m: 'PAYROLL (Read/Write)', a: 'R/W/D', hr: 'R/W', e: 'R (Self)' },
+                        { m: 'ATTENDANCE (Clock)', a: 'R/W/D', hr: 'R/W', e: 'R/W (Self)' },
+                        { m: 'LEAVE (Approvals)', a: 'R/W', hr: 'R/W', e: 'None' },
+                        { m: 'AUDIT (Immutable)', a: 'R (Immutable)', hr: 'None', e: 'None' },
+                        { m: 'DEI (Intelligence)', a: 'R', hr: 'R', e: 'None' },
+                        { m: 'RECRUITMENT (ATS)', a: 'R/W', hr: 'R/W', e: 'None' },
+                      ].map((row, i) => (
+                        <tr key={i} className="transition-colors hover:bg-[var(--bg-hover)]">
+                          <td className="p-4 pl-6 font-semibold text-[var(--text-main)]">{row.m}</td>
+                          <td className="p-4 text-center"><Badge variant="rose">{row.a}</Badge></td>
+                          <td className="p-4 text-center"><Badge variant="amber">{row.hr}</Badge></td>
+                          <td className="p-4 pr-6 text-center"><Badge variant="emerald">{row.e}</Badge></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Office Geo-Fence Coordinates Configuration */}
+          <Card className="border-[var(--brand)]/30">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-[var(--brand)]" /> Office Geo-Fence & Location Settings
+                </span>
+                <Badge variant="brand">50m Radius Guard</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <p className="text-xs text-[var(--text-muted)]">
+                Set the exact GPS latitude and longitude coordinates for your office location. The attendance system evaluates employee distance against this point within the configured meter radius.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Office Latitude (°N/S)</label>
+                  <input
+                    type="text"
+                    value={officeLat}
+                    onChange={(e) => setOfficeLat(e.target.value)}
+                    placeholder="e.g. 23.8103"
+                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Office Longitude (°E/W)</label>
+                  <input
+                    type="text"
+                    value={officeLng}
+                    onChange={(e) => setOfficeLng(e.target.value)}
+                    placeholder="e.g. 90.4125"
+                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Radius (Meters)</label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="1000"
+                    value={officeRadius}
+                    onChange={(e) => setOfficeRadius(Number(e.target.value))}
+                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border-hairline)] pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={detectCurrentGpsLocation}
+                  disabled={detectingGps}
+                  className="rounded-xl flex items-center gap-2 text-xs"
+                >
+                  <Navigation size={14} className={detectingGps ? 'animate-spin' : ''} />
+                  {detectingGps ? 'Detecting Location...' : 'Use My Current GPS Coordinates'}
+                </Button>
+
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={saveGeoFence}
+                    disabled={savingGeo}
+                    className="btn-primary rounded-xl px-4 py-2 text-xs font-semibold flex items-center gap-2"
+                  >
+                    <Save size={14} />
+                    {savingGeo ? 'Saving...' : 'Save Geo-Fence Location'}
+                  </Button>
+                  {geoSaved && (
+                    <span className="flex items-center gap-1 text-xs font-bold text-[var(--emerald)]">
+                      <Check size={14} /> Saved!
+                    </span>
+                  )}
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </div>
 

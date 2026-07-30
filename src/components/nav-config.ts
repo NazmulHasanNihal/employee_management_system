@@ -46,6 +46,8 @@ export const navCategories: NavCategory[] = [
       { label: 'Shift Schedule', icon: CalendarRange, path: '/shifts' },
     ],
   },
+
+
   {
     title: 'Finance & Assets',
     items: [

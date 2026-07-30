@@ -291,8 +291,22 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[var(--brand)]/30 bg-[var(--brand-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-strong)] transition-all hover:bg-[var(--brand)] hover:text-white"
             >
               <Clock size={14} />
-              <span>Attendance</span>
+              <span>{t('Attendance')}</span>
             </Link>
+
+            {isAdmin && (
+              <Link
+                href="/registry"
+                aria-label="Add New Member"
+                className="hidden lg:flex items-center gap-1.5 rounded-xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] px-3 py-1.5 text-xs font-semibold text-[var(--emerald)] transition-all hover:bg-[var(--emerald)] hover:text-white"
+              >
+                <UserPlus size={14} />
+                <span>+ Add Member</span>
+              </Link>
+            )}
+
+
+
 
             <button
               aria-label="Open command palette"
