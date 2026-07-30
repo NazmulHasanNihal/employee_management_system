@@ -19,6 +19,8 @@ export interface Caller {
   branchId?: string | null;
   /** Active tenant (SaaS). Null in single-tenant deployments. */
   tenantId?: string | null;
+  permissions?: string[] | null;
+
   // Extra fields mirrored from the User row so legacy handlers can traverse the
   // manager chain without re-querying. All optional.
   managerId?: string | null;
@@ -79,7 +81,9 @@ export async function getCaller(): Promise<Caller | null> {
     isCEO,
     branchId: dbUser.branchId,
     tenantId: dbUser.tenantId ?? null,
+    permissions: (dbUser as any).permissions ?? [],
     managerId: dbUser.managerId,
+
     avatarUrl: dbUser.avatarUrl,
     status: dbUser.status,
     isOnboarded: dbUser.isOnboarded,

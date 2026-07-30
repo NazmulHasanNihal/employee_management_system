@@ -232,31 +232,27 @@ export default async function TeamPage() {
       </Card>
 
       {/* Team analytics: KPI strip + completion chart */}
-      {performance.length > 0 && (
-        <>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <Card className="animate-fade-up">
-               <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{teamSummary.avgCompletion}%</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Avg Completion</p>
-            </Card>
-            <Card className="animate-fade-up">
-               <p className="text-fluid-2xl font-semibold text-[var(--emerald)]">{teamSummary.totalDone}</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Tasks Completed</p>
-            </Card>
-            <Card className="animate-fade-up">
-               <p className="text-fluid-2xl font-semibold text-[var(--brand)]">{teamSummary.doneThisWeek}</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Done This Week</p>
-            </Card>
-            <Card className="animate-fade-up">
-               <p className="text-fluid-2xl font-semibold text-[var(--rose)]">{teamSummary.blockedRate}%</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Blocked Rate</p>
-            </Card>
-          </div>
-          <TeamCompletionChartDynamic
-            data={performance.map((m: { name: string; completionRate: number }) => ({ name: m.name, completionRate: m.completionRate }))}
-          />
-        </>
-      )}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Card className="animate-fade-up">
+           <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{teamSummary.avgCompletion}%</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Avg Completion</p>
+        </Card>
+        <Card className="animate-fade-up">
+           <p className="text-fluid-2xl font-semibold text-[var(--emerald)]">{teamSummary.totalDone}</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Tasks Completed</p>
+        </Card>
+        <Card className="animate-fade-up">
+           <p className="text-fluid-2xl font-semibold text-[var(--brand)]">{teamSummary.doneThisWeek}</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Done This Week</p>
+        </Card>
+        <Card className="animate-fade-up">
+           <p className="text-fluid-2xl font-semibold text-[var(--rose)]">{teamSummary.blockedRate}%</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">Blocked Rate</p>
+        </Card>
+      </div>
+      <TeamCompletionChartDynamic
+        data={performance.map((m: { name: string; completionRate: number }) => ({ name: m.name, completionRate: m.completionRate }))}
+      />
     </div>
   );
 }

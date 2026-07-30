@@ -10,12 +10,8 @@ export default async function OnboardingPage() {
   await requireAdmin();
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
-      <PageHeader
-        title="Onboarding Workflow"
-        subtitle="New hire sequences and checklist management."
-        icon={<UserPlus className="h-5 w-5" />}
-      />
       <OnboardingClientPage />
     </div>
   );
+
 }

@@ -5,6 +5,8 @@ import { Flame } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
+import { toast } from '@/lib/toast';
+
 
 const CATEGORIES = ['Appreciation', 'Teamwork', 'Leadership', 'Innovation', 'Customer Love'];
 
@@ -18,13 +20,18 @@ export default function RecognitionIsland() {
   const { data: users } = trpc.registry.searchEmployees.useQuery({ query: '' });
   const sendKudo = trpc.recognition.sendKudo.useMutation({
     onSuccess: () => {
+      toast.success('Kudos Sent!', 'Your recognition shoutout has been posted on the Hall of Fame wall.');
       utils.recognition.getRecentKudos.invalidate();
       utils.kudoLeaderboard.invalidate();
       setReceiverId('');
       setMessage('');
       setCategory('Appreciation');
     },
+    onError: (err: any) => {
+      toast.error('Could not send kudos', err?.message || 'Please try again');
+    },
   });
+
 
   const colleagues = (users || []).filter((u: { id: string }) => u.id !== user?.id);
 

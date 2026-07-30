@@ -290,40 +290,12 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-2">
-            {/* Universal Section Navigation Dropdown */}
-            <div className="relative flex items-center">
-              <select
-                value={pathname}
-                onChange={(e) => {
-                  if (e.target.value) router.push(e.target.value);
-                }}
-                className="ledger-input rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-main)] shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand)] max-w-[150px] sm:max-w-[190px] md:max-w-[220px] truncate"
-                aria-label="Jump to Section Dropdown"
-              >
-                <option value="" disabled>
-                  📍 {t('Jump to Section')}...
-                </option>
-                {navCategories.map((cat) => {
-                  const items = cat.items.filter(canSee);
-                  if (items.length === 0) return null;
-                  return (
-                    <optgroup key={cat.title} label={t(cat.title)}>
-                      {items.map((item) => (
-                        <option key={item.path} value={item.path}>
-                          {t(item.label)}
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
-              </select>
-            </div>
-
             <button
               aria-label="Open command palette"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)]"
             >
+
 
               <Command size={14} /> <span className="hidden md:inline">Command</span>
             </button>

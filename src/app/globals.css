@@ -186,6 +186,21 @@ html[lang="bn"] {
     border-color: var(--border-strong);
   }
 
+  .glass-panel {
+    background-color: color-mix(in srgb, var(--bg-panel) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-hairline);
+  }
+
+  .interactive-hover {
+    transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+  }
+  .interactive-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-glow);
+    border-color: color-mix(in srgb, var(--brand) 40%, transparent);
+  }
+
   .btn-primary {
     background-color: var(--brand);
     color: #fff;
@@ -193,9 +208,10 @@ html[lang="bn"] {
     transition: transform 0.12s var(--ease-out), box-shadow 0.12s var(--ease-out), filter 0.12s var(--ease-out);
     box-shadow: var(--shadow-sm);
   }
-  .btn-primary:hover { filter: brightness(1.05); box-shadow: var(--shadow-glow); }
-  .btn-primary:active { transform: translateY(1px); }
+  .btn-primary:hover { filter: brightness(1.06); box-shadow: var(--shadow-glow); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(1px) scale(0.98); }
   .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
 
   .btn-secondary {
     background-color: var(--bg-panel);

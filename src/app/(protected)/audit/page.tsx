@@ -10,7 +10,10 @@ export const dynamic = 'force-dynamic';
 
 export default async function AuditPage() {
   const caller = await getCaller();
-  if (!caller || (!caller.isAdmin && !caller.isCEO)) {
+  const isCEO = caller?.isCEO || caller?.isOwner || caller?.role === 'CEO' || caller?.role === 'Founder';
+  const hasAuditPermission = Array.isArray(caller?.permissions) && caller.permissions.includes('AUDIT_LOG_ACCESS');
+
+  if (!caller || (!isCEO && !hasAuditPermission)) {
     redirect('/');
   }
 
@@ -20,10 +23,11 @@ export default async function AuditPage() {
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
         title="Audit Trail"
-        subtitle="Immutable system activity log for compliance and security."
+        subtitle="Immutable system activity log — Confidential CEO & Founder Security Ledger."
         icon={<Activity className="h-5 w-5" />}
       />
-      <AuditClientPage initialEvents={events} />
+      <AuditClientPage initialEvents={events} isCEO={isCEO} />
     </div>
   );
 }
+

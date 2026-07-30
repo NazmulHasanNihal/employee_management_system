@@ -1170,15 +1170,18 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
     });
   }
 
+  const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+
   for (const h of holidays) {
     const isTentative = h.category === 'Tentative';
+    const isPast = new Date(h.date) < startOfToday;
     items.push({
       id: `holiday-${h.id}`,
       title: lang === 'bn' && h.nameBn ? h.nameBn : h.name,
       description: `Bangladesh ${h.type} holiday${isTentative ? ' (tentative — pending moon sighting / govt notification)' : ''}`,
       date: h.date.toISOString(),
       type: 'Holiday',
-      status: 'Done',
+      status: isPast ? 'Done' : 'Pending',
       derived: 'holiday',
       isTentative,
     });
@@ -1188,31 +1191,34 @@ export async function getCalendarFeed(caller: Caller | null, lang: 'en' | 'bn' =
     if (!u.dateOfBirth) continue;
     const dob = new Date(u.dateOfBirth);
     const nextBday = new Date(nowYear, dob.getMonth(), dob.getDate());
-    if (nextBday < new Date()) nextBday.setFullYear(nowYear + 1);
+    if (nextBday < startOfToday) nextBday.setFullYear(nowYear + 1);
+    const isPast = nextBday < startOfToday;
     items.push({
       id: `birthday-${u.id}`,
       title: `${u.name}'s Birthday`,
       description: 'Team birthday',
       date: nextBday.toISOString(),
       type: 'Social',
-      status: 'Done',
+      status: isPast ? 'Done' : 'Pending',
       derived: 'birthday',
     });
   }
 
   for (const a of shiftAssignments) {
+    const isPast = new Date(a.date) < startOfToday;
     items.push({
       id: `shift-${a.id}`,
       title: `${a.shift?.name || 'Shift'}: ${a.user?.name || 'Unassigned'}`,
       description: `Shift ${a.shift?.startTime}-${a.shift?.endTime}`,
       date: a.date.toISOString(),
       type: 'Meeting',
-      status: 'Done',
+      status: isPast ? 'Done' : 'Pending',
       derived: 'shift',
     });
   }
 
   return items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
 }
 
 export async function getMyReminders(caller: Caller | null) {

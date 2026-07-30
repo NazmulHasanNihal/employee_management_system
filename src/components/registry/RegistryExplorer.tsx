@@ -634,12 +634,44 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Department</label>
-                  <input required type="text" value={provisionForm.department} onChange={(e) => setProvisionForm({ ...provisionForm, department: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Engineering" />
+                  <select
+                    required
+                    value={provisionForm.department}
+                    onChange={(e) => setProvisionForm({ ...provisionForm, department: e.target.value })}
+                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  >
+                    <option value="">Select Department...</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Human Resources">Human Resources</option>
+                    <option value="Finance & Accounting">Finance & Accounting</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Sales & Business Dev">Sales & Business Dev</option>
+                    <option value="Operations">Operations</option>
+                    <option value="IT & Infrastructure">IT & Infrastructure</option>
+                    <option value="Legal & Compliance">Legal & Compliance</option>
+                  </select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Designation</label>
-                  <input required type="text" value={provisionForm.designation} onChange={(e) => setProvisionForm({ ...provisionForm, designation: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Software Engineer" />
+                  <select
+                    required
+                    value={provisionForm.designation}
+                    onChange={(e) => setProvisionForm({ ...provisionForm, designation: e.target.value })}
+                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  >
+                    <option value="">Select Designation...</option>
+                    <option value="Software Engineer">Software Engineer</option>
+                    <option value="Senior Developer">Senior Developer</option>
+                    <option value="HR Executive">HR Executive</option>
+                    <option value="HR Manager">HR Manager</option>
+                    <option value="Financial Analyst">Financial Analyst</option>
+                    <option value="Marketing Specialist">Marketing Specialist</option>
+                    <option value="Operations Lead">Operations Lead</option>
+                    <option value="Accountant">Accountant</option>
+                    <option value="Executive Staff">Executive Staff</option>
+                  </select>
                 </div>
+
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">System Role</label>
                   <select value={provisionForm.role} onChange={(e) => setProvisionForm({ ...provisionForm, role: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">

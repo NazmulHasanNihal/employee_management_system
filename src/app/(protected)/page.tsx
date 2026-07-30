@@ -36,7 +36,8 @@ interface StatCard {
 export default async function HomePage() {
   const caller = await getCaller();
   const t = await getServerT();
-  const isPrivilegedCaller = caller?.isAdmin || caller?.isCEO || false;
+  const isPrivilegedCaller = caller?.isAdmin || caller?.isCEO || caller?.isHR || false;
+
   const [stats, myOverview, trainingCompliance, officeSetting] = await Promise.all([
     getDashboardStats(caller),
     getDashboardMyOverview(caller),

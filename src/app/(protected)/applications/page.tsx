@@ -17,12 +17,8 @@ export default async function ApplicationsPage() {
   // authClient.useSession.
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
-      <PageHeader
-        title="Applications"
-        subtitle="View and manage platform requests and integrations."
-        icon={<Settings className="h-5 w-5" />}
-      />
       <ApplicationsClientPage initialApps={apps} isAdmin={isAdmin} />
     </div>
   );
+
 }

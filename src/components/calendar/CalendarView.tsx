@@ -129,10 +129,10 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
       return !!d && d >= new Date(new Date().setHours(0, 0, 0, 0));
     };
     return filteredEvents.filter((e) => {
-      if (e.derived !== 'event') return isFuture(e);
-      return e.status !== 'Done' && isFuture(e);
+      return e.status !== 'Done' && e.status !== 'Cancelled' && isFuture(e);
     });
   }, [filteredEvents]);
+
 
   const weekDays = useMemo(() => {
     const sow = new Date(currentDate);
