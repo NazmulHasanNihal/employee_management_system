@@ -61,97 +61,97 @@ export default function BrandComparisonSection() {
   ];
 
   return (
-    <section id="comparison" className="py-24 bg-slate-950 relative overflow-hidden">
+    <section id="comparison" className="py-24 bg-[var(--bg-app)] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-soft)] border border-[var(--brand)]/20 text-[var(--brand)] text-xs font-semibold uppercase tracking-wider mb-4">
             <Zap className="w-3.5 h-3.5" />
             Competitive Comparison
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
             How OpsHub Outperforms Legacy Software & Spreadsheets
           </h2>
-          <p className="mt-4 text-lg text-slate-400">
+          <p className="mt-4 text-lg text-[var(--text-muted)]">
             Compare key features head-to-head and see why companies upgrade to OpsHub.
           </p>
         </div>
 
         {/* Comparison Table */}
-        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-2xl">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-sm">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/80">
-                <th className="p-5 text-sm font-bold text-slate-300 w-2/5">Capabilities & Features</th>
-                <th className="p-5 text-base font-extrabold text-white bg-gradient-to-b from-indigo-900/50 to-slate-900/80 border-x border-indigo-500/30 text-center w-1/5">
-                  <div className="flex items-center justify-center gap-1.5 text-cyan-400">
+              <tr className="border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]">
+                <th className="p-5 text-sm font-bold text-[var(--text-main)] w-2/5">Capabilities & Features</th>
+                <th className="p-5 text-base font-extrabold text-[var(--text-main)] bg-[var(--brand-soft)]/20 border-x border-[var(--brand)]/20 text-center w-1/5">
+                  <div className="flex items-center justify-center gap-1.5 text-[var(--brand)]">
                     <Sparkles className="w-4 h-4" />
                     OpsHub
                   </div>
-                  <span className="block text-[11px] font-normal text-slate-400 mt-0.5">Modern All-In-One SaaS</span>
+                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">Modern All-In-One SaaS</span>
                 </th>
-                <th className="p-5 text-sm font-bold text-slate-400 text-center w-1/5">
+                <th className="p-5 text-sm font-bold text-[var(--text-main)] text-center w-1/5">
                   Legacy HR Systems
-                  <span className="block text-[11px] font-normal text-slate-500 mt-0.5">Workday / BambooHR</span>
+                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">Workday / BambooHR</span>
                 </th>
-                <th className="p-5 text-sm font-bold text-slate-400 text-center w-1/5">
+                <th className="p-5 text-sm font-bold text-[var(--text-main)] text-center w-1/5">
                   Excel & Manual
-                  <span className="block text-[11px] font-normal text-slate-500 mt-0.5">Paper / Spreadsheets</span>
+                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">Paper / Spreadsheets</span>
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80 text-sm">
+            <tbody className="divide-y divide-[var(--border-hairline)] text-sm">
               {comparisonData.map((row, index) => (
-                <tr key={index} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="p-5 font-semibold text-slate-200">{row.feature}</td>
+                <tr key={index} className="hover:bg-[var(--bg-hover)] transition-colors">
+                  <td className="p-5 font-semibold text-[var(--text-main)]">{row.feature}</td>
 
                   {/* OpsHub Column */}
-                  <td className="p-5 bg-indigo-950/20 border-x border-indigo-500/20 text-center font-medium text-white">
+                  <td className="p-5 bg-[var(--brand-soft)]/10 border-x border-[var(--brand)]/10 text-center font-medium text-[var(--text-main)]">
                     <div className="flex flex-col items-center justify-center gap-1">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-[var(--emerald-soft)] border border-[var(--emerald)]/40 text-[var(--emerald)] flex items-center justify-center shrink-0">
                         <Check className="w-3.5 h-3.5" />
                       </div>
-                      <span className="text-xs text-slate-200 mt-1">{row.opshub}</span>
+                      <span className="text-xs text-[var(--text-main)] mt-1">{row.opshub}</span>
                     </div>
                   </td>
 
                   {/* Legacy Column */}
-                  <td className="p-5 text-center text-slate-400">
+                  <td className="p-5 text-center text-[var(--text-muted)]">
                     <div className="flex flex-col items-center justify-center gap-1">
                       {row.status.legacy === true ? (
-                        <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-[var(--emerald-soft)] text-[var(--emerald)] flex items-center justify-center">
                           <Check className="w-3.5 h-3.5" />
                         </div>
                       ) : row.status.legacy === "partial" ? (
-                        <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-[var(--amber-soft)] text-[var(--amber)] flex items-center justify-center">
                           <Minus className="w-3.5 h-3.5" />
                         </div>
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-[var(--rose-soft)] text-[var(--rose)] flex items-center justify-center">
                           <X className="w-3.5 h-3.5" />
                         </div>
                       )}
-                      <span className="text-xs text-slate-400 mt-1">{row.legacy}</span>
+                      <span className="text-xs text-[var(--text-muted)] mt-1">{row.legacy}</span>
                     </div>
                   </td>
 
                   {/* Excel Column */}
-                  <td className="p-5 text-center text-slate-400">
+                  <td className="p-5 text-center text-[var(--text-muted)]">
                     <div className="flex flex-col items-center justify-center gap-1">
                       {row.status.excel === true ? (
-                        <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-[var(--emerald-soft)] text-[var(--emerald)] flex items-center justify-center">
                           <Check className="w-3.5 h-3.5" />
                         </div>
                       ) : row.status.excel === "partial" ? (
-                        <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-[var(--amber-soft)] text-[var(--amber)] flex items-center justify-center">
                           <Minus className="w-3.5 h-3.5" />
                         </div>
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-[var(--rose-soft)] text-[var(--rose)] flex items-center justify-center">
                           <X className="w-3.5 h-3.5" />
                         </div>
                       )}
-                      <span className="text-xs text-slate-400 mt-1">{row.excel}</span>
+                      <span className="text-xs text-[var(--text-muted)] mt-1">{row.excel}</span>
                     </div>
                   </td>
                 </tr>
