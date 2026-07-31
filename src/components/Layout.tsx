@@ -367,7 +367,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               )}
             </div>
 
-            <div className="relative" ref={profileRef}>
+            <div className="relative shrink-0" ref={profileRef}>
               <button
                 aria-label="Profile menu"
                 aria-expanded={showProfileMenu}
@@ -378,22 +378,26 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl">
-                  <div className="border-b border-[var(--border-hairline)] px-4 py-3">
-                    <p className="text-sm font-bold text-[var(--text-main)]">{user.name}</p>
-                    <p className="text-xs text-[var(--text-muted)]">{user.email}</p>
-                     <p className="mt-1 text-[11px] font-medium text-[var(--brand)] truncate">{user.department} · {user.designation}</p>
+                <div className="absolute right-0 z-50 mt-2 w-64 min-w-[16rem] max-w-[90vw] overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-1">
+                  <div className="border-b border-[var(--border-hairline)] px-4 py-3 space-y-0.5">
+                    <p className="text-sm font-bold text-[var(--text-main)] truncate whitespace-nowrap">{user.name}</p>
+                    <p className="text-xs text-[var(--text-muted)] truncate whitespace-nowrap">{user.email}</p>
+                    <div className="pt-1">
+                      <span className="inline-block text-[11px] font-semibold text-[var(--brand)] bg-[var(--brand-soft)] px-2 py-0.5 rounded-md truncate max-w-full">
+                        {user.department} · {user.designation}
+                      </span>
+                    </div>
                   </div>
                   <div className="py-1">
-                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
-                      <UserCircle size={16} className="text-[var(--text-muted)]" /> {t('My Profile')}
+                    <button onClick={() => { router.push('/profile'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)] whitespace-nowrap">
+                      <UserCircle size={16} className="text-[var(--text-muted)] shrink-0" /> {t('My Profile')}
                     </button>
-                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)]">
-                      <Settings size={16} className="text-[var(--text-muted)]" /> {t('Settings')}
+                    <button onClick={() => { router.push('/settings'); setShowProfileMenu(false); }} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--text-main)] transition-colors hover:bg-[var(--bg-hover)] whitespace-nowrap">
+                      <Settings size={16} className="text-[var(--text-muted)] shrink-0" /> {t('Settings')}
                     </button>
                     <div className="my-1 border-t border-[var(--border-hairline)]" />
-                    <button onClick={handleLogout} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--rose)] transition-colors hover:bg-[var(--rose-soft)]">
-                      <LogOut size={16} /> {t('Sign Out')}
+                    <button onClick={handleLogout} className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-[var(--rose)] transition-colors hover:bg-[var(--rose-soft)] whitespace-nowrap">
+                      <LogOut size={16} className="shrink-0" /> {t('Sign Out')}
                     </button>
                   </div>
                 </div>

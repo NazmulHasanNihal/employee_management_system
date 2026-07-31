@@ -11,6 +11,22 @@ function initials(name?: string | null): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
+function parseSize(size?: number | string): number {
+  if (typeof size === 'number' && !isNaN(size)) return size;
+  if (typeof size === 'string') {
+    const parsed = parseInt(size, 10);
+    if (!isNaN(parsed)) return parsed;
+    switch (size) {
+      case 'xs': return 24;
+      case 'sm': return 32;
+      case 'md': return 40;
+      case 'lg': return 48;
+      case 'xl': return 64;
+    }
+  }
+  return 40;
+}
+
 export function Avatar({
   src,
   name,
@@ -20,17 +36,18 @@ export function Avatar({
 }: {
   src?: string | null;
   name?: string | null;
-  size?: number;
+  size?: number | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | string;
   rounded?: 'full' | 'md';
   className?: string;
 }) {
   const [errored, setErrored] = React.useState(false);
+  const numericSize = parseSize(size);
   const radius = rounded === 'full' ? 'rounded-full' : 'rounded-xl';
   const normalizedSrc = toPublicAvatarUrl(src);
   const fallback = (
     <div
-      className={`flex items-center justify-center bg-[var(--brand-soft)] border border-[var(--brand)]/30 text-[var(--brand)] font-mono font-bold ${radius} ${className}`}
-      style={{ width: size, height: size, fontSize: Math.max(10, size * 0.4) }}
+      className={`flex shrink-0 items-center justify-center bg-[var(--brand-soft)] border border-[var(--brand)]/30 text-[var(--brand)] font-mono font-bold ${radius} ${className}`}
+      style={{ width: `${numericSize}px`, height: `${numericSize}px`, fontSize: `${Math.max(10, numericSize * 0.4)}px` }}
       aria-hidden
     >
       {initials(name)}
@@ -40,12 +57,15 @@ export function Avatar({
   if (!normalizedSrc || errored) return fallback;
 
   return (
-    <div className={`relative overflow-hidden ${radius} border border-[var(--border-hairline)] ${className}`} style={{ width: size, height: size }}>
+    <div
+      className={`relative shrink-0 overflow-hidden ${radius} border border-[var(--border-hairline)] ${className}`}
+      style={{ width: `${numericSize}px`, height: `${numericSize}px` }}
+    >
       <Image
         src={normalizedSrc}
         alt={name || 'User'}
         fill
-        sizes={`${size}px`}
+        sizes={`${numericSize}px`}
         className="object-cover"
         onError={() => setErrored(true)}
       />

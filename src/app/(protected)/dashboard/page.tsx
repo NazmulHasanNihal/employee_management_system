@@ -33,7 +33,7 @@ interface StatCard {
   description?: string;
 }
 
-export default async function HomePage() {
+export default async function DashboardPage() {
   const caller = await getCaller();
   const t = await getServerT();
   const isPrivilegedCaller = caller?.isAdmin || caller?.isCEO || caller?.isHR || false;

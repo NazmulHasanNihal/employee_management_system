@@ -32,7 +32,7 @@ export const navCategories: NavCategory[] = [
   {
     title: 'Core System',
     items: [
-      { label: 'Dashboard', icon: LayoutDashboard, path: '/' },
+      { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
       { label: 'My Team', icon: Users, path: '/team' },
       { label: 'Company News', icon: Megaphone, path: '/announcements' },
       { label: 'Company Calendar', icon: Calendar, path: '/calendar' },

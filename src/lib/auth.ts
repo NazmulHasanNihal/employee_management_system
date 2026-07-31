@@ -109,7 +109,7 @@ export function isManagerOrAbove(caller: Caller): boolean {
 export async function requireAdmin(): Promise<Caller> {
   const caller = await getCaller();
   if (!caller || !(caller.isAdmin || caller.isCEO)) {
-    redirect('/');
+    redirect('/dashboard');
   }
   return caller;
 }

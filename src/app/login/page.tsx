@@ -55,7 +55,7 @@ export default function LoginPage() {
         setRequiresTwoFactor(true);
         setTempSessionId(result.sessionId);
       } else if (result.user) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
@@ -77,7 +77,7 @@ export default function LoginPage() {
     try {
       const result = await loginWithRateLimit(email, password, code, tempSessionId);
       if (result.user) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";

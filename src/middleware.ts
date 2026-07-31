@@ -112,6 +112,8 @@ export async function middleware(request: NextRequest) {
     }
 
     const isPublicRoute = 
+      request.nextUrl.pathname === '/' ||
+      request.nextUrl.pathname.startsWith('/pricing') ||
       request.nextUrl.pathname.startsWith('/login') ||
       request.nextUrl.pathname.startsWith('/setup') ||
       request.nextUrl.pathname.startsWith('/auth/callback') ||
@@ -130,7 +132,7 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.startsWith('/login')
     ) {
       const url = request.nextUrl.clone()
-      url.pathname = '/'
+      url.pathname = '/dashboard'
       return NextResponse.redirect(url)
     }
 
