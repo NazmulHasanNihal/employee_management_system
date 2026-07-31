@@ -1,22 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Rocket, CheckSquare, ShieldOff, AlertTriangle, AlertCircle, UserPlus, FileSignature, CheckCircle2, X, FileText } from 'lucide-react';
-import { trpc } from '@/lib/trpc/client';
-import { toast } from '@/lib/toast';
-import { useUser } from '@/components/UserProvider';
-import { PageHeader } from '@/components/PageHeader';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { EmptyState } from '@/components/EmptyState';
-import { Badge } from '@/components/ui/badge';
-
-interface OnboardingTask {
-  id: string;
-"use client";
-
-import React, { useEffect, useState } from 'react';
 import { Rocket, CheckSquare, ShieldOff, AlertTriangle, AlertCircle, UserPlus, FileSignature, CheckCircle2, X, FileText, Laptop } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { toast } from '@/lib/toast';

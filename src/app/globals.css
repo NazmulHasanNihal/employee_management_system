@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 /* ============================================================================
    EMS Design System — Modern Enterprise SaaS
    - Light theme by default, proper dark mode via next-themes (<html class="dark">)
@@ -130,6 +132,27 @@
   --color-accent-foreground: var(--text-main);
   --color-destructive: var(--rose);
   --radius-md: 0.5rem;
+  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+  @keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+    }
+  }
+  @keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+    }
+  15%, 35% {
+    transform: translateZ(0) rotate(90deg);
+    }
+  65%, 85% {
+    transform: translateZ(0) rotate(270deg);
+    }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+    }
+  }
 }
 
 * { border-color: var(--border-hairline); }
@@ -211,7 +234,6 @@ html[lang="bn"] {
   .btn-primary:hover { filter: brightness(1.06); box-shadow: var(--shadow-glow); transform: translateY(-1px); }
   .btn-primary:active { transform: translateY(1px) scale(0.98); }
   .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
-
 
   .btn-secondary {
     background-color: var(--bg-panel);
@@ -751,4 +773,3 @@ figure img { max-width: 100%; height: auto; }
 .section-spacing { padding-top: var(--space-4); padding-bottom: var(--space-4); }
 @media (min-width: 640px) { .section-spacing { padding-top: var(--space-5); padding-bottom: var(--space-5); } }
 @media (min-width: 1024px) { .section-spacing { padding-top: var(--space-6); padding-bottom: var(--space-6); } }
-

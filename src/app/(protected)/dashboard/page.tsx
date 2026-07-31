@@ -1,4 +1,5 @@
 import { Users, Clock, CalendarClock, Ticket, DollarSign, Receipt, TrendingUp, GraduationCap, ArrowUpRight, BarChart3, Activity } from 'lucide-react';
+import { ShimmerButton } from '@/components/ui/shimmer-button';
 import { getCaller } from '@/lib/auth';
 import { getDashboardStats, getDashboardMyOverview, getTrainingCompliance } from '@/server/queries';
 import { PageHeader } from '@/components/PageHeader';
@@ -131,6 +132,13 @@ export default async function DashboardPage() {
         title={t('Dashboard')}
         subtitle={caller ? `${t('Welcome back')}, ${caller.name}` : t('Organization overview')}
         icon={<TrendingUp className="h-5 w-5" />}
+        actions={
+          <ShimmerButton className="shadow-2xl">
+            <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
+              ✨ Quick Action
+            </span>
+          </ShimmerButton>
+        }
       />
 
       {/* Key Metrics */}
