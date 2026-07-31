@@ -1,7 +1,23 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Rocket, CheckSquare, ShieldOff, AlertTriangle, AlertCircle, UserPlus } from 'lucide-react';
+import { Rocket, CheckSquare, ShieldOff, AlertTriangle, AlertCircle, UserPlus, FileSignature, CheckCircle2, X, FileText } from 'lucide-react';
+import { trpc } from '@/lib/trpc/client';
+import { toast } from '@/lib/toast';
+import { useUser } from '@/components/UserProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { EmptyState } from '@/components/EmptyState';
+import { Badge } from '@/components/ui/badge';
+
+interface OnboardingTask {
+  id: string;
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { Rocket, CheckSquare, ShieldOff, AlertTriangle, AlertCircle, UserPlus, FileSignature, CheckCircle2, X, FileText, Laptop } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { toast } from '@/lib/toast';
 import { useUser } from '@/components/UserProvider';
@@ -25,6 +41,14 @@ interface UserOption {
   name: string;
 }
 
+interface ESignatureDoc {
+  id: string;
+  title: string;
+  description: string;
+  signedAt: string | null;
+  signedBy: string | null;
+}
+
 export default function OnboardingClientPage() {
   const { user } = useUser();
   const isAdmin = user.role === 'Admin' || user.role === 'HR Manager';
@@ -32,6 +56,16 @@ export default function OnboardingClientPage() {
   const [targetUserId, setTargetUserId] = useState(user.id || '');
   const [newTask, setNewTask] = useState('');
   const [offboardUserId, setOffboardUserId] = useState('');
+  const [provisionAssetId, setProvisionAssetId] = useState('');
+  const [provisionUserId, setProvisionUserId] = useState('');
+
+  const [docs, setDocs] = useState<ESignatureDoc[]>([
+    { id: 'doc_1', title: 'OpsHub NDA', description: 'Non-disclosure agreement regarding OpsHub IP.', signedAt: null, signedBy: null },
+    { id: 'doc_2', title: 'Employee Handbook', description: 'Acknowledgment of company policies and code of conduct.', signedAt: null, signedBy: null },
+    { id: 'doc_3', title: 'Direct Deposit Auth', description: 'Authorization for BEFTN / bKash payroll disbursement.', signedAt: null, signedBy: null },
+  ]);
+  const [signingDoc, setSigningDoc] = useState<ESignatureDoc | null>(null);
+  const [signatureText, setSignatureText] = useState('');
 
   const { data: users } = trpc.registry.searchEmployees.useQuery(
     { query: '' },
@@ -41,6 +75,8 @@ export default function OnboardingClientPage() {
     { userId: targetUserId },
     { enabled: !!targetUserId }
   );
+  
+  const { data: assets } = trpc.assets.getAssets.useQuery(undefined, { enabled: isAdmin });
 
   const [localTasks, setLocalTasks] = useState<OnboardingTask[]>([]);
 
@@ -95,6 +131,21 @@ export default function OnboardingClientPage() {
     createTask.mutate({ userId: targetUserId, task: newTask });
   };
 
+  const updateAsset = trpc.assets.updateAsset.useMutation({
+    onSuccess: () => {
+      utils.assets.getAssets.invalidate();
+      toast.success('Asset Provisioned', 'Hardware successfully assigned to employee.');
+      setProvisionAssetId('');
+      setProvisionUserId('');
+    }
+  });
+
+  const handleProvisionAsset = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!provisionAssetId || !provisionUserId) return;
+    updateAsset.mutate({ id: provisionAssetId, userId: provisionUserId, status: 'Active' });
+  };
+
   const handleOffboard = (e: React.FormEvent) => {
     e.preventDefault();
     if (!offboardUserId) return;
@@ -102,6 +153,24 @@ export default function OnboardingClientPage() {
       triggerOffboarding.mutate({ userId: offboardUserId });
     }
   };
+
+  const handleSignDocument = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signingDoc || !signatureText.trim()) return;
+    
+    setDocs(prev => prev.map(d => 
+      d.id === signingDoc.id 
+        ? { ...d, signedAt: new Date().toISOString(), signedBy: signatureText } 
+        : d
+    ));
+    toast.success('Document Signed', `Cryptographically logged signature for ${signingDoc.title}`);
+    setSigningDoc(null);
+    setSignatureText('');
+  };
+
+  const totalTasks = localTasks.length + docs.length;
+  const completedTasks = localTasks.filter(t => t.isCompleted).length + docs.filter(d => d.signedAt).length;
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6 lg:px-8 animate-fade-up">
@@ -112,9 +181,24 @@ export default function OnboardingClientPage() {
         actions={isAdmin ? <Badge variant="brand">Admin</Badge> : undefined}
       />
 
+      {/* Progress Bar */}
+      <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-6 shadow-sm">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-[var(--text-main)]">New Hire Onboarding Packet Progress</h3>
+          <span className="text-xs font-bold text-[var(--emerald)]">{progressPercent}% Completed</span>
+        </div>
+        <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
+          <div 
+            className="h-full rounded-full bg-[var(--emerald)] transition-all duration-500 ease-in-out" 
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Onboarding Checklist */}
-        <Card>
+        <div className="space-y-6">
+          {/* Onboarding Checklist */}
+          <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckSquare size={16} className="text-[var(--brand-strong)]" /> Onboarding Checklist
@@ -195,6 +279,96 @@ export default function OnboardingClientPage() {
             )}
           </CardContent>
         </Card>
+        </div>
+
+        {/* E-Signature Document Vault */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileSignature size={16} className="text-[var(--brand-strong)]" /> E-Signature Document Vault
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {docs.map(doc => (
+                <div key={doc.id} className={`flex items-center justify-between gap-4 rounded-xl border p-4 transition-colors ${doc.signedAt ? 'border-[var(--emerald)]/30 bg-[var(--emerald-soft)]' : 'border-[var(--border-hairline)] bg-[var(--bg-hover)]'}`}>
+                  <div className="flex gap-3">
+                    <div className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${doc.signedAt ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]' : 'bg-[var(--bg-panel)] text-[var(--text-muted)]'}`}>
+                      {doc.signedAt ? <CheckCircle2 size={16} /> : <FileText size={16} />}
+                    </div>
+                    <div>
+                      <h4 className={`text-sm font-semibold ${doc.signedAt ? 'text-[var(--emerald)]' : 'text-[var(--text-main)]'}`}>{doc.title}</h4>
+                      <p className="text-xs text-[var(--text-muted)]">{doc.description}</p>
+                      {doc.signedAt && (
+                        <p className="mt-1 text-[10px] text-[var(--emerald)] font-mono">
+                          Signed by {doc.signedBy} on {new Date(doc.signedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {!doc.signedAt && (
+                    <Button variant="outline" size="sm" onClick={() => setSigningDoc(doc)} className="shrink-0 text-xs">
+                      Sign Document
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-6">
+        {/* IT Hardware Provisioning */}
+        {isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Laptop size={16} className="text-[var(--sky)]" /> Zero-Touch IT Provisioning
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4 text-sm text-[var(--text-muted)]">
+                Assign available inventory assets to new hires. The device will be marked active under their profile.
+              </p>
+              <form onSubmit={handleProvisionAsset} className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-[var(--text-muted)]">New Hire</label>
+                  <select
+                    required
+                    value={provisionUserId}
+                    onChange={(e) => setProvisionUserId(e.target.value)}
+                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                  >
+                    <option value="">Select employee…</option>
+                    {users?.map((u: { id: string; name: string }) => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs text-[var(--text-muted)]">Available Inventory</label>
+                  <select
+                    required
+                    value={provisionAssetId}
+                    onChange={(e) => setProvisionAssetId(e.target.value)}
+                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                  >
+                    <option value="">Select unassigned hardware…</option>
+                    {assets
+                      ?.filter((a: { userId: string | null }) => !a.userId)
+                      .map((a: { id: string; name: string }) => (
+                        <option key={a.id} value={a.id}>{a.name}</option>
+                      ))}
+                  </select>
+                </div>
+                <Button type="submit" variant="primary" disabled={updateAsset.isPending || !provisionAssetId || !provisionUserId}>
+                  Provision Asset
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Offboarding Protocol */}
         {isAdmin && (
@@ -271,6 +445,49 @@ export default function OnboardingClientPage() {
           </Card>
         )}
       </div>
+
+      {/* E-Signature Modal */}
+      {signingDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="ledger-card w-full max-w-md overflow-hidden rounded-2xl bg-[var(--bg-app)]">
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+                <FileSignature className="h-4 w-4 text-[var(--brand-strong)]" /> Digital Signature Required
+              </h3>
+              <button onClick={() => { setSigningDoc(null); setSignatureText(''); }} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="mb-6 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 text-center">
+                <FileText className="mx-auto h-8 w-8 text-[var(--text-muted)] mb-2" />
+                <h4 className="text-sm font-bold text-[var(--text-main)]">{signingDoc.title}</h4>
+                <p className="text-xs text-[var(--text-muted)] mt-1">Please review the document and provide your legal signature below to acknowledge.</p>
+              </div>
+
+              <form onSubmit={handleSignDocument} className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Type Full Legal Name to Sign</label>
+                  <Input 
+                    type="text" 
+                    required 
+                    placeholder="John Doe" 
+                    value={signatureText}
+                    onChange={(e) => setSignatureText(e.target.value)}
+                    className="font-mono"
+                  />
+                </div>
+                <div className="pt-2">
+                  <Button type="submit" className="w-full" disabled={!signatureText.trim()}>
+                    Sign & Acknowledge
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

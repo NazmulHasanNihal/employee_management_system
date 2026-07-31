@@ -138,6 +138,10 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
   }, [logs]);
 
   const handleClockIn = () => {
+    if (!geo && !clockedIn) {
+      toast.error('Location Required', 'GPS verification is mandatory for clock-in to prevent proxy attendance.');
+      return;
+    }
     if (clockedIn) {
       setIsScanning(true);
       setTimeout(() => {

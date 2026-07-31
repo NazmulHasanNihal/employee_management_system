@@ -93,7 +93,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 const sentryEnabled = !!process.env.NEXT_PUBLIC_SENTRY_DSN;
 
 export default withSentryConfig(
-  nextConfig,
+  withSerwist(nextConfig),
   {
     org: process.env.SENTRY_ORG || "nazrat",
     project: process.env.SENTRY_PROJECT || "javascript-nextjs",

@@ -22,7 +22,14 @@ const serwist = new Serwist({
   runtimeCaching: [
     ...defaultCache,
     {
-      matcher: ({ url }) => url.pathname.startsWith('/api/trpc/attendance.clockIn'),
+      matcher: ({ url }) => {
+        const p = url.pathname;
+        return p.includes('attendance.clockIn') ||
+               p.includes('attendance.clockOut') ||
+               p.includes('leave.requestLeave') ||
+               p.includes('expenses.submitExpense') ||
+               p.includes('workflows.createTask');
+      },
       handler: new NetworkOnly({
         plugins: [bgSyncPlugin],
       }),

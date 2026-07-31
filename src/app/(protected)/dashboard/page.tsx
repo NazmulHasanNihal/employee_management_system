@@ -14,6 +14,8 @@ import AttendanceMixDonutDynamic from '@/components/dashboard/AttendanceMixDonut
 import PayrollTrendDynamic from '@/components/dashboard/PayrollTrendDynamic';
 import HeadcountTrendDynamic from '@/components/dashboard/HeadcountTrendDynamic';
 import LeaveExpenseTrendDynamic from '@/components/dashboard/LeaveExpenseTrendDynamic';
+import { PulseSurveyWidget } from '@/components/dashboard/PulseSurveyWidget';
+import { PulseAnalyticsChart } from '@/components/dashboard/PulseAnalyticsChart';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
 import { prisma } from '@/lib/prisma';
@@ -233,6 +235,7 @@ export default async function DashboardPage() {
               { period: 'This Mo', value: stats.expenseThisMonth },
             ]}
           />
+          <PulseAnalyticsChart />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Card className="animate-fade-up">
               <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.payrollRunRate)}</p>
@@ -261,10 +264,12 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">What's Happening</h2>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Events</CardTitle>
-            </CardHeader>
+          <div className="space-y-6">
+            <PulseSurveyWidget />
+            <Card>
+              <CardHeader>
+                <CardTitle>Upcoming Events</CardTitle>
+              </CardHeader>
             <CardContent>
               {stats.upcomingEvents.length === 0 ? (
                 <EmptyState title="No upcoming events" description="Calendar events will appear here." />
@@ -288,6 +293,7 @@ export default async function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          </div>
 
           <Card>
             <CardHeader>

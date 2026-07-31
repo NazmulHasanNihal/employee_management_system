@@ -23,6 +23,7 @@ import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LangSync } from "@/components/LangSync";
 import WebVitals from "@/components/WebVitals";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -63,6 +64,7 @@ export default function RootLayout({
           <PostHogProvider>
             <LangSync />
             <WebVitals />
+            <OfflineBanner />
             {children}
           </PostHogProvider>
         </ThemeProvider>

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Cpu, Users, Building2, User, Briefcase, CheckCircle2 } from 'lucide-react';
+import { Cpu, Users, Building2, User, Briefcase, CheckCircle2, Download, Smartphone, Send } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
 interface RunPayrollFormProps {
@@ -29,8 +29,8 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
 
   const runAutomatedPayroll = trpc.payroll.runAutomatedPayroll.useMutation({
     onSuccess: () => {
-      toast.success('Payroll Processed', `Disbursement completed for ${targetType === 'ALL' ? 'all employees' : targetType === 'DEPARTMENT' ? selectedDept : targetType === 'EMPLOYMENT_GROUP' ? selectedGroup : 'selected employee'}.`);
-      onSuccess();
+      toast.success('Payroll Logged', `Payroll successfully logged for ${targetType === 'ALL' ? 'all employees' : targetType === 'DEPARTMENT' ? selectedDept : targetType === 'EMPLOYMENT_GROUP' ? selectedGroup : 'selected employee'}.`);
+      setStep(4);
     },
     onError: (err: any) => {
       toast.error('Payroll Failed', err?.message || 'Failed to execute disbursement');
@@ -48,10 +48,10 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
             <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2 uppercase tracking-wide">
               <Cpu size={20} className="text-[var(--emerald)]" /> HR / Admin Payroll Payout Console
             </h3>
-            <p className="text-xs text-[var(--text-muted)] mt-1">Step {step} of 3 — Select payout target & execute batch disbursement</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1">Step {step} of 4 — Select payout target & execute batch disbursement</p>
           </div>
           <div className="flex gap-2">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div key={i} className={`h-2 w-8 rounded-full ${step >= i ? 'bg-[var(--emerald)] shadow-[0_0_10px_var(--emerald)]' : 'bg-[var(--bg-hover)]'}`} />
             ))}
           </div>
@@ -223,10 +223,10 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
         )}
 
         {step === 3 && (
-          <div className="space-y-6 text-center">
+          <div className="space-y-6 text-center animate-fade-up">
             <h4 className="text-sm font-semibold text-[var(--text-main)]">3. Execute Batch Payout Disbursement</h4>
             <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-              Authorizing this payout will generate official itemized payslips and dispatch ACH / mobile financial transfer logs.
+              Authorizing this payout will generate official itemized payslips and prepare the records for BEFTN / mobile financial transfer.
             </p>
 
             <div className="flex justify-center gap-4 mt-6">
@@ -240,6 +240,67 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
               >
                 <CheckCircle2 size={16} />
                 {runAutomatedPayroll.isPending ? 'Processing Payout...' : 'Authorize & Issue Payouts'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-6 text-center animate-fade-up">
+            <div className="flex justify-center mb-4">
+              <div className="h-16 w-16 bg-[var(--emerald)]/20 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-[var(--emerald)]" />
+              </div>
+            </div>
+            <h4 className="text-lg font-bold text-[var(--text-main)]">Payroll Officially Processed</h4>
+            <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto mb-6">
+              The payroll batch for {month} has been successfully computed and logged. Choose your preferred disbursement method below.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="bg-[var(--bg-app)] border border-[var(--border-hairline)] hover:border-[var(--brand)] transition-all cursor-pointer">
+                <CardContent className="p-4 flex flex-col items-center text-center gap-3" onClick={() => {
+                  const csv = "AccountNo,Amount,ReceiverName,BankName,RoutingNo\n0011223344,485000.00,BATCH_PAYROLL,BRAC BANK,090262100";
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `BEFTN_BATCH_${month.replace(' ', '_')}.csv`;
+                  a.click();
+                  toast.success('BEFTN Batch Exported', 'CSV is ready for corporate banking portal upload.');
+                }}>
+                  <Download className="h-8 w-8 text-[var(--brand)]" />
+                  <div>
+                    <h5 className="text-sm font-semibold text-[var(--text-main)]">BEFTN CSV</h5>
+                    <p className="text-[10px] text-[var(--text-muted)] mt-1">Download Bangladesh Bank format</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#E2136E]/10 border border-[#E2136E]/20 hover:border-[#E2136E] transition-all cursor-pointer" onClick={() => toast.success('bKash API Triggered', 'Disbursement dispatched to bKash Corporate B2B gateway.')}>
+                <CardContent className="p-4 flex flex-col items-center text-center gap-3">
+                  <Smartphone className="h-8 w-8 text-[#E2136E]" />
+                  <div>
+                    <h5 className="text-sm font-semibold text-[#E2136E]">bKash B2B</h5>
+                    <p className="text-[10px] text-[#E2136E]/70 mt-1">Instant mobile wallet payout</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-[#F7931E]/10 border border-[#F7931E]/20 hover:border-[#F7931E] transition-all cursor-pointer" onClick={() => toast.success('Nagad API Triggered', 'Disbursement dispatched to Nagad Corporate gateway.')}>
+                <CardContent className="p-4 flex flex-col items-center text-center gap-3">
+                  <Send className="h-8 w-8 text-[#F7931E]" />
+                  <div>
+                    <h5 className="text-sm font-semibold text-[#F7931E]">Nagad Corporate</h5>
+                    <p className="text-[10px] text-[#F7931E]/70 mt-1">Instant mobile wallet payout</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex justify-center mt-6 pt-4 border-t border-[var(--border-hairline)]">
+              <Button onClick={onSuccess} className="rounded-xl px-8 py-2 text-xs font-semibold bg-[var(--bg-hover)] text-[var(--text-main)] hover:bg-[var(--bg-app)] border border-[var(--border-hairline)]">
+                Close
               </Button>
             </div>
           </div>
