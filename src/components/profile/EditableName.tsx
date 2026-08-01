@@ -28,7 +28,7 @@ export function EditableName({ name }: { name: string }) {
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          className="ledger-input w-56 rounded-xl px-2 py-1 text-center text-xl font-semibold outline-none"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-56 rounded-xl px-2 py-1 text-center text-xl font-semibold outline-none"
           autoFocus
         />
         <button type="button" onClick={save} disabled={saving} className="text-[var(--emerald)]" aria-label="Save name">

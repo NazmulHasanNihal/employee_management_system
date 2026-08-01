@@ -36,33 +36,33 @@ export default function ContactSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
           
           {/* Contact Form */}
-          <div className="ledger-card p-8 rounded-3xl shadow-sm border-[var(--border-hairline)]">
+          <div className="bg-card text-card-foreground border border-border p-8 rounded-3xl shadow-sm border-[var(--border-hairline)]">
             <h3 className="text-xl font-bold text-[var(--text-main)] mb-6">Send us a message</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-sm font-semibold text-[var(--text-main)]">First Name</label>
-                  <input type="text" required className="ledger-input w-full" placeholder="John" />
+                  <input type="text" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full" placeholder="John" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-sm font-semibold text-[var(--text-main)]">Last Name</label>
-                  <input type="text" required className="ledger-input w-full" placeholder="Doe" />
+                  <input type="text" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full" placeholder="Doe" />
                 </div>
               </div>
               
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-[var(--text-main)]">Work Email</label>
-                <input type="email" required className="ledger-input w-full" placeholder="john@company.com" />
+                <input type="email" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full" placeholder="john@company.com" />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-[var(--text-main)]">Company Name</label>
-                <input type="text" required className="ledger-input w-full" placeholder="Acme Corp" />
+                <input type="text" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full" placeholder="Acme Corp" />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-[var(--text-main)]">How can we help?</label>
-                <textarea required rows={4} className="ledger-input w-full resize-none" placeholder="Tell us about your team size and requirements..." />
+                <textarea required rows={4} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full resize-none" placeholder="Tell us about your team size and requirements..." />
               </div>
 
               <button

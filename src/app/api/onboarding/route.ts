@@ -17,6 +17,12 @@ export async function POST(req: Request) {
     if ('res' in parsed) return parsed.res;
     const body = parsed.data;
 
+    // Check for unacknowledged hardware assignments
+    const assignedAssetsCount = await prisma.asset.count({ where: { userId: caller.id } });
+    if (assignedAssetsCount > 0 && body.hardwareAcknowledged !== true) {
+      return NextResponse.json({ error: 'Hardware policy acknowledgment is required.' }, { status: 400 });
+    }
+
     // Validate the NID if provided (store masked for display).
     let nidRaw: string | null = null;
     let nidMasked: string | null = null;

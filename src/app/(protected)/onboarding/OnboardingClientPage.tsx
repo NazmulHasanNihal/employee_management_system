@@ -196,7 +196,7 @@ export default function OnboardingClientPage() {
                   <select
                     value={targetUserId}
                     onChange={(e) => setTargetUserId(e.target.value)}
-                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
                     <option value={user.id}>Myself</option>
                     {users?.map((u: UserOption) => (
@@ -322,7 +322,7 @@ export default function OnboardingClientPage() {
                     required
                     value={provisionUserId}
                     onChange={(e) => setProvisionUserId(e.target.value)}
-                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
                     <option value="">Select employee…</option>
                     {users?.map((u: { id: string; name: string }) => (
@@ -336,7 +336,7 @@ export default function OnboardingClientPage() {
                     required
                     value={provisionAssetId}
                     onChange={(e) => setProvisionAssetId(e.target.value)}
-                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
                     <option value="">Select unassigned hardware…</option>
                     {assets
@@ -377,7 +377,7 @@ export default function OnboardingClientPage() {
                     required
                     value={offboardUserId}
                     onChange={(e) => setOffboardUserId(e.target.value)}
-                    className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
                     <option value="">Select someone…</option>
                     {users
@@ -406,7 +406,7 @@ export default function OnboardingClientPage() {
                 <div className="flex gap-2">
                   <select
                     id="severanceUser"
-                    className="ledger-input h-10 flex-1 rounded-xl px-3 text-sm outline-none"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 flex-1 rounded-xl px-3 text-sm outline-none"
                   >
                     <option value="">Select Terminated Employee…</option>
                     {users?.filter((u: { status?: string }) => u.status === 'Terminated').map((u: { id: string; name: string }) => (
@@ -433,7 +433,7 @@ export default function OnboardingClientPage() {
       {/* E-Signature Modal */}
       {signingDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="ledger-card w-full max-w-md overflow-hidden rounded-2xl bg-[var(--bg-app)]">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--bg-app)] border border-[var(--border-hairline)] shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
                 <FileSignature className="h-4 w-4 text-[var(--brand-strong)]" /> Digital Signature Required

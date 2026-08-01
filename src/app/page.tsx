@@ -136,7 +136,7 @@ export default function SaaSMainPage() {
             {/* Dashboard Visual Teaser Card */}
             <div className="mt-16 relative max-w-5xl mx-auto">
               <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-[var(--brand-strong)] via-[var(--sky)] to-[var(--brand)] opacity-20 blur-xl pointer-events-none" />
-              <div className="relative rounded-2xl ledger-card overflow-hidden p-6 sm:p-8">
+              <div className="relative rounded-2xl bg-card text-card-foreground border border-border overflow-hidden p-6 sm:p-8">
                 {/* Visual Top Bar Mockup */}
                 <div className="flex items-center justify-between pb-6 mb-6 border-b border-[var(--border-hairline)]">
                   <div className="flex items-center gap-3">
@@ -242,7 +242,7 @@ export default function SaaSMainPage() {
               {testimonials.map((t, index) => (
                 <div
                   key={index}
-                  className="ledger-card rounded-3xl p-8 flex flex-col justify-between"
+                  className="bg-card text-card-foreground border border-border rounded-3xl p-8 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex gap-1 text-[var(--amber)] mb-6">

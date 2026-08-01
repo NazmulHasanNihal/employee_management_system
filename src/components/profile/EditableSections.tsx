@@ -162,7 +162,7 @@ function SelectRow({
             <select
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
               autoFocus
             >
               <option value="">{placeholder}</option>
@@ -248,7 +248,7 @@ function TextAreaRow({
             onChange={(e) => setDraft(e.target.value)}
             rows={3}
             placeholder={placeholder}
-            className="ledger-input w-full rounded-xl px-3 py-2 text-sm outline-none"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm outline-none"
           />
           <div className="flex justify-end gap-2">
             <Button size="sm" variant="ghost" onClick={() => { setDraft(value ?? ''); setEditing(false); }} disabled={saving}>
@@ -385,14 +385,14 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">Blood Group</Label>
-              <select value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} className="ledger-input w-full rounded-xl px-2 py-2 text-sm outline-none">
+              <select value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-2 py-2 text-sm outline-none">
                 <option value="">Select</option>
                 {BLOOD_GROUPS.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
             <div>
               <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">Religion</Label>
-              <select value={religion} onChange={(e) => setReligion(e.target.value)} className="ledger-input w-full rounded-xl px-2 py-2 text-sm outline-none">
+              <select value={religion} onChange={(e) => setReligion(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-2 py-2 text-sm outline-none">
                 <option value="">Select</option>
                 {RELIGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
@@ -400,7 +400,7 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
           </div>
           <div>
             <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">Preferred Language</Label>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="ledger-input w-full rounded-xl px-2 py-2 text-sm outline-none">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-2 py-2 text-sm outline-none">
               {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
           </div>
@@ -527,7 +527,7 @@ function BranchSelectRow({
             <select
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
               autoFocus
             >
               <option value="">None</option>
@@ -587,7 +587,7 @@ function ManagerSelectRow({
             <select
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              className="ledger-input h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
               autoFocus
             >
               <option value="">None</option>

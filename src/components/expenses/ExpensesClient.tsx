@@ -161,7 +161,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                 <form className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-4" onSubmit={(e) => { e.preventDefault(); if (penaltyDraft.userId && penaltyDraft.amount && penaltyDraft.reason) createPenalty.mutate({ ...penaltyDraft, amount: Number(penaltyDraft.amount), dueDate: penaltyDraft.dueDate || undefined }); }}>
                   <div>
                     <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Employee</label>
-                    <select required className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={penaltyDraft.userId} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, userId: e.target.value })}>
+                    <select required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={penaltyDraft.userId} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, userId: e.target.value })}>
                       <option value="">-- Select --</option>
                       {users?.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
@@ -243,7 +243,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Category</label>
                   <select
-                    className="ledger-input"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     value={newExpense.category}
                     onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
                   >
@@ -290,7 +290,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                   value={newExpense.description}
                   onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
                   placeholder="Please describe the business purpose of this expense..."
-                  className="ledger-input h-24 resize-none"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-24 resize-none"
                 />
               </div>
 

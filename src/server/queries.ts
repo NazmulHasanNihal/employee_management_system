@@ -1727,7 +1727,6 @@ export async function getActivityHeatmap(caller: Caller | null) {
     }),
     prisma.teamTask.findMany({
       where: { assigneeId: userId, status: 'Done', completedAt: { gte: start } },
-      select: { completedAt: true },
     }),
     prisma.calendarEvent.findMany({
       where: { OR: [{ creatorId: userId }, { assigneeId: userId }], date: { gte: start } },
@@ -1753,6 +1752,50 @@ export async function getActivityHeatmap(caller: Caller | null) {
     if (c <= 4) return 3;
     return 4;
   });
+}
+
+// ── Pulse Surveys (Priority 5) ──
+export async function getPulseStatus(caller: Caller | null) {
+  if (!caller) return { submittedThisWeek: false };
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const recent = await prisma.pulseSurveyResponse.findFirst({
+    where: { userId: caller.id, createdAt: { gte: sevenDaysAgo } }
+  });
+  return { submittedThisWeek: !!recent };
+}
+
+export async function getPulseAnalytics(caller: Caller | null) {
+  if (!caller || (!caller.isAdmin && !caller.isCEO && !caller.isHR)) {
+    return { data: [] };
+  }
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const responses = await prisma.pulseSurveyResponse.findMany({
+    where: {
+      createdAt: { gte: sixMonthsAgo },
+      ...tenantWhere(caller),
+    },
+    select: { score: true, createdAt: true },
+    orderBy: { createdAt: 'asc' }
+  });
+  const grouped: Record<string, { happy: number; okay: number; stressed: number }> = {};
+  responses.forEach(r => {
+    const month = new Date(r.createdAt).toLocaleString('default', { month: 'short' });
+    if (!grouped[month]) grouped[month] = { happy: 0, okay: 0, stressed: 0 };
+    if (r.score >= 4) grouped[month].happy++;
+    else if (r.score === 3) grouped[month].okay++;
+    else grouped[month].stressed++;
+  });
+  const data = Object.keys(grouped).map(month => {
+    const total = grouped[month].happy + grouped[month].okay + grouped[month].stressed;
+    return {
+      month,
+      happy: total > 0 ? Math.round((grouped[month].happy / total) * 100) : 0,
+      okay: total > 0 ? Math.round((grouped[month].okay / total) * 100) : 0,
+      stressed: total > 0 ? Math.round((grouped[month].stressed / total) * 100) : 0,
+    };
+  });
+  return { data };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -1886,4 +1929,6 @@ export const q = {
   calibrationSessions: () => getCaller().then((c) => getCalibrationSessions(c)),
   calibrationEntries: (sessionId: string) => getCaller().then((c) => getCalibrationEntries(c, sessionId)),
   branches: getBranches,
+  'pulse.getStatus': () => getCaller().then((c) => getPulseStatus(c)),
+  'pulse.getAnalytics': () => getCaller().then((c) => getPulseAnalytics(c)),
 };

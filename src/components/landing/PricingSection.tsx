@@ -120,7 +120,7 @@ export default function PricingSection() {
             return (
               <div
                 key={idx}
-                className={`relative flex flex-col rounded-3xl p-8 backdrop-blur-md transition-all duration-300 ledger-card ${
+                className={`relative flex flex-col rounded-3xl p-8 backdrop-blur-md transition-all duration-300 bg-card text-card-foreground border border-border ${
                   plan.popular
                     ? "border-[var(--brand)] shadow-lg shadow-[var(--brand)]/20 lg:-translate-y-2 bg-[var(--bg-app)]"
                     : "shadow-sm border-[var(--border-hairline)]"

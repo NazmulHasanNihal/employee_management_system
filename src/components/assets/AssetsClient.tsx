@@ -119,7 +119,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assign To</label>
                 <select
-                  className="ledger-input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={newAsset.userId}
                   onChange={(e) => setNewAsset({ ...newAsset, userId: e.target.value })}
                 >
@@ -200,7 +200,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                   {isAdmin && (
                     <div className="flex justify-end border-t border-[var(--border-hairline)] pt-4">
                       <select
-                        className="ledger-input w-auto py-1.5 text-xs"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-auto py-1.5 text-xs"
                         value={asset.status}
                         onChange={(e) => updateMutation.mutate({ id: asset.id, status: e.target.value })}
                       >

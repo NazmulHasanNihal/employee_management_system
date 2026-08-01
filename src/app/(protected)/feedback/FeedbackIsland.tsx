@@ -50,7 +50,7 @@ export default function FeedbackIsland({ isAdmin }: FeedbackIslandProps) {
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="ledger-input flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none"
         >
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c === 'Suggestion' ? 'Suggestion / Idea' : c === 'Concern' ? 'Concern / Issue' : c === 'Culture' ? 'Company Culture' : 'Facilities / Office'}</option>
@@ -66,7 +66,7 @@ export default function FeedbackIsland({ isAdmin }: FeedbackIslandProps) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Share your thoughts safely and securely..."
-          className="ledger-input flex w-full rounded-xl px-3 py-2 text-sm outline-none resize-none"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex w-full rounded-xl px-3 py-2 text-sm outline-none resize-none"
         />
       </div>
 

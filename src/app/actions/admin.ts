@@ -36,6 +36,7 @@ export interface ProvisionInput {
   // Supabase invite email transport is unavailable.
   invite?: boolean;
   password?: string;
+  provisionAssetId?: string | null;
 }
 
 export async function provisionEmployeeAccount(data: ProvisionInput) {
@@ -159,6 +160,17 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
         tenantId,
       },
     });
+
+    if (data.provisionAssetId) {
+      try {
+        await prisma.asset.update({
+          where: { id: data.provisionAssetId },
+          data: { userId: newUser.id },
+        });
+      } catch (assetErr) {
+        logError('Failed to assign asset during provisioning:', assetErr);
+      }
+    }
 
     // Fire a welcome automation if configured (best-effort, non-blocking).
     try {

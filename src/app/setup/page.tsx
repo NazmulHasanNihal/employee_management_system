@@ -6,7 +6,7 @@ export default function SetupPage() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-4">
       <div className="ledger-accent" />
       <div className="relative z-10 w-full max-w-2xl animate-fade-up">
-        <div className="ledger-card rounded-2xl p-8 shadow-[var(--shadow-lg)]">
+        <div className="bg-card text-card-foreground border border-border rounded-2xl p-8 shadow-[var(--shadow-lg)]">
           <div className="mb-7 flex flex-col items-center text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--rose-soft)] text-[var(--rose)]">
               <AlertCircle size={22} />

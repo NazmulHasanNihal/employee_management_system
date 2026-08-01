@@ -498,13 +498,13 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                     placeholder="Filter employee list..."
                     value={employeeQuery}
                     onChange={(e) => setEmployeeQuery(e.target.value)}
-                    className="ledger-input w-full rounded-xl pl-9 pr-3 py-2 text-xs mb-2"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl pl-9 pr-3 py-2 text-xs mb-2"
                   />
                 </div>
                 <select
                   value={selectedEmpId}
                   onChange={(e) => setSelectedEmpId(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
                   <option value="">Select Employee...</option>
                   {filteredEmployees.map((emp) => (
@@ -522,7 +522,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   type="date"
                   value={entryDate}
                   onChange={(e) => setEntryDate(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
 
@@ -560,7 +560,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                       type="time"
                       value={clockInTime}
                       onChange={(e) => setClockInTime(e.target.value)}
-                      className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-mono"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -569,7 +569,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                       type="time"
                       value={clockOutTime}
                       onChange={(e) => setClockOutTime(e.target.value)}
-                      className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-mono"
                     />
                   </div>
                 </div>
@@ -583,7 +583,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   placeholder="e.g. Verified In/Out by HR Admin"
                   value={hrNote}
                   onChange={(e) => setHrNote(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
             </div>

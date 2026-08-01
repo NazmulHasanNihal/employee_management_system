@@ -70,7 +70,7 @@ export default function ValuePropSection() {
         {/* Problem vs Solution Comparison Overview */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
           {/* Pain Points Box */}
-          <div className="ledger-card bg-[var(--rose-soft)]/10 border-[var(--rose)]/30 rounded-2xl p-8 relative">
+          <div className="bg-card text-card-foreground border border-border bg-[var(--rose-soft)]/10 border-[var(--rose)]/30 rounded-2xl p-8 relative">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-[var(--rose-soft)] border border-[var(--rose)]/20 flex items-center justify-center text-[var(--rose)]">
                 <AlertTriangle className="w-5 h-5" />
@@ -144,7 +144,7 @@ export default function ValuePropSection() {
             return (
               <div
                 key={idx}
-                className="ledger-card rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 group"
+                className="bg-card text-card-foreground border border-border rounded-2xl p-6 transition-all duration-200 hover:-translate-y-1 group"
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-tr ${pillar.color} flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform`}>

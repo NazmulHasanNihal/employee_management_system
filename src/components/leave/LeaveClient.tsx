@@ -171,7 +171,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Leave Category</label>
-                  <select className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm transition-shadow focus:outline-none" value={type} onChange={(e) => setType(e.target.value)}>
+                  <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm transition-shadow focus:outline-none" value={type} onChange={(e) => setType(e.target.value)}>
                     {leaveTypes.map((lt) => (
                       <option key={lt.id} value={lt.name}>
                         {labelFor(lt.name, lt.nameBn)}
@@ -200,7 +200,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     placeholder="Please provide details for your absence..."
-                    className="ledger-input resize-none"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                   />
                 </div>
                 <Button type="submit" disabled={submitRequest.isPending || !startDate || !endDate || !reason} className="w-full">

@@ -173,15 +173,15 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
                 <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Event Title</label>
-                <input required value={title} onChange={(e) => setTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="E.g. Q3 Planning" />
+                <input required value={title} onChange={(e) => setTitle(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="E.g. Q3 Planning" />
               </div>
               <div>
                 <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Start Date</label>
-                <input type="datetime-local" required value={date} onChange={(e) => setDate(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" />
+                <input type="datetime-local" required value={date} onChange={(e) => setDate(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" />
               </div>
               <div>
                 <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">End Date (Optional)</label>
-                <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" />
+                <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -195,14 +195,14 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
               </div>
               <div>
                 <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Assign To (Optional)</label>
-                <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                   <option value="">No assignment</option>
                   {teamMembers.map((m) => (<option key={m.id} value={m.id}>{m.name}</option>))}
                 </select>
               </div>
               <div>
                 <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Reminder</label>
-                <select value={reminderMinutes} onChange={(e) => setReminderMinutes(Number(e.target.value))} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                <select value={reminderMinutes} onChange={(e) => setReminderMinutes(Number(e.target.value))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                   <option value={0}>No reminder</option>
                   <option value={15}>15 min before</option>
                   <option value={30}>30 min before</option>
@@ -213,7 +213,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
             </div>
             <div>
               <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Description</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="ledger-input h-20 w-full resize-none rounded-xl px-3 py-2.5 text-sm" placeholder="Additional details..." />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-20 w-full resize-none rounded-xl px-3 py-2.5 text-sm" placeholder="Additional details..." />
             </div>
             <div className="flex justify-end">
               <Button variant="primary" size="md" type="submit"><Check className="h-4 w-4" /> Schedule</Button>

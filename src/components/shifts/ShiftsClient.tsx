@@ -205,7 +205,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
             >
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Target Shift</label>
-                <select required className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.shiftId} onChange={(e) => setNewAssign({ ...newAssign, shiftId: e.target.value })}>
+                <select required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.shiftId} onChange={(e) => setNewAssign({ ...newAssign, shiftId: e.target.value })}>
                   <option value="">-- Select Block --</option>
                   {shifts.map((s: any) => (
                     <option key={s.id} value={s.id}>{s.name} ({s.startTime} - {s.endTime})</option>
@@ -214,7 +214,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assign Team (optional)</label>
-                <select className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.teamId} onChange={(e) => setNewAssign({ ...newAssign, teamId: e.target.value, userId: e.target.value ? '' : newAssign.userId })}>
+                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.teamId} onChange={(e) => setNewAssign({ ...newAssign, teamId: e.target.value, userId: e.target.value ? '' : newAssign.userId })}>
                   <option value="">— No team —</option>
                   {teamList.map((tm: any) => (
                     <option key={tm.id} value={tm.id}>{tm.name}</option>
@@ -223,7 +223,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Or Select Personnel</label>
-                <select className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.userId} onChange={(e) => setNewAssign({ ...newAssign, userId: e.target.value, teamId: e.target.value ? '' : newAssign.teamId })}>
+                <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.userId} onChange={(e) => setNewAssign({ ...newAssign, userId: e.target.value, teamId: e.target.value ? '' : newAssign.teamId })}>
                   <option value="">-- Browse Directory --</option>
                   {users?.map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name} - {u.designation}</option>
@@ -283,7 +283,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               </div>
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Branch</label>
-                <select value={shiftDraft.branchId} onChange={(e) => setShiftDraft({ ...shiftDraft, branchId: e.target.value })} className="ledger-input w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm">
+                <select value={shiftDraft.branchId} onChange={(e) => setShiftDraft({ ...shiftDraft, branchId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm">
                   <option value="">— No branch —</option>
                   {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>

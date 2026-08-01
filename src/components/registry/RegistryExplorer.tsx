@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X, Trash2, MapPin, Calendar, Globe, Heart, Link2, Activity, Shield, Fingerprint } from 'lucide-react';
+import { Users, Search, Download, ShieldAlert, Key, UserCircle, Briefcase, Mail, Phone, Settings, UserPlus, Check, X, Trash2, MapPin, Calendar, Globe, Heart, Link2, Activity, Shield, Fingerprint, Monitor } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { provisionEmployeeAccount } from '@/app/actions/admin';
@@ -79,7 +79,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
   const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
   const [provisionForm, setProvisionForm] = useState({
     email: '', password: '', name: '', department: '', role: 'Employee', designation: '',
-    managerId: '', branchId: '', employmentType: 'Full-Time', joinDate: '', baseSalary: '', nid: '', invite: true,
+    managerId: '', branchId: '', employmentType: 'Full-Time', joinDate: '', baseSalary: '', nid: '', invite: true, provisionAssetId: '',
   });
   const [provisionStatus, setProvisionStatus] = useState({ loading: false, error: null as string | null, success: false, inviteToken: null as string | null });
   const [deleteStatus, setDeleteStatus] = useState<{ loading: boolean; error: string | null }>({ loading: false, error: null });
@@ -87,6 +87,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
   const utils = trpc.useUtils();
   const { data: employeesData } = trpc.registry.getAll.useQuery(undefined, { initialData: employees as any });
   const liveEmployees = (employeesData as Employee[] | undefined) ?? employees ?? [];
+  const { data: assetsData } = trpc.assets.getAssets.useQuery(undefined, { enabled: isProvisionModalOpen });
+  const unassignedAssets = assetsData?.filter((a: any) => !a.userId) || [];
 
   const managerOptions = liveEmployees.filter((e) => e.role === 'Manager' || e.role === 'Admin' || e.role === 'HR Manager');
 
@@ -161,6 +163,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
         joinDate: provisionForm.joinDate || null,
         managerId: provisionForm.managerId || null,
         branchId: provisionForm.branchId || null,
+        provisionAssetId: provisionForm.provisionAssetId || null,
       });
       if (res.success) {
         setProvisionStatus({
@@ -174,7 +177,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
           setTimeout(() => {
             setIsProvisionModalOpen(false);
             setProvisionStatus({ loading: false, error: null, success: false, inviteToken: null });
-            setProvisionForm({ email: '', password: '', name: '', department: '', role: 'Employee', designation: '', managerId: '', branchId: '', employmentType: 'Full-Time', joinDate: '', baseSalary: '', nid: '', invite: true });
+            setProvisionForm({ email: '', password: '', name: '', department: '', role: 'Employee', designation: '', managerId: '', branchId: '', employmentType: 'Full-Time', joinDate: '', baseSalary: '', nid: '', invite: true, provisionAssetId: '' });
           }, 1500);
         }
       } else {
@@ -216,7 +219,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
           <input
             type="text" placeholder="Search Personnel..."
             value={filter} onChange={(e) => setFilter(e.target.value)}
-            className="ledger-input w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-3 pl-10 pr-4 text-sm"
           />
         </div>
         <div className="flex gap-3">
@@ -613,7 +616,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                       required
                       value={provisionForm.password}
                       onChange={(e) => setProvisionForm({ ...provisionForm, password: e.target.value })}
-                      className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono border-[var(--brand)]/40"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-mono border-[var(--brand)]/40"
                       placeholder="Enter password for initial login..."
                     />
                     <p className="text-[11px] text-[var(--text-muted)]">
@@ -626,11 +629,11 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
-                  <input required type="text" value={provisionForm.name} onChange={(e) => setProvisionForm({ ...provisionForm, name: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="John Doe" />
+                  <input required type="text" value={provisionForm.name} onChange={(e) => setProvisionForm({ ...provisionForm, name: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="John Doe" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Email Address</label>
-                  <input required type="email" value={provisionForm.email} onChange={(e) => setProvisionForm({ ...provisionForm, email: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="john@company.com" />
+                  <input required type="email" value={provisionForm.email} onChange={(e) => setProvisionForm({ ...provisionForm, email: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="john@company.com" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Department</label>
@@ -638,7 +641,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     required
                     value={provisionForm.department}
                     onChange={(e) => setProvisionForm({ ...provisionForm, department: e.target.value })}
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                   >
                     <option value="">Select Department...</option>
                     <option value="Engineering">Engineering</option>
@@ -657,7 +660,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     required
                     value={provisionForm.designation}
                     onChange={(e) => setProvisionForm({ ...provisionForm, designation: e.target.value })}
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                   >
                     <option value="">Select Designation...</option>
                     <option value="Software Engineer">Software Engineer</option>
@@ -674,7 +677,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">System Role</label>
-                  <select value={provisionForm.role} onChange={(e) => setProvisionForm({ ...provisionForm, role: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                  <select value={provisionForm.role} onChange={(e) => setProvisionForm({ ...provisionForm, role: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                     <option value="Employee">Employee</option>
                     <option value="Manager">Manager</option>
                     <option value="HR Manager">HR Manager</option>
@@ -683,7 +686,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Manager</label>
-                  <select value={provisionForm.managerId} onChange={(e) => setProvisionForm({ ...provisionForm, managerId: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                  <select value={provisionForm.managerId} onChange={(e) => setProvisionForm({ ...provisionForm, managerId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                     <option value="">None</option>
                     {managerOptions.map((m) => (
                       <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
@@ -692,7 +695,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Branch</label>
-                  <select value={provisionForm.branchId} onChange={(e) => setProvisionForm({ ...provisionForm, branchId: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                  <select value={provisionForm.branchId} onChange={(e) => setProvisionForm({ ...provisionForm, branchId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                     <option value="">None</option>
                     {branches.map((b) => (
                       <option key={b.id} value={b.id}>{b.name} ({b.city})</option>
@@ -701,7 +704,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Employment Type</label>
-                  <select value={provisionForm.employmentType} onChange={(e) => setProvisionForm({ ...provisionForm, employmentType: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                  <select value={provisionForm.employmentType} onChange={(e) => setProvisionForm({ ...provisionForm, employmentType: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                     <option value="Full-Time">Full-Time</option>
                     <option value="Part-Time">Part-Time</option>
                     <option value="Contract">Contract</option>
@@ -710,15 +713,24 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Join Date</label>
-                  <input type="date" value={provisionForm.joinDate} onChange={(e) => setProvisionForm({ ...provisionForm, joinDate: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" />
+                  <input type="date" value={provisionForm.joinDate} onChange={(e) => setProvisionForm({ ...provisionForm, joinDate: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Base Salary (BDT)</label>
-                  <input type="number" min="0" value={provisionForm.baseSalary} onChange={(e) => setProvisionForm({ ...provisionForm, baseSalary: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. 50000" />
+                  <input type="number" min="0" value={provisionForm.baseSalary} onChange={(e) => setProvisionForm({ ...provisionForm, baseSalary: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. 50000" />
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">National ID (NID)</label>
-                  <input type="text" value={provisionForm.nid} onChange={(e) => setProvisionForm({ ...provisionForm, nid: e.target.value })} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" />
+                  <input type="text" value={provisionForm.nid} onChange={(e) => setProvisionForm({ ...provisionForm, nid: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)] flex items-center gap-1"><Monitor className="h-3 w-3" /> Assign Hardware (Optional)</label>
+                  <select value={provisionForm.provisionAssetId} onChange={(e) => setProvisionForm({ ...provisionForm, provisionAssetId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
+                    <option value="">None (Unassigned)</option>
+                    {unassignedAssets.map((a: any) => (
+                      <option key={a.id} value={a.id}>{a.name} ({a.status})</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="flex gap-4 border-t border-[var(--border-hairline)] pt-4">

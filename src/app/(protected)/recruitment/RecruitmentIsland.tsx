@@ -103,7 +103,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                 </div>
                 <div>
                   <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Department</label>
-                  <select value={jobDept} onChange={(e) => setJobDept(e.target.value)} className="ledger-input flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none">
+                  <select value={jobDept} onChange={(e) => setJobDept(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none">
                     {['Engineering', 'Product', 'Human Resources', 'Sales'].map((d) => (
                       <option key={d} value={d}>{d}</option>
                     ))}
@@ -111,7 +111,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                 </div>
                 <div>
                   <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Location Vector</label>
-                  <select value={jobLoc} onChange={(e) => setJobLoc(e.target.value)} className="ledger-input flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none">
+                  <select value={jobLoc} onChange={(e) => setJobLoc(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none">
                     {['Remote', 'New York (Hybrid)', 'San Francisco (On-Site)'].map((l) => (
                       <option key={l} value={l}>{l}</option>
                     ))}

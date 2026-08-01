@@ -149,23 +149,25 @@ export default async function DashboardPage() {
         </div>
         <div className={`grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3`}>
           {statCards.map((s) => (
-            <Card key={s.label} className="animate-fade-up group">
-              <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${s.tone} transition-transform duration-200 group-hover:scale-105`}>
-                <s.icon className="h-5 w-5" />
-              </div>
-              <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{s.value}</p>
-              <div className="mt-1 flex items-center gap-2">
-                <p className="text-xs font-medium text-[var(--text-muted)]">{s.label}</p>
-                {typeof s.delta === 'number' && (
-                  <DeltaBadge value={s.delta} goodWhen={s.goodWhen} />
+            <Card key={s.label} className="animate-fade-up group hover:shadow-md transition-shadow">
+              <CardContent className="p-5 flex flex-col justify-center">
+                <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${s.tone} transition-transform duration-200 group-hover:scale-105`}>
+                  <s.icon className="h-5 w-5" />
+                </div>
+                <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{s.value}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <p className="text-xs font-medium text-[var(--text-muted)]">{s.label}</p>
+                  {typeof s.delta === 'number' && (
+                    <DeltaBadge value={s.delta} goodWhen={s.goodWhen} />
+                  )}
+                </div>
+                {s.deltaLabel && (
+                  <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{s.deltaLabel}</p>
                 )}
-              </div>
-              {s.deltaLabel && (
-                <p className="mt-0.5 text-[10px] text-[var(--text-muted)]">{s.deltaLabel}</p>
-              )}
-              {s.description && (
-                <p className="mt-2 text-[11px] text-[var(--text-muted)] opacity-80">{s.description}</p>
-              )}
+                {s.description && (
+                  <p className="mt-2 text-[11px] text-[var(--text-muted)] opacity-80">{s.description}</p>
+                )}
+              </CardContent>
             </Card>
           ))}
         </div>

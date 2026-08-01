@@ -189,7 +189,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
                 <select
                   value={selectedEmpId}
                   onChange={(e) => setSelectedEmpId(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
@@ -205,7 +205,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
                   <select
                     value={reviewPeriod}
                     onChange={(e) => setReviewPeriod(e.target.value)}
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                   >
                     <option value="Q1 2026">Q1 2026</option>
                     <option value="Q2 2026">Q2 2026</option>
@@ -220,7 +220,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
                   <select
                     value={rating}
                     onChange={(e) => setRating(e.target.value)}
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                   >
                     <option value="Exceeds Expectations">Exceeds Expectations</option>
                     <option value="Meets Expectations">Meets Expectations</option>
@@ -237,7 +237,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
                   placeholder="Enter detailed evaluation feedback, achievements, and development points..."
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
 

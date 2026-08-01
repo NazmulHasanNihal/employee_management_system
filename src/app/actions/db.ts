@@ -2759,6 +2759,22 @@ async function runMutation(path: string, input: any) {
       return { success: true, message: 'Severance released. All assets reclaimed.' };
     }
 
+    if (path === 'pulse.submit') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'You must be logged in to submit a pulse survey');
+      const score = Number(input?.score);
+      if (isNaN(score) || score < 1 || score > 5) {
+        throw new Error('Invalid score. Must be between 1 and 5.');
+      }
+      return await prisma.pulseSurveyResponse.create({
+        data: {
+          score,
+          userId,
+          tenantId: caller.tenantId,
+          department: caller.department, // Snapshot their department for analytics
+        }
+      });
+    }
+
     throw new MutationError('NOT_FOUND', `Unknown mutation: ${path}`);
   } catch (error: any) {
     const typed = error instanceof MutationError ? error : classifyError(error);
@@ -2808,6 +2824,7 @@ function revalidateForPath(path: string) {
     invitations: ['/registry', '/team'],
     branch: ['/dashboard', '/team', '/registry'],
     delegation: ['/profile', '/settings'],
+    pulse: ['/dashboard'],
   };
   const routes = routeMap[domain] ?? ['/dashboard'];
   for (const route of routes) {

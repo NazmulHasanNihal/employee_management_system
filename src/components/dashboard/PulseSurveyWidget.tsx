@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { HeartPulse, CheckCircle2 } from 'lucide-react';
+import { HeartPulse, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast';
+import { trpc } from '@/lib/trpc/client';
 
 const MOODS = [
   { emoji: '😡', label: 'Angry', value: 1, color: 'hover:bg-rose-100 hover:border-rose-500' },
@@ -15,15 +16,24 @@ const MOODS = [
 ];
 
 export function PulseSurveyWidget() {
-  const [submitted, setSubmitted] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
+
+  const { data: status, isLoading: statusLoading } = trpc.pulse.getStatus.useQuery();
+  const submitMutation = trpc.pulse.submit.useMutation({
+    onSuccess: () => {
+      toast.success('Feedback Recorded', 'Thank you for submitting your weekly pulse check!');
+    },
+    onError: (err: any) => {
+      toast.error('Submission Failed', err.message);
+    }
+  });
 
   const handleSubmit = () => {
     if (selected === null) return;
-    // In a real app, send to TRPC mutation
-    setSubmitted(true);
-    toast.success('Feedback Recorded', 'Thank you for submitting your weekly pulse check!');
+    submitMutation.mutate({ score: selected });
   };
+
+  const isSubmitted = status?.submittedThisWeek;
 
   return (
     <Card className="animate-fade-up">
@@ -33,7 +43,11 @@ export function PulseSurveyWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {submitted ? (
+        {statusLoading ? (
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-[var(--text-muted)]" />
+          </div>
+        ) : isSubmitted ? (
           <div className="flex flex-col items-center justify-center space-y-3 py-6 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--emerald-soft)] text-[var(--emerald)]">
               <CheckCircle2 size={24} />
@@ -53,6 +67,7 @@ export function PulseSurveyWidget() {
                   onClick={() => setSelected(m.value)}
                   className={`flex flex-1 flex-col items-center gap-1 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] py-3 transition-all ${m.color} ${selected === m.value ? 'ring-2 ring-[var(--brand)] scale-105 shadow-md' : 'hover:scale-105'}`}
                   title={m.label}
+                  disabled={submitMutation.isLoading}
                 >
                   <span className="text-2xl">{m.emoji}</span>
                   <span className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{m.label}</span>
@@ -61,10 +76,11 @@ export function PulseSurveyWidget() {
             </div>
             <Button 
               onClick={handleSubmit} 
-              disabled={selected === null}
+              disabled={selected === null || submitMutation.isLoading}
               className="w-full btn-primary"
             >
-              Submit Anonymous Feedback
+              {submitMutation.isLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              {submitMutation.isLoading ? 'Submitting...' : 'Submit Anonymous Feedback'}
             </Button>
           </div>
         )}

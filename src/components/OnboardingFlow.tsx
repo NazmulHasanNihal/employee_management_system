@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Rocket, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, Rocket, ShieldAlert, Monitor } from 'lucide-react';
 import { useTranslation } from '@/lib/translations';
+import { trpc } from '@/lib/trpc/client';
 import { useAppStore } from '@/lib/store';
 import { validateNid } from '@/lib/nid';
 
@@ -11,6 +12,8 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
   const router = useRouter();
   const { language } = useAppStore();
   const t = useTranslation(language);
+  const { data: assetsData } = trpc.assets.getAssets.useQuery();
+  const myAssets = assetsData?.filter((a: any) => a.userId === user?.id) || [];
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
@@ -24,6 +27,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
     emergencyContactPhone: '',
     password: '',
     confirmPassword: '',
+    hardwareAcknowledged: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -52,6 +56,15 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
     return Object.keys(e).length === 0;
   };
 
+  const validateStep3 = () => {
+    const e: Record<string, string> = {};
+    if (myAssets.length > 0 && form.hardwareAcknowledged !== 'true') {
+      e.hardwareAcknowledged = 'You must acknowledge the hardware policy to proceed.';
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
   const completeOnboarding = async () => {
     setLoading(true);
     setError('');
@@ -68,6 +81,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
           address: form.address || null,
           emergencyContactName: form.emergencyContactName || null,
           emergencyContactPhone: form.emergencyContactPhone || null,
+          hardwareAcknowledged: form.hardwareAcknowledged === 'true',
           ...(requiresPassword && form.password ? { password: form.password } : {}),
         }),
       });
@@ -89,16 +103,18 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
 
   const next = () => {
     if (step === 1 && !validateStep1()) return;
-    setStep((s) => Math.min(3, s + 1));
+    if (step === 2 && !validateStep2()) return;
+    if (step === 3 && !validateStep3()) return;
+    setStep((s) => Math.min(4, s + 1));
   };
   const back = () => setStep((s) => Math.max(1, s - 1));
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-4">
       <div className="ledger-accent" />
-      <div className="ledger-card relative z-10 w-full max-w-lg animate-fade-up rounded-2xl p-8 shadow-[var(--shadow-lg)]">
+      <div className="bg-card text-card-foreground border border-border relative z-10 w-full max-w-lg animate-fade-up rounded-2xl p-8 shadow-[var(--shadow-lg)]">
         <div className="absolute left-0 top-0 h-1 w-full overflow-hidden rounded-t-2xl bg-[var(--bg-hover)]">
-          <div className="h-full bg-[var(--brand)] transition-all duration-500" style={{ width: `${(step / 3) * 100}%` }} />
+          <div className="h-full bg-[var(--brand)] transition-all duration-500" style={{ width: `${(step / 4) * 100}%` }} />
         </div>
 
         <div className="mb-6 text-center">
@@ -112,7 +128,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
             {t('Your identity has been authenticated as')} <strong className="text-[var(--brand)]">{user?.name}</strong>.
           </p>
           <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-            Step {step} of 3 — Complete your profile
+            Step {step} of 4 — Complete your profile
           </p>
         </div>
 
@@ -127,23 +143,23 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
           <div className="space-y-4">
             <div className="space-y-1">
               <label htmlFor="onboarding-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
-              <input id="onboarding-name" value={form.name} onChange={(e) => update('name', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Your full name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'onboarding-name-error' : undefined} />
+              <input id="onboarding-name" value={form.name} onChange={(e) => update('name', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Your full name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'onboarding-name-error' : undefined} />
               {errors.name && <p id="onboarding-name-error" className="text-[10px] text-[var(--rose)]">{errors.name}</p>}
             </div>
             <div className="space-y-1">
               <label htmlFor="onboarding-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Phone Number</label>
-              <input id="onboarding-phone" value={form.phone} onChange={(e) => update('phone', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? 'onboarding-phone-error' : undefined} />
+              <input id="onboarding-phone" value={form.phone} onChange={(e) => update('phone', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? 'onboarding-phone-error' : undefined} />
               {errors.phone && <p id="onboarding-phone-error" className="text-[10px] text-[var(--rose)]">{errors.phone}</p>}
             </div>
             <div className="space-y-1">
               <label htmlFor="onboarding-nid" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">National ID (NID)</label>
-              <input id="onboarding-nid" value={form.nid} onChange={(e) => update('nid', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" aria-invalid={Boolean(errors.nid)} aria-describedby={errors.nid ? 'onboarding-nid-error' : undefined} />
+              <input id="onboarding-nid" value={form.nid} onChange={(e) => update('nid', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" aria-invalid={Boolean(errors.nid)} aria-describedby={errors.nid ? 'onboarding-nid-error' : undefined} />
               {errors.nid && <p id="onboarding-nid-error" className="text-[10px] text-[var(--rose)]">{errors.nid}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label htmlFor="onboarding-blood" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Blood Group</label>
-                <select id="onboarding-blood" value={form.bloodGroup} onChange={(e) => update('bloodGroup', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                <select id="onboarding-blood" value={form.bloodGroup} onChange={(e) => update('bloodGroup', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                   <option value="">Select</option>
                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map((b) => (
                     <option key={b} value={b}>{b}</option>
@@ -152,7 +168,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
               </div>
               <div className="space-y-1">
                 <label htmlFor="onboarding-gender" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Gender</label>
-                <select id="onboarding-gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                <select id="onboarding-gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                   <option value="">Select</option>
                   {['Male', 'Female', 'Non-Binary', 'Prefer Not to Say'].map((g) => (
                     <option key={g} value={g}>{g}</option>
@@ -164,12 +180,12 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
               <div className="grid grid-cols-2 gap-4 border-t border-[var(--border-hairline)] pt-4 mt-2">
                 <div className="space-y-1">
                   <label htmlFor="onboarding-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Set Password</label>
-                  <input id="onboarding-password" type="password" value={form.password} onChange={(e) => update('password', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'onboarding-password-error' : undefined} />
+                  <input id="onboarding-password" type="password" value={form.password} onChange={(e) => update('password', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'onboarding-password-error' : undefined} />
                   {errors.password && <p id="onboarding-password-error" className="text-[10px] text-[var(--rose)]">{errors.password}</p>}
                 </div>
                 <div className="space-y-1">
                   <label htmlFor="onboarding-confirm-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Confirm Password</label>
-                  <input id="onboarding-confirm-password" type="password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.confirmPassword)} aria-describedby={errors.confirmPassword ? 'onboarding-confirm-password-error' : undefined} />
+                  <input id="onboarding-confirm-password" type="password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.confirmPassword)} aria-describedby={errors.confirmPassword ? 'onboarding-confirm-password-error' : undefined} />
                   {errors.confirmPassword && <p id="onboarding-confirm-password-error" className="text-[10px] text-[var(--rose)]">{errors.confirmPassword}</p>}
                 </div>
               </div>
@@ -183,24 +199,63 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
           <div className="space-y-4">
             <div className="space-y-1">
               <label htmlFor="onboarding-address" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Address</label>
-              <input id="onboarding-address" value={form.address} onChange={(e) => update('address', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Street, City" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'onboarding-address-error' : undefined} />
+              <input id="onboarding-address" value={form.address} onChange={(e) => update('address', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Street, City" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'onboarding-address-error' : undefined} />
               {errors.address && <p id="onboarding-address-error" className="text-[10px] text-[var(--rose)]">{errors.address}</p>}
             </div>
             <div className="space-y-1">
               <label htmlFor="onboarding-emergency-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Name</label>
-              <input id="onboarding-emergency-name" value={form.emergencyContactName} onChange={(e) => update('emergencyContactName', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Next of kin" />
+              <input id="onboarding-emergency-name" value={form.emergencyContactName} onChange={(e) => update('emergencyContactName', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Next of kin" />
             </div>
             <div className="space-y-1">
               <label htmlFor="onboarding-emergency-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Phone</label>
-              <input id="onboarding-emergency-phone" value={form.emergencyContactPhone} onChange={(e) => update('emergencyContactPhone', e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.emergencyContactPhone)} aria-describedby={errors.emergencyContactPhone ? 'onboarding-emergency-phone-error' : undefined} />
+              <input id="onboarding-emergency-phone" value={form.emergencyContactPhone} onChange={(e) => update('emergencyContactPhone', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.emergencyContactPhone)} aria-describedby={errors.emergencyContactPhone ? 'onboarding-emergency-phone-error' : undefined} />
               {errors.emergencyContactPhone && <p id="onboarding-emergency-phone-error" className="text-[10px] text-[var(--rose)]">{errors.emergencyContactPhone}</p>}
             </div>
             <ButtonRow onBack={back} onNext={next} step={step} loading={loading} />
           </div>
         )}
 
-        {/* Step 3: Confirm */}
+        {/* Step 3: Workstation */}
         {step === 3 && (
+          <div className="space-y-4">
+            {myAssets.length > 0 ? (
+              <>
+                <div className="rounded-xl border border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 space-y-3">
+                  <div className="flex items-center gap-2 text-[var(--brand-strong)] font-semibold text-sm">
+                    <Monitor size={18} />
+                    Assigned Workstation
+                  </div>
+                  {myAssets.map((asset: any) => (
+                    <div key={asset.id} className="rounded-lg bg-background p-3 shadow-sm text-sm font-medium">
+                      {asset.name}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-start gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="hardware-ack"
+                    className="mt-1"
+                    checked={form.hardwareAcknowledged === 'true'}
+                    onChange={(e) => update('hardwareAcknowledged', e.target.checked ? 'true' : '')}
+                  />
+                  <label htmlFor="hardware-ack" className="text-xs text-[var(--text-muted)] leading-tight">
+                    I acknowledge that I have received the above IT hardware and agree to the Acceptable Use Policy.
+                  </label>
+                </div>
+                {errors.hardwareAcknowledged && <p className="text-[10px] text-[var(--rose)]">{errors.hardwareAcknowledged}</p>}
+              </>
+            ) : (
+              <div className="rounded-xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-center text-sm text-[var(--text-muted)]">
+                No IT hardware is currently assigned to your profile.
+              </div>
+            )}
+            <ButtonRow onBack={back} onNext={next} step={step} loading={loading} />
+          </div>
+        )}
+
+        {/* Step 4: Confirm */}
+        {step === 4 && (
           <div className="space-y-4">
             <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-sm space-y-1">
               <Row label="Name" value={form.name} />

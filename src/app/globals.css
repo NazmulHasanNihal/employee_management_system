@@ -120,17 +120,31 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
 
-  /* Tokens required by base-ui primitives (select/dialog) */
+  /* Tokens required by base-ui primitives (select/dialog) and Shadcn */
   --color-popover: var(--bg-panel);
   --color-popover-foreground: var(--text-main);
   --color-foreground: var(--text-main);
+  --color-background: var(--bg-app);
+  
+  --color-primary: var(--brand);
+  --color-primary-foreground: #ffffff;
+  
+  --color-secondary: var(--bg-hover);
+  --color-secondary-foreground: var(--text-main);
+  
+  --color-card: var(--bg-panel);
+  --color-card-foreground: var(--text-main);
+  
+  --color-muted: var(--bg-hover);
   --color-muted-foreground: var(--text-muted);
+  
   --color-input: var(--border-hairline);
   --color-ring: var(--brand);
   --color-border: var(--border-hairline);
   --color-accent: var(--bg-hover);
   --color-accent-foreground: var(--text-main);
   --color-destructive: var(--rose);
+  --color-destructive-foreground: #ffffff;
   --radius-md: 0.5rem;
   --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
   --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
@@ -276,9 +290,8 @@ html[lang="bn"] {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border-hairline);
-    margin-bottom: 1.75rem;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
   }
   @media (min-width: 768px) {
     .page-header { flex-direction: row; align-items: flex-end; justify-content: space-between; }
@@ -324,13 +337,6 @@ html[lang="bn"] {
     z-index: 0;
   }
 
-  .ledger-card {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-hairline);
-    box-shadow: var(--shadow-sm);
-    transition: border-color 0.25s var(--ease-out), transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
-  }
-  .ledger-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); transform: translateY(-1px); }
 
   /* ── Motion: shimmer skeleton ── */
   .skeleton-shimmer {
@@ -466,14 +472,14 @@ input, textarea, select { text-overflow: ellipsis; }
 .flex > .shrink-safe, .grid > .shrink-safe { min-width: 0; }
 
 /* 5. Card / panel base spacing scales down gracefully on phones. */
-.ledger-card, .panel {
+.panel {
   padding: 1rem;
 }
 @media (min-width: 640px) {
-  .ledger-card, .panel { padding: 1.25rem; }
+  .panel { padding: 1.25rem; }
 }
 @media (min-width: 1024px) {
-  .ledger-card, .panel { padding: 1.5rem; }
+  .panel { padding: 1.5rem; }
 }
 
 /* 6. Headings share one consistent scale + tight tracking for a unified look. */

@@ -104,7 +104,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-muted)]" />
           <input
             type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search news..." className="ledger-input w-full rounded-xl py-2.5 pl-9 pr-4 text-sm"
+            placeholder="Search news..." className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-2.5 pl-9 pr-4 text-sm"
           />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -152,8 +152,8 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                         {ann.isPinned && <div className="absolute right-3 top-3"><Pin className="h-3.5 w-3.5 text-[var(--amber)]" /></div>}
                         {isEditing ? (
                           <div className="space-y-3">
-                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
-                            <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
+                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
+                            <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
                             <div className="flex gap-2">
                               {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
                                 <button key={p} onClick={() => setEditPriority(p)} className={`rounded-lg border px-3 py-1 text-[10px] font-semibold uppercase ${editPriority === p ? `${PRIORITY_TONE[p].label} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p}</button>
@@ -206,8 +206,8 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                       <div key={ann.id} className={`relative overflow-hidden rounded-2xl border-l-4 bg-[var(--bg-panel)] p-6 shadow-sm ${pConfig.tone.includes('rose') ? 'border-l-[var(--rose)]' : pConfig.tone.includes('amber') ? 'border-l-[var(--amber)]' : 'border-l-[var(--brand)]'}`}>
                         {isEditing ? (
                           <div className="space-y-3">
-                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
-                            <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
+                            <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-semibold" />
+                            <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" rows={3} />
                             <div className="flex gap-2">
                               {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
                                 <button key={p} onClick={() => setEditPriority(p)} className={`rounded-lg border px-3 py-1 text-[10px] font-semibold uppercase ${editPriority === p ? `${PRIORITY_TONE[p].label} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p}</button>
@@ -262,7 +262,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
               <div className="space-y-4">
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Subject</label>
-                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Enter news subject..." />
+                  <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Enter news subject..." />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Priority Level</label>
@@ -285,7 +285,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                 {category === 'Team' && (
                   <div>
                     <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Target Team</label>
-                    <select value={targetTeam} onChange={(e) => setTargetTeam(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm">
+                    <select value={targetTeam} onChange={(e) => setTargetTeam(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
                       <option value="">Select department...</option>
                       {departments.map((d) => (<option key={d.id} value={d.name}>{d.name}</option>))}
                     </select>
@@ -298,7 +298,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Message Body</label>
-                  <textarea value={content} onChange={(e) => setContent(e.target.value)} className="ledger-input h-32 w-full resize-none rounded-xl px-3 py-2.5 text-sm" placeholder="Type the news content here..." />
+                  <textarea value={content} onChange={(e) => setContent(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-32 w-full resize-none rounded-xl px-3 py-2.5 text-sm" placeholder="Type the news content here..." />
                 </div>
                 <Button variant="primary" size="md" className="w-full" onClick={handlePost} disabled={!title || !content || isSubmitting}>
                   {isSubmitting ? <Check className="h-4 w-4 animate-pulse" /> : <Send className="h-4 w-4" />}{isSubmitting ? 'Publishing...' : 'Publish News'}

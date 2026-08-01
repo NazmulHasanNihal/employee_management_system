@@ -42,7 +42,7 @@ export default function AboutSection() {
 
           {/* Right Content / Values Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="ledger-card p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300">
+            <div className="bg-card text-card-foreground border border-border p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300">
               <div className="w-12 h-12 rounded-xl bg-[var(--emerald-soft)] text-[var(--emerald)] flex items-center justify-center">
                 <Target className="w-6 h-6" />
               </div>
@@ -52,7 +52,7 @@ export default function AboutSection() {
               </p>
             </div>
 
-            <div className="ledger-card p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300 sm:mt-12">
+            <div className="bg-card text-card-foreground border border-border p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300 sm:mt-12">
               <div className="w-12 h-12 rounded-xl bg-[var(--amber-soft)] text-[var(--amber)] flex items-center justify-center">
                 <Lightbulb className="w-6 h-6" />
               </div>
@@ -62,7 +62,7 @@ export default function AboutSection() {
               </p>
             </div>
 
-            <div className="ledger-card p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300 sm:-mt-12">
+            <div className="bg-card text-card-foreground border border-border p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300 sm:-mt-12">
               <div className="w-12 h-12 rounded-xl bg-[var(--sky-soft)] text-[var(--sky)] flex items-center justify-center">
                 <Users className="w-6 h-6" />
               </div>

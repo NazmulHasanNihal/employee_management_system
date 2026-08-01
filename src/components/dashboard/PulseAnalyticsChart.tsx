@@ -2,19 +2,18 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { HeartPulse, TrendingDown } from 'lucide-react';
+import { HeartPulse, TrendingDown, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-
-const mockData = [
-  { month: 'Jan', happy: 80, stressed: 10, okay: 10 },
-  { month: 'Feb', happy: 75, stressed: 15, okay: 10 },
-  { month: 'Mar', happy: 70, stressed: 20, okay: 10 },
-  { month: 'Apr', happy: 85, stressed: 5, okay: 10 },
-  { month: 'May', happy: 65, stressed: 25, okay: 10 },
-  { month: 'Jun', happy: 60, stressed: 30, okay: 10 },
-];
+import { trpc } from '@/lib/trpc/client';
 
 export function PulseAnalyticsChart() {
+  const { data: result, isLoading } = trpc.pulse.getAnalytics.useQuery();
+  const chartData = result?.data || [];
+  
+  // Calculate if there's high attrition risk in the latest month
+  const latestMonth = chartData.length > 0 ? chartData[chartData.length - 1] : null;
+  const isHighRisk = latestMonth ? latestMonth.stressed >= 30 : false;
+
   return (
     <Card className="animate-fade-up flex flex-col h-full">
       <CardHeader>
@@ -22,9 +21,11 @@ export function PulseAnalyticsChart() {
           <span className="flex items-center gap-2">
             <HeartPulse size={16} className="text-[var(--rose)]" /> Employee Sentiment & Attrition Risk
           </span>
-          <span className="flex items-center gap-1 rounded bg-[var(--rose-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--rose)]">
-            <TrendingDown size={12} /> High Risk (Jun)
-          </span>
+          {isHighRisk && (
+            <span className="flex items-center gap-1 rounded bg-[var(--rose-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--rose)]">
+              <TrendingDown size={12} /> High Risk ({latestMonth?.month})
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
@@ -34,9 +35,18 @@ export function PulseAnalyticsChart() {
           <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--rose)]" /> Stressed/Angry</div>
         </div>
         <div className="h-[250px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={mockData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-              <defs>
+          {isLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-[var(--border)]" />
+            </div>
+          ) : chartData.length === 0 ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-sm text-[var(--text-muted)]">No pulse data collected yet.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <defs>
                 <linearGradient id="colorHappy" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="var(--emerald)" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="var(--emerald)" stopOpacity={0} />
@@ -63,6 +73,7 @@ export function PulseAnalyticsChart() {
               <Area type="monotone" dataKey="stressed" stackId="1" stroke="var(--rose)" fill="url(#colorStressed)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
+          )}
         </div>
       </CardContent>
     </Card>

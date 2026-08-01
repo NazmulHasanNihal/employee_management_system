@@ -74,7 +74,7 @@ export default function HierarchyManager({
                   type="text" required placeholder="e.g. Cyber Security"
                   value={newDept.name}
                   onChange={(e) => setNewDept({ ...newDept, name: e.target.value })}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
@@ -83,7 +83,7 @@ export default function HierarchyManager({
                   type="number" required min="0" step="10000"
                   value={newDept.budget}
                   onChange={(e) => setNewDept({ ...newDept, budget: parseInt(e.target.value) })}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 />
               </div>
               <div>
@@ -91,7 +91,7 @@ export default function HierarchyManager({
                 <select
                   value={newDept.headId}
                   onChange={(e) => setNewDept({ ...newDept, headId: e.target.value })}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 >
                   <option value="">Leave Unassigned...</option>
                   {liveEmployees.map((u) => (

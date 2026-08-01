@@ -102,7 +102,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Severity Level</label>
                 <select
-                  className="ledger-input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
@@ -119,7 +119,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Provide logs or specific details..."
-                  className="ledger-input resize-none"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                 />
               </div>
               <Button type="submit" disabled={createTicket.isPending || !subject.trim() || !description.trim()}>

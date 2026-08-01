@@ -20,7 +20,7 @@ export default function RootErrorBoundary({
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-6">
       <div className="ledger-accent" />
-      <div className="ledger-card relative z-10 flex w-full max-w-lg flex-col items-center rounded-2xl p-8 text-center shadow-[var(--shadow-lg)]">
+      <div className="relative z-10 flex w-full max-w-lg flex-col items-center rounded-2xl p-8 text-center bg-[var(--bg-panel)] border border-[var(--border-hairline)] shadow-[var(--shadow-lg)]">
         <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--rose-soft)] text-[var(--rose)]">
           <ShieldAlert className="h-8 w-8" strokeWidth={1.75} />
         </div>

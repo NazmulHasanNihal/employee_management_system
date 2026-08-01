@@ -242,7 +242,7 @@ export default function SettingsClientPage() {
                     value={officeLat}
                     onChange={(e) => setOfficeLat(e.target.value)}
                     placeholder="e.g. 23.8103"
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-mono"
                   />
                 </div>
                 <div className="space-y-1">
@@ -252,7 +252,7 @@ export default function SettingsClientPage() {
                     value={officeLng}
                     onChange={(e) => setOfficeLng(e.target.value)}
                     placeholder="e.g. 90.4125"
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-mono"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-mono"
                   />
                 </div>
                 <div className="space-y-1">
@@ -263,7 +263,7 @@ export default function SettingsClientPage() {
                     max="1000"
                     value={officeRadius}
                     onChange={(e) => setOfficeRadius(Number(e.target.value))}
-                    className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-semibold"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-semibold"
                   />
                 </div>
               </div>
@@ -338,19 +338,19 @@ export default function SettingsClientPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Start</label>
-                  <input type="time" value={officeStart} onChange={(e) => setOfficeStart(e.target.value)} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                  <input type="time" value={officeStart} onChange={(e) => setOfficeStart(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">End</label>
-                  <input type="time" value={officeEnd} onChange={(e) => setOfficeEnd(e.target.value)} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                  <input type="time" value={officeEnd} onChange={(e) => setOfficeEnd(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Grace (min)</label>
-                  <input type="number" min={0} max={60} value={officeGrace} onChange={(e) => setOfficeGrace(Number(e.target.value))} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                  <input type="number" min={0} max={60} value={officeGrace} onChange={(e) => setOfficeGrace(Number(e.target.value))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Timezone</label>
-                  <input value={officeTimezone} onChange={(e) => setOfficeTimezone(e.target.value)} className="ledger-input w-full rounded-lg px-3 py-2 text-sm" />
+                  <input value={officeTimezone} onChange={(e) => setOfficeTimezone(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
               </div>
               <div className="flex items-center gap-3">

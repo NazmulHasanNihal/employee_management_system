@@ -7,6 +7,7 @@ import { useUser } from '@/components/UserProvider';
 import { StatusBadge } from '../StatusBadge';
 import { EmptyState } from '../EmptyState';
 import { toast } from '@/lib/toast';
+import { Card } from '@/components/ui/card';
 
 interface ApplicationsClientPageProps {
   initialApps: any[];
@@ -83,7 +84,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
         </div>
       </header>
 
-      <div className="ledger-card overflow-hidden rounded-2xl">
+      <Card className="overflow-hidden">
         <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
             <Server className="h-4 w-4 text-[var(--text-muted)]" /> Authorization Ledger
@@ -144,11 +145,11 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
               </table>
           )}
         </div>
-      </div>
+      </Card>
 
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="ledger-card w-full max-w-lg overflow-hidden rounded-2xl">
+          <Card className="w-full max-w-lg overflow-hidden">
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
                 <Fingerprint className="h-4 w-4 text-[var(--brand-strong)]" /> Authorize New Request
@@ -164,7 +165,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                 <select
                   value={newApp.type}
                   onChange={(e) => setNewApp({ ...newApp, type: e.target.value })}
-                  className="ledger-input"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="Leave Request">Leave / PTO</option>
                   <option value="Expense Claim">Expense Claim</option>
@@ -182,7 +183,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                   value={newApp.details}
                   onChange={(e) => setNewApp({ ...newApp, details: e.target.value })}
                   placeholder="Provide detailed justification..."
-                  className="ledger-input resize-none"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                 />
               </div>
 
@@ -196,7 +197,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                 </button>
               </div>
             </form>
-          </div>
+          </Card>
         </div>
       )}
     </div>

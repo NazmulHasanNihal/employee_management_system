@@ -85,7 +85,7 @@ export default function InvitePage() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-4">
       <div className="ledger-accent" />
       <div className="relative z-10 w-full max-w-md animate-fade-up">
-        <div className="ledger-card rounded-2xl p-8 shadow-[var(--shadow-lg)]">
+        <div className="bg-card text-card-foreground border border-border rounded-2xl p-8 shadow-[var(--shadow-lg)]">
           <div className="mb-7 flex flex-col items-center text-center">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
               <Mail size={22} />
@@ -124,7 +124,7 @@ export default function InvitePage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="ledger-input w-full rounded-xl py-2.5 pl-4 pr-11 text-sm"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-2.5 pl-4 pr-11 text-sm"
                     placeholder="••••••••"
                   />
                   <button
@@ -145,7 +145,7 @@ export default function InvitePage() {
                   required
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
-                  className="ledger-input w-full rounded-xl py-2.5 pl-4 pr-4 text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-2.5 pl-4 pr-4 text-sm"
                   placeholder="••••••••"
                 />
               </div>

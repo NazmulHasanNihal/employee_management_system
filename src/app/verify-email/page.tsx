@@ -61,7 +61,7 @@ export default function VerifyEmailPage() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-4">
       <div className="ledger-accent" />
       <div className="relative z-10 w-full max-w-md animate-fade-up">
-        <div className="ledger-card rounded-2xl p-8 text-center shadow-[var(--shadow-lg)]">
+        <div className="bg-card text-card-foreground border border-border rounded-2xl p-8 text-center shadow-[var(--shadow-lg)]">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand)]">
             <MailCheck size={26} />
           </div>

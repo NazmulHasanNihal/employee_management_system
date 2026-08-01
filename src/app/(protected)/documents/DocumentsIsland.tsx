@@ -115,12 +115,12 @@ function UserUploadForm({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase text-[var(--text-muted)]">Document Title</label>
-            <Input type="text" required placeholder="e.g. Passport / NID Copy" value={name} onChange={(e) => setName(e.target.value)} className="ledger-input rounded-xl" />
+            <Input type="text" required placeholder="e.g. Passport / NID Copy" value={name} onChange={(e) => setName(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-xl" />
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase text-[var(--text-muted)]">Document Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2 text-sm">
+            <select value={category} onChange={(e) => setCategory(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm">
               <option value="NID / Passport">NID / Passport Identity</option>
               <option value="Employment Contract">Employment Contract</option>
               <option value="Tax Certificate">Tax TIN Certificate</option>
@@ -161,7 +161,7 @@ function UserUploadForm({ onClose }: { onClose: () => void }) {
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold uppercase text-[var(--text-muted)]">File Attachment</label>
-          <input type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} className="ledger-input w-full rounded-xl px-3 py-2 text-sm" />
+          <input type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm" />
         </div>
 
         {error && <p className="text-xs text-[var(--rose)]">{error}</p>}
@@ -238,11 +238,11 @@ function DistributeForm({ onClose }: { onClose: () => void }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase text-[var(--text-muted)]">Document Title</label>
-            <Input type="text" required placeholder="e.g. Q4 Performance Policy / NDA" value={name} onChange={(e) => setName(e.target.value)} className="ledger-input rounded-xl" />
+            <Input type="text" required placeholder="e.g. Q4 Performance Policy / NDA" value={name} onChange={(e) => setName(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-xl" />
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase text-[var(--text-muted)]">Assign Target Employee</label>
-            <select required value={userId} onChange={(e) => setUserId(e.target.value)} className="ledger-input w-full rounded-xl px-3 py-2 text-sm">
+            <select required value={userId} onChange={(e) => setUserId(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm">
               <option value="">Select Employee...</option>
               {(users || []).map((u: any) => (
                 <option key={u.id} value={u.id}>{u.name} ({u.designation || u.role})</option>
@@ -253,7 +253,7 @@ function DistributeForm({ onClose }: { onClose: () => void }) {
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold uppercase text-[var(--text-muted)]">File</label>
-          <input type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} className="ledger-input w-full rounded-xl px-3 py-2 text-sm" />
+          <input type="file" required onChange={(e) => setFile(e.target.files?.[0] || null)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm" />
         </div>
 
         <div className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3">

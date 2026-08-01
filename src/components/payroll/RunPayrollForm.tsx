@@ -67,7 +67,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                   required
                   value={month}
                   onChange={(e) => setMonth(e.target.value)}
-                  className="ledger-input rounded-xl text-sm"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 rounded-xl text-sm"
                   placeholder="e.g. July 2026"
                 />
               </div>
@@ -130,7 +130,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 <select
                   value={selectedDept}
                   onChange={(e) => setSelectedDept(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
                   <option value="Engineering">Engineering</option>
                   <option value="Human Resources">Human Resources</option>
@@ -148,7 +148,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 <select
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
                   <option value="Full-Time">Full-Time Staff</option>
                   <option value="Part-Time">Part-Time Staff</option>
@@ -164,7 +164,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 <select
                   value={selectedEmpId}
                   onChange={(e) => setSelectedEmpId(e.target.value)}
-                  className="ledger-input w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
                   <option value="">Select Employee...</option>
                   {employees.map((emp: any) => (

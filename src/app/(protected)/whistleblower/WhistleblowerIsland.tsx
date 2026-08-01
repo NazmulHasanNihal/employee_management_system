@@ -111,7 +111,7 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
                       <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Assign to</Label>
                       <select
                         aria-label="Assign report to committee member"
-                        className="ledger-input h-10 w-full rounded-xl px-3 text-sm outline-none"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                         value={r.assignedTo || ''}
                         onChange={(e) => assign.mutate({ id: r.id, assignedTo: e.target.value || null })}
                       >
@@ -132,7 +132,7 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
                       defaultValue={r.resolution || ''}
                       placeholder="Resolution notes…"
                       aria-label="Resolution notes"
-                      className="ledger-input w-full rounded-xl p-3 text-sm outline-none"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl p-3 text-sm outline-none"
                       onBlur={(e) => updateStatus.mutate({ id: r.id, status: 'Resolved', resolution: e.target.value })}
                     />
                   )}
