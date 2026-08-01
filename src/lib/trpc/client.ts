@@ -143,18 +143,54 @@ const createDummyHook = (path: string[]) => {
       const fullPath = path.join(".");
       return {
         mutate: (input: any) => {
+          if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            import('@/lib/offline-sync').then(({ queueOfflineMutation }) => {
+              queueOfflineMutation(fullPath, input);
+              // Optimistically call onSuccess so the UI can proceed (e.g., clock in button updates)
+              if (onSuccess) onSuccess({ success: true, offline: true, message: 'Queued for sync' });
+            });
+            return;
+          }
+
           executeServerMutation(fullPath, input)
             .then((res) => {
               if (onSuccess) onSuccess(res);
             })
             .catch((err) => {
-              if (onError) onError(err);
+              // If it's a network error (Failed to fetch) during execution, queue it
+              if (err instanceof TypeError && err.message.includes('fetch')) {
+                import('@/lib/offline-sync').then(({ queueOfflineMutation }) => {
+                  queueOfflineMutation(fullPath, input);
+                  if (onSuccess) onSuccess({ success: true, offline: true, message: 'Queued for sync' });
+                });
+              } else {
+                if (onError) onError(err);
+              }
             });
         },
         mutateAsync: async (input: any) => {
-          const res = await executeServerMutation(fullPath, input);
-          if (onSuccess) onSuccess(res);
-          return res;
+          if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            const { queueOfflineMutation } = await import('@/lib/offline-sync');
+            await queueOfflineMutation(fullPath, input);
+            const res = { success: true, offline: true, message: 'Queued for sync' };
+            if (onSuccess) onSuccess(res);
+            return res;
+          }
+
+          try {
+            const res = await executeServerMutation(fullPath, input);
+            if (onSuccess) onSuccess(res);
+            return res;
+          } catch (err) {
+            if (err instanceof TypeError && err.message.includes('fetch')) {
+              const { queueOfflineMutation } = await import('@/lib/offline-sync');
+              await queueOfflineMutation(fullPath, input);
+              const res = { success: true, offline: true, message: 'Queued for sync' };
+              if (onSuccess) onSuccess(res);
+              return res;
+            }
+            throw err;
+          }
         },
       };
     },

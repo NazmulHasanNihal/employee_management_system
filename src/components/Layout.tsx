@@ -57,10 +57,10 @@ function NavLink({ item, active, onClick, t }: { item: any; active: boolean; onC
       prefetch
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
-      className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ease-out ${
+      className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 ease-out ${
         active
-          ? 'bg-[var(--brand-soft)] text-[var(--brand-strong)]'
-          : 'text-[var(--text-muted)] hover:-translate-y-px hover:bg-[var(--bg-hover)] hover:text-[var(--text-main)] hover:shadow-sm'
+          ? 'bg-gradient-to-r from-[var(--brand-soft)] to-transparent text-[var(--brand-strong)] shadow-sm border border-[var(--brand)]/10'
+          : 'text-[var(--text-muted)] hover:-translate-y-[2px] hover:bg-[var(--bg-hover)]/80 hover:text-[var(--text-main)] hover:shadow-sm'
       }`}
     >
       {active && (
@@ -193,18 +193,18 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
       </AnimatePresence>
 
       <motion.aside
-        className={`fixed z-50 flex h-full w-[85vw] max-w-[18rem] flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)]/95 backdrop-blur-xl transition-transform duration-300 md:relative md:w-72 md:translate-x-0 ${
+        className={`fixed z-50 flex h-full w-[85vw] max-w-[18rem] flex-col transform border-r border-[var(--border-hairline)] bg-[var(--bg-panel)]/70 backdrop-blur-2xl shadow-xl transition-transform duration-300 md:relative md:w-72 md:translate-x-0 ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between border-b border-[var(--border-hairline)] p-5">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] px-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-md shadow-[var(--brand)]/20">
-              <LinkIcon size={18} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-lg shadow-[var(--brand)]/30 transition-transform group-hover:scale-105">
+              <LinkIcon size={20} className="drop-shadow-md" />
             </div>
             <div>
-              <h1 className="text-sm font-extrabold tracking-tight text-[var(--text-main)]">OpsHub</h1>
-              <p className="text-[10px] font-medium tracking-wide text-[var(--text-muted)]">Workspace</p>
+              <h1 className="text-base font-extrabold tracking-tight text-[var(--text-main)]">OpsHub</h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Enterprise</p>
             </div>
           </div>
           <button aria-label="Close menu" className="text-[var(--text-muted)] hover:text-[var(--text-main)] md:hidden rounded-lg p-1" onClick={() => setIsMobileMenuOpen(false)}>
@@ -280,7 +280,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
            </div>
          )}
 
-        <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)]/90 backdrop-blur-md px-4 md:px-6">
+        <header className="z-10 flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-app)]/60 backdrop-blur-2xl px-4 md:px-8">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 md:hidden">
               <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="touch-target -ml-1 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]">

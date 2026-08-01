@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Download, Calculator, FileSpreadsheet, PiggyBank } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RunPayrollForm } from '@/components/payroll/RunPayrollForm';
-import { downloadCSV, toPfCsv, toGratuityCsv } from '@/lib/export';
+import { downloadCSV, toPfCsv, toGratuityCsv, toBeftnCsv } from '@/lib/export';
 
 interface PayrollActionsProps {
   payrolls: any[];
@@ -35,6 +35,7 @@ export function PayrollActions({ payrolls }: PayrollActionsProps) {
   const exportPF = () => downloadCSV('pf_statement.csv', toPfCsv(payrolls));
   const exportGratuity = () => downloadCSV('gratuity_report.csv', toGratuityCsv(payrolls));
   const exportFull = () => downloadCSV('payroll_export.csv', payslipCsv(payrolls));
+  const exportBEFTN = () => downloadCSV(`BEFTN_Batch_${new Date().toISOString().split('T')[0]}.csv`, toBeftnCsv(payrolls));
 
   return (
     <>
@@ -44,6 +45,9 @@ export function PayrollActions({ payrolls }: PayrollActionsProps) {
         </Button>
         <Button variant="outline" size="sm" onClick={exportGratuity} title="Gratuity accrual report (CSV)" className="touch-target-sm">
           <FileSpreadsheet className="h-4 w-4" /> Gratuity
+        </Button>
+        <Button variant="outline" size="sm" onClick={exportBEFTN} title="BEFTN Bank Batch Export" className="touch-target-sm bg-[var(--brand)]/10 text-[var(--brand)] hover:bg-[var(--brand)]/20 border-[var(--brand)]/30">
+          <Download className="h-4 w-4" /> BEFTN
         </Button>
         <Button variant="outline" size="sm" onClick={exportFull} title="Full payroll export (CSV)" className="touch-target-sm">
           <Download className="h-4 w-4" /> Export CSV

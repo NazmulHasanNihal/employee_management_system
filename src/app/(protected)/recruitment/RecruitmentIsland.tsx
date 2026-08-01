@@ -5,6 +5,7 @@ import { Plus, Building, Target, Users, Send, X, Phone, FileText, Briefcase } fr
 import { trpc } from '@/lib/trpc/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/lib/toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,7 +14,7 @@ interface RecruitmentIslandProps {
   initialJobs: { id: string; title: string; department: string; location: string; type: string; status: string; requiredSkills: string | null; description: string | null; candidates: { id: string; name: string; email: string; status: string }[] }[];
 }
 
-const STATUS_COLUMNS = ['Applied', 'Interviewing', 'Offered'];
+const STATUS_COLUMNS = ['Applied', 'Interviewing', 'Offered', 'Hired'];
 
 export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProps) {
   const [showAddJob, setShowAddJob] = useState(false);
@@ -64,6 +65,10 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
     }));
 
     updateCandidateStatus.mutate({ candidateId, status: newStatus });
+    
+    if (newStatus === 'Offered' || newStatus === 'Hired') {
+      toast.success('Candidate Converted', `Candidate moved to ${newStatus}. They have been automatically provisioned as an Employee in the Onboarding pipeline.`);
+    }
   };
 
   const handleAddJob = (e: React.FormEvent) => {
@@ -171,7 +176,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
                       {STATUS_COLUMNS.map((statusColumn) => (
                         <div
                           key={statusColumn}
@@ -182,7 +187,7 @@ export default function RecruitmentIsland({ initialJobs }: RecruitmentIslandProp
                           <h5 className="mb-2 border-b border-[var(--border-hairline)] pb-2 text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">
                             {statusColumn}
                           </h5>
-                          {(job.candidates || []).filter((c: { id: string; name: string; email: string; status: string; phone?: string; resumeUrl?: string }) => c.status === statusColumn || (statusColumn === 'Offered' && c.status === 'Hired')).map((cand: { id: string; name: string; email: string; status: string; phone?: string; resumeUrl?: string }) => (
+                          {(job.candidates || []).filter((c: { id: string; name: string; email: string; status: string; phone?: string; resumeUrl?: string }) => c.status === statusColumn).map((cand: { id: string; name: string; email: string; status: string; phone?: string; resumeUrl?: string }) => (
                             <div
                               key={cand.id}
                               draggable

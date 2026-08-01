@@ -1,6 +1,5 @@
 import { defaultCache } from "@serwist/next/worker";
 import { type PrecacheEntry, Serwist } from "serwist";
-import { BackgroundSyncPlugin, NetworkOnly } from "serwist";
 
 declare global {
   interface ServiceWorkerGlobalScope {
@@ -10,31 +9,12 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-const bgSyncPlugin = new BackgroundSyncPlugin("offline-attendance-queue", {
-  maxRetentionTime: 24 * 60, // Retry for max of 24 Hours (specified in minutes)
-});
-
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
-  runtimeCaching: [
-    ...defaultCache,
-    {
-      matcher: ({ url }) => {
-        const p = url.pathname;
-        return p.includes('attendance.clockIn') ||
-               p.includes('attendance.clockOut') ||
-               p.includes('leave.requestLeave') ||
-               p.includes('expenses.submitExpense') ||
-               p.includes('workflows.createTask');
-      },
-      handler: new NetworkOnly({
-        plugins: [bgSyncPlugin],
-      }),
-    },
-  ],
+  runtimeCaching: defaultCache,
 });
 
 serwist.addEventListeners();

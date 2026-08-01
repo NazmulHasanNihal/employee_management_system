@@ -14,6 +14,7 @@ import { estimateProvidentFund, estimateFestivalBonus, estimateGratuity } from '
 import { computeAttendance } from '@/lib/attendance';
 import { computeBdLeaveBalance } from '@/server/leaveBalance';
 import { parseServerAction, ValidationError, BatchSchema } from '@/lib/validation';
+import { logSecureAuditEvent } from '@/lib/audit';
 
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -1283,10 +1284,14 @@ async function runMutation(path: string, input: any) {
       if (input.status === 'terminated' || input.status === 'active') {
         data.status = input.status;
       }
-      if (Object.keys(data).length === 0) {
-        throw new Error('No valid fields provided (expected permissions array and/or status)');
-      }
       const updated = await prisma.user.update({ where: { id: input.userId }, data });
+      await logSecureAuditEvent({
+        action: 'Permissions Updated',
+        target: input.userId,
+        user: caller?.email || 'System',
+        severity: 'HIGH',
+      });
+      return updated;
       // Keep the cached employee list (used by the registry/hierarchy/grid) fresh.
       try { revalidateTag('employees'); } catch { /* revalidateTag unavailable outside a request scope */ }
       return updated;
@@ -1702,7 +1707,7 @@ async function runMutation(path: string, input: any) {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       return await prisma.user.update({
         where: { id: userId },
-        data: { pushSub: null as any },
+        data: { pushSub: input },
       });
     }
     if (path === 'notifications.removePushSub') {
@@ -2123,10 +2128,30 @@ async function runMutation(path: string, input: any) {
     if (path === 'recruitment.updateCandidateStatus') {
       if (!isAdmin && !isCEO) throw new Error('Unauthorized: HR only');
       if (!input?.candidateId || !input?.status) throw new Error('Missing fields');
-      return await prisma.candidate.update({
+      const updatedCandidate = await prisma.candidate.update({
         where: { id: input.candidateId },
         data: { status: input.status }
       });
+
+      // Auto-conversion ATS -> Onboarding Pipeline
+      if (input.status === 'Offered' || input.status === 'Hired') {
+        const existingUser = await prisma.user.findUnique({ where: { email: updatedCandidate.email } });
+        if (!existingUser) {
+          await prisma.user.create({
+            data: {
+              id: `usr_${Date.now()}_${Math.floor(Math.random() * 1000)}`, // Dummy ID for Supabase auth placeholder
+              email: updatedCandidate.email,
+              name: updatedCandidate.name,
+              phone: updatedCandidate.phone,
+              role: 'Employee',
+              status: 'invited',
+              isOnboarded: false,
+              department: 'General', // Default department, to be filled during onboarding
+            }
+          });
+        }
+      }
+      return updatedCandidate;
     }
     if (path === 'recruitment.updateCandidate') {
       if (!isAdmin && !isCEO) throw new Error('Unauthorized: HR only');
@@ -2544,6 +2569,14 @@ async function runMutation(path: string, input: any) {
           created++;
         }
       }
+
+      await logSecureAuditEvent({
+        action: 'Automated Payroll Run',
+        target: `${month} ${year}`,
+        user: caller?.email || 'System',
+        severity: 'CRITICAL',
+      });
+
       return { success: true, created };
     }
 
@@ -2773,6 +2806,26 @@ async function runMutation(path: string, input: any) {
           department: caller.department, // Snapshot their department for analytics
         }
       });
+    }
+    if (path === 'audit.tamperDatabase') {
+      if (!isCEO) throw new MutationError('UNAUTHORIZED', 'CEO only');
+      
+      const record = await prisma.auditLog.findFirst({
+        orderBy: { timestamp: 'desc' },
+        skip: 1 // pick the 2nd most recent so we break the chain
+      });
+      
+      if (!record) return { success: false };
+      
+      // Deliberately tamper with the database record
+      await prisma.auditLog.update({
+        where: { id: record.id },
+        data: { 
+          action: 'TAMPERED: Payroll Executed $999,999' 
+        }
+      });
+      
+      return { success: true, tamperedId: record.id };
     }
 
     throw new MutationError('NOT_FOUND', `Unknown mutation: ${path}`);

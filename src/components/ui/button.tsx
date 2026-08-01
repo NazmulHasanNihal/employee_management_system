@@ -8,19 +8,19 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        default: "bg-gradient-to-b from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-md shadow-[var(--brand)]/20 hover:shadow-lg hover:shadow-[var(--brand)]/40 hover:brightness-110 active:scale-[0.98] transition-all duration-300",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border border-[var(--border-strong)] bg-transparent hover:bg-[var(--bg-hover)]/80 hover:shadow-sm active:scale-[0.98] transition-all duration-300",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-[var(--bg-hover)] text-[var(--text-main)] border border-transparent hover:border-[var(--border-hairline)] hover:shadow-sm active:scale-[0.98] transition-all duration-300",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-[var(--bg-hover)]/80 text-[var(--text-main)] hover:shadow-sm active:scale-[0.98] transition-all duration-300",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-gradient-to-b from-[var(--rose)] to-rose-700 text-white shadow-md shadow-[var(--rose)]/20 hover:shadow-lg hover:shadow-[var(--rose)]/40 hover:brightness-110 active:scale-[0.98] transition-all duration-300",
+        link: "text-[var(--brand)] underline-offset-4 hover:underline",
         // Legacy variants
-        primary: "bg-primary text-primary-foreground hover:bg-primary/80",
-        danger: "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        primary: "bg-gradient-to-b from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-md shadow-[var(--brand)]/20 hover:shadow-lg hover:shadow-[var(--brand)]/40 hover:brightness-110 active:scale-[0.98] transition-all duration-300",
+        danger: "bg-gradient-to-b from-[var(--rose)] to-rose-700 text-white shadow-md shadow-[var(--rose)]/20 hover:shadow-lg hover:shadow-[var(--rose)]/40 hover:brightness-110 active:scale-[0.98] transition-all duration-300",
       },
       size: {
         default:

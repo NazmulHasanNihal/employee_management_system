@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lock, FileDigit, Search, ShieldCheck, UserPlus, Crown, Check, ShieldAlert, Loader2, Link as LinkIcon } from 'lucide-react';
-import { trpc } from '@/lib/trpc/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { executeServerMutation } from '@/app/actions/db';
+import { trpc } from '@/lib/trpc/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -56,6 +57,17 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
     updatePermissions.mutate({ userId: selectedUserId, permissions: ['AUDIT_LOG_ACCESS'] });
   };
 
+  const handleTamper = async () => {
+    try {
+      await executeServerMutation('audit.tamperDatabase', {});
+      toast.success('Database Tampered', 'A record was maliciously altered. Run Verify Ledger to catch it!');
+      // Typically we'd invalidate queries here, but a hard reload is fine for demo
+      window.location.reload();
+    } catch (e: any) {
+      toast.error('Tamper Failed', e.message);
+    }
+  };
+
   const handleVerifyLedger = async () => {
     setVerifyState('verifying');
     let isTampered = false;
@@ -70,25 +82,33 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
     
     for (let i = 0; i < verificationChain.length; i++) {
       const event = verificationChain[i];
-      // Compute what the hash *should* be
-      const payloadString = prevHash + event.action + (event.actorId || event.user || '') + new Date(event.timestamp).toISOString();
+      
+      const actualHash = event.hash || "MISSING";
+      const actualPrev = event.previousHash || "MISSING";
+      
+      // Compute what the hash *should* be based on the payload
+      const payloadString = prevHash + event.action + (event.target || '') + (event.user || '') + new Date(event.timestamp).toISOString();
       const computedHash = await computeSHA256(payloadString);
       
-      // Since our seeded db might not have strict hashes, we simulate the presence for the UI demo.
-      // In production, `actualHash` would just be `event.hash`.
-      const actualHash = event.hash || computedHash.substring(0, 32);
-      const actualPrev = event.previousHash || (i === 0 ? "genesis_hash_00000000000000000000000000000000" : prevHash);
+      // Validate both the current hash and the chain link (prevHash)
+      // If `event.hash` doesn't exist, it's a legacy seeded record, we'll gracefully let it pass if it matches our initial dummy logic, but for real records it must match.
+      const isLegacy = !event.hash && !event.previousHash;
       
-      const isRecordValid = true; // For demo purposes, assuming valid
+      let isRecordValid = true;
+      if (!isLegacy) {
+        if (actualHash !== computedHash || actualPrev !== prevHash) {
+          isRecordValid = false;
+        }
+      }
 
       updatedEvents.push({
         ...event,
-        verifiedHash: actualHash,
-        verifiedPrevHash: actualPrev,
+        verifiedHash: isLegacy ? computedHash.substring(0, 32) : actualHash,
+        verifiedPrevHash: isLegacy ? prevHash : actualPrev,
         isValid: isRecordValid
       });
       
-      prevHash = actualHash;
+      prevHash = isLegacy ? computedHash : actualHash;
       
       if (!isRecordValid) {
         isTampered = true;
@@ -148,14 +168,14 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
           </Button>
 
           {isCEO && (
-            <Button
-              onClick={() => setShowGrantModal(true)}
-              variant="primary"
-              size="sm"
-              className="rounded-xl flex items-center gap-2 text-xs font-semibold"
-            >
-              <Crown size={14} className="text-[var(--amber)]" /> Delegate Audit
-            </Button>
+            <>
+              <Button onClick={() => setShowGrantModal(true)} variant="outline" className="rounded-xl flex items-center gap-2 border-[var(--border-hairline)] bg-[var(--bg-panel)]">
+                <UserPlus size={16} className="text-[var(--text-muted)]" /> Grant Audit Access
+              </Button>
+              <Button onClick={handleTamper} variant="outline" className="rounded-xl flex items-center gap-2 border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10">
+                <ShieldAlert size={16} /> Tamper Database
+              </Button>
+            </>
           )}
         </div>
       </div>

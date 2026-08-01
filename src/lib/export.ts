@@ -31,6 +31,15 @@ export interface PfRow {
   providentFund: number;
 }
 
+export interface BeftnCsvRow {
+  user?: { name?: string; id?: string };
+  id: string;
+  month: string;
+  year: number;
+  netPay?: number;
+  totalAmount?: number;
+}
+
 export interface PfCsvRow {
   user?: { name?: string; id?: string; baseSalary?: number };
   month: string;
@@ -93,5 +102,37 @@ export function toFestivalBonusCsv(festivalBonuses: FestivalBonusCsvRow[]): (str
     f.amount ?? 0,
     f.status,
   ]);
+  return [header, ...body];
+}
+
+export function toBeftnCsv(payrolls: BeftnCsvRow[]): (string | number)[][] {
+  const header = [
+    'Receiver Name', 
+    'Receiver Account No', 
+    'Routing Number', 
+    'Amount (BDT)', 
+    'Payment Description', 
+    'Payment Date'
+  ];
+  
+  const today = new Date().toISOString().split('T')[0];
+  
+  const body = payrolls.map((p) => {
+    // In a production system, Account/Routing numbers would be fetched from the User model.
+    // For now, we supply structurally valid placeholders for the accountant to populate.
+    const accountNoPlaceholder = '00000000000'; 
+    const routingNoPlaceholder = '000000000';
+    const amount = p.netPay ?? p.totalAmount ?? 0;
+    
+    return [
+      p.user?.name || 'Unknown',
+      accountNoPlaceholder,
+      routingNoPlaceholder,
+      amount,
+      `Salary for ${p.month} ${p.year}`,
+      today,
+    ];
+  });
+  
   return [header, ...body];
 }

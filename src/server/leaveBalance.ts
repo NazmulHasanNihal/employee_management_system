@@ -43,9 +43,9 @@ export interface LeaveBucket {
  */
 export const LEAVE_POLICY = {
   leaveYearStart: { month: 0, day: 1 }, // Jan 1 (month is 0-indexed)
-  casual: { perYear: 10, accruesPerMonth: true, carryForward: 0 }, // 10 days, non-cumulative
+  casual: { perYear: 14, accruesPerMonth: true, carryForward: 0 }, // 14 days, non-cumulative (BLA 2006)
   earned: { perYear: 14, carryForward: 30 }, // 1 day per 18 worked days, up to 30 carried forward
-  sick: { perYear: 14, carryForward: 0 }, // 14 days, non-cumulative
+  sick: { perYear: 14, carryForward: 0 }, // 14 days, non-cumulative (BLA 2006)
   festival: { perYear: 11, carryForward: 0 }, // 11 festival days (national + religious)
   maternity: { perYear: 112, carryForward: 0, minServiceMonths: 0 }, // 16 weeks / 112 days
   paternity: { perYear: 2, carryForward: 0, minServiceMonths: 0 },

@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Noto_Sans_Bengali } from "next/font/google";
+import { Outfit, Inter, Noto_Sans_Bengali } from "next/font/google";
 import "./globals.css";
 
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-heading",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
@@ -52,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bengaliSans.variable} antialiased`}
+        className={`${inter.variable} ${outfit.variable} ${bengaliSans.variable} font-sans antialiased bg-[var(--bg-app)] text-[var(--text-main)] min-h-screen`}
         suppressHydrationWarning
       >
         <ThemeProvider
