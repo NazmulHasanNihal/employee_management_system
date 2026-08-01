@@ -18,14 +18,14 @@ function Avatar({
   name?: string | null;
 }) {
   // Map legacy sizes to shadcn sizes
-  const mappedSize = size === "md" ? "default" : size === "xl" ? "lg" : size === "xs" ? "sm" : size;
+  const mappedSize = size === "md" ? "default" : size === "xs" ? "sm" : size;
   
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={mappedSize}
       className={cn(
-        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
+        "group/avatar relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:border-border after:mix-blend-darken data-[size=lg]:size-10 data-[size=xl]:size-24 data-[size=xxl]:size-32 data-[size=sm]:size-6 dark:after:mix-blend-lighten",
         className
       )}
       {...props}

@@ -117,7 +117,7 @@ export default async function ProfilePage() {
         <div className="lg:col-span-1">
           <Card className="flex h-full flex-col items-center text-center">
             <div className="flex flex-col items-center gap-4 py-2">
-              <AvatarUpload currentUrl={user.avatarUrl} size="xl" />
+              <AvatarUpload currentUrl={user.avatarUrl} size="xxl" />
               <div>
                 <EditableName name={user.name} />
                 <p className="text-sm text-[var(--text-muted)]">{user.designation || 'Employee'}</p>

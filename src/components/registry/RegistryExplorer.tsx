@@ -320,52 +320,57 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
       {selectedEmployee && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setSelectedEmployee(null)}>
           <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4 sm:p-6">
-              <div className="flex items-center gap-4">
+            <div className="relative flex flex-col items-center justify-center border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-6 text-center">
+              <button 
+                onClick={() => setSelectedEmployee(null)} 
+                className="absolute right-4 top-4 rounded-full p-2 text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-panel)] hover:text-[var(--text-main)]"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              
+              <div className="mb-4 flex justify-center">
                 {canModifyUser({ role: user.role, designation: user.designation ?? undefined, isOwner }, { role: selectedEmployee.role, designation: selectedEmployee.designation ?? undefined, isOwner: selectedEmployee.isOwner }) ? (
                   <AvatarUpload
                     currentUrl={selectedEmployee.avatarUrl}
                     targetUserId={selectedEmployee.id}
                     targetName={selectedEmployee.name}
-                    size="xl"
+                    size="xxl"
                     onUploadSuccess={(url) => {
                       setSelectedEmployee({ ...selectedEmployee, avatarUrl: url });
                       utils.invalidate('registry');
                     }}
                   />
                 ) : (
-                  <Avatar src={selectedEmployee.avatarUrl} name={selectedEmployee.name} size="xl" />
+                  <Avatar src={selectedEmployee.avatarUrl} name={selectedEmployee.name} size="xxl" />
                 )}
-                <div>
-                  <h3 className="text-lg font-semibold text-[var(--text-main)]">{selectedEmployee.name}</h3>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
-                      {selectedEmployee.designation || 'Staff'}
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <h3 className="text-xl font-bold text-[var(--text-main)]">{selectedEmployee.name}</h3>
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                  <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
+                    {selectedEmployee.designation || 'Staff'}
+                  </span>
+                  <span className="text-sm text-[var(--text-muted)]">· {selectedEmployee.department || 'No Department'}</span>
+                </div>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                  <Badge variant={roleVariant(selectedEmployee.role)}>{selectedEmployee.role}</Badge>
+                  {(selectedEmployee.role === 'CEO' || selectedEmployee.isOwner) && selectedEmployee.role !== 'Admin' && (
+                    <Badge variant="rose">Admin</Badge>
+                  )}
+                  {selectedEmployee.status && (
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.status === 'active' || selectedEmployee.status === 'Active' ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : selectedEmployee.status === 'Terminated' ? 'bg-[var(--rose-soft)] text-[var(--rose)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
+                      {selectedEmployee.status}
                     </span>
-                    <span className="text-xs text-[var(--text-muted)]">· {selectedEmployee.department || 'No Department'}</span>
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <Badge variant={roleVariant(selectedEmployee.role)}>{selectedEmployee.role}</Badge>
-                    {(selectedEmployee.role === 'CEO' || selectedEmployee.isOwner) && selectedEmployee.role !== 'Admin' && (
-                      <Badge variant="rose">Admin</Badge>
-                    )}
-                    {selectedEmployee.status && (
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.status === 'active' || selectedEmployee.status === 'Active' ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : selectedEmployee.status === 'Terminated' ? 'bg-[var(--rose-soft)] text-[var(--rose)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
-                        {selectedEmployee.status}
-                      </span>
-                    )}
-                    {selectedEmployee.isOnline !== undefined && (
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.isOnline ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${selectedEmployee.isOnline ? 'bg-[var(--emerald)]' : 'bg-[var(--text-muted)]'}`} />
-                        {selectedEmployee.isOnline ? 'Online' : 'Offline'}
-                      </span>
-                    )}
-                  </div>
+                  )}
+                  {selectedEmployee.isOnline !== undefined && (
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.isOnline ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${selectedEmployee.isOnline ? 'bg-[var(--emerald)]' : 'bg-[var(--text-muted)]'}`} />
+                      {selectedEmployee.isOnline ? 'Online' : 'Offline'}
+                    </span>
+                  )}
                 </div>
               </div>
-              <button onClick={() => setSelectedEmployee(null)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] touch-target-sm">
-                <X className="h-5 w-5" />
-              </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

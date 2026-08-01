@@ -15,7 +15,7 @@ export function AvatarUpload({
   onUploadSuccess,
 }: {
   currentUrl?: string | null;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   targetUserId?: string;
   targetName?: string;
   onUploadSuccess?: (url: string) => void;

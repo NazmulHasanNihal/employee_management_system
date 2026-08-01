@@ -1236,17 +1236,21 @@ async function runMutation(path: string, input: any) {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       const { isOwner, role, status, ...safeData } = input || {};
       const tenantId = caller?.tenantId || undefined;
-      return await prisma.user.create({ data: { ...safeData, tenantId } as any });
+      const newUser = await prisma.user.create({ data: { ...safeData, tenantId } as any });
+      revalidateTag('org-tree');
+      return newUser;
     }
     if (path === 'registry.updateEmployee') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       // Non-admins may only edit a narrow allow-list of safe fields.
-      const allowed = ['name', 'designation', 'department', 'avatarUrl', 'employmentType', 'phone', 'location'];
+      const allowed = ['name', 'designation', 'department', 'avatarUrl', 'employmentType', 'phone', 'location', 'managerId'];
       const data: Record<string, unknown> = {};
       for (const key of allowed) {
         if (input?.data?.[key] !== undefined) data[key] = input.data[key];
       }
-      return await prisma.user.update({ where: { id: input.id }, data });
+      const updatedUser = await prisma.user.update({ where: { id: input.id }, data });
+      revalidateTag('org-tree');
+      return updatedUser;
     }
     if (path === 'registry.deleteEmployee') {
       const targetUser = await prisma.user.findUnique({ where: { id: input.id } });
@@ -1259,7 +1263,7 @@ async function runMutation(path: string, input: any) {
       // Delete related records (cascade doesn't always handle supabase auth).
       // Wrap in a transaction so a failure at any step rolls back the whole
       // operation — no orphaned attendance/leave/payroll rows left behind.
-      return await prisma.$transaction([
+      const result = await prisma.$transaction([
         prisma.attendance.deleteMany({ where: { userId: input.id } }),
         prisma.leaveRequest.deleteMany({ where: { userId: input.id } }),
         prisma.payroll.deleteMany({ where: { userId: input.id } }),
@@ -1272,6 +1276,8 @@ async function runMutation(path: string, input: any) {
         }),
         prisma.user.delete({ where: { id: input.id } }),
       ]);
+      revalidateTag('org-tree');
+      return result;
     }
     if (path === 'registry.updatePermissions') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');

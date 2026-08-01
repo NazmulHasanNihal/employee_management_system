@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getCaller } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
@@ -178,6 +179,10 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
     } catch (autoErr) {
       logError('Welcome automation failed (non-fatal):', autoErr);
     }
+
+    // Invalidate org chart and employees list
+    revalidateTag('org-tree');
+    revalidateTag('employees');
 
     return {
       success: true,
