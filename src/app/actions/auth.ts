@@ -3,6 +3,7 @@
 import crypto from 'crypto';
 import { rateLimit, provisionKey } from '@/lib/ratelimit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { logError } from '@/lib/logger';
 import { MutationError } from '@/lib/mutation-error';
@@ -65,7 +66,16 @@ export async function loginWithRateLimit(email: string, password: string, twoFac
     }
 
     pendingSessions.delete(tempSessionId);
-    return { user: data.user };
+    
+    // 2FA passed. Now log in with server client to set cookies.
+    const supabase = await createClient();
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: session.email,
+      password: session.password,
+    });
+    
+    if (authError) return { error: authError.message };
+    return { user: authData.user };
   }
 
   const { data, error } = await admin.auth.signInWithPassword({
@@ -91,11 +101,43 @@ export async function loginWithRateLimit(email: string, password: string, twoFac
       expires: Date.now() + 120000,
     });
     cleanupPendingSessions();
-    await admin.auth.signOut();
     return { requiresTwoFactor: true, sessionId };
   }
 
-  return { user: data.user };
+  // No 2FA required. Sign in with Server Client to set cookies.
+  const supabase = await createClient();
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  
+  if (authError) return { error: authError.message };
+  return { user: authData.user };
+}
+
+export async function sendMagicLink(email: string) {
+  const ip = 'unknown';
+  const rl = await rateLimit(provisionKey(undefined, ip), { max: 5, windowMs: 15 * 60 * 1000 });
+  if (!rl.success) {
+    return { error: 'Too many attempts. Try again in 15 minutes.' };
+  }
+
+  const supabase = await createClient();
+  
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false, // Don't allow random signups
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    logError('Magic link failed:', error);
+    return { error: error.message };
+  }
+
+  return { ok: true };
 }
 
 export async function updatePassword(password: string) {

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound, KeyRound } from "lucide-react";
+import { Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound, KeyRound, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { loginWithRateLimit } from "@/app/actions/auth";
+import { loginWithRateLimit, sendMagicLink } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 import { T } from "@/components/Translate";
 
@@ -22,6 +22,8 @@ export default function LoginPage() {
   const [tempSessionId, setTempSessionId] = useState<string | null>(null);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isRecoverySent, setIsRecoverySent] = useState(false);
+  const [isMagicLink, setIsMagicLink] = useState(false);
+  const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
 
   const validateEmail = (value: string) => {
     if (!value) return "Email is required";
@@ -122,6 +124,25 @@ export default function LoginPage() {
     }
   };
 
+  const handleMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailErr = validateEmail(email);
+    setEmailError(emailErr);
+    if (emailErr) return;
+
+    setError("");
+    setLoading(true);
+    
+    const result = await sendMagicLink(email);
+    setLoading(false);
+    
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setIsMagicLinkSent(true);
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg-app)] p-4">
       <div className="ledger-accent" />
@@ -132,11 +153,13 @@ export default function LoginPage() {
               {requiresTwoFactor ? <KeyRound size={22} /> : <Lock size={22} />}
             </div>
              <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-              {/* @ts-ignore */}<T>{isForgotPassword ? 'Reset Password' : requiresTwoFactor ? 'Two-Factor Authentication' : (loginType === 'admin' ? 'Admin Sign In' : 'Welcome Back')}</T>
+              {/* @ts-ignore */}<T>{isForgotPassword ? 'Reset Password' : isMagicLink ? 'Magic Link' : requiresTwoFactor ? 'Two-Factor Authentication' : (loginType === 'admin' ? 'Admin Sign In' : 'Welcome Back')}</T>
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
               {/* @ts-ignore */}<T>{isForgotPassword
                 ? 'Enter your email to receive a recovery link'
+                : isMagicLink
+                ? 'Sign in securely without a password'
                 : requiresTwoFactor
                 ? 'Enter the 6-digit code from your authenticator app'
                 : (loginType === 'admin'
@@ -145,7 +168,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {!requiresTwoFactor && !isForgotPassword && (
+          {!requiresTwoFactor && !isForgotPassword && !isMagicLink && (
             <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-1">
               <button
                 type="button"
@@ -175,7 +198,48 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-          {isForgotPassword ? (
+          {isMagicLink ? (
+            isMagicLinkSent ? (
+              <div className="text-center animate-fade-in">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand)]/10 text-[var(--brand)]">
+                  <Sparkles size={28} />
+                </div>
+                <h3 className="mb-2 text-lg font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Check your inbox</T></h3>
+                <p className="mb-6 text-sm text-[var(--text-muted)]">
+                  {/* @ts-ignore */}<T>We've sent a magic sign-in link to</T> <span className="font-semibold text-[var(--text-main)]">{email}</span>
+                </p>
+                <button type="button" onClick={() => { setIsMagicLink(false); setIsMagicLinkSent(false); }} className="w-full text-sm font-medium text-[var(--brand)] hover:underline">
+                  {/* @ts-ignore */}<T>Back to login</T>
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleMagicLink} className="space-y-4">
+                <div>
+                  <label htmlFor="magic-email" className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
+                    {/* @ts-ignore */}<T>Email address</T></label>
+                  <div className="relative">
+                    <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                    <input
+                      id="magic-email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(validateEmail(e.target.value)); }}
+                      className={cn("flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-2.5 pl-10 pr-4 text-sm", emailError && "border-[var(--rose)]")}
+                      placeholder="you@company.com"
+                    />
+                  </div>
+                  {emailError && <p className="mt-1 text-xs text-[var(--rose)]">{emailError}</p>}
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-60">
+                  {loading ? "Sending..." : <>{/* @ts-ignore */}<T>Send Magic Link</T><Sparkles size={16} /></>}
+                </button>
+                <button type="button" onClick={() => setIsMagicLink(false)} className="w-full text-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
+                  {/* @ts-ignore */}<T>Back to login</T>
+                </button>
+              </form>
+            )
+          ) : isForgotPassword ? (
             isRecoverySent ? (
               <div className="text-center">
                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
@@ -266,6 +330,24 @@ export default function LoginPage() {
               </div>
               <button type="submit" disabled={loading} className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-60">
                 {loading ? "Signing in…" : <>{/* @ts-ignore */}<T>Sign in</T><ArrowRight size={16} /></>}
+              </button>
+              
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[var(--border-hairline)]"></div>
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-card px-2 text-[var(--text-muted)]">Or continue with</span>
+                </div>
+              </div>
+              
+              <button 
+                type="button" 
+                onClick={() => setIsMagicLink(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-app)] py-3 text-sm font-medium text-[var(--text-main)] transition-colors hover:bg-[var(--border-hairline)]"
+              >
+                <Sparkles size={16} className="text-[var(--brand)]" />
+                {/* @ts-ignore */}<T>Sign in with Magic Link</T>
               </button>
             </form>
           ) : (
