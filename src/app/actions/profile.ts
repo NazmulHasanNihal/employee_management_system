@@ -105,7 +105,7 @@ export async function updateProfileField(field: string, value: unknown) {
     where: { id: caller.id },
     data: { [field]: normalized },
   });
-  revalidatePath('/registry');
+  revalidatePath('/', 'layout');
   return { ok: true };
 }
 
@@ -140,7 +140,7 @@ export async function updateProfileBatch(
    if (Object.keys(data).length === 0) return { ok: true };
 
   await prisma.user.update({ where: { id: caller.id }, data });
-  revalidatePath('/registry');
+  revalidatePath('/', 'layout');
   return { ok: true };
 }
 
@@ -189,7 +189,7 @@ export async function updateAvatarUrl(url: string) {
     where: { id: caller.id },
     data: { avatarUrl: url },
   });
-  revalidatePath('/registry');
+  revalidatePath('/', 'layout');
   return { ok: true };
 }
 

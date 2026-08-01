@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lock, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { updatePassword } from "@/app/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { T } from "@/components/Translate";
 
@@ -13,6 +14,20 @@ export default function UpdatePasswordPage() {
   const [error, setError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    // When the component mounts, instantiate the Supabase client
+    // This will automatically parse any #access_token=... in the URL
+    // (from Implicit flow password recovery links) and set the session cookies
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      // If there's an error from the URL hash, display it
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      if (hashParams.get('error_description')) {
+        setError(decodeURIComponent(hashParams.get('error_description') || ''));
+      }
+    });
+  }, []);
 
   const validatePassword = (value: string) => {
     if (!value) return "Password is required";

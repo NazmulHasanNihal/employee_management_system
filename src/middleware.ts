@@ -159,7 +159,8 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.startsWith('/auth/callback') ||
       request.nextUrl.pathname.startsWith('/api/invite') ||
       request.nextUrl.pathname.startsWith('/invite') ||
-      request.nextUrl.pathname.startsWith('/verify-email');
+      request.nextUrl.pathname.startsWith('/verify-email') ||
+      request.nextUrl.pathname.startsWith('/update-password');
 
     if (!user && !isPublicRoute) {
       const url = request.nextUrl.clone()

@@ -2882,7 +2882,7 @@ function revalidateForPath(path: string) {
   const routes = routeMap[domain] ?? ['/dashboard'];
   for (const route of routes) {
     try {
-      revalidatePath(route);
+      revalidatePath('/', 'layout');
     } catch {
       // revalidatePath is a no-op outside a request scope; ignore.
     }
