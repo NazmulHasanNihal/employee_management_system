@@ -2,8 +2,40 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { isIpAllowed, getClientIp, isAdminRoute, createIpDenyResponse } from '@/lib/ip-allowlist'
 
+// ── Rate Limiting (In-Memory per Isolate) ──────────────────────────────────
+const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
+
+function applyRateLimit(ip: string): boolean {
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 100;    // 100 requests per minute per IP
+  const now = Date.now();
+
+  const record = rateLimitMap.get(ip);
+  if (!record || record.resetTime < now) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+    return true;
+  }
+  
+  if (record.count >= maxRequests) {
+    return false;
+  }
+
+  record.count += 1;
+  return true;
+}
+
 export async function middleware(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request) || 'unknown';
+    
+    // Phase 1: API Rate Limiting (DDoS Protection)
+    if (!applyRateLimit(clientIp)) {
+      return new NextResponse(
+        JSON.stringify({ error: "TOO_MANY_REQUESTS", message: "Rate limit exceeded. Please try again later." }),
+        { status: 429, headers: { "content-type": "application/json", "Retry-After": "60" } }
+      );
+    }
+
     const code = request.nextUrl.searchParams.get('code');
     const tokenHash = request.nextUrl.searchParams.get('token_hash');
     const type = request.nextUrl.searchParams.get('type');
@@ -50,9 +82,17 @@ export async function middleware(request: NextRequest) {
             supabaseResponse = NextResponse.next({
               request,
             })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              supabaseResponse.cookies.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Phase 3: Session Hijacking Prevention
+              // Enforce strict security on all session cookies
+              const secureOptions = {
+                ...options,
+                sameSite: 'strict' as const,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+              };
+              supabaseResponse.cookies.set(name, value, secureOptions);
+            })
           },
         },
       }

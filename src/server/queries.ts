@@ -458,7 +458,7 @@ export async function getEmployeesScoped(caller: Caller | null) {
   const privileged =
     caller.isAdmin || caller.isCEO || caller.role === 'Manager' || caller.role === 'Director';
   if (privileged) {
-    return prisma.user.findMany({
+    const results = await prisma.user.findMany({
       select: {
         id: true,
         name: true,
@@ -497,6 +497,16 @@ export async function getEmployeesScoped(caller: Caller | null) {
         manager: { select: { id: true, name: true, role: true, designation: true } },
       },
       orderBy: { name: 'asc' },
+    });
+    
+    // Phase 2: Strict Data Masking (Zero Trust)
+    const isSuperPrivileged = caller.isAdmin || caller.isCEO || caller.isHR;
+    return results.map(u => {
+      if (!isSuperPrivileged && u.id !== caller.id && u.managerId !== caller.id) {
+        (u as any).baseSalary = null;
+        (u as any).nidMasked = null;
+      }
+      return u;
     });
   }
   // Non-privileged: self + direct reports only.

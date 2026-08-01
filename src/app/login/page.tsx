@@ -52,10 +52,12 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await loginWithRateLimit(email, password);
-      if (result.requiresTwoFactor) {
+      if ('error' in result && result.error) {
+        setError(result.error);
+      } else if ('requiresTwoFactor' in result && result.requiresTwoFactor) {
         setRequiresTwoFactor(true);
         setTempSessionId(result.sessionId);
-      } else if (result.user) {
+      } else if ('user' in result && result.user) {
         window.location.href = "/dashboard";
       }
     } catch (err) {
@@ -77,7 +79,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await loginWithRateLimit(email, password, code, tempSessionId);
-      if (result.user) {
+      if ('error' in result && result.error) {
+        setError(result.error);
+      } else if ('user' in result && result.user) {
         window.location.href = "/dashboard";
       }
     } catch (err) {
@@ -103,7 +107,7 @@ export default function LoginPage() {
     setError("");
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
     });
     if (resetError) {
       setError(resetError.message);
