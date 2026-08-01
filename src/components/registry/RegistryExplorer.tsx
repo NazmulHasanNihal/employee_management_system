@@ -244,10 +244,10 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredList.map((emp) => (
-            <button
+            <div
               key={emp.id}
               onClick={() => openProfile(emp)}
-              className="flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
+              className="cursor-pointer flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
             >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-4">
@@ -311,7 +311,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   )}
                 </div>
               )}
-            </button>
+            </div>
           ))}
         </div>
       )}

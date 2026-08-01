@@ -401,7 +401,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                 <TableHeader>
                   <TableRow>
                     <TableHead>{/* @ts-ignore */}<T>Date</T></TableHead>
-                    {isAdmin && <TableHead>{/* @ts-ignore */}<T>Employee</T></TableHead>}
+                    <TableHead>{/* @ts-ignore */}<T>Employee</T></TableHead>
                     <TableHead>{/* @ts-ignore */}<T>Status</T></TableHead>
                     <TableHead>{/* @ts-ignore */}<T>Clock In</T></TableHead>
                     <TableHead>{/* @ts-ignore */}<T>Clock Out</T></TableHead>
@@ -417,7 +417,9 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                       <TableCell>
                         {new Date(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                       </TableCell>
-                      {isAdmin && <TableCell className="font-semibold text-[var(--text-main)]">{log.userName}</TableCell>}
+                      <TableCell className="font-semibold text-[var(--text-main)]">
+                        {log.userName || log.user?.name || 'Employee'}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={log.status === 'Present' ? 'emerald' : log.status === 'Late' ? 'amber' : 'rose'}>
                           {log.status}

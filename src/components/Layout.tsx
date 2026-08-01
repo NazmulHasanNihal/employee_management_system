@@ -421,31 +421,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
         </div>
       </main>
 
-       <div className="fixed bottom-0 left-0 z-40 flex h-16 w-full items-center justify-around border-t border-[var(--border-hairline)] bg-[var(--bg-panel)]/85 backdrop-blur-lg px-0 safe-bottom md:hidden">
-          {[
-             { path: '/', icon: Home, label: 'Home' },
-             { path: '/team', icon: Users, label: 'Team' },
-             { path: '/attendance', icon: Clock, label: 'Time' },
-             { path: '/leave', icon: Calendar, label: 'Leave' },
-             { path: '/helpdesk', icon: LifeBuoy, label: 'Help' },
-          ].map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.path;
-            return (
-              <Link key={item.path} href={item.path} prefetch aria-label={item.label} aria-current={active ? 'page' : undefined}
-                className={`touch-target flex flex-1 flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${active ? 'text-[var(--brand)]' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}>
-                <div className={`relative flex items-center justify-center ${active ? 'after:absolute after:-bottom-1 after:h-1 after:w-4 after:rounded-full after:bg-[var(--brand)] after:content-[""]' : ''}`}>
-                  <Icon size={20} className="shrink-0" />
-                </div>
-                <span className="text-[9px] font-semibold leading-tight">{item.label}</span>
-              </Link>
-            );
-          })}
-          <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="touch-target flex flex-1 flex-col items-center justify-center gap-0.5 text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)]">
-            <Menu size={20} className="shrink-0" />
-            <span className="text-[9px] font-semibold leading-tight">{/* @ts-ignore */}<T>More</T></span>
-          </button>
-        </div>
+
 
       <BottomSheet open={isBottomSheetOpen} onClose={() => setIsBottomSheetOpen(false)}>
         <div className="grid grid-cols-2 gap-2">

@@ -772,10 +772,10 @@ export async function getAttendanceLogs(caller: Caller | null) {
     const branchScope = (isAdmin || isCEO) ? await getSelectedBranchId() : null;
     const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
     const logs = await prisma.attendance.findMany({ where: userBranch, include: { user: true }, orderBy: { date: 'desc' }, take: 100 });
-    return logs.map((l) => ({ ...l, userName: l.user.name }));
+    return logs.map((l) => ({ ...l, userName: l.user?.name || 'Employee' }));
   }
   const logs = await prisma.attendance.findMany({ where: { userId }, include: { user: true }, orderBy: { date: 'desc' }, take: 50 });
-  return logs.map((l) => ({ ...l, userName: l.user.name }));
+  return logs.map((l) => ({ ...l, userName: l.user?.name || caller?.name || 'Employee' }));
 }
 
 export async function getAttendanceAdminStats(caller?: Caller | null) {

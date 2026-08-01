@@ -550,10 +550,10 @@ export async function runQuery(
     if (path === 'attendance.getLogs') {
       if (isAdmin) {
         const logs = await prisma.attendance.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { date: 'desc' }, take: 100 });
-        return logs.map(l => ({ ...l, userName: l.user.name }));
+        return logs.map(l => ({ ...l, userName: l.user?.name || 'Employee' }));
       }
       const logs = await prisma.attendance.findMany({ where: { userId }, include: { user: true }, orderBy: { date: 'desc' }, take: 50 });
-      return logs.map(l => ({ ...l, userName: l.user.name }));
+      return logs.map(l => ({ ...l, userName: l.user?.name || caller?.name || 'Employee' }));
     }
     if (path === 'attendance.getAdminStats') {
       const today = new Date(); today.setHours(0, 0, 0, 0);
