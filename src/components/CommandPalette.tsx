@@ -40,6 +40,23 @@ export default function CommandPalette() {
   const canSee = makeCanSee(isAdmin, isContractor);
   // Only surface nav items the current user is allowed to see.
   const visibleNav = useMemo(() => NAV_INDEX.filter(canSee), [canSee]);
+  
+  const [pinnedPaths, setPinnedPaths] = useState<string[]>([]);
+  useEffect(() => {
+    const loadPinned = () => {
+      try {
+        const saved = localStorage.getItem('personal_quick_actions');
+        if (saved) {
+          setPinnedPaths(JSON.parse(saved));
+        } else {
+          setPinnedPaths(["/attendance", "/leave", "/expenses"]);
+        }
+      } catch (e) {}
+    };
+    loadPinned();
+    window.addEventListener('quickActionsUpdated', loadPinned);
+    return () => window.removeEventListener('quickActionsUpdated', loadPinned);
+  }, []);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -123,23 +140,19 @@ export default function CommandPalette() {
     }
 
     if (!q) {
+      // Pinned custom quick actions
+      const customQuickActions = pinnedPaths
+        .map(path => visibleNav.find(item => item.path === path))
+        .filter(Boolean)
+        .map(item => ({
+          icon: React.createElement(item!.icon, { size: 14, className: "text-[var(--brand)]" }),
+          label: `Quick Action: ${item!.label}`,
+          action: () => { router.push(item!.path); setOpen(false); },
+        }));
+
       // Default suggestions: a few popular destinations + quick actions + commands.
       return [
-        {
-          icon: <Clock size={14} className="text-[var(--brand)]" />,
-          label: "Quick Action: Clock In / View Attendance",
-          action: () => { router.push("/attendance"); setOpen(false); },
-        },
-        {
-          icon: <Calendar size={14} className="text-[var(--brand)]" />,
-          label: "Quick Action: Apply for Leave",
-          action: () => { router.push("/leave"); setOpen(false); },
-        },
-        {
-          icon: <Receipt size={14} className="text-[var(--brand)]" />,
-          label: "Quick Action: Submit Expense Claim",
-          action: () => { router.push("/expenses"); setOpen(false); },
-        },
+        ...customQuickActions,
         ...visibleNav.slice(0, 4).map((item) => ({
           icon: React.createElement(item.icon, { size: 14 }),
           label: `Go to ${item.label}`,

@@ -139,6 +139,7 @@ function SelectRow({
   options: string[];
   placeholder?: string;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? '');
   const [saving, setSaving] = useState(false);
@@ -213,6 +214,7 @@ function TextAreaRow({
   value: string | null | undefined;
   placeholder?: string;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? '');
   const [saving, setSaving] = useState(false);

@@ -41,6 +41,8 @@ function maskSalary() {
   return '••••••••';
 }
 
+import { QuickActionsSettings } from '@/components/profile/QuickActionsSettings';
+
 export default async function ProfilePage() {
   const caller = await getCaller();
   const t = await getServerT();
@@ -296,6 +298,12 @@ export default async function ProfilePage() {
             <SprintHeatmap data={activity} />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-1">
+          <QuickActionsSettings />
+        </div>
       </div>
     </div>
   );
