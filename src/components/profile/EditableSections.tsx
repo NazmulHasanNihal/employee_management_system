@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUser } from '@/components/UserProvider';
 import { updateProfileField, updateProfileBatch } from '@/app/actions/profile';
+import { useRouter } from 'next/navigation';
 import { T } from "@/components/Translate";
 
 export type ProfileUser = {
@@ -64,6 +65,7 @@ function FieldRow({
   type?: string;
   placeholder?: string;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? '');
   const [saving, setSaving] = useState(false);
@@ -77,6 +79,7 @@ function FieldRow({
     try {
       await updateProfileField(field, draft);
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }
@@ -149,6 +152,7 @@ function SelectRow({
     try {
       await updateProfileField(field, draft);
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }
@@ -222,6 +226,7 @@ function TextAreaRow({
     try {
       await updateProfileField(field, draft);
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }
@@ -337,6 +342,7 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
   const [bloodGroup, setBloodGroup] = useState(user.bloodGroup ?? '');
   const [religion, setReligion] = useState(user.religion ?? '');
   const [language, setLanguage] = useState(user.preferredLanguage ?? 'en');
+  const router = useRouter();
 
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -354,6 +360,7 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
         preferredLanguage: language,
       });
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }
@@ -502,6 +509,7 @@ function BranchSelectRow({
   options: { id: string; name: string }[];
   currentName?: string | null;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -512,6 +520,7 @@ function BranchSelectRow({
     try {
       await updateProfileField(field, draft || null);
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }
@@ -561,6 +570,7 @@ function ManagerSelectRow({
   options: { id: string; name: string }[];
   currentName?: string | null;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -572,6 +582,7 @@ function ManagerSelectRow({
       // Empty selection clears the manager.
       await updateProfileField(field, draft || null);
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }

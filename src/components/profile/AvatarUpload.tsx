@@ -5,14 +5,22 @@ import { Camera, Loader2, Check } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { useUser } from '@/components/UserProvider';
 import { updateAvatarUrl, recordPhotoHistory } from '@/app/actions/profile';
+import { useRouter } from 'next/navigation';
 
 export function AvatarUpload({
   currentUrl,
   size = 'xl',
+  targetUserId,
+  targetName,
+  onUploadSuccess,
 }: {
   currentUrl?: string | null;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  targetUserId?: string;
+  targetName?: string;
+  onUploadSuccess?: (url: string) => void;
 }) {
+  const router = useRouter();
   const { user } = useUser();
   const [preview, setPreview] = useState<string | null>(currentUrl ?? null);
   const [uploading, setUploading] = useState(false);
@@ -36,11 +44,13 @@ export function AvatarUpload({
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (data.success && data.url) {
-        await updateAvatarUrl(data.url);
+        await updateAvatarUrl(data.url, targetUserId);
         // Keep a timeline of past profile pictures.
-        try { await recordPhotoHistory(data.url); } catch { /* non-fatal */ }
+        try { await recordPhotoHistory(data.url, targetUserId); } catch { /* non-fatal */ }
         setPreview(data.url);
         setSaved(true);
+        if (onUploadSuccess) onUploadSuccess(data.url);
+        router.refresh();
         setTimeout(() => setSaved(false), 2000);
       } else {
         // revert preview on failure
@@ -64,7 +74,7 @@ export function AvatarUpload({
         className="group relative rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--brand)] focus:ring-offset-2 focus:ring-offset-[var(--bg-panel)]"
         aria-label="Change avatar"
       >
-        <Avatar src={preview} name={user.name} size={size} />
+        <Avatar src={preview} name={targetName || user.name} size={size} />
         <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100">
           {uploading ? <Loader2 size={22} className="animate-spin" /> : saved ? <Check size={22} /> : <Camera size={22} />}
         </span>

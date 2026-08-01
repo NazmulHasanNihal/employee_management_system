@@ -294,10 +294,8 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
             <button
               aria-label="Open command palette"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
-              className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)]"
+              className="flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 sm:px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)]"
             >
-
-
               <Command size={14} /> <span className="hidden md:inline">{/* @ts-ignore */}<T>Command</T></span>
             </button>
 

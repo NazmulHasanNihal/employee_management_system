@@ -181,12 +181,20 @@ export async function uploadDocument(title: string, url: string, type = 'General
   });
 }
 
-export async function updateAvatarUrl(url: string) {
+export async function updateAvatarUrl(url: string, targetUserId?: string) {
   const caller = await getCaller();
   if (!caller) throw new Error('Unauthorized');
   if (!url) throw new Error('URL required');
+
+  const updateId = targetUserId || caller.id;
+  if (targetUserId && targetUserId !== caller.id) {
+    if (!caller.isAdmin && !caller.isCEO && caller.role !== 'HR Manager') {
+      throw new Error('Unauthorized');
+    }
+  }
+
   await prisma.user.update({
-    where: { id: caller.id },
+    where: { id: updateId },
     data: { avatarUrl: url },
   });
   revalidatePath('/', 'layout');
@@ -197,12 +205,20 @@ export async function updateAvatarUrl(url: string) {
  * Records an avatar change in the ProfilePhotoHistory table so the user keeps a
  * timeline of past profile pictures. Call this right after a successful upload.
  */
-export async function recordPhotoHistory(url: string) {
+export async function recordPhotoHistory(url: string, targetUserId?: string) {
   const caller = await getCaller();
   if (!caller) throw new Error('Unauthorized');
   if (!url) throw new Error('URL required');
+
+  const updateId = targetUserId || caller.id;
+  if (targetUserId && targetUserId !== caller.id) {
+    if (!caller.isAdmin && !caller.isCEO && caller.role !== 'HR Manager') {
+      throw new Error('Unauthorized');
+    }
+  }
+
   return await prisma.profilePhotoHistory.create({
-    data: { userId: caller.id, url },
+    data: { userId: updateId, url },
   });
 }
 

@@ -8,6 +8,7 @@ import { provisionEmployeeAccount } from '@/app/actions/admin';
 import { canModifyUser } from '@/lib/hierarchy';
 import { toast } from '@/lib/toast';
 import { Avatar } from '@/components/ui/avatar';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
@@ -321,7 +322,20 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
           <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4 sm:p-6">
               <div className="flex items-center gap-4">
-                <Avatar src={selectedEmployee.avatarUrl} name={selectedEmployee.name} size="xl" />
+                {canModifyUser({ role: user.role, designation: user.designation ?? undefined, isOwner }, { role: selectedEmployee.role, designation: selectedEmployee.designation ?? undefined, isOwner: selectedEmployee.isOwner }) ? (
+                  <AvatarUpload
+                    currentUrl={selectedEmployee.avatarUrl}
+                    targetUserId={selectedEmployee.id}
+                    targetName={selectedEmployee.name}
+                    size="xl"
+                    onUploadSuccess={(url) => {
+                      setSelectedEmployee({ ...selectedEmployee, avatarUrl: url });
+                      utils.invalidate('registry');
+                    }}
+                  />
+                ) : (
+                  <Avatar src={selectedEmployee.avatarUrl} name={selectedEmployee.name} size="xl" />
+                )}
                 <div>
                   <h3 className="text-lg font-semibold text-[var(--text-main)]">{selectedEmployee.name}</h3>
                   <div className="mt-1 flex items-center gap-2">

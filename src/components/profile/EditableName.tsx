@@ -3,8 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
 import { updateProfileField } from '@/app/actions/profile';
+import { useRouter } from 'next/navigation';
 
 export function EditableName({ name }: { name: string }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
   const [saving, setSaving] = useState(false);
@@ -17,6 +19,7 @@ export function EditableName({ name }: { name: string }) {
     try {
       await updateProfileField('name', draft.trim());
       setEditing(false);
+      router.refresh();
     } finally {
       setSaving(false);
     }
