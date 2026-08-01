@@ -87,10 +87,9 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
         }),
       });
       if (res.ok) {
-        // Soft client navigation + server refresh (no full page reload) so the
-        // protected layout re-reads isOnboarded and lands the user in the app.
-        router.refresh();
-        router.push('/');
+        // Force a hard reload to /dashboard to completely bypass Next.js client router cache
+        // which was causing the onboarding form to persistently show up.
+        window.location.href = '/dashboard';
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data.error || 'Failed to complete onboarding. Please try again.');
