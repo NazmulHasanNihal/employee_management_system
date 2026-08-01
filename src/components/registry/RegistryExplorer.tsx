@@ -253,7 +253,11 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   <Avatar src={emp.avatarUrl} name={emp.name} size="lg" />
                   <div>
                      <h4 className="max-w-[12rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{emp.designation || 'Staff'}</p>
+                     <div className="mt-0.5">
+                       <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
+                         {emp.designation || 'Staff'}
+                       </span>
+                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
@@ -320,7 +324,12 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 <Avatar src={selectedEmployee.avatarUrl} name={selectedEmployee.name} size="xl" />
                 <div>
                   <h3 className="text-lg font-semibold text-[var(--text-main)]">{selectedEmployee.name}</h3>
-                  <p className="text-xs text-[var(--text-muted)]">{selectedEmployee.designation || 'Staff'} · {selectedEmployee.department || 'No Department'}</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
+                      {selectedEmployee.designation || 'Staff'}
+                    </span>
+                    <span className="text-xs text-[var(--text-muted)]">· {selectedEmployee.department || 'No Department'}</span>
+                  </div>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge variant={roleVariant(selectedEmployee.role)}>{selectedEmployee.role}</Badge>
                     {(selectedEmployee.role === 'CEO' || selectedEmployee.isOwner) && selectedEmployee.role !== 'Admin' && (
