@@ -1579,7 +1579,10 @@ async function runMutation(path: string, input: any) {
       return request;
     }
     if (path === 'leave.updateStatus') {
-      if (!isAdmin) throw new Error('Forbidden');
+      const leaveReq = await prisma.leaveRequest.findUnique({ where: { id: input.id }, include: { user: true } });
+      if (!leaveReq) throw new Error('Leave request not found');
+      const isManager = leaveReq.user?.managerId === userId;
+      if (!isAdmin && !isCEO && !isManager) throw new Error('Forbidden');
       const updated = await prisma.leaveRequest.update({
         where: { id: input.id },
         data: { status: input.status },
@@ -1652,6 +1655,20 @@ async function runMutation(path: string, input: any) {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.name) throw new Error('Department name is required');
       return await prisma.department.create({
+        data: {
+          name: input.name,
+          budget: input.budget ?? null,
+          headId: input.headId || null,
+          branchId: input.branchId || null,
+        },
+      });
+    }
+
+    if (path === 'departments.updateDepartment') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Department ID is required');
+      return await prisma.department.update({
+        where: { id: input.id },
         data: {
           name: input.name,
           budget: input.budget ?? null,
@@ -2698,9 +2715,16 @@ async function runMutation(path: string, input: any) {
     if (path === 'helpdesk.createTicket') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       if (!input?.subject) throw new Error('Subject required');
-      return await prisma.ticket.create({
+      const ticket = await prisma.ticket.create({
         data: { subject: input.subject, priority: input.priority || 'Medium', status: 'Open', userId: userId! }
       });
+      // If a description was provided, create it as the first reply
+      if (input.description && input.description.trim()) {
+        await prisma.ticketReply.create({
+          data: { ticketId: ticket.id, authorId: userId!, content: input.description.trim() }
+        });
+      }
+      return ticket;
     }
     if (path === 'helpdesk.addReply') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');

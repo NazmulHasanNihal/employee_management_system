@@ -284,11 +284,11 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     <span className="truncate font-mono text-xs">{emp.phone}</span>
                   </div>
                 )}
-                {emp.isOnline !== undefined && (
+                {emp.status && (
                   <div className="flex items-center gap-3 text-sm">
                     <Activity className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                    <span className={emp.isOnline ? 'text-[var(--emerald)]' : 'text-[var(--text-muted)]'}>
-                      {emp.isOnline ? 'Online' : 'Offline'}
+                    <span className={emp.status.toLowerCase() === 'active' ? 'text-[var(--emerald)]' : emp.status.toLowerCase() === 'terminated' ? 'text-[var(--rose)]' : 'text-[var(--text-muted)]'}>
+                      {emp.status}
                     </span>
                   </div>
                 )}

@@ -29,6 +29,9 @@ export default function HierarchyManager({
   const [showCreate, setShowCreate] = useState(false);
   const [newDept, setNewDept] = useState({ name: '', budget: 100000, headId: '' });
 
+  const [editDeptId, setEditDeptId] = useState<string | null>(null);
+  const [editDeptData, setEditDeptData] = useState({ id: '', name: '', budget: 0, headId: '' });
+
   const utils = trpc.useUtils();
   // Live data (seeded with server props) so create/delete refresh in place.
   const { data: departmentsData } = trpc.departments.getDepartments.useQuery(undefined, { initialData: departments as any });
@@ -41,6 +44,13 @@ export default function HierarchyManager({
       utils.departments.getDepartments.invalidate();
       setShowCreate(false);
       setNewDept({ name: '', budget: 100000, headId: '' });
+    },
+  });
+
+  const updateDept = trpc.departments.updateDepartment.useMutation({
+    onSuccess: () => {
+      utils.departments.getDepartments.invalidate();
+      setEditDeptId(null);
     },
   });
 
@@ -114,34 +124,100 @@ export default function HierarchyManager({
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
           {liveDepartments.map((dept) => (
-            <div key={dept.id} className="flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
-              <div className="mb-4 flex items-center gap-3 border-b border-[var(--border-hairline)] pb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
-                  <Hash className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="truncate text-xl font-semibold text-[var(--text-main)]">{dept.name}</h3>
-                  <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{/* @ts-ignore */}<T>UUID:</T>{dept.id.slice(0, 8)}</p>
-                </div>
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                  <div className="flex items-center gap-2 text-[var(--text-muted)]">
-                    <DollarSign className="h-4 w-4 text-[var(--emerald)]" />
-                    <span className="text-xs uppercase tracking-wide">{/* @ts-ignore */}<T>Operating Budget</T></span>
+            <div key={dept.id} className="flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm relative group">
+              
+              {editDeptId === dept.id ? (
+                <form
+                  className="space-y-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    updateDept.mutate(editDeptData);
+                  }}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-sm font-semibold text-[var(--text-main)]">Edit Unit</h3>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setEditDeptId(null)}><X className="h-4 w-4" /></Button>
                   </div>
-                  <span className="font-semibold text-[var(--text-main)]">${(dept.budget || 0).toLocaleString()}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                  <div className="flex items-center gap-2 text-[var(--text-muted)]">
-                    <UserCircle className="h-4 w-4 text-[var(--brand)]" />
-                    <span className="text-xs uppercase tracking-wide">{/* @ts-ignore */}<T>Unit Commander</T></span>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Unit Designation</T></label>
+                    <input
+                      type="text" required
+                      value={editDeptData.name}
+                      onChange={(e) => setEditDeptData({ ...editDeptData, name: e.target.value })}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
+                    />
                   </div>
-                  <span className={`text-xs font-semibold ${dept.head ? 'text-[var(--text-main)]' : 'text-[var(--rose)] animate-pulse'}`}>
-                    {dept.head?.name || 'UNASSIGNED'}
-                  </span>
-                </div>
-              </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Allocated Budget ($)</T></label>
+                    <input
+                      type="number" required min="0" step="10000"
+                      value={editDeptData.budget}
+                      onChange={(e) => setEditDeptData({ ...editDeptData, budget: parseInt(e.target.value) })}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Unit Commander (Head)</T></label>
+                    <select
+                      value={editDeptData.headId}
+                      onChange={(e) => setEditDeptData({ ...editDeptData, headId: e.target.value })}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
+                    >
+                      <option value="">{/* @ts-ignore */}<T>Leave Unassigned...</T></option>
+                      {liveEmployees.map((u) => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button type="submit" variant="primary" disabled={updateDept.isPending || !editDeptData.name} className="w-full">
+                    {/* @ts-ignore */}<T>Save Changes</T>
+                  </Button>
+                </form>
+              ) : (
+                <>
+                  <div className="absolute top-6 right-6 opacity-0 transition-opacity group-hover:opacity-100">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setEditDeptId(dept.id);
+                      setEditDeptData({
+                        id: dept.id,
+                        name: dept.name,
+                        budget: dept.budget || 0,
+                        headId: dept.head?.name ? liveEmployees.find(e => e.name === dept.head?.name)?.id || '' : ''
+                      });
+                    }}>
+                      Edit
+                    </Button>
+                  </div>
+
+                  <div className="mb-4 flex items-center gap-3 border-b border-[var(--border-hairline)] pb-4 pr-16">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)]">
+                      <Hash className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="truncate text-xl font-semibold text-[var(--text-main)]">{dept.name}</h3>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{/* @ts-ignore */}<T>UUID:</T>{dept.id.slice(0, 8)}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
+                      <div className="flex items-center gap-2 text-[var(--text-muted)]">
+                        <DollarSign className="h-4 w-4 text-[var(--emerald)]" />
+                        <span className="text-xs uppercase tracking-wide">{/* @ts-ignore */}<T>Operating Budget</T></span>
+                      </div>
+                      <span className="font-semibold text-[var(--text-main)]">${(dept.budget || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
+                      <div className="flex items-center gap-2 text-[var(--text-muted)]">
+                        <UserCircle className="h-4 w-4 text-[var(--brand)]" />
+                        <span className="text-xs uppercase tracking-wide">{/* @ts-ignore */}<T>Unit Commander</T></span>
+                      </div>
+                      <span className={`text-xs font-semibold ${dept.head ? 'text-[var(--text-main)]' : 'text-[var(--rose)] animate-pulse'}`}>
+                        {dept.head?.name || 'UNASSIGNED'}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

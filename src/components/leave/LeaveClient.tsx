@@ -17,6 +17,7 @@ interface LeaveClientProps {
   leaveTypes: { id: string; name: string; nameBn?: string | null; category: string; defaultDays: number; applicableGender?: string | null }[];
   isAdmin: boolean;
   lang: string;
+  currentUserId?: string;
 }
 
 const CAT_ICON: Record<string, React.ReactNode> = {
@@ -32,7 +33,7 @@ function PlusIcon() {
   return <Calendar className="h-4 w-4 text-[var(--emerald)]" />;
 }
 
-export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdmin, lang }: LeaveClientProps) {
+export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdmin, lang, currentUserId }: LeaveClientProps) {
   const [type, setType] = useState(leaveTypes[0]?.name || 'Casual Leave');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -252,7 +253,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                           </div>
                         </div>
 
-                        {isAdmin && req.status === 'Pending' && (
+                        {(isAdmin || (currentUserId && req.user?.managerId === currentUserId)) && req.status === 'Pending' && (
                           <div className="flex shrink-0 gap-2 border-t border-[var(--border-hairline)] pt-3 md:border-t-0 md:pt-0">
                             <Button variant="outline" size="sm" className="text-[var(--emerald)]" onClick={() => updateStatus.mutate({ id: req.id, status: 'Approved' })}>
                               <CheckCircle2 className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Approve</T></Button>

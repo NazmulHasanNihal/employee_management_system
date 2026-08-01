@@ -425,17 +425,28 @@ export const getOrgTree = unstable_cache(
     const userMap: Record<string, OrgUser> = {};
     users.forEach((u) => (userMap[u.id] = { ...u, children: [] }));
     let root: OrgUser | null = null;
+    const ceoUser = users.find(u => u.role === 'CEO' || u.designation === 'CEO') || users.find(u => u.role === 'Admin') || users[0];
+    if (ceoUser) root = userMap[ceoUser.id];
+
     const isDescendant = (nodeId: string, ancestorId: string): boolean => {
       if (!nodeId || !userMap[nodeId]) return false;
       if (nodeId === ancestorId) return true;
       for (const child of userMap[nodeId].children) if (isDescendant(child.id, ancestorId)) return true;
       return false;
     };
+
     users.forEach((u) => {
+      if (root && u.id === root.id) return;
+      
       if (u.managerId && userMap[u.managerId]) {
-        if (!isDescendant(u.id, u.managerId)) userMap[u.managerId].children.push(userMap[u.id]);
-      } else if (!u.managerId) {
-        if (!root || u.role === 'Admin' || u.role === 'CEO') root = userMap[u.id];
+        if (!isDescendant(u.id, u.managerId)) {
+          userMap[u.managerId].children.push(userMap[u.id]);
+        }
+      } else {
+        // No managerId, or manager not found? Attach to root so they don't disappear
+        if (root && !isDescendant(u.id, root.id)) {
+          root.children.push(userMap[u.id]);
+        }
       }
     });
     return root || { ...users[0], children: [] };
@@ -850,12 +861,27 @@ export async function getLeaveRequests(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
   const userId = caller?.id;
+  if (!userId) return [];
+  
   if (isAdmin || isCEO) {
     const branchScope = await getSelectedBranchId();
     const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
     return prisma.leaveRequest.findMany({ where: userBranch, include: { user: true }, orderBy: { createdAt: 'desc' } });
   }
-  return prisma.leaveRequest.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
+  
+  const directReports = await prisma.user.findMany({ where: { managerId: userId }, select: { id: true } });
+  const directReportIds = directReports.map(u => u.id);
+  
+  return prisma.leaveRequest.findMany({ 
+    where: { 
+      OR: [
+        { userId },
+        { userId: { in: directReportIds } }
+      ]
+    }, 
+    include: { user: true }, 
+    orderBy: { createdAt: 'desc' } 
+  });
 }
 
 export async function getLeaveBalance(caller: Caller | null) {

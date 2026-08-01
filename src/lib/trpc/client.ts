@@ -170,60 +170,88 @@ const createDummyHook = (path: string[]) => {
       return { data, isLoading, error };
     },
 
-    useMutation: ({ onSuccess, onError }: any = {}) => {
+    useMutation: (opts: any = {}) => {
       const fullPath = path.join(".");
-      return {
-        mutate: (input: any) => {
-          if (typeof navigator !== 'undefined' && !navigator.onLine) {
-            import('@/lib/offline-sync').then(({ queueOfflineMutation }) => {
-              queueOfflineMutation(fullPath, input);
-              // Optimistically call onSuccess so the UI can proceed (e.g., clock in button updates)
-              if (onSuccess) onSuccess({ success: true, offline: true, message: 'Queued for sync' });
-            });
-            return;
-          }
+      const [isPending, setIsPending] = useState(false);
+      const [error, setError] = useState<any>(null);
+      const [data, setData] = useState<any>(null);
+      const optsRef = useRef(opts);
+      optsRef.current = opts;
 
-          executeServerMutation(fullPath, input)
-            .then((res) => {
-              if (onSuccess) onSuccess(res);
-            })
-            .catch((err) => {
-              // If it's a network error (Failed to fetch) during execution, queue it
-              if (err instanceof TypeError && err.message.includes('fetch')) {
-                import('@/lib/offline-sync').then(({ queueOfflineMutation }) => {
-                  queueOfflineMutation(fullPath, input);
-                  if (onSuccess) onSuccess({ success: true, offline: true, message: 'Queued for sync' });
-                });
-              } else {
-                if (onError) onError(err);
-              }
-            });
-        },
-        mutateAsync: async (input: any) => {
-          if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      const mutate = useCallback((input: any) => {
+        const { onSuccess, onError } = optsRef.current;
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          import('@/lib/offline-sync').then(({ queueOfflineMutation }) => {
+            queueOfflineMutation(fullPath, input);
+            const res = { success: true, offline: true, message: 'Queued for sync' };
+            setData(res);
+            if (onSuccess) onSuccess(res);
+          });
+          return;
+        }
+
+        setIsPending(true);
+        setError(null);
+        executeServerMutation(fullPath, input)
+          .then((res) => {
+            setData(res);
+            setIsPending(false);
+            if (onSuccess) onSuccess(res);
+          })
+          .catch((err) => {
+            if (err instanceof TypeError && err.message.includes('fetch')) {
+              import('@/lib/offline-sync').then(({ queueOfflineMutation }) => {
+                queueOfflineMutation(fullPath, input);
+                const res = { success: true, offline: true, message: 'Queued for sync' };
+                setData(res);
+                setIsPending(false);
+                if (onSuccess) onSuccess(res);
+              });
+            } else {
+              setError(err);
+              setIsPending(false);
+              if (onError) onError(err);
+            }
+          });
+      }, [fullPath]);
+
+      const mutateAsync = useCallback(async (input: any) => {
+        const { onSuccess, onError } = optsRef.current;
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          const { queueOfflineMutation } = await import('@/lib/offline-sync');
+          await queueOfflineMutation(fullPath, input);
+          const res = { success: true, offline: true, message: 'Queued for sync' };
+          setData(res);
+          if (onSuccess) onSuccess(res);
+          return res;
+        }
+
+        setIsPending(true);
+        setError(null);
+        try {
+          const res = await executeServerMutation(fullPath, input);
+          setData(res);
+          setIsPending(false);
+          if (onSuccess) onSuccess(res);
+          return res;
+        } catch (err) {
+          if (err instanceof TypeError && (err as any).message.includes('fetch')) {
             const { queueOfflineMutation } = await import('@/lib/offline-sync');
             await queueOfflineMutation(fullPath, input);
             const res = { success: true, offline: true, message: 'Queued for sync' };
+            setData(res);
+            setIsPending(false);
             if (onSuccess) onSuccess(res);
             return res;
           }
+          setError(err);
+          setIsPending(false);
+          if (onError) onError(err);
+          throw err;
+        }
+      }, [fullPath]);
 
-          try {
-            const res = await executeServerMutation(fullPath, input);
-            if (onSuccess) onSuccess(res);
-            return res;
-          } catch (err) {
-            if (err instanceof TypeError && err.message.includes('fetch')) {
-              const { queueOfflineMutation } = await import('@/lib/offline-sync');
-              await queueOfflineMutation(fullPath, input);
-              const res = { success: true, offline: true, message: 'Queued for sync' };
-              if (onSuccess) onSuccess(res);
-              return res;
-            }
-            throw err;
-          }
-        },
-      };
+      return { mutate, mutateAsync, isPending, error, data, isLoading: isPending };
     },
   };
 };
@@ -235,12 +263,25 @@ const proxyHandler: ProxyHandler<any> = {
         return createDummyHook(target.path)[prop as "useQuery" | "useMutation"];
       }
       if (prop === "useUtils") {
-        return () => ({
-          invalidate: (prefix?: string) => {
-            invalidate(prefix);
-            return Promise.resolve();
-          },
-        });
+        return () => {
+          const createUtilsProxy = (segments: string[] = []): any => {
+            return new Proxy({}, {
+              get: (_target, p: string | symbol) => {
+                if (typeof p !== 'string') return undefined;
+                if (p === 'invalidate') {
+                  return () => {
+                    const prefix = segments.length > 0 ? segments.join('.') : undefined;
+                    invalidate(prefix);
+                    return Promise.resolve();
+                  };
+                }
+                // Keep nesting deeper
+                return createUtilsProxy([...segments, p]);
+              }
+            });
+          };
+          return createUtilsProxy();
+        };
       }
       if (prop === "useQueries") {
         return useQueries;

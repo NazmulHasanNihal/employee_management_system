@@ -33,6 +33,9 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
   const [method, setMethod] = React.useState<'BKASH' | 'ROCKET' | 'BANK'>('BKASH');
   const [reference, setReference] = React.useState('');
   const [amount, setAmount] = React.useState<string>('');
+  const [bankName, setBankName] = React.useState('');
+  const [routingNumber, setRoutingNumber] = React.useState('');
+  const [branchName, setBranchName] = React.useState('');
 
   // Mount the payment list as a live query (seeded with the server prop) so
   // recording a payment refreshes the paid-status in place — no full reload.
@@ -50,6 +53,16 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
 
   const payNow = () => {
     const payAmount = Number(amount) || amountDue;
+    
+    let extraDetails = '';
+    if (method === 'BANK') {
+      const parts = [];
+      if (bankName) parts.push(bankName);
+      if (branchName) parts.push(`Branch: ${branchName}`);
+      if (routingNumber) parts.push(`Routing: ${routingNumber}`);
+      if (parts.length > 0) extraDetails = ` - ${parts.join(', ')}`;
+    }
+
     recordPayment.mutate({
       userId,
       payrollId: latestPayslip?.id || null,
@@ -59,7 +72,7 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
       method,
       reference: reference || undefined,
       status: 'PAID',
-      details: isAdmin ? 'Manual entry (admin)' : `Paid via ${method}`,
+      details: isAdmin ? `Manual entry (admin)${extraDetails}` : `Paid via ${method}${extraDetails}`,
     });
   };
 
@@ -102,7 +115,15 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
             )}
           </div>
 
-          {!isPaid && (
+          {amountDue === 0 && !isPaid && (
+            <div className="rounded-2xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] p-6 text-center">
+              <CheckCircle2 className="mx-auto mb-2 h-8 w-8 text-[var(--emerald)]" />
+              <h4 className="text-sm font-bold text-[var(--emerald)]">{/* @ts-ignore */}<T>No Balance Due</T></h4>
+              <p className="mt-1 text-xs text-[var(--emerald)]/80">{/* @ts-ignore */}<T>There are no outstanding payments for this period.</T></p>
+            </div>
+          )}
+
+          {amountDue > 0 && !isPaid && (
             <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pay Using</T></label>
@@ -118,17 +139,50 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
                   ))}
                 </div>
               </div>
+
+              {method === 'BANK' && (
+                <div className="animate-in fade-in slide-in-from-top-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Bank Name</T></label>
+                    <select 
+                      value={bankName} 
+                      onChange={(e) => setBankName(e.target.value)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
+                    >
+                      <option value="">{/* @ts-ignore */}<T>Select Bank...</T></option>
+                      <option value="BRAC Bank">BRAC Bank PLC</option>
+                      <option value="Dutch-Bangla Bank">Dutch-Bangla Bank PLC</option>
+                      <option value="City Bank">The City Bank PLC</option>
+                      <option value="Eastern Bank">Eastern Bank PLC (EBL)</option>
+                      <option value="Islami Bank">Islami Bank Bangladesh PLC</option>
+                      <option value="Standard Chartered">Standard Chartered Bangladesh</option>
+                      <option value="HSBC">HSBC Bangladesh</option>
+                      <option value="Prime Bank">Prime Bank PLC</option>
+                      <option value="Mutual Trust Bank">Mutual Trust Bank PLC</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Branch Name</T></label>
+                    <Input value={branchName} placeholder="e.g. Gulshan" onChange={(e) => setBranchName(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Routing Number</T></label>
+                    <Input value={routingNumber} placeholder="e.g. 090262100" onChange={(e) => setRoutingNumber(e.target.value)} />
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Amount (auto = due)</T></label>
                   <Input value={amount} placeholder={String(amountDue)} onChange={(e) => setAmount(e.target.value)} />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reference / Account No.</T></label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Account No. / Reference</T></label>
                   <Input value={reference} placeholder="e.g. 01XXXXXXXXX" onChange={(e) => setReference(e.target.value)} />
                 </div>
               </div>
-              <Button onClick={payNow} disabled={recordPayment.isPending} className="w-full sm:w-auto">
+              <Button onClick={payNow} disabled={recordPayment.isPending || (method === 'BANK' && !bankName)} className="w-full sm:w-auto">
                 <CreditCard size={16} className="mr-2" /> {recordPayment.isPending ? 'Processing…' : 'Pay Now'}
               </Button>
               <p className="text-[10px] text-[var(--text-muted)]">

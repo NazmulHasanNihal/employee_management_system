@@ -55,8 +55,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
   });
 
   const addReply = trpc.helpdesk.addReply.useMutation({
-    onSuccess: (_data: any, variables: any) => {
-      setReplyTexts((prev) => ({ ...prev, [variables.ticketId]: '' }));
+    onSuccess: () => {
       utils.helpdesk.getTickets.invalidate();
     },
   });
@@ -71,13 +70,14 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
   const handleReply = (ticketId: string) => {
     const text = replyTexts[ticketId];
     if (!text || !text.trim()) return;
+    setReplyTexts((prev) => ({ ...prev, [ticketId]: '' }));
     addReply.mutate({ ticketId, content: text.trim() });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !description.trim()) return;
-    createTicket.mutate({ subject, priority });
+    createTicket.mutate({ subject, priority, description });
   };
 
   return (

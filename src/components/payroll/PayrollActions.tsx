@@ -56,8 +56,10 @@ export function PayrollActions({ payrolls }: PayrollActionsProps) {
       </div>
 
       {showGenerate && (
-        <div className="animate-scale-in">
-          <RunPayrollForm onSuccess={() => setShowGenerate(false)} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+            <RunPayrollForm onSuccess={() => setShowGenerate(false)} />
+          </div>
         </div>
       )}
     </>

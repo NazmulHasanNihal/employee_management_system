@@ -266,9 +266,12 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Priority Level</T></label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
-                      <button key={p} onClick={() => setPriority(p)} className={`rounded-xl py-2 text-[10px] font-semibold uppercase ${priority === p ? `${PRIORITY_TONE[p].label} border border-current` : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p === 'Emergency' ? '🚨' : ''} {p}</button>
+                      <button key={p} onClick={() => setPriority(p)} className={`flex flex-col items-center justify-center gap-1 rounded-xl p-2 text-[10px] font-semibold uppercase ${priority === p ? `${PRIORITY_TONE[p].label} border border-current` : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>
+                        {p === 'Emergency' && <span className="text-sm">🚨</span>}
+                        <span className="w-full truncate">{p}</span>
+                      </button>
                     ))}
                   </div>
                 </div>
