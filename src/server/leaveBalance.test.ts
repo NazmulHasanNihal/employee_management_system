@@ -24,7 +24,7 @@ describe('BD leave balance (approved-policy model)', () => {
       usedByCategory: {},
       gender: 'Female',
     });
-    expect(bal.Casual.total).toBe(10);
+    expect(bal.Casual.total).toBe(14); // BLA 2006 Compliance: 14 Casual days
     expect(bal.Earned.total).toBe(14);
     expect(bal.Sick.total).toBe(14);
     expect(bal.Festival.total).toBe(11);
@@ -38,7 +38,7 @@ describe('BD leave balance (approved-policy model)', () => {
       usedByCategory: { Casual: 10, Earned: 4, Festival: 1 },
       gender: 'Male',
     });
-    expect(bal.Casual.remaining).toBe(0);
+    expect(bal.Casual.remaining).toBe(4); // 14 total - 10 used = 4 remaining
     expect(bal.Earned.remaining).toBe(10);
     expect(bal.Festival.remaining).toBe(10);
     expect(bal.Optional.total).toBe(3);

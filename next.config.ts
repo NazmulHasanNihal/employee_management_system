@@ -26,6 +26,7 @@ const nextConfig: NextConfig = {
   // Tree-shake heavy icon/component barrels so they don't ship whole libraries
   // in the shared chunk. This noticeably trims the ~187 kB common bundle.
   experimental: {
+    reactCompiler: true,
     optimizePackageImports: [
       "lucide-react",
       "recharts",

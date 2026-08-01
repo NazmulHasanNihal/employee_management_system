@@ -637,42 +637,50 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Department</label>
-                  <select
+                  <input
                     required
+                    list="department-suggestions"
                     value={provisionForm.department}
                     onChange={(e) => setProvisionForm({ ...provisionForm, department: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
-                  >
-                    <option value="">Select Department...</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Human Resources">Human Resources</option>
-                    <option value="Finance & Accounting">Finance & Accounting</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Sales & Business Dev">Sales & Business Dev</option>
-                    <option value="Operations">Operations</option>
-                    <option value="IT & Infrastructure">IT & Infrastructure</option>
-                    <option value="Legal & Compliance">Legal & Compliance</option>
-                  </select>
+                    placeholder="E.g., Engineering, Marketing..."
+                  />
+                  <datalist id="department-suggestions">
+                    <option value="Engineering" />
+                    <option value="Human Resources" />
+                    <option value="Finance & Accounting" />
+                    <option value="Marketing" />
+                    <option value="Sales & Business Dev" />
+                    <option value="Operations" />
+                    <option value="IT & Infrastructure" />
+                    <option value="Legal & Compliance" />
+                    <option value="Executive Management" />
+                  </datalist>
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Designation</label>
-                  <select
+                  <input
                     required
+                    list="designation-suggestions"
                     value={provisionForm.designation}
                     onChange={(e) => setProvisionForm({ ...provisionForm, designation: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
-                  >
-                    <option value="">Select Designation...</option>
-                    <option value="Software Engineer">Software Engineer</option>
-                    <option value="Senior Developer">Senior Developer</option>
-                    <option value="HR Executive">HR Executive</option>
-                    <option value="HR Manager">HR Manager</option>
-                    <option value="Financial Analyst">Financial Analyst</option>
-                    <option value="Marketing Specialist">Marketing Specialist</option>
-                    <option value="Operations Lead">Operations Lead</option>
-                    <option value="Accountant">Accountant</option>
-                    <option value="Executive Staff">Executive Staff</option>
-                  </select>
+                    placeholder="E.g., COO, Senior Developer..."
+                  />
+                  <datalist id="designation-suggestions">
+                    <option value="Chief Executive Officer (CEO)" />
+                    <option value="Chief Operating Officer (COO)" />
+                    <option value="Chief Technology Officer (CTO)" />
+                    <option value="Software Engineer" />
+                    <option value="Senior Developer" />
+                    <option value="HR Executive" />
+                    <option value="HR Manager" />
+                    <option value="Financial Analyst" />
+                    <option value="Marketing Specialist" />
+                    <option value="Operations Lead" />
+                    <option value="Accountant" />
+                    <option value="Executive Staff" />
+                  </datalist>
                 </div>
 
                 <div className="space-y-1">

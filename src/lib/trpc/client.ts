@@ -21,6 +21,12 @@ interface QueryEntry {
   refetchAll: () => void;
 }
 
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+const globalQueryCache = new Map<string, CacheEntry>();
+
 const registry = new Set<QueryEntry>();
 
 function invalidate(prefix?: string) {
@@ -70,39 +76,64 @@ const createDummyHook = (path: string[]) => {
   return {
     useQuery: (...args: any[]) => {
       const fullPath = path.join(".");
-      const [data, setData] = useState<any>(null);
-      const [isLoading, setIsLoading] = useState(true);
+      const input = args[0];
+      const options = args[1] || {};
+      const argsString = JSON.stringify(input ?? null);
+      const cacheKey = `${fullPath}-${argsString}`;
+      
+      const cached = globalQueryCache.get(cacheKey);
+      const initialData = options.initialData !== undefined ? options.initialData : (cached ? cached.data : null);
+
+      if (options.initialData !== undefined) {
+        globalQueryCache.set(cacheKey, { data: options.initialData, timestamp: Date.now() });
+      }
+
+      const [data, setData] = useState<any>(initialData);
+      const [isLoading, setIsLoading] = useState(initialData === null && options.enabled !== false);
       const [error, setError] = useState<any>(null);
-      const argsString = JSON.stringify(args);
 
       const run = useCallback(() => {
+        if (options.enabled === false) return;
         setData((prev: any) => {
           if (prev === null) setIsLoading(true);
           return prev;
         });
-        const parsedArgs = JSON.parse(argsString);
-        executeServerQuery(fullPath, parsedArgs[0])
+        executeServerQuery(fullPath, input)
           .then((res) => {
             setData(res);
+            globalQueryCache.set(cacheKey, { data: res, timestamp: Date.now() });
             setIsLoading(false);
           })
           .catch((err) => {
             setError(err);
             setIsLoading(false);
           });
-      }, [fullPath, argsString]);
+      }, [fullPath, argsString, options.enabled]);
 
       useEffect(() => {
         let isMounted = true;
+        
+        if (options.enabled === false) {
+          setIsLoading(false);
+          return;
+        }
+
+        // If we have initialData, it's already fresh from RSC, no need to background fetch on mount
+        if (options.initialData !== undefined) {
+          setIsLoading(false);
+          return;
+        }
+
         setData((prev: any) => {
           if (prev === null) setIsLoading(true);
           return prev;
         });
-        const parsedArgs = JSON.parse(argsString);
-        executeServerQuery(fullPath, parsedArgs[0])
+
+        executeServerQuery(fullPath, input)
           .then((res) => {
             if (isMounted) {
               setData(res);
+              globalQueryCache.set(cacheKey, { data: res, timestamp: Date.now() });
               setIsLoading(false);
             }
           })
@@ -115,7 +146,7 @@ const createDummyHook = (path: string[]) => {
         return () => {
           isMounted = false;
         };
-      }, [fullPath, argsString]);
+      }, [fullPath, argsString, options.enabled]);
 
       // Register for invalidation. Use a ref so `run` stays stable.
       const entryRef = useRef<QueryEntry | null>(null);
