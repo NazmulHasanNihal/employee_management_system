@@ -114,13 +114,13 @@ export default async function ProfilePage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* ── Identity hub ── */}
-        <div className="lg:col-span-1">
-          <Card className="flex h-full flex-col items-center text-center">
-            <div className="flex flex-col items-center gap-4 py-2">
+        <div className="h-fit space-y-6 lg:col-span-1">
+          <Card className="flex flex-col items-center overflow-hidden text-center">
+            <div className="flex w-full flex-col items-center gap-4 p-6 pb-2">
               <AvatarUpload currentUrl={user.avatarUrl} size="xxl" />
               <div>
                 <EditableName name={user.name} />
-                <p className="text-sm text-[var(--text-muted)]">{user.designation || 'Employee'}</p>
+                <p className="mt-1 text-sm font-medium text-[var(--text-muted)]">{user.designation || 'Employee'}</p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Badge variant="brand">{user.department || 'Unassigned'}</Badge>
@@ -132,11 +132,11 @@ export default async function ProfilePage() {
               </div>
             </div>
 
-            <div className="mt-4 w-full space-y-2 border-t border-[var(--border-hairline)] pt-4 text-left">
+            <div className="w-full space-y-3 bg-[var(--bg-hover)]/30 p-6 pt-4 text-left">
               <InfoLine icon={<CalendarDays size={14} />} label="Joined" value={user.joinDate ? formatDate(user.joinDate, 'en') : '—'} />
               <InfoLine icon={<UserIcon size={14} />} label="Manager" value={manager?.name || '—'} />
               <InfoLine icon={<Sparkles size={14} />} label="Branch" value={branch?.name || '—'} />
-              <InfoLine icon={<Sparkles size={14} />} label="Employee ID" value={user.id.slice(0, 8)} />
+              <InfoLine icon={<Zap size={14} />} label="Employee ID" value={user.id.slice(0, 8)} />
             </div>
           </Card>
         </div>

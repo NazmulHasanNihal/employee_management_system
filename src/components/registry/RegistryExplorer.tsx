@@ -329,7 +329,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               </button>
               
               <div className="mb-4 flex justify-center">
-                {canModifyUser({ role: user.role, designation: user.designation ?? undefined, isOwner }, { role: selectedEmployee.role, designation: selectedEmployee.designation ?? undefined, isOwner: selectedEmployee.isOwner }) ? (
+                {user?.id === selectedEmployee.id ? (
                   <AvatarUpload
                     currentUrl={selectedEmployee.avatarUrl}
                     targetUserId={selectedEmployee.id}

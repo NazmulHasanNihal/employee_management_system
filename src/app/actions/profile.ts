@@ -188,9 +188,7 @@ export async function updateAvatarUrl(url: string, targetUserId?: string) {
 
   const updateId = targetUserId || caller.id;
   if (targetUserId && targetUserId !== caller.id) {
-    if (!caller.isAdmin && !caller.isCEO && caller.role !== 'HR Manager') {
-      throw new Error('Unauthorized');
-    }
+    throw new Error('Unauthorized: Only the user can change their own profile picture.');
   }
 
   await prisma.user.update({
