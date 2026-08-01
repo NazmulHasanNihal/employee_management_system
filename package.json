@@ -46,6 +46,7 @@
     "posthog-js": "^1.399.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-easy-crop": "^6.2.3",
     "reactflow": "^11.11.4",
     "recharts": "^3.9.2",
     "serwist": "^9.5.11",
