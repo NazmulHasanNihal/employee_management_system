@@ -20,6 +20,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [tempSessionId, setTempSessionId] = useState<string | null>(null);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isRecoverySent, setIsRecoverySent] = useState(false);
 
   const validateEmail = (value: string) => {
     if (!value) return "Email is required";
@@ -99,20 +101,24 @@ export default function LoginPage() {
     setCodeError("");
   };
 
-  const handleForgotPassword = async () => {
-    if (!email) {
-      setError("Enter your email address to reset your password.");
-      return;
-    }
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailErr = validateEmail(email);
+    setEmailError(emailErr);
+    if (emailErr) return;
+
     setError("");
+    setLoading(true);
     const supabase = createClient();
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
     });
+    setLoading(false);
+    
     if (resetError) {
       setError(resetError.message);
     } else {
-      setError("If that email exists, a password reset link has been sent.");
+      setIsRecoverySent(true);
     }
   };
 
@@ -126,18 +132,20 @@ export default function LoginPage() {
               {requiresTwoFactor ? <KeyRound size={22} /> : <Lock size={22} />}
             </div>
              <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-              {requiresTwoFactor ? 'Two-Factor Authentication' : (loginType === 'admin' ? 'Admin Sign In' : 'Welcome Back')}
+              {/* @ts-ignore */}<T>{isForgotPassword ? 'Reset Password' : requiresTwoFactor ? 'Two-Factor Authentication' : (loginType === 'admin' ? 'Admin Sign In' : 'Welcome Back')}</T>
             </h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              {requiresTwoFactor
+              {/* @ts-ignore */}<T>{isForgotPassword
+                ? 'Enter your email to receive a recovery link'
+                : requiresTwoFactor
                 ? 'Enter the 6-digit code from your authenticator app'
                 : (loginType === 'admin'
                   ? 'Elevated access for system administrators'
-                  : 'Sign in to your EMS workspace')}
+                  : 'Sign in to your EMS workspace')}</T>
             </p>
           </div>
 
-          {!requiresTwoFactor && (
+          {!requiresTwoFactor && !isForgotPassword && (
             <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-1">
               <button
                 type="button"
@@ -167,8 +175,49 @@ export default function LoginPage() {
               {error}
             </div>
           )}
-
-          {!requiresTwoFactor ? (
+          {isForgotPassword ? (
+            isRecoverySent ? (
+              <div className="text-center">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
+                  <Mail size={24} />
+                </div>
+                <h2 className="mb-2 text-xl font-semibold">{/* @ts-ignore */}<T>Check your email</T></h2>
+                <p className="mb-6 text-sm text-[var(--text-muted)]">
+                  {/* @ts-ignore */}<T>We sent a password recovery link to</T> <strong>{email}</strong>
+                </p>
+                <button type="button" onClick={() => { setIsForgotPassword(false); setIsRecoverySent(false); }} className="w-full btn-primary py-2.5 rounded-xl">
+                  {/* @ts-ignore */}<T>Back to login</T>
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label htmlFor="recovery-email" className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
+                    {/* @ts-ignore */}<T>Email address</T>
+                  </label>
+                  <div className="relative">
+                    <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                    <input
+                      id="recovery-email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(validateEmail(e.target.value)); }}
+                      className={cn("flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-2.5 pl-10 pr-4 text-sm", emailError && "border-[var(--rose)]")}
+                      placeholder="you@company.com"
+                    />
+                  </div>
+                  {emailError && <p className="mt-1 text-xs text-[var(--rose)]">{emailError}</p>}
+                </div>
+                <button type="submit" disabled={loading} className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-60">
+                  {loading ? "Sending..." : <>{/* @ts-ignore */}<T>Send Recovery Link</T><ArrowRight size={16} /></>}
+                </button>
+                <button type="button" onClick={() => setIsForgotPassword(false)} className="w-full text-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
+                  {/* @ts-ignore */}<T>Back to login</T>
+                </button>
+              </form>
+            )
+          ) : !requiresTwoFactor ? (
             <form onSubmit={handlePasswordLogin} className="space-y-4">
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
@@ -250,12 +299,11 @@ export default function LoginPage() {
                 {/* @ts-ignore */}<T>Back to password</T></button>
             </form>
           )}
-
-          {!requiresTwoFactor && (
+          {!requiresTwoFactor && !isForgotPassword && (
             <div className="mt-5 text-center">
               <button
                 type="button"
-                onClick={handleForgotPassword}
+                onClick={() => { setIsForgotPassword(true); setError(""); setEmailError(""); }}
                 className="text-sm font-medium text-[var(--brand)] transition-colors hover:underline"
               >
                 {/* @ts-ignore */}<T>Forgot your password?</T></button>
