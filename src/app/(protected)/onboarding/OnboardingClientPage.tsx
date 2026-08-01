@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/ui/badge';
+import { T } from "@/components/Translate";
 
 interface OnboardingTask {
   id: string;
@@ -162,14 +163,14 @@ export default function OnboardingClientPage() {
         title="HR Workflows"
         subtitle="Automated onboarding checklists and offboarding protocols."
         icon={<Rocket size={20} />}
-        actions={isAdmin ? <Badge variant="brand">Admin</Badge> : undefined}
+        actions={isAdmin ? <Badge variant="brand">{/* @ts-ignore */}<T>Admin</T></Badge> : undefined}
       />
 
       {/* Progress Bar */}
       <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-6 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[var(--text-main)]">New Hire Onboarding Packet Progress</h3>
-          <span className="text-xs font-bold text-[var(--emerald)]">{progressPercent}% Completed</span>
+          <h3 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>New Hire Onboarding Packet Progress</T></h3>
+          <span className="text-xs font-bold text-[var(--emerald)]">{progressPercent}{/* @ts-ignore */}<T>% Completed</T></span>
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
           <div 
@@ -185,20 +186,19 @@ export default function OnboardingClientPage() {
           <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CheckSquare size={16} className="text-[var(--brand-strong)]" /> Onboarding Checklist
-            </CardTitle>
+              <CheckSquare size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Onboarding Checklist</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {isAdmin && (
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs text-[var(--text-muted)]">View Checklist For</label>
+                  <label className="mb-1 block text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>View Checklist For</T></label>
                   <select
                     value={targetUserId}
                     onChange={(e) => setTargetUserId(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value={user.id}>Myself</option>
+                    <option value={user.id}>{/* @ts-ignore */}<T>Myself</T></option>
                     {users?.map((u: UserOption) => (
                       <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
@@ -210,13 +210,12 @@ export default function OnboardingClientPage() {
                   onClick={() => targetUserId && triggerProbation.mutate({ userId: targetUserId })}
                   disabled={!targetUserId || triggerProbation.isPending}
                 >
-                  <UserPlus size={14} /> Init Probation
-                </Button>
+                  <UserPlus size={14} /> {/* @ts-ignore */}<T>Init Probation</T></Button>
               </div>
             )}
 
             {isLoading ? (
-              <p className="py-4 text-center text-sm text-[var(--text-muted)]">Loading tasks…</p>
+              <p className="py-4 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Loading tasks…</T></p>
             ) : (
               <>
                 <div className="space-y-2">
@@ -251,8 +250,7 @@ export default function OnboardingClientPage() {
                       placeholder="New task…"
                     />
                     <Button type="submit" disabled={createTask.isPending}>
-                      Add
-                    </Button>
+                      {/* @ts-ignore */}<T>Add</T></Button>
                   </form>
                 )}
 
@@ -269,8 +267,7 @@ export default function OnboardingClientPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileSignature size={16} className="text-[var(--brand-strong)]" /> E-Signature Document Vault
-            </CardTitle>
+              <FileSignature size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>E-Signature Document Vault</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
@@ -285,15 +282,14 @@ export default function OnboardingClientPage() {
                       <p className="text-xs text-[var(--text-muted)]">{doc.description}</p>
                       {doc.signedAt && (
                         <p className="mt-1 text-[10px] text-[var(--emerald)] font-mono">
-                          Signed by {doc.signedBy} on {new Date(doc.signedAt).toLocaleDateString()}
+                          {/* @ts-ignore */}<T>Signed by</T>{doc.signedBy} {/* @ts-ignore */}<T>on</T>{new Date(doc.signedAt).toLocaleDateString()}
                         </p>
                       )}
                     </div>
                   </div>
                   {!doc.signedAt && (
                     <Button variant="outline" size="sm" onClick={() => setSigningDoc(doc)} className="shrink-0 text-xs">
-                      Sign Document
-                    </Button>
+                      {/* @ts-ignore */}<T>Sign Document</T></Button>
                   )}
                 </div>
               ))}
@@ -308,37 +304,35 @@ export default function OnboardingClientPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Laptop size={16} className="text-[var(--sky)]" /> Zero-Touch IT Provisioning
-              </CardTitle>
+                <Laptop size={16} className="text-[var(--sky)]" /> {/* @ts-ignore */}<T>Zero-Touch IT Provisioning</T></CardTitle>
             </CardHeader>
             <CardContent>
               <p className="mb-4 text-sm text-[var(--text-muted)]">
-                Assign available inventory assets to new hires. The device will be marked active under their profile.
-              </p>
+                {/* @ts-ignore */}<T>Assign available inventory assets to new hires. The device will be marked active under their profile.</T></p>
               <form onSubmit={handleProvisionAsset} className="flex flex-col gap-4 sm:flex-row sm:items-end">
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs text-[var(--text-muted)]">New Hire</label>
+                  <label className="mb-1 block text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>New Hire</T></label>
                   <select
                     required
                     value={provisionUserId}
                     onChange={(e) => setProvisionUserId(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value="">Select employee…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select employee…</T></option>
                     {users?.map((u: { id: string; name: string }) => (
                       <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs text-[var(--text-muted)]">Available Inventory</label>
+                  <label className="mb-1 block text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Available Inventory</T></label>
                   <select
                     required
                     value={provisionAssetId}
                     onChange={(e) => setProvisionAssetId(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value="">Select unassigned hardware…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select unassigned hardware…</T></option>
                     {assets
                       ?.filter((a: { userId: string | null }) => !a.userId)
                       .map((a: { id: string; name: string }) => (
@@ -347,8 +341,7 @@ export default function OnboardingClientPage() {
                   </select>
                 </div>
                 <Button type="submit" variant="primary" disabled={updateAsset.isPending || !provisionAssetId || !provisionUserId}>
-                  Provision Asset
-                </Button>
+                  {/* @ts-ignore */}<T>Provision Asset</T></Button>
               </form>
             </CardContent>
           </Card>
@@ -359,27 +352,25 @@ export default function OnboardingClientPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <ShieldOff size={16} className="text-[var(--rose)]" /> Offboarding Protocol
-              </CardTitle>
+                <ShieldOff size={16} className="text-[var(--rose)]" /> {/* @ts-ignore */}<T>Offboarding Protocol</T></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-3 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-3">
                 <AlertTriangle size={18} className="shrink-0 text-[var(--rose)]" />
                 <p className="text-sm text-[var(--text-main)]">
-                  Triggering offboarding will instantly mark the employee as Terminated, revoking system access, and automatically create high-priority Helpdesk tickets to reclaim company assets.
-                </p>
+                  {/* @ts-ignore */}<T>Triggering offboarding will instantly mark the employee as Terminated, revoking system access, and automatically create high-priority Helpdesk tickets to reclaim company assets.</T></p>
               </div>
 
               <form onSubmit={handleOffboard} className="space-y-3">
                 <div>
-                  <label className="mb-1 block text-xs text-[var(--text-muted)]">Select Employee to Terminate</label>
+                  <label className="mb-1 block text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Employee to Terminate</T></label>
                   <select
                     required
                     value={offboardUserId}
                     onChange={(e) => setOffboardUserId(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value="">Select someone…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select someone…</T></option>
                     {users
                       ?.filter((u: { id: string; status?: string }) => u.id !== user.id && u.status !== 'Terminated')
                       .map((u: { id: string; name: string; department?: string }) => (
@@ -394,21 +385,19 @@ export default function OnboardingClientPage() {
                   className="w-full"
                   disabled={triggerOffboarding.isPending || !offboardUserId}
                 >
-                  <AlertCircle size={16} /> Execute Offboarding
-                </Button>
+                  <AlertCircle size={16} /> {/* @ts-ignore */}<T>Execute Offboarding</T></Button>
               </form>
 
               <div className="space-y-3 border-t border-[var(--border-hairline)] pt-4">
-                <h4 className="text-sm font-semibold text-[var(--text-main)]">Finalize Severance</h4>
+                <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Finalize Severance</T></h4>
                 <p className="text-xs text-[var(--text-muted)]">
-                  Release final payout. This will fail if the employee has unreturned active IT assets.
-                </p>
+                  {/* @ts-ignore */}<T>Release final payout. This will fail if the employee has unreturned active IT assets.</T></p>
                 <div className="flex gap-2">
                   <select
                     id="severanceUser"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 flex-1 rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value="">Select Terminated Employee…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select Terminated Employee…</T></option>
                     {users?.filter((u: { status?: string }) => u.status === 'Terminated').map((u: { id: string; name: string }) => (
                       <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
@@ -421,8 +410,7 @@ export default function OnboardingClientPage() {
                     }}
                     disabled={finalizeSeverance.isPending}
                   >
-                    Release Funds
-                  </Button>
+                    {/* @ts-ignore */}<T>Release Funds</T></Button>
                 </div>
               </div>
             </CardContent>
@@ -436,8 +424,7 @@ export default function OnboardingClientPage() {
           <div className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--bg-app)] border border-[var(--border-hairline)] shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-                <FileSignature className="h-4 w-4 text-[var(--brand-strong)]" /> Digital Signature Required
-              </h3>
+                <FileSignature className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Digital Signature Required</T></h3>
               <button onClick={() => { setSigningDoc(null); setSignatureText(''); }} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
                 <X className="h-5 w-5" />
               </button>
@@ -446,12 +433,12 @@ export default function OnboardingClientPage() {
               <div className="mb-6 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 text-center">
                 <FileText className="mx-auto h-8 w-8 text-[var(--text-muted)] mb-2" />
                 <h4 className="text-sm font-bold text-[var(--text-main)]">{signingDoc.title}</h4>
-                <p className="text-xs text-[var(--text-muted)] mt-1">Please review the document and provide your legal signature below to acknowledge.</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">{/* @ts-ignore */}<T>Please review the document and provide your legal signature below to acknowledge.</T></p>
               </div>
 
               <form onSubmit={handleSignDocument} className="space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Type Full Legal Name to Sign</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Type Full Legal Name to Sign</T></label>
                   <Input 
                     type="text" 
                     required 
@@ -463,8 +450,7 @@ export default function OnboardingClientPage() {
                 </div>
                 <div className="pt-2">
                   <Button type="submit" className="w-full" disabled={!signatureText.trim()}>
-                    Sign & Acknowledge
-                  </Button>
+                    {/* @ts-ignore */}<T>Sign & Acknowledge</T></Button>
                 </div>
               </form>
             </div>

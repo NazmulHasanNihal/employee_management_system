@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { T } from "@/components/Translate";
 
 interface HelpdeskClientProps {
   initialTickets: any[];
@@ -85,13 +86,12 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-[var(--brand-strong)]" /> New Support Ticket
-            </CardTitle>
+              <Plus className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>New Support Ticket</T></CardTitle>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Subject / Title</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Subject / Title</T></label>
                 <Input
                   required
                   value={subject}
@@ -100,19 +100,19 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Severity Level</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Severity Level</T></label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={priority}
                   onChange={(e) => setPriority(e.target.value)}
                 >
-                  <option value="Low">Low - Minor issue, no blocker</option>
-                  <option value="Medium">Medium - Workflow impeded</option>
-                  <option value="High">High - Critical system blocker</option>
+                  <option value="Low">{/* @ts-ignore */}<T>Low - Minor issue, no blocker</T></option>
+                  <option value="Medium">{/* @ts-ignore */}<T>Medium - Workflow impeded</T></option>
+                  <option value="High">{/* @ts-ignore */}<T>High - Critical system blocker</T></option>
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Detailed Description</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Detailed Description</T></label>
                 <textarea
                   required
                   rows={4}
@@ -123,8 +123,7 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                 />
               </div>
               <Button type="submit" disabled={createTicket.isPending || !subject.trim() || !description.trim()}>
-                <Send className="h-4 w-4" /> Open Ticket
-              </Button>
+                <Send className="h-4 w-4" /> {/* @ts-ignore */}<T>Open Ticket</T></Button>
             </form>
           </CardContent>
         </Card>
@@ -132,13 +131,12 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
 
       <div className="space-y-6 lg:col-span-2">
         <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-          <Ticket className="h-4 w-4" /> Active Ticket Feed
-        </h2>
+          <Ticket className="h-4 w-4" /> {/* @ts-ignore */}<T>Active Ticket Feed</T></h2>
 
         {(!tickets || tickets.length === 0) ? (
           <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
             <LifeBuoy className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
-            <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Active Tickets</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-muted)]">{/* @ts-ignore */}<T>No Active Tickets</T></h3>
           </div>
         ) : (
           <div className="custom-scrollbar max-h-[70vh] space-y-4 overflow-y-auto pr-1">
@@ -151,25 +149,24 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                         <MessageSquare className="h-4 w-4" />
                       </div>
                      <div>
-                       <p className="text-xs text-[var(--text-muted)]">Ticket #{ticket.id.slice(0, 6)}</p>
+                       <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Ticket #</T>{ticket.id.slice(0, 6)}</p>
                        <h4 className="truncate text-lg font-semibold text-[var(--text-main)]">{ticket.subject}</h4>
                      </div>
                     </div>
                     <Badge variant={getPriorityVariant(ticket.priority) as any}>
-                      {getPriorityIcon(ticket.priority)} {ticket.priority} Priority
-                    </Badge>
+                      {getPriorityIcon(ticket.priority)} {ticket.priority} {/* @ts-ignore */}<T>Priority</T></Badge>
                   </div>
 
                   <div className="flex items-center justify-between rounded-2xl bg-[var(--bg-hover)] p-4">
                     <div>
-                      <p className="text-xs text-[var(--text-muted)]">Current Status</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Current Status</T></p>
                       <Badge variant={getStatusVariant(ticket.status) as any}>
                         {ticket.status === 'Resolved' ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
                         {ticket.status}
                       </Badge>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-[var(--text-muted)]">Created At</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Created At</T></p>
                       <p className="text-xs text-[var(--text-main)]">
                         {new Date(ticket.createdAt).toLocaleString()}
                       </p>
@@ -219,12 +216,10 @@ export function HelpdeskClient({ initialTickets, userId, isPrivileged }: Helpdes
                     <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border-hairline)] pt-4">
                       {ticket.status === 'Open' && (
                         <Button variant="outline" size="sm" className="text-[var(--amber)]" onClick={() => updateStatus.mutate({ id: ticket.id, status: 'In Progress' })} disabled={updateStatus.isPending}>
-                          Mark In Progress
-                        </Button>
+                          {/* @ts-ignore */}<T>Mark In Progress</T></Button>
                       )}
                       <Button variant="outline" size="sm" className="text-[var(--emerald)]" onClick={() => updateStatus.mutate({ id: ticket.id, status: 'Resolved' })} disabled={updateStatus.isPending}>
-                        <CheckCircle2 className="h-4 w-4" /> Mark Resolved
-                      </Button>
+                        <CheckCircle2 className="h-4 w-4" /> {/* @ts-ignore */}<T>Mark Resolved</T></Button>
                     </div>
                   )}
                 </CardContent>

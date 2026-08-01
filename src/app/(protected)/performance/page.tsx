@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { getServerT } from '@/lib/i18n-server';
 import PerformanceIsland from './PerformanceIsland';
 import { PromotionReadiness } from '@/components/performance/PromotionReadiness';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -65,8 +66,7 @@ export default async function PerformancePage() {
 
           <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-              <Star className="h-4 w-4 text-[var(--amber)]" /> Manager Reviews
-            </h3>
+              <Star className="h-4 w-4 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Manager Reviews</T></h3>
           </div>
 
           <div className="space-y-4">
@@ -78,20 +78,19 @@ export default async function PerformancePage() {
                     <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{rev.reviewPeriod}</span>
                     <Badge variant={isExceeds ? 'amber' : 'emerald'}>{rev.rating}</Badge>
                   </div>
-                  <p className="text-sm text-[var(--text-main)] italic leading-relaxed mb-4">&ldquo;{rev.comments}&rdquo;</p>
+                  <p className="text-sm text-[var(--text-main)] italic leading-relaxed mb-4">{/* @ts-ignore */}<T>&ldquo;</T>{rev.comments}{/* @ts-ignore */}<T>&rdquo;</T></p>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[var(--border-hairline)]">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--bg-hover)] text-[10px] font-bold text-[var(--text-main)]">
                       {rev.reviewerName.charAt(0)}
                     </div>
-                    <span className="text-xs text-[var(--text-muted)]">Reviewed by {rev.reviewerName}</span>
+                    <span className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reviewed by</T>{rev.reviewerName}</span>
                   </div>
                 </div>
               );
             })}
             {(!reviews || reviews.length === 0) && (
               <div className="rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)]/50 p-8 text-center text-sm text-[var(--text-muted)]">
-                No formal reviews on record.
-              </div>
+                {/* @ts-ignore */}<T>No formal reviews on record.</T></div>
             )}
           </div>
         </div>

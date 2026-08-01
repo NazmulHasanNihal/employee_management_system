@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/lib/toast';
+import { T } from "@/components/Translate";
 
 interface Objective {
   id: string;
@@ -112,8 +113,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
             disabled={createObj.isPending || !newTitle.trim()}
             className="shrink-0 rounded-xl font-semibold"
           >
-            <Plus size={16} /> Add OKR
-          </Button>
+            <Plus size={16} /> {/* @ts-ignore */}<T>Add OKR</T></Button>
         </form>
 
         {isPrivileged && (
@@ -125,8 +125,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
             }}
             className="btn-primary shrink-0 rounded-xl font-semibold flex items-center gap-2"
           >
-            <UserCheck size={16} /> Evaluate Employee
-          </Button>
+            <UserCheck size={16} /> {/* @ts-ignore */}<T>Evaluate Employee</T></Button>
         )}
       </div>
 
@@ -152,7 +151,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
             </div>
 
             <div className="mt-3 flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Update progress:</span>
+              <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Update progress:</T></span>
               {[0, 25, 50, 75, 100].map((val) => (
                 <button
                   key={val}
@@ -176,7 +175,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <div className="flex items-center gap-2">
                 <Award size={20} className="text-[var(--brand)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">Submit Employee Performance Review</h3>
+                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Submit Employee Performance Review</T></h3>
               </div>
               <button onClick={() => setIsReviewModalOpen(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
                 <X size={18} />
@@ -185,7 +184,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
 
             <form onSubmit={handleSaveReview} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Select Employee</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Employee</T></label>
                 <select
                   value={selectedEmpId}
                   onChange={(e) => setSelectedEmpId(e.target.value)}
@@ -201,36 +200,36 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Review Period</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Review Period</T></label>
                   <select
                     value={reviewPeriod}
                     onChange={(e) => setReviewPeriod(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                   >
-                    <option value="Q1 2026">Q1 2026</option>
-                    <option value="Q2 2026">Q2 2026</option>
-                    <option value="Q3 2026">Q3 2026</option>
-                    <option value="Q4 2026">Q4 2026</option>
-                    <option value="Annual 2026">Annual 2026</option>
+                    <option value="Q1 2026">{/* @ts-ignore */}<T>Q1 2026</T></option>
+                    <option value="Q2 2026">{/* @ts-ignore */}<T>Q2 2026</T></option>
+                    <option value="Q3 2026">{/* @ts-ignore */}<T>Q3 2026</T></option>
+                    <option value="Q4 2026">{/* @ts-ignore */}<T>Q4 2026</T></option>
+                    <option value="Annual 2026">{/* @ts-ignore */}<T>Annual 2026</T></option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Rating</label>
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Rating</T></label>
                   <select
                     value={rating}
                     onChange={(e) => setRating(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                   >
-                    <option value="Exceeds Expectations">Exceeds Expectations</option>
-                    <option value="Meets Expectations">Meets Expectations</option>
-                    <option value="Needs Improvement">Needs Improvement</option>
+                    <option value="Exceeds Expectations">{/* @ts-ignore */}<T>Exceeds Expectations</T></option>
+                    <option value="Meets Expectations">{/* @ts-ignore */}<T>Meets Expectations</T></option>
+                    <option value="Needs Improvement">{/* @ts-ignore */}<T>Needs Improvement</T></option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Evaluation Comments & Feedback</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Evaluation Comments & Feedback</T></label>
                 <textarea
                   rows={3}
                   required
@@ -247,8 +246,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
                   onClick={() => setIsReviewModalOpen(false)}
                   className="flex-1 rounded-xl border border-[var(--border-hairline)] py-2.5 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
                 >
-                  Cancel
-                </button>
+                  {/* @ts-ignore */}<T>Cancel</T></button>
                 <button
                   type="submit"
                   disabled={submitReviewMutation.isPending}

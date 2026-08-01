@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { T } from "@/components/Translate";
 
 /**
  * PWA install prompt (Tier 9). Listens for the browser's `beforeinstallprompt`
@@ -38,10 +39,9 @@ export function PwaInstallPrompt() {
   return (
     <div className="fixed bottom-20 right-4 z-50 flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 py-3 shadow-lg md:bottom-4">
       <Download className="h-4 w-4 text-[var(--text-muted)]" />
-      <span className="text-xs font-mono text-[var(--text-muted)]">Install EMS</span>
+      <span className="text-xs font-mono text-[var(--text-muted)]">{/* @ts-ignore */}<T>Install EMS</T></span>
       <Button size="sm" onClick={install}>
-        Install
-      </Button>
+        {/* @ts-ignore */}<T>Install</T></Button>
     </div>
   );
 }

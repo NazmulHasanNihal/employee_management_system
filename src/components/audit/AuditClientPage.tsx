@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { toast } from '@/lib/toast';
+import { T } from "@/components/Translate";
 
 interface AuditClientPageProps {
   initialEvents: any[];
@@ -161,20 +162,18 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
               'bg-[var(--bg-panel)] hover:bg-[var(--bg-card)] text-[var(--text-main)] border border-[var(--border-hairline)]'
             }`}
           >
-            {verifyState === 'idle' && <><ShieldCheck size={16} className="text-[var(--text-muted)]" /> Verify Ledger Integrity</>}
-            {verifyState === 'verifying' && <><Loader2 size={16} className="animate-spin text-[var(--brand)]" /> Verifying Hash Chain...</>}
-            {verifyState === 'secure' && <><ShieldCheck size={16} /> Mathematically Proven Immutable</>}
-            {verifyState === 'tampered' && <><ShieldAlert size={16} /> Ledger Tampered!</>}
+            {verifyState === 'idle' && <><ShieldCheck size={16} className="text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Verify Ledger Integrity</T></>}
+            {verifyState === 'verifying' && <><Loader2 size={16} className="animate-spin text-[var(--brand)]" /> {/* @ts-ignore */}<T>Verifying Hash Chain...</T></>}
+            {verifyState === 'secure' && <><ShieldCheck size={16} /> {/* @ts-ignore */}<T>Mathematically Proven Immutable</T></>}
+            {verifyState === 'tampered' && <><ShieldAlert size={16} /> {/* @ts-ignore */}<T>Ledger Tampered!</T></>}
           </Button>
 
           {isCEO && (
             <>
               <Button onClick={() => setShowGrantModal(true)} variant="outline" className="rounded-xl flex items-center gap-2 border-[var(--border-hairline)] bg-[var(--bg-panel)]">
-                <UserPlus size={16} className="text-[var(--text-muted)]" /> Grant Audit Access
-              </Button>
+                <UserPlus size={16} className="text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Grant Audit Access</T></Button>
               <Button onClick={handleTamper} variant="outline" className="rounded-xl flex items-center gap-2 border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10">
-                <ShieldAlert size={16} /> Tamper Database
-              </Button>
+                <ShieldAlert size={16} /> {/* @ts-ignore */}<T>Tamper Database</T></Button>
             </>
           )}
         </div>
@@ -192,11 +191,11 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
           <Table>
             <TableHeader className="bg-[var(--bg-app)] border-b border-[var(--border-hairline)]">
               <TableRow>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Timestamp</TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider w-[240px]">Cryptographic Hash Chain</TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Actor</TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Action</TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Details</TableHead>
+                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Timestamp</T></TableHead>
+                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider w-[240px]">{/* @ts-ignore */}<T>Cryptographic Hash Chain</T></TableHead>
+                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Actor</T></TableHead>
+                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Action</T></TableHead>
+                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Details</T></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -210,11 +209,11 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
                     <TableCell className="font-mono text-[10px]">
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-1.5 opacity-60">
-                          <span className="bg-[var(--bg-app)] px-1.5 py-0.5 rounded text-[var(--text-muted)] w-8 text-center text-[9px]">PREV</span>
+                          <span className="bg-[var(--bg-app)] px-1.5 py-0.5 rounded text-[var(--text-muted)] w-8 text-center text-[9px]">{/* @ts-ignore */}<T>PREV</T></span>
                           <span className="text-[var(--text-muted)] truncate max-w-[120px] lg:max-w-[180px]">{event.verifiedPrevHash || event.previousHash || 'genesis_hash_00000000000'}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className={`px-1.5 py-0.5 rounded w-8 text-center text-[9px] font-bold ${isSecureRow ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]' : 'bg-[var(--brand)]/10 text-[var(--brand)]'}`}>HASH</span>
+                          <span className={`px-1.5 py-0.5 rounded w-8 text-center text-[9px] font-bold ${isSecureRow ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]' : 'bg-[var(--brand)]/10 text-[var(--brand)]'}`}>{/* @ts-ignore */}<T>HASH</T></span>
                           <span className={`${isSecureRow ? 'text-[var(--emerald)]' : 'text-[var(--text-main)]'} truncate max-w-[120px] lg:max-w-[180px] font-bold`}>
                             {event.verifiedHash || event.hash || event.id}
                           </span>
@@ -252,7 +251,7 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <div className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-[var(--amber)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">Delegate Audit Log Access</h3>
+                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Delegate Audit Log Access</T></h3>
               </div>
               <button onClick={() => setShowGrantModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
                 ✕
@@ -260,20 +259,19 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
             </div>
 
             <p className="text-xs text-[var(--text-muted)]">
-              As CEO / Founder, select an employee account to grant confidential Audit Log viewing permissions.
-            </p>
+              {/* @ts-ignore */}<T>As CEO / Founder, select an employee account to grant confidential Audit Log viewing permissions.</T></p>
 
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Select Account</label>
+              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Select Account</T></label>
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-xs font-medium"
               >
-                <option value="">Select Employee Account...</option>
+                <option value="">{/* @ts-ignore */}<T>Select Employee Account...</T></option>
                 {employees.map((emp: any) => (
                   <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role} &middot; {emp.department})
+                    {emp.name} ({emp.role} {/* @ts-ignore */}<T>&middot;</T>{emp.department})
                   </option>
                 ))}
               </select>
@@ -281,8 +279,7 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
 
             <div className="flex justify-end gap-3 pt-2">
               <Button onClick={() => setShowGrantModal(false)} variant="outline" size="sm" className="rounded-xl">
-                Cancel
-              </Button>
+                {/* @ts-ignore */}<T>Cancel</T></Button>
               <Button
                 onClick={handleGrantAccess}
                 disabled={!selectedUserId || updatePermissions.isPending}
@@ -290,8 +287,7 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
                 size="sm"
                 className="rounded-xl flex items-center gap-1.5"
               >
-                <Check size={14} /> Grant Permission
-              </Button>
+                <Check size={14} /> {/* @ts-ignore */}<T>Grant Permission</T></Button>
             </div>
           </div>
         </div>

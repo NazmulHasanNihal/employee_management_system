@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusBadge } from '@/components/StatusBadge';
 import { formatCurrency } from '@/lib/format';
+import { T } from "@/components/Translate";
 
 interface ExpensesClientProps {
   initialExpenses: any[];
@@ -87,7 +88,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
           <CardContent>
-            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Pending</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Pending</T></p>
             <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
               {formatCurrency(totalPending, 'BDT', 'en')}
             </p>
@@ -95,7 +96,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
         </Card>
         <Card>
           <CardContent>
-            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Reimbursed</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Reimbursed</T></p>
             <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
               {formatCurrency(totalApproved, 'BDT', 'en')}
             </p>
@@ -106,7 +107,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
       {!isAdmin && (
         <div className="flex justify-end">
           <Button variant="primary" size="sm" onClick={() => setShowForm((s) => !s)}>
-            {showForm ? 'Cancel Claim' : <><Plus className="h-4 w-4" /> New Claim</>}
+            {showForm ? 'Cancel Claim' : <><Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>New Claim</T></>}
           </Button>
         </div>
       )}
@@ -116,12 +117,11 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Ban className="h-4 w-4 text-[var(--rose)]" /> My Penalties
-            </CardTitle>
+              <Ban className="h-4 w-4 text-[var(--rose)]" /> {/* @ts-ignore */}<T>My Penalties</T></CardTitle>
           </CardHeader>
           <CardContent>
             {penalties.length === 0 ? (
-              <p className="py-6 text-center text-sm text-[var(--text-muted)]">You have no outstanding penalties. 🎉</p>
+              <p className="py-6 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>You have no outstanding penalties. 🎉</T></p>
             ) : (
               <div className="space-y-3">
                 {penalties.map((p: any) => (
@@ -133,7 +133,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                       <div>
                         <p className="text-sm font-semibold text-[var(--text-main)]">{formatCurrency(p.amount, 'BDT', 'en')}</p>
                         <p className="text-xs text-[var(--text-muted)]">{p.reason}</p>
-                        {p.dueDate && <p className="text-[10px] text-[var(--text-muted)]">Due: {new Date(p.dueDate).toLocaleDateString()}</p>}
+                        {p.dueDate && <p className="text-[10px] text-[var(--text-muted)]">{/* @ts-ignore */}<T>Due:</T>{new Date(p.dueDate).toLocaleDateString()}</p>}
                       </div>
                     </div>
                     <StatusBadge status={p.status === 'PAID' ? 'APPROVED' : 'PENDING'} />
@@ -149,37 +149,37 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
         <>
           <div className="flex justify-end">
             <Button variant="outline" size="sm" onClick={() => setShowPenaltyForm((s) => !s)}>
-              {showPenaltyForm ? 'Cancel' : <><Plus className="h-4 w-4" /> Add Penalty</>}
+              {showPenaltyForm ? 'Cancel' : <><Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>Add Penalty</T></>}
             </Button>
           </div>
           {showPenaltyForm && (
             <Card className="animate-scale-in">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Ban className="h-4 w-4 text-[var(--rose)]" /> Issue Penalty</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Ban className="h-4 w-4 text-[var(--rose)]" /> {/* @ts-ignore */}<T>Issue Penalty</T></CardTitle>
               </CardHeader>
               <CardContent>
                 <form className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-4" onSubmit={(e) => { e.preventDefault(); if (penaltyDraft.userId && penaltyDraft.amount && penaltyDraft.reason) createPenalty.mutate({ ...penaltyDraft, amount: Number(penaltyDraft.amount), dueDate: penaltyDraft.dueDate || undefined }); }}>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Employee</label>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employee</T></label>
                     <select required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={penaltyDraft.userId} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, userId: e.target.value })}>
-                      <option value="">-- Select --</option>
+                      <option value="">{/* @ts-ignore */}<T>-- Select --</T></option>
                       {users?.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Amount (৳)</label>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Amount (৳)</T></label>
                     <Input type="number" required value={penaltyDraft.amount || ''} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, amount: Number(e.target.value) })} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Due Date</label>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Due Date</T></label>
                     <Input type="date" value={penaltyDraft.dueDate} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, dueDate: e.target.value })} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Reason</label>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reason</T></label>
                     <Input required value={penaltyDraft.reason} onChange={(e) => setPenaltyDraft({ ...penaltyDraft, reason: e.target.value })} placeholder="Reason for penalty" />
                   </div>
                   <div className="md:col-span-4">
-                    <Button type="submit" disabled={createPenalty.isPending} className="bg-[var(--rose)] hover:brightness-105">Issue Penalty</Button>
+                    <Button type="submit" disabled={createPenalty.isPending} className="bg-[var(--rose)] hover:brightness-105">{/* @ts-ignore */}<T>Issue Penalty</T></Button>
                   </div>
                 </form>
               </CardContent>
@@ -187,11 +187,11 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
           )}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Ban className="h-4 w-4 text-[var(--rose)]" /> All Penalties</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Ban className="h-4 w-4 text-[var(--rose)]" /> {/* @ts-ignore */}<T>All Penalties</T></CardTitle>
             </CardHeader>
             <CardContent>
               {penalties.length === 0 ? (
-                <p className="py-6 text-center text-sm text-[var(--text-muted)]">No penalties recorded.</p>
+                <p className="py-6 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No penalties recorded.</T></p>
               ) : (
                 <div className="divide-y divide-[var(--border-hairline)]">
                   {penalties.map((p: any) => (
@@ -203,7 +203,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                       <div className="flex items-center gap-2">
                         <StatusBadge status={p.status === 'PAID' ? 'APPROVED' : 'PENDING'} />
                         {p.status !== 'PAID' && (
-                          <Button variant="outline" size="sm" onClick={() => updatePenaltyStatus.mutate({ id: p.id, status: 'PAID' })}>Mark Paid</Button>
+                          <Button variant="outline" size="sm" onClick={() => updatePenaltyStatus.mutate({ id: p.id, status: 'PAID' })}>{/* @ts-ignore */}<T>Mark Paid</T></Button>
                         )}
                       </div>
                     </div>
@@ -219,14 +219,13 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
         <Card className="animate-scale-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-4 w-4 text-[var(--brand-strong)]" /> File Expense Claim
-            </CardTitle>
+              <Receipt className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>File Expense Claim</T></CardTitle>
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Claim Amount (৳)</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Claim Amount (৳)</T></label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
                     <Input
@@ -241,7 +240,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Category</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Category</T></label>
                   <select
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     value={newExpense.category}
@@ -263,13 +262,12 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                   className="h-4 w-4 accent-[var(--brand)]"
                 />
                 <label htmlFor="isMileage" className="cursor-pointer text-xs text-[var(--text-main)]">
-                  Auto-calculate Mileage (distance-based)
-                </label>
+                  {/* @ts-ignore */}<T>Auto-calculate Mileage (distance-based)</T></label>
               </div>
 
               {newExpense.isMileage && (
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Distance Driven (Miles)</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Distance Driven (Miles)</T></label>
                   <Input
                     type="number"
                     step="0.1"
@@ -283,8 +281,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
 
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">
-                  Business Justification / Description
-                </label>
+                  {/* @ts-ignore */}<T>Business Justification / Description</T></label>
                 <textarea
                   required
                   value={newExpense.description}
@@ -295,8 +292,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
               </div>
 
               <Button type="submit" disabled={submitExpense.isPending}>
-                Submit Ticket For Approval
-              </Button>
+                {/* @ts-ignore */}<T>Submit Ticket For Approval</T></Button>
             </form>
           </CardContent>
         </Card>
@@ -305,8 +301,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Landmark className="h-4 w-4 text-[var(--text-muted)]" /> Expense Ledger
-          </CardTitle>
+            <Landmark className="h-4 w-4 text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Expense Ledger</T></CardTitle>
         </CardHeader>
         <CardContent>
           {(!data || data.length === 0) ? (
@@ -337,7 +332,7 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                        </div>
                        <p className="mt-1 text-sm italic text-[var(--text-muted)] line-clamp-2">"{exp.description}"</p>
                       {isAdmin && (
-                        <p className="mt-1 text-xs text-[var(--brand-strong)]">Claimant: {exp.user?.name}</p>
+                        <p className="mt-1 text-xs text-[var(--brand-strong)]">{/* @ts-ignore */}<T>Claimant:</T>{exp.user?.name}</p>
                       )}
                     </div>
                   </div>
@@ -350,15 +345,13 @@ export function ExpensesClient({ initialExpenses, initialPenalties, isAdmin }: E
                         className="text-[var(--emerald)]"
                         onClick={() => updateStatus.mutate({ id: exp.id, status: 'APPROVED' })}
                       >
-                        <CheckCircle2 className="h-4 w-4" /> Approve
-                      </Button>
+                        <CheckCircle2 className="h-4 w-4" /> {/* @ts-ignore */}<T>Approve</T></Button>
                       <Button
                         variant="danger"
                         size="sm"
                         onClick={() => updateStatus.mutate({ id: exp.id, status: 'REJECTED' })}
                       >
-                        <XCircle className="h-4 w-4" /> Reject
-                      </Button>
+                        <XCircle className="h-4 w-4" /> {/* @ts-ignore */}<T>Reject</T></Button>
                     </div>
                   )}
                 </div>

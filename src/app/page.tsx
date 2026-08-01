@@ -11,6 +11,7 @@ import RoiCalculator from "@/components/landing/RoiCalculator";
 import AboutSection from "@/components/landing/AboutSection";
 import ContactSection from "@/components/landing/ContactSection";
 import LandingFooter from "@/components/landing/LandingFooter";
+import { T } from "@/components/Translate";
 
 export default function SaaSMainPage() {
   const testimonials = [
@@ -79,25 +80,21 @@ export default function SaaSMainPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-panel)] border border-[var(--border-hairline)] shadow-sm mb-8 animate-fade-in">
                 <span className="flex h-2 w-2 rounded-full bg-[var(--brand)] animate-ping" />
                 <span className="text-xs font-semibold text-[var(--text-main)]">
-                  ✨ Modern Workforce SaaS Platform
-                </span>
+                  {/* @ts-ignore */}<T>✨ Modern Workforce SaaS Platform</T></span>
                 <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 rounded-full bg-[var(--brand-soft)] text-[var(--brand)] border border-[var(--border-hairline)]">
-                  v2.4 Live
-                </span>
+                  {/* @ts-ignore */}<T>v2.4 Live</T></span>
               </div>
 
               {/* High Impact Headline */}
               <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[var(--text-main)] leading-[1.15]">
-                All Your HR, Payroll & Operations in{" "}
+                {/* @ts-ignore */}<T>All Your HR, Payroll & Operations in</T>{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--sky)] via-[var(--brand)] to-[var(--brand-strong)]">
-                  One Smart Hub.
-                </span>
+                  {/* @ts-ignore */}<T>One Smart Hub.</T></span>
               </h1>
 
               {/* Subheadline */}
               <p className="mt-6 text-lg sm:text-xl text-[var(--text-muted)] max-w-2xl mx-auto leading-relaxed">
-                OpsHub automates shift rosters, 1-click payroll, festival bonuses, attendance tracking, and compliance auditing into a single intuitive platform built for growing teams.
-              </p>
+                {/* @ts-ignore */}<T>OpsHub automates shift rosters, 1-click payroll, festival bonuses, attendance tracking, and compliance auditing into a single intuitive platform built for growing teams.</T></p>
 
               {/* Action CTAs */}
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -105,31 +102,26 @@ export default function SaaSMainPage() {
                   href="/login?signup=true"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl font-extrabold text-base btn-primary flex items-center justify-center gap-2"
                 >
-                  Start 14-Day Free Trial
-                  <ArrowRight className="w-5 h-5" />
+                  {/* @ts-ignore */}<T>Start 14-Day Free Trial</T><ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
                   href="#pricing"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base btn-secondary flex items-center justify-center gap-2"
                 >
-                  View Pricing Plans
-                </Link>
+                  {/* @ts-ignore */}<T>View Pricing Plans</T></Link>
               </div>
 
               {/* Trust Subtext */}
               <div className="mt-6 flex items-center justify-center gap-6 text-xs text-[var(--text-muted)]">
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[var(--emerald)]" />
-                  No credit card required
-                </span>
+                  {/* @ts-ignore */}<T>No credit card required</T></span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[var(--emerald)]" />
-                  Instant 10-min setup
-                </span>
+                  {/* @ts-ignore */}<T>Instant 10-min setup</T></span>
                 <span className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[var(--emerald)]" />
-                  Cancel anytime
-                </span>
+                  {/* @ts-ignore */}<T>Cancel anytime</T></span>
               </div>
             </div>
 
@@ -145,49 +137,48 @@ export default function SaaSMainPage() {
                       <div className="w-3 h-3 rounded-full bg-[var(--amber)]" />
                       <div className="w-3 h-3 rounded-full bg-[var(--emerald)]" />
                     </div>
-                    <span className="text-xs font-mono text-[var(--text-muted)] ml-2">app.opshub.io/dashboard</span>
+                    <span className="text-xs font-mono text-[var(--text-muted)] ml-2">{/* @ts-ignore */}<T>app.opshub.io/dashboard</T></span>
                   </div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--emerald-soft)] border border-[var(--emerald)]/20 text-[var(--emerald)] text-xs font-semibold">
-                    Live System Active 🟢
-                  </div>
+                    {/* @ts-ignore */}<T>Live System Active 🟢</T></div>
                 </div>
 
                 {/* Dashboard Stats Teaser Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-4 rounded-xl bg-[var(--bg-app)] border border-[var(--border-hairline)]">
                     <div className="flex items-center justify-between text-[var(--text-muted)] text-xs mb-1">
-                      <span>Active Employees</span>
+                      <span>{/* @ts-ignore */}<T>Active Employees</T></span>
                       <Users className="w-4 h-4 text-[var(--brand)]" />
                     </div>
-                    <div className="text-2xl font-extrabold text-[var(--text-main)]">128 Staff</div>
-                    <span className="text-[10px] text-[var(--emerald)] font-semibold mt-1 block">↑ 12% vs last month</span>
+                    <div className="text-2xl font-extrabold text-[var(--text-main)]">{/* @ts-ignore */}<T>128 Staff</T></div>
+                    <span className="text-[10px] text-[var(--emerald)] font-semibold mt-1 block">{/* @ts-ignore */}<T>↑ 12% vs last month</T></span>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[var(--bg-app)] border border-[var(--border-hairline)]">
                     <div className="flex items-center justify-between text-[var(--text-muted)] text-xs mb-1">
-                      <span>Attendance Rate</span>
+                      <span>{/* @ts-ignore */}<T>Attendance Rate</T></span>
                       <Clock className="w-4 h-4 text-[var(--emerald)]" />
                     </div>
                     <div className="text-2xl font-extrabold text-[var(--text-main)]">98.4%</div>
-                    <span className="text-[10px] text-[var(--sky)] font-semibold mt-1 block">Live geofence active</span>
+                    <span className="text-[10px] text-[var(--sky)] font-semibold mt-1 block">{/* @ts-ignore */}<T>Live geofence active</T></span>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[var(--bg-app)] border border-[var(--border-hairline)]">
                     <div className="flex items-center justify-between text-[var(--text-muted)] text-xs mb-1">
-                      <span>Monthly Payroll</span>
+                      <span>{/* @ts-ignore */}<T>Monthly Payroll</T></span>
                       <DollarSign className="w-4 h-4 text-[var(--sky)]" />
                     </div>
                     <div className="text-2xl font-extrabold text-[var(--text-main)]">$84,500</div>
-                    <span className="text-[10px] text-[var(--emerald)] font-semibold mt-1 block">1-Click Payout Ready</span>
+                    <span className="text-[10px] text-[var(--emerald)] font-semibold mt-1 block">{/* @ts-ignore */}<T>1-Click Payout Ready</T></span>
                   </div>
 
                   <div className="p-4 rounded-xl bg-[var(--bg-app)] border border-[var(--border-hairline)]">
                     <div className="flex items-center justify-between text-[var(--text-muted)] text-xs mb-1">
-                      <span>Compliance Score</span>
+                      <span>{/* @ts-ignore */}<T>Compliance Score</T></span>
                       <ShieldCheck className="w-4 h-4 text-[var(--brand-strong)]" />
                     </div>
-                    <div className="text-2xl font-extrabold text-[var(--text-main)]">100% Pass</div>
-                    <span className="text-[10px] text-[var(--brand-strong)] font-semibold mt-1 block">DEI Vault verified</span>
+                    <div className="text-2xl font-extrabold text-[var(--text-main)]">{/* @ts-ignore */}<T>100% Pass</T></div>
+                    <span className="text-[10px] text-[var(--brand-strong)] font-semibold mt-1 block">{/* @ts-ignore */}<T>DEI Vault verified</T></span>
                   </div>
                 </div>
               </div>
@@ -228,14 +219,11 @@ export default function SaaSMainPage() {
             <div className="text-center max-w-3xl mx-auto mb-16">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--amber-soft)] border border-[var(--amber)]/20 text-[var(--amber)] text-xs font-semibold uppercase tracking-wider mb-4">
                 <Star className="w-3.5 h-3.5 fill-[var(--amber)]" />
-                Customer Success Stories
-              </div>
+                {/* @ts-ignore */}<T>Customer Success Stories</T></div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
-                Trusted by Fast-Growing Companies Worldwide
-              </h2>
+                {/* @ts-ignore */}<T>Trusted by Fast-Growing Companies Worldwide</T></h2>
               <p className="mt-4 text-lg text-[var(--text-muted)]">
-                Here is why HR Leaders and Operations Managers love OpsHub.
-              </p>
+                {/* @ts-ignore */}<T>Here is why HR Leaders and Operations Managers love OpsHub.</T></p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -278,11 +266,9 @@ export default function SaaSMainPage() {
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-soft)] border border-[var(--brand)]/20 text-[var(--brand)] text-xs font-semibold uppercase tracking-wider mb-4">
                 <HelpCircle className="w-3.5 h-3.5" />
-                Got Questions?
-              </div>
+                {/* @ts-ignore */}<T>Got Questions?</T></div>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
-                Frequently Asked Questions
-              </h2>
+                {/* @ts-ignore */}<T>Frequently Asked Questions</T></h2>
             </div>
 
             <div className="space-y-4">
@@ -292,7 +278,7 @@ export default function SaaSMainPage() {
                   className="bg-[var(--bg-panel)] border border-[var(--border-hairline)] rounded-2xl p-6 shadow-sm hover:border-[var(--border-strong)] transition-colors"
                 >
                   <h3 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-                    <span className="text-[var(--brand)] font-mono">Q.</span>
+                    <span className="text-[var(--brand)] font-mono">{/* @ts-ignore */}<T>Q.</T></span>
                     {faq.q}
                   </h3>
                   <p className="mt-3 text-sm text-[var(--text-muted)] leading-relaxed pl-6">
@@ -318,25 +304,21 @@ export default function SaaSMainPage() {
               <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
               <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-                Ready to Automate Your Workforce Operations?
-              </h2>
+                {/* @ts-ignore */}<T>Ready to Automate Your Workforce Operations?</T></h2>
               <p className="mt-4 text-base sm:text-lg text-white/90 max-w-2xl mx-auto">
-                Join hundreds of businesses running their workforce smoothly with OpsHub. Start your 14-day free trial today.
-              </p>
+                {/* @ts-ignore */}<T>Join hundreds of businesses running their workforce smoothly with OpsHub. Start your 14-day free trial today.</T></p>
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/login?signup=true"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl font-extrabold text-base text-[var(--brand-strong)] bg-white shadow-xl shadow-white/20 flex items-center justify-center gap-2 transition-transform transform hover:scale-105"
                 >
-                  Get Started Free Now
-                  <ArrowRight className="w-5 h-5" />
+                  {/* @ts-ignore */}<T>Get Started Free Now</T><ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
                   href="/login"
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base text-white bg-black/20 hover:bg-black/30 border border-white/20 flex items-center justify-center gap-2 transition-colors"
                 >
-                  Log In to Existing Workspace
-                </Link>
+                  {/* @ts-ignore */}<T>Log In to Existing Workspace</T></Link>
               </div>
             </div>
           </div>

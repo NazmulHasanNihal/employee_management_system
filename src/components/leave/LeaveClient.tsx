@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { DeltaBadge } from '@/components/ui/delta-badge';
 import { LeaveBreakdownDonut } from '@/components/dashboard/AnalyticsCharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { T } from "@/components/Translate";
 
 interface LeaveClientProps {
   initialRequests: any[];
@@ -128,7 +129,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                 <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                   {String(remaining).padStart(2, '0')}
                 </p>
-                <p className="text-sm text-[var(--text-muted)]">Available · {used} used of {total}</p>
+                <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Available ·</T>{used} {/* @ts-ignore */}<T>used of</T>{total}</p>
                 <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
                   <div className="h-full rounded-full bg-[var(--brand)]" style={{ width: `${pct}%` }} />
                 </div>
@@ -143,16 +144,16 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
           <div className="grid grid-cols-3 gap-4 lg:col-span-2">
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
                 <p className="text-fluid-2xl font-bold text-[var(--emerald)]">{leaveAnalytics.approvalRate}%</p>
-              <p className="text-[10px] uppercase text-[var(--text-muted)]">Approval Rate</p>
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Approval Rate</T></p>
               <DeltaBadge value={leaveAnalytics.approvalRate} label="approved" goodWhen="up" className="mt-1" />
             </div>
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
                 <p className="text-fluid-2xl font-bold text-[var(--amber)]">{leaveAnalytics.pending}</p>
-              <p className="text-[10px] uppercase text-[var(--text-muted)]">Pending</p>
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pending</T></p>
             </div>
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4 text-center">
                 <p className="text-fluid-2xl font-bold text-[var(--rose)]">{leaveAnalytics.rejected}</p>
-              <p className="text-[10px] uppercase text-[var(--text-muted)]">Rejected</p>
+              <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Rejected</T></p>
             </div>
           </div>
           <LeaveBreakdownDonut data={leaveAnalytics.byType} />
@@ -164,13 +165,12 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <PlusIcon /> File New Request
-              </CardTitle>
+                <PlusIcon /> {/* @ts-ignore */}<T>File New Request</T></CardTitle>
             </CardHeader>
             <CardContent>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Leave Category</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Leave Category</T></label>
                   <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm transition-shadow focus:outline-none" value={type} onChange={(e) => setType(e.target.value)}>
                     {leaveTypes.map((lt) => (
                       <option key={lt.id} value={lt.name}>
@@ -179,21 +179,20 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                     ))}
                   </select>
                   <p className="mt-1 flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
-                    <Languages className="h-3 w-3" /> Per Bangladesh Labour Act (2006)
-                  </p>
+                    <Languages className="h-3 w-3" /> {/* @ts-ignore */}<T>Per Bangladesh Labour Act (2006)</T></p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Start Date</label>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Start Date</T></label>
                     <Input type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">End Date</label>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>End Date</T></label>
                     <Input type="date" required value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Reason (Required)</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reason (Required)</T></label>
                   <textarea
                     required
                     rows={3}
@@ -215,14 +214,13 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
           <Card className="flex h-full flex-col">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[var(--text-muted)]" /> Request History
-              </CardTitle>
+                <Clock className="h-4 w-4 text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Request History</T></CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
               {(!requests || requests.length === 0) ? (
                 <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
                   <Umbrella className="mb-3 h-8 w-8 text-[var(--text-muted)]" />
-                  <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Leave History</h3>
+                  <h3 className="text-sm font-semibold text-[var(--text-muted)]">{/* @ts-ignore */}<T>No Leave History</T></h3>
                 </div>
               ) : (
                 <div className="max-h-[30rem] space-y-3 overflow-y-auto">
@@ -239,7 +237,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <h5 className="text-sm font-semibold text-[var(--text-main)]">{req.type} Leave</h5>
+                              <h5 className="text-sm font-semibold text-[var(--text-main)]">{req.type} {/* @ts-ignore */}<T>Leave</T></h5>
                               <Badge variant={req.status === 'Approved' ? 'emerald' : req.status === 'Rejected' ? 'rose' : 'amber'}>
                                 {req.status}
                               </Badge>
@@ -249,7 +247,7 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                             </p>
                             <p className="mt-1 text-xs italic text-[var(--text-muted)]">"{req.details}"</p>
                             {isAdmin && (
-                              <p className="mt-1 text-xs text-[var(--brand-strong)]">Requested By: {req.user?.name || 'Unknown'}</p>
+                              <p className="mt-1 text-xs text-[var(--brand-strong)]">{/* @ts-ignore */}<T>Requested By:</T>{req.user?.name || 'Unknown'}</p>
                             )}
                           </div>
                         </div>
@@ -257,11 +255,9 @@ export function LeaveClient({ initialRequests, initialBalance, leaveTypes, isAdm
                         {isAdmin && req.status === 'Pending' && (
                           <div className="flex shrink-0 gap-2 border-t border-[var(--border-hairline)] pt-3 md:border-t-0 md:pt-0">
                             <Button variant="outline" size="sm" className="text-[var(--emerald)]" onClick={() => updateStatus.mutate({ id: req.id, status: 'Approved' })}>
-                              <CheckCircle2 className="h-3.5 w-3.5" /> Approve
-                            </Button>
+                              <CheckCircle2 className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Approve</T></Button>
                             <Button variant="danger" size="sm" onClick={() => updateStatus.mutate({ id: req.id, status: 'Rejected' })}>
-                              <XCircle className="h-3.5 w-3.5" /> Reject
-                            </Button>
+                              <XCircle className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Reject</T></Button>
                           </div>
                         )}
                       </div>

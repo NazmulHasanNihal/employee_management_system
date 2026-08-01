@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/PageHeader';
 import FeedbackIsland, { FeedbackMarkReviewedButton } from './FeedbackIsland';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -28,8 +29,7 @@ export default async function FeedbackPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-[var(--rose)]" /> Submit Feedback
-              </CardTitle>
+                <Lock className="h-4 w-4 text-[var(--rose)]" /> {/* @ts-ignore */}<T>Submit Feedback</T></CardTitle>
             </CardHeader>
             <CardContent>
               <FeedbackIsland isAdmin={isAdmin} />
@@ -43,26 +43,23 @@ export default async function FeedbackPage() {
             <Card className="h-full">
               <CardContent className="flex h-full flex-col items-center justify-center text-center">
                 <ShieldCheck size={64} className="mb-6 text-[var(--rose)]/30" />
-                <h3 className="mb-4 text-xl font-extrabold uppercase tracking-wide text-[var(--text-main)]">Zero-Knowledge Policy</h3>
+                <h3 className="mb-4 text-xl font-extrabold uppercase tracking-wide text-[var(--text-main)]">{/* @ts-ignore */}<T>Zero-Knowledge Policy</T></h3>
                 <p className="max-w-sm text-sm leading-relaxed text-[var(--text-muted)]">
-                  When &ldquo;Ghost Mode&rdquo; is enabled, your identity is cryptographically decoupled from your submission. HR and management receive the contents of your message without any identifiable metadata.
-                </p>
+                  {/* @ts-ignore */}<T>When &ldquo;Ghost Mode&rdquo; is enabled, your identity is cryptographically decoupled from your submission. HR and management receive the contents of your message without any identifiable metadata.</T></p>
               </CardContent>
             </Card>
           ) : (
             <Card className="flex h-full flex-col overflow-hidden">
               <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
                 <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-                  <Inbox size={16} className="text-[var(--rose)]" /> Administrative Inbox
-                </h3>
-                <span className="rounded-full bg-[var(--bg-hover)] px-2 py-1 text-[10px] text-[var(--text-muted)]">{allFeedback?.length || 0} Messages</span>
+                  <Inbox size={16} className="text-[var(--rose)]" /> {/* @ts-ignore */}<T>Administrative Inbox</T></h3>
+                <span className="rounded-full bg-[var(--bg-hover)] px-2 py-1 text-[10px] text-[var(--text-muted)]">{allFeedback?.length || 0} {/* @ts-ignore */}<T>Messages</T></span>
               </div>
 
               <div className="flex-1 space-y-4 overflow-y-auto p-6">
                 {(!allFeedback || allFeedback.length === 0) ? (
                   <div className="rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)]/50 p-12 text-center text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                    Inbox is completely empty.
-                  </div>
+                    {/* @ts-ignore */}<T>Inbox is completely empty.</T></div>
                 ) : (
                   allFeedback.map((fb: { id: string; type: string; status: string; content: string; anonymous: boolean; createdAt: Date; category?: string; authorName?: string }) => (
                     <div key={fb.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--rose)]/30">
@@ -76,7 +73,7 @@ export default async function FeedbackPage() {
                         </span>
                       </div>
 
-                      <p className="my-4 text-sm leading-relaxed text-[var(--text-main)]">&ldquo;{fb.content}&rdquo;</p>
+                      <p className="my-4 text-sm leading-relaxed text-[var(--text-main)]">{/* @ts-ignore */}<T>&ldquo;</T>{fb.content}{/* @ts-ignore */}<T>&rdquo;</T></p>
 
                       <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-4 mt-2">
                         <span className="text-[10px] font-bold uppercase tracking-wide text-[var(--rose)]">

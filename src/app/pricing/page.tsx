@@ -4,6 +4,7 @@ import LandingHeader from "@/components/landing/LandingHeader";
 import PricingSection from "@/components/landing/PricingSection";
 import BrandComparisonSection from "@/components/landing/BrandComparisonSection";
 import LandingFooter from "@/components/landing/LandingFooter";
+import { T } from "@/components/Translate";
 
 export default function PricingPage() {
   return (
@@ -17,8 +18,7 @@ export default function PricingPage() {
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to OpsHub Home
-          </Link>
+            {/* @ts-ignore */}<T>Back to OpsHub Home</T></Link>
         </div>
 
         {/* Pricing Matrix */}

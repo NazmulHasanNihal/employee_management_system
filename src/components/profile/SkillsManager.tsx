@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { addSkill, removeSkill } from '@/app/actions/profile';
+import { T } from "@/components/Translate";
 
 interface SkillRow {
   id: string;
@@ -55,7 +56,7 @@ export function SkillsManager({ initialSkills }: { initialSkills: SkillRow[] }) 
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
         {skills.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">No skills added yet.</p>
+          <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No skills added yet.</T></p>
         ) : (
           skills.map((s) => (
             <span
@@ -106,13 +107,12 @@ export function SkillsManager({ initialSkills }: { initialSkills: SkillRow[] }) 
         >
           {[1, 2, 3, 4, 5].map((l) => (
             <option key={l} value={l}>
-              L{l}
+              {/* @ts-ignore */}<T>L</T>{l}
             </option>
           ))}
         </select>
         <Button size="sm" onClick={handleAdd} disabled={pending || !newSkill.trim()}>
-          <Plus size={14} /> Add
-        </Button>
+          <Plus size={14} /> {/* @ts-ignore */}<T>Add</T></Button>
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import TeamTasksBoard from '@/components/team/TeamTasksBoard';
 import TeamCompletionChartDynamic from '@/components/team/TeamCompletionChartDynamic';
+import { T } from "@/components/Translate";
 
 export default async function TeamPage() {
   const caller = await getCaller();
@@ -51,8 +52,7 @@ export default async function TeamPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-[var(--amber)]" /> Reporting Chain
-          </CardTitle>
+            <Shield className="h-4 w-4 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Reporting Chain</T></CardTitle>
         </CardHeader>
         <CardContent>
           {chain.chain.length === 0 ? (
@@ -73,7 +73,7 @@ export default async function TeamPage() {
                       <p className="truncate text-xs sm:text-sm font-semibold text-[var(--text-main)]">
                         {person.name}
                         {person.id === caller?.id && (
-                          <span className="ml-1 sm:ml-2 rounded-full bg-[var(--brand-soft)] px-1.5 py-0.5 text-[8px] sm:text-[9px] font-semibold uppercase text-[var(--brand-strong)]">You</span>
+                          <span className="ml-1 sm:ml-2 rounded-full bg-[var(--brand-soft)] px-1.5 py-0.5 text-[8px] sm:text-[9px] font-semibold uppercase text-[var(--brand-strong)]">{/* @ts-ignore */}<T>You</T></span>
                         )}
                       </p>
                       <p className="hidden sm:block text-[11px] text-[var(--text-muted)]">{person.designation}</p>
@@ -89,7 +89,7 @@ export default async function TeamPage() {
           {chain.directReports.length > 0 && (
             <div className="mt-6">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Direct Reports ({chain.directReports.length})
+                {/* @ts-ignore */}<T>Direct Reports (</T>{chain.directReports.length})
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {chain.directReports.map((r) => (
@@ -109,7 +109,7 @@ export default async function TeamPage() {
           {chain.peers.length > 0 && (
             <div className="mt-6">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                <Zap className="mr-1 inline h-3 w-3 text-[var(--brand)]" /> Team Peers ({chain.peers.length})
+                <Zap className="mr-1 inline h-3 w-3 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Team Peers (</T>{chain.peers.length})
               </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {chain.peers.map((p) => (
@@ -128,13 +128,12 @@ export default async function TeamPage() {
           {chain.secondLevelReports.length > 0 && (
             <div className="mt-6">
               <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                <Layers className="mr-1 inline h-3 w-3 text-[var(--sky)]" /> Extended Team
-              </p>
+                <Layers className="mr-1 inline h-3 w-3 text-[var(--sky)]" /> {/* @ts-ignore */}<T>Extended Team</T></p>
               <div className="space-y-3">
                 {chain.secondLevelReports.map((group) => (
                   <div key={group.managerId}>
                     <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                      Reports to {group.managerName}
+                      {/* @ts-ignore */}<T>Reports to</T>{group.managerName}
                     </p>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                       {group.reports.map((rep) => (
@@ -155,7 +154,7 @@ export default async function TeamPage() {
       {/* Task Board */}
       <Card>
         <CardHeader>
-          <CardTitle>Task Board</CardTitle>
+          <CardTitle>{/* @ts-ignore */}<T>Task Board</T></CardTitle>
         </CardHeader>
         <CardContent>
           <TeamTasksBoard tasks={tasks} members={members} isManager={isManager} />
@@ -165,7 +164,7 @@ export default async function TeamPage() {
       {/* Performance */}
       <Card>
         <CardHeader>
-          <CardTitle>Performance</CardTitle>
+          <CardTitle>{/* @ts-ignore */}<T>Performance</T></CardTitle>
         </CardHeader>
         <CardContent>
           {performance.length === 0 ? (
@@ -192,7 +191,7 @@ export default async function TeamPage() {
                     <div className="space-y-3">
                       <div>
                         <div className="mb-1 flex justify-between text-[10px] text-[var(--text-muted)]">
-                          <span>Task Completion</span>
+                          <span>{/* @ts-ignore */}<T>Task Completion</T></span>
                           <span className={statusColor}>{member.completionRate}%</span>
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
@@ -201,7 +200,7 @@ export default async function TeamPage() {
                       </div>
                       <div>
                         <div className="mb-1 flex justify-between text-[10px] text-[var(--text-muted)]">
-                          <span>Attendance</span>
+                          <span>{/* @ts-ignore */}<T>Attendance</T></span>
                           <span className="text-[var(--emerald)]">{member.attendanceRate}%</span>
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
@@ -212,15 +211,15 @@ export default async function TeamPage() {
                     <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--border-hairline)] pt-3 text-center">
                       <div>
                         <p className={`text-lg font-bold ${statusColor}`}>{member.totalTasks}</p>
-                        <p className="text-[7px] uppercase text-[var(--text-muted)]">Total</p>
+                        <p className="text-[7px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total</T></p>
                       </div>
                       <div>
                         <p className="text-lg font-bold text-[var(--emerald)]">{member.doneTasks}</p>
-                        <p className="text-[7px] uppercase text-[var(--text-muted)]">Done</p>
+                        <p className="text-[7px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Done</T></p>
                       </div>
                       <div>
                         <p className="text-lg font-bold text-[var(--brand)]">{member.inProgressTasks}</p>
-                        <p className="text-[7px] uppercase text-[var(--text-muted)]">Active</p>
+                        <p className="text-[7px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Active</T></p>
                       </div>
                     </div>
                   </div>
@@ -235,19 +234,19 @@ export default async function TeamPage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card className="animate-fade-up">
            <p className="text-fluid-2xl font-semibold text-[var(--text-main)]">{teamSummary.avgCompletion}%</p>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Avg Completion</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Avg Completion</T></p>
         </Card>
         <Card className="animate-fade-up">
            <p className="text-fluid-2xl font-semibold text-[var(--emerald)]">{teamSummary.totalDone}</p>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Tasks Completed</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Tasks Completed</T></p>
         </Card>
         <Card className="animate-fade-up">
            <p className="text-fluid-2xl font-semibold text-[var(--brand)]">{teamSummary.doneThisWeek}</p>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Done This Week</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Done This Week</T></p>
         </Card>
         <Card className="animate-fade-up">
            <p className="text-fluid-2xl font-semibold text-[var(--rose)]">{teamSummary.blockedRate}%</p>
-          <p className="mt-1 text-xs text-[var(--text-muted)]">Blocked Rate</p>
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Blocked Rate</T></p>
         </Card>
       </div>
       <TeamCompletionChartDynamic

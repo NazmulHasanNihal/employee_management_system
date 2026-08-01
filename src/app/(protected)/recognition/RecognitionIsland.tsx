@@ -6,7 +6,7 @@ import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast';
-
+import { T } from "@/components/Translate";
 
 const CATEGORIES = ['Appreciation', 'Teamwork', 'Leadership', 'Innovation', 'Customer Love'];
 
@@ -44,14 +44,14 @@ export default function RecognitionIsland() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Recipient Colleague</label>
+        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Recipient Colleague</T></label>
         <select
           required
           value={receiverId}
           onChange={(e) => setReceiverId(e.target.value)}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 flex h-10 w-full rounded-xl px-3 py-2 text-sm outline-none"
         >
-          <option value="">Select a champion...</option>
+          <option value="">{/* @ts-ignore */}<T>Select a champion...</T></option>
           {colleagues.map((c: { id: string; name: string; designation?: string }) => (
             <option key={c.id} value={c.id}>{c.name} ({c.designation || 'Staff'})</option>
           ))}
@@ -59,7 +59,7 @@ export default function RecognitionIsland() {
       </div>
 
       <div>
-        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Category</label>
+        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Category</T></label>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => (
             <button
@@ -75,7 +75,7 @@ export default function RecognitionIsland() {
       </div>
 
       <div>
-        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Message of Praise</label>
+        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Message of Praise</T></label>
         <textarea
           required
           rows={4}
@@ -92,8 +92,7 @@ export default function RecognitionIsland() {
         variant="primary"
         className="w-full"
       >
-        <Flame size={18} /> Ignite Recognition
-      </Button>
+        <Flame size={18} /> {/* @ts-ignore */}<T>Ignite Recognition</T></Button>
     </form>
   );
 }

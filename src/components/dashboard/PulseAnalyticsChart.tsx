@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { HeartPulse, TrendingDown, Loader2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { trpc } from '@/lib/trpc/client';
+import { T } from "@/components/Translate";
 
 export function PulseAnalyticsChart() {
   const { data: result, isLoading } = trpc.pulse.getAnalytics.useQuery();
@@ -19,20 +20,19 @@ export function PulseAnalyticsChart() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
-            <HeartPulse size={16} className="text-[var(--rose)]" /> Employee Sentiment & Attrition Risk
-          </span>
+            <HeartPulse size={16} className="text-[var(--rose)]" /> {/* @ts-ignore */}<T>Employee Sentiment & Attrition Risk</T></span>
           {isHighRisk && (
             <span className="flex items-center gap-1 rounded bg-[var(--rose-soft)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[var(--rose)]">
-              <TrendingDown size={12} /> High Risk ({latestMonth?.month})
+              <TrendingDown size={12} /> {/* @ts-ignore */}<T>High Risk (</T>{latestMonth?.month})
             </span>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1">
         <div className="mb-4 flex gap-4 text-xs">
-          <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--emerald)]" /> Happy/Good</div>
-          <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--amber)]" /> Okay</div>
-          <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--rose)]" /> Stressed/Angry</div>
+          <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--emerald)]" /> {/* @ts-ignore */}<T>Happy/Good</T></div>
+          <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--amber)]" /> {/* @ts-ignore */}<T>Okay</T></div>
+          <div className="flex items-center gap-1"><div className="h-3 w-3 rounded-full bg-[var(--rose)]" /> {/* @ts-ignore */}<T>Stressed/Angry</T></div>
         </div>
         <div className="h-[250px] w-full">
           {isLoading ? (
@@ -41,7 +41,7 @@ export function PulseAnalyticsChart() {
             </div>
           ) : chartData.length === 0 ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-[var(--text-muted)]">No pulse data collected yet.</p>
+              <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No pulse data collected yet.</T></p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">

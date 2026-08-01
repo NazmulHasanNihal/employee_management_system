@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast';
 import { trpc } from '@/lib/trpc/client';
+import { T } from "@/components/Translate";
 
 const MOODS = [
   { emoji: '😡', label: 'Angry', value: 1, color: 'hover:bg-rose-100 hover:border-rose-500' },
@@ -39,8 +40,7 @@ export function PulseSurveyWidget() {
     <Card className="animate-fade-up">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <HeartPulse size={16} className="text-[var(--rose)]" /> Weekly Pulse Survey
-        </CardTitle>
+          <HeartPulse size={16} className="text-[var(--rose)]" /> {/* @ts-ignore */}<T>Weekly Pulse Survey</T></CardTitle>
       </CardHeader>
       <CardContent>
         {statusLoading ? (
@@ -53,13 +53,13 @@ export function PulseSurveyWidget() {
               <CheckCircle2 size={24} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-[var(--text-main)]">Thank you!</p>
-              <p className="text-xs text-[var(--text-muted)]">Your response helps us improve the workplace.</p>
+              <p className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Thank you!</T></p>
+              <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Your response helps us improve the workplace.</T></p>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-[var(--text-muted)]">How are you feeling about work this week?</p>
+            <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>How are you feeling about work this week?</T></p>
             <div className="flex justify-between gap-2">
               {MOODS.map((m) => (
                 <button

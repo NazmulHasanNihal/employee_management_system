@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Zap, ShieldCheck, Lock, Globe, Mail } from "lucide-react";
+import { T } from "@/components/Translate";
 
 export default function LandingFooter() {
   return (
@@ -13,69 +14,66 @@ export default function LandingFooter() {
                 <Zap className="w-5 h-5 text-white fill-white" />
               </div>
               <span className="font-extrabold text-xl text-[var(--text-main)] tracking-tight">
-                OpsHub<span className="text-[var(--brand)]">.</span>
+                {/* @ts-ignore */}<T>OpsHub</T><span className="text-[var(--brand)]">.</span>
               </span>
             </Link>
             <p className="text-sm text-[var(--text-muted)] leading-relaxed max-w-sm">
-              The modern workforce & HR operating system for scaling companies. Automate payroll, shift rosters, attendance, compliance, and employee experience in one seamless SaaS platform.
-            </p>
+              {/* @ts-ignore */}<T>The modern workforce & HR operating system for scaling companies. Automate payroll, shift rosters, attendance, compliance, and employee experience in one seamless SaaS platform.</T></p>
             <div className="flex items-center gap-4 pt-2">
               <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                 <Lock className="w-3.5 h-3.5 text-[var(--sky)]" />
-                256-Bit SSL Encrypted
-              </div>
+                {/* @ts-ignore */}<T>256-Bit SSL Encrypted</T></div>
               <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)]">
                 <ShieldCheck className="w-3.5 h-3.5 text-[var(--emerald)]" />
-                SOC-2 & GDPR Ready
-              </div>
+                {/* @ts-ignore */}<T>SOC-2 & GDPR Ready</T></div>
             </div>
           </div>
 
           {/* Column 2: Product Links */}
           <div>
-            <h4 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">Product</h4>
+            <h4 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">{/* @ts-ignore */}<T>Product</T></h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">Shift Scheduling</Link></li>
-              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">1-Click Payroll Engine</Link></li>
-              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">Festival Bonus Module</Link></li>
-              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">Attendance & Geofencing</Link></li>
-              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">DEI & Compliance Auditor</Link></li>
-              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">IT Asset Management</Link></li>
+              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Shift Scheduling</T></Link></li>
+              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>1-Click Payroll Engine</T></Link></li>
+              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Festival Bonus Module</T></Link></li>
+              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Attendance & Geofencing</T></Link></li>
+              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>DEI & Compliance Auditor</T></Link></li>
+              <li><Link href="#features" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>IT Asset Management</T></Link></li>
             </ul>
           </div>
 
           {/* Column 3: Solutions & Compare */}
           <div>
-            <h4 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">Compare</h4>
+            <h4 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">{/* @ts-ignore */}<T>Compare</T></h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="#comparison" className="hover:text-[var(--text-main)] transition-colors">OpsHub vs. Workday</Link></li>
-              <li><Link href="#comparison" className="hover:text-[var(--text-main)] transition-colors">OpsHub vs. BambooHR</Link></li>
-              <li><Link href="#comparison" className="hover:text-[var(--text-main)] transition-colors">OpsHub vs. Excel Spreadsheets</Link></li>
-              <li><Link href="#why-opshub" className="hover:text-[var(--text-main)] transition-colors">Why Switch to OpsHub</Link></li>
-              <li><Link href="#calculator" className="hover:text-[var(--text-main)] transition-colors">ROI Calculator</Link></li>
+              <li><Link href="#comparison" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>OpsHub vs. Workday</T></Link></li>
+              <li><Link href="#comparison" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>OpsHub vs. BambooHR</T></Link></li>
+              <li><Link href="#comparison" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>OpsHub vs. Excel Spreadsheets</T></Link></li>
+              <li><Link href="#why-opshub" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Why Switch to OpsHub</T></Link></li>
+              <li><Link href="#calculator" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>ROI Calculator</T></Link></li>
             </ul>
           </div>
 
           {/* Column 4: Company & Legal */}
           <div>
-            <h4 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">Company</h4>
+            <h4 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">{/* @ts-ignore */}<T>Company</T></h4>
             <ul className="space-y-2.5 text-sm">
-              <li><Link href="#about" className="hover:text-[var(--text-main)] transition-colors">About Us</Link></li>
-              <li><Link href="#pricing" className="hover:text-[var(--text-main)] transition-colors">Pricing Plans</Link></li>
-              <li><Link href="/login" className="hover:text-[var(--text-main)] transition-colors">Employee Portal Login</Link></li>
-              <li><Link href="#faq" className="hover:text-[var(--text-main)] transition-colors">Help Center & FAQ</Link></li>
-              <li><Link href="#contact" className="hover:text-[var(--text-main)] transition-colors">Contact Support</Link></li>
-              <li><span className="text-[var(--text-muted)] opacity-50 cursor-not-allowed">Privacy Policy</span></li>
-              <li><span className="text-[var(--text-muted)] opacity-50 cursor-not-allowed">Terms of Service</span></li>
+              <li><Link href="#about" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>About Us</T></Link></li>
+              <li><Link href="#pricing" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Pricing Plans</T></Link></li>
+              <li><Link href="/login" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Employee Portal Login</T></Link></li>
+              <li><Link href="#faq" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Help Center & FAQ</T></Link></li>
+              <li><Link href="#contact" className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>Contact Support</T></Link></li>
+              <li><span className="text-[var(--text-muted)] opacity-50 cursor-not-allowed">{/* @ts-ignore */}<T>Privacy Policy</T></span></li>
+              <li><span className="text-[var(--text-muted)] opacity-50 cursor-not-allowed">{/* @ts-ignore */}<T>Terms of Service</T></span></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-[var(--border-hairline)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© {new Date().getFullYear()} OpsHub Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {/* @ts-ignore */}<T>OpsHub Inc. All rights reserved.</T></p>
           <div className="flex items-center gap-6">
-            <span className="hover:text-[var(--text-main)] transition-colors">System Status: All Systems Operational 🟢</span>
+            <span className="hover:text-[var(--text-main)] transition-colors">{/* @ts-ignore */}<T>System Status: All Systems Operational 🟢</T></span>
           </div>
         </div>
       </div>

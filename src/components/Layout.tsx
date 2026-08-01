@@ -33,6 +33,7 @@ import { trpc } from '@/lib/trpc/client';
 import { navCategories } from '@/components/nav-config';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { SkipLinks } from './SkipLinks';
+import { T } from "@/components/Translate";
 
 interface LayoutUser {
   id: string;
@@ -203,8 +204,8 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               <LinkIcon size={20} className="drop-shadow-md" />
             </div>
             <div>
-              <h1 className="text-base font-extrabold tracking-tight text-[var(--text-main)]">OpsHub</h1>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Enterprise</p>
+              <h1 className="text-base font-extrabold tracking-tight text-[var(--text-main)]">{/* @ts-ignore */}<T>OpsHub</T></h1>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Enterprise</T></p>
             </div>
           </div>
           <button aria-label="Close menu" className="text-[var(--text-muted)] hover:text-[var(--text-main)] md:hidden rounded-lg p-1" onClick={() => setIsMobileMenuOpen(false)}>
@@ -269,14 +270,14 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
       </motion.aside>
 
        <main id="main-content" className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg-app)]">
-         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--bg-panel)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-main)] focus:shadow-lg">Skip to content</a>
+         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-[var(--bg-panel)] focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-[var(--text-main)] focus:shadow-lg">{/* @ts-ignore */}<T>Skip to content</T></a>
          {isOffline && (
            <div role="status" aria-live="polite" className="relative z-50 flex items-center justify-between bg-[var(--rose)] px-3 py-1.5 text-xs font-medium text-white">
              <div className="flex items-center gap-2">
                <Activity size={14} className="animate-pulse" />
-               <span>Offline — {offlineQueue} operations queued</span>
+               <span>{/* @ts-ignore */}<T>Offline —</T>{offlineQueue} {/* @ts-ignore */}<T>operations queued</T></span>
              </div>
-             <span className="opacity-80">Awaiting connection…</span>
+             <span className="opacity-80">{/* @ts-ignore */}<T>Awaiting connection…</T></span>
            </div>
          )}
 
@@ -297,7 +298,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
             >
 
 
-              <Command size={14} /> <span className="hidden md:inline">Command</span>
+              <Command size={14} /> <span className="hidden md:inline">{/* @ts-ignore */}<T>Command</T></span>
             </button>
 
 
@@ -338,12 +339,12 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               {showNotifications && (
                 <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl">
                   <div className="flex items-center justify-between border-b border-[var(--border-hairline)] px-4 py-3">
-                    <span className="text-xs font-semibold text-[var(--text-main)]">Alerts ({unreadCount})</span>
-                    <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] hover:underline">Mark all read</button>
+                    <span className="text-xs font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Alerts (</T>{unreadCount})</span>
+                    <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] hover:underline">{/* @ts-ignore */}<T>Mark all read</T></button>
                   </div>
                   <div className="custom-scrollbar max-h-72 overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <div className="p-6 text-center text-sm text-[var(--text-muted)]">No notifications</div>
+                      <div className="p-6 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No notifications</T></div>
                     ) : (
                       notifications.map((n: any) => (
                         <div
@@ -444,7 +445,7 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           })}
           <button aria-label="More routes" onClick={() => setIsBottomSheetOpen(true)} className="touch-target flex flex-1 flex-col items-center justify-center gap-0.5 text-[var(--text-muted)] transition-all active:scale-95 hover:text-[var(--text-main)]">
             <Menu size={20} className="shrink-0" />
-            <span className="text-[9px] font-semibold leading-tight">More</span>
+            <span className="text-[9px] font-semibold leading-tight">{/* @ts-ignore */}<T>More</T></span>
           </button>
         </div>
 

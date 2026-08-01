@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Calculator, ArrowRight, TrendingUp, Clock, DollarSign } from "lucide-react";
+import { T } from "@/components/Translate";
 
 export default function RoiCalculator() {
   const [employees, setEmployees] = useState<number>(40);
@@ -22,14 +23,11 @@ export default function RoiCalculator() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-soft)] border border-[var(--brand)]/20 text-[var(--brand)] text-xs font-semibold uppercase tracking-wider mb-4">
             <Calculator className="w-3.5 h-3.5" />
-            Interactive ROI Calculator
-          </div>
+            {/* @ts-ignore */}<T>Interactive ROI Calculator</T></div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
-            Calculate How Much Time & Money OpsHub Saves You
-          </h2>
+            {/* @ts-ignore */}<T>Calculate How Much Time & Money OpsHub Saves You</T></h2>
           <p className="mt-4 text-lg text-[var(--text-muted)]">
-            Adjust your company headcount and average HR rate to calculate your estimated annual savings.
-          </p>
+            {/* @ts-ignore */}<T>Adjust your company headcount and average HR rate to calculate your estimated annual savings.</T></p>
         </div>
 
         {/* Calculator Card Grid */}
@@ -40,11 +38,10 @@ export default function RoiCalculator() {
             <div>
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
-                  <span>Number of Employees:</span>
+                  <span>{/* @ts-ignore */}<T>Number of Employees:</T></span>
                 </label>
                 <span className="px-3.5 py-1 rounded-xl bg-[var(--sky-soft)] text-[var(--sky)] font-extrabold text-lg border border-[var(--sky)]/30">
-                  {employees} Staff
-                </span>
+                  {employees} {/* @ts-ignore */}<T>Staff</T></span>
               </div>
               <input
                 type="range"
@@ -56,9 +53,9 @@ export default function RoiCalculator() {
                 className="w-full h-3 bg-[var(--bg-panel)] rounded-lg appearance-none cursor-pointer accent-[var(--brand)]"
               />
               <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2">
-                <span>5 Employees</span>
+                <span>{/* @ts-ignore */}<T>5 Employees</T></span>
                 <span>150</span>
-                <span>300+ Employees</span>
+                <span>{/* @ts-ignore */}<T>300+ Employees</T></span>
               </div>
             </div>
 
@@ -66,11 +63,10 @@ export default function RoiCalculator() {
             <div>
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
-                  <span>Avg HR / Admin Hourly Rate ($):</span>
+                  <span>{/* @ts-ignore */}<T>Avg HR / Admin Hourly Rate ($):</T></span>
                 </label>
                 <span className="px-3.5 py-1 rounded-xl bg-[var(--sky-soft)] text-[var(--sky)] font-extrabold text-lg border border-[var(--sky)]/30">
-                  ${hourlyRate} / hr
-                </span>
+                  ${hourlyRate} {/* @ts-ignore */}<T>/ hr</T></span>
               </div>
               <input
                 type="range"
@@ -82,16 +78,16 @@ export default function RoiCalculator() {
                 className="w-full h-3 bg-[var(--bg-panel)] rounded-lg appearance-none cursor-pointer accent-[var(--brand)]"
               />
               <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2">
-                <span>$20/hr</span>
-                <span>$60/hr</span>
-                <span>$100/hr</span>
+                <span>{/* @ts-ignore */}<T>$20/hr</T></span>
+                <span>{/* @ts-ignore */}<T>$60/hr</T></span>
+                <span>{/* @ts-ignore */}<T>$100/hr</T></span>
               </div>
             </div>
 
             {/* Breakdown Note */}
             <div className="p-4 rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-hairline)] text-xs text-[var(--text-muted)] space-y-1">
-              <p className="font-semibold text-[var(--text-main)]">💡 Calculation Logic:</p>
-              <p>Based on automated shift roster generation, 1-click payroll processing, self-service leave, and digital expense approvals replacing manual spreadsheets.</p>
+              <p className="font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>💡 Calculation Logic:</T></p>
+              <p>{/* @ts-ignore */}<T>Based on automated shift roster generation, 1-click payroll processing, self-service leave, and digital expense approvals replacing manual spreadsheets.</T></p>
             </div>
           </div>
 
@@ -99,30 +95,27 @@ export default function RoiCalculator() {
           <div className="lg:col-span-5 bg-gradient-to-b from-[var(--bg-hover)] via-[var(--bg-panel)] to-[var(--bg-hover)] border border-[var(--brand)]/30 rounded-2xl p-8 text-center flex flex-col justify-between shadow-lg">
             <div>
               <span className="text-xs font-bold text-[var(--sky)] uppercase tracking-widest block mb-2">
-                Estimated Annual Savings
-              </span>
+                {/* @ts-ignore */}<T>Estimated Annual Savings</T></span>
               <div className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--sky)] to-[var(--brand)] my-3">
                 ${annualSavings.toLocaleString()}
               </div>
-              <p className="text-xs text-[var(--text-muted)]">Total yearly ROI from switching to OpsHub</p>
+              <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total yearly ROI from switching to OpsHub</T></p>
 
               <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-[var(--border-hairline)]">
                 <div className="p-3 rounded-xl bg-[var(--bg-app)] border border-[var(--border-hairline)] shadow-sm">
                   <div className="flex items-center justify-center gap-1 text-[var(--text-muted)] text-xs mb-1">
                     <Clock className="w-3.5 h-3.5 text-[var(--sky)]" />
-                    Time Saved
-                  </div>
-                  <span className="font-bold text-[var(--text-main)] text-base">{hoursSavedPerMonth} hrs</span>
-                  <span className="text-[10px] text-[var(--text-muted)] block">per month</span>
+                    {/* @ts-ignore */}<T>Time Saved</T></div>
+                  <span className="font-bold text-[var(--text-main)] text-base">{hoursSavedPerMonth} {/* @ts-ignore */}<T>hrs</T></span>
+                  <span className="text-[10px] text-[var(--text-muted)] block">{/* @ts-ignore */}<T>per month</T></span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[var(--bg-app)] border border-[var(--border-hairline)] shadow-sm">
                   <div className="flex items-center justify-center gap-1 text-[var(--text-muted)] text-xs mb-1">
                     <DollarSign className="w-3.5 h-3.5 text-[var(--emerald)]" />
-                    Monthly Value
-                  </div>
+                    {/* @ts-ignore */}<T>Monthly Value</T></div>
                   <span className="font-bold text-[var(--text-main)] text-base">${monthlySavings.toLocaleString()}</span>
-                  <span className="text-[10px] text-[var(--text-muted)] block">per month</span>
+                  <span className="text-[10px] text-[var(--text-muted)] block">{/* @ts-ignore */}<T>per month</T></span>
                 </div>
               </div>
             </div>
@@ -132,8 +125,7 @@ export default function RoiCalculator() {
                 href="/login?signup=true"
                 className="w-full btn-primary py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
               >
-                Claim Your Savings Now
-                <ArrowRight className="w-4 h-4" />
+                {/* @ts-ignore */}<T>Claim Your Savings Now</T><ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>

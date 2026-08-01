@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Mail, KeyRound, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { T } from "@/components/Translate";
 
 export default function InvitePage() {
   const params = useParams();
@@ -91,15 +92,13 @@ export default function InvitePage() {
               <Mail size={22} />
             </div>
             <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-              Accept invitation
-            </h1>
+              {/* @ts-ignore */}<T>Accept invitation</T></h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              Set up your secure account
-            </p>
+              {/* @ts-ignore */}<T>Set up your secure account</T></p>
           </div>
 
           {status === 'loading' && (
-            <p className="text-center text-sm text-[var(--text-muted)]">Verifying invite…</p>
+            <p className="text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Verifying invite…</T></p>
           )}
 
           {status === 'invalid' && (
@@ -111,13 +110,13 @@ export default function InvitePage() {
           {status === 'ready' && (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="rounded-xl bg-[var(--bg-hover)] p-3 text-sm">
-                <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Invited as</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Invited as</T></p>
                 <p className="font-semibold text-[var(--text-main)]">{email}</p>
                 <p className="mt-1 text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">{role}</p>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">New password</label>
+                <label className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">{/* @ts-ignore */}<T>New password</T></label>
                 <div className="relative">
                   <input
                     type={showPw ? 'text' : 'password'}
@@ -139,7 +138,7 @@ export default function InvitePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">Confirm password</label>
+                <label className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">{/* @ts-ignore */}<T>Confirm password</T></label>
                 <input
                   type={showPw ? 'text' : 'password'}
                   required
@@ -160,15 +159,14 @@ export default function InvitePage() {
                 type="submit"
                 className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm"
               >
-                <KeyRound size={16} /> Activate account
-              </button>
+                <KeyRound size={16} /> {/* @ts-ignore */}<T>Activate account</T></button>
             </form>
           )}
 
           {status === 'done' && (
             <div className="space-y-3 text-center">
               <CheckCircle2 className="mx-auto text-[var(--emerald)]" size={40} />
-              <p className="font-semibold text-[var(--emerald)]">Account activated</p>
+              <p className="font-semibold text-[var(--emerald)]">{/* @ts-ignore */}<T>Account activated</T></p>
             </div>
           )}
 
@@ -178,8 +176,7 @@ export default function InvitePage() {
                 {errorMsg}
               </div>
               <button onClick={() => setStatus('ready')} className="btn-primary w-full rounded-xl py-2.5 text-sm">
-                Try again
-              </button>
+                {/* @ts-ignore */}<T>Try again</T></button>
             </div>
           )}
         </div>

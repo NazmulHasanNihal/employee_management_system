@@ -5,6 +5,7 @@ import { Plus, X, Check, Trash2, ListTodo } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 type TaskStatus = 'ToDo' | 'InProgress' | 'Done' | 'Blocked';
 
@@ -123,7 +124,7 @@ export default function TeamTasksBoard({
         <div className="rounded-2xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] p-5 animate-scale-in">
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Task Title</label>
+              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Task Title</T></label>
               <input
                 type="text"
                 value={title}
@@ -133,20 +134,20 @@ export default function TeamTasksBoard({
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Assign To</label>
+              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign To</T></label>
               <select
                 value={assigneeId}
                 onChange={(e) => setAssigneeId(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm"
               >
-                <option value="">Select team member...</option>
+                <option value="">{/* @ts-ignore */}<T>Select team member...</T></option>
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>{m.name} — {m.designation}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Priority</label>
+              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Priority</T></label>
               <div className="flex gap-2">
                 {['Low', 'Medium', 'High'].map((p) => (
                   <button
@@ -162,7 +163,7 @@ export default function TeamTasksBoard({
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Due Date</label>
+              <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Due Date</T></label>
               <input
                 type="date"
                 value={dueDate}
@@ -172,7 +173,7 @@ export default function TeamTasksBoard({
             </div>
           </div>
           <div className="mt-3">
-            <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Description</label>
+            <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Description</T></label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -187,8 +188,7 @@ export default function TeamTasksBoard({
               disabled={!title || !assigneeId}
               className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
-              <Check className="h-4 w-4" /> Assign Task
-            </button>
+              <Check className="h-4 w-4" /> {/* @ts-ignore */}<T>Assign Task</T></button>
           </div>
         </div>
       )}
@@ -249,18 +249,18 @@ export default function TeamTasksBoard({
                   </div>
                   {task.dueDate && (
                     <p className="mt-2 text-[9px] text-[var(--text-muted)]">
-                      Due: {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      {/* @ts-ignore */}<T>Due:</T>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </p>
                   )}
                   <div className="mt-2 flex gap-1 border-t border-[var(--border-hairline)] pt-2">
                     {status !== 'Done' && (
-                      <button onClick={() => updateStatusMutation.mutate({ id: task.id, status: 'Done' })} className="text-[9px] font-semibold text-[var(--emerald)] hover:bg-[var(--emerald-soft)] rounded px-2 py-1">✓ Done</button>
+                      <button onClick={() => updateStatusMutation.mutate({ id: task.id, status: 'Done' })} className="text-[9px] font-semibold text-[var(--emerald)] hover:bg-[var(--emerald-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>✓ Done</T></button>
                     )}
                     {status !== 'InProgress' && status !== 'Done' && (
-                      <button onClick={() => updateStatusMutation.mutate({ id: task.id, status: 'InProgress' })} className="text-[9px] font-semibold text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded px-2 py-1">▶ Start</button>
+                      <button onClick={() => updateStatusMutation.mutate({ id: task.id, status: 'InProgress' })} className="text-[9px] font-semibold text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>▶ Start</T></button>
                     )}
                     {status !== 'Blocked' && status !== 'Done' && (
-                      <button onClick={() => updateStatusMutation.mutate({ id: task.id, status: 'Blocked' })} className="text-[9px] font-semibold text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded px-2 py-1">⊘ Block</button>
+                      <button onClick={() => updateStatusMutation.mutate({ id: task.id, status: 'Blocked' })} className="text-[9px] font-semibold text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>⊘ Block</T></button>
                     )}
                   </div>
                 </div>

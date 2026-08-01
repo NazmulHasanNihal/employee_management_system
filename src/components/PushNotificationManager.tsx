@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
+import { T } from "@/components/Translate";
 
 export function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
@@ -71,15 +72,13 @@ export function PushNotificationManager() {
           onClick={unsubscribeFromPush}
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--emerald)]/10 text-[var(--emerald)] border border-[var(--emerald)]/30 text-xs font-mono font-bold hover:bg-[var(--emerald)] hover:text-black transition-all"
         >
-          <Bell size={14} /> Notifications On
-        </button>
+          <Bell size={14} /> {/* @ts-ignore */}<T>Notifications On</T></button>
       ) : (
         <button 
           onClick={subscribeToPush}
           className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 text-[var(--text-muted)] border border-white/10 text-xs font-mono font-bold hover:text-white hover:bg-white/10 transition-all"
         >
-          <BellOff size={14} /> Enable Notifications
-        </button>
+          <BellOff size={14} /> {/* @ts-ignore */}<T>Enable Notifications</T></button>
       )}
     </div>
   );

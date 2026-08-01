@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { T } from "@/components/Translate";
 
 interface ShiftsClientProps {
   shifts: any[];
@@ -132,11 +133,9 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               {autoGenerate.isPending ? 'AI Computing...' : 'Auto-Fill Roster'}
             </Button>
             <Button variant="outline" size="sm" onClick={() => setShowAssignForm((s) => !s)}>
-              <Plus className="h-4 w-4" /> Assign
-            </Button>
+              <Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>Assign</T></Button>
             <Button variant="outline" size="sm" onClick={() => setShowTeamPanel((s) => !s)}>
-              <Users className="h-4 w-4" /> Teams
-            </Button>
+              <Users className="h-4 w-4" /> {/* @ts-ignore */}<T>Teams</T></Button>
             <Button variant="outline" size="sm" onClick={() => { setShowShiftEditor((s) => !s); if (!showShiftEditor) { setEditingShiftId(null); setShiftDraft({ id: '', name: '', startTime: '09:00', endTime: '17:00', location: '', graceMinutes: 10, breakMinutes: 60, isNightShift: false, recurringDays: [], branchId: '' }); } }}>
               <CalendarRange className="h-4 w-4" /> {showShiftEditor ? 'Close Editor' : 'New Shift'}
             </Button>
@@ -148,8 +147,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
         <Card className="animate-scale-in border-[var(--brand)]/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-[var(--brand-strong)]" /> Teams
-            </CardTitle>
+              <Users className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Teams</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form
@@ -157,25 +155,25 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               onSubmit={(e) => { e.preventDefault(); if (teamDraft.name) createTeam.mutate({ ...teamDraft, memberIds: [] }); }}
             >
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Team Name</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Team Name</T></label>
                 <Input value={teamDraft.name} onChange={(e) => setTeamDraft({ ...teamDraft, name: e.target.value })} placeholder="e.g. Assembly Line A" />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Description</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Description</T></label>
                 <Input value={teamDraft.description} onChange={(e) => setTeamDraft({ ...teamDraft, description: e.target.value })} placeholder="Short description" />
               </div>
-              <Button type="submit" disabled={createTeam.isPending || !teamDraft.name}>Create Team</Button>
+              <Button type="submit" disabled={createTeam.isPending || !teamDraft.name}>{/* @ts-ignore */}<T>Create Team</T></Button>
             </form>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {teamList.length === 0 ? (
-                <p className="text-xs text-[var(--text-muted)]">No teams yet. Create one above.</p>
+                <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>No teams yet. Create one above.</T></p>
               ) : teamList.map((tm: any) => (
                 <div key={tm.id} className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-[var(--text-main)]">{tm.name}</p>
                     <p className="truncate text-xs text-[var(--text-muted)]">{tm.description || 'No description'}</p>
-                    <p className="mt-1 text-[10px] uppercase text-[var(--text-muted)]">{tm._count?.members ?? tm.memberIds?.length ?? 0} members</p>
+                    <p className="mt-1 text-[10px] uppercase text-[var(--text-muted)]">{tm._count?.members ?? tm.memberIds?.length ?? 0} {/* @ts-ignore */}<T>members</T></p>
                   </div>
                   <button onClick={() => deleteTeam.mutate({ id: tm.id })} className="text-[var(--text-muted)] transition-colors hover:text-[var(--rose)]" aria-label="Delete team">
                     <Trash2 className="h-4 w-4" />
@@ -191,8 +189,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
         <Card className="animate-scale-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserCircle2 className="h-4 w-4 text-[var(--brand-strong)]" /> Assign Personnel or Team
-            </CardTitle>
+              <UserCircle2 className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Assign Personnel or Team</T></CardTitle>
           </CardHeader>
           <CardContent>
             <form
@@ -204,44 +201,43 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               }}
             >
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Target Shift</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Target Shift</T></label>
                 <select required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.shiftId} onChange={(e) => setNewAssign({ ...newAssign, shiftId: e.target.value })}>
-                  <option value="">-- Select Block --</option>
+                  <option value="">{/* @ts-ignore */}<T>-- Select Block --</T></option>
                   {shifts.map((s: any) => (
                     <option key={s.id} value={s.id}>{s.name} ({s.startTime} - {s.endTime})</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assign Team (optional)</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign Team (optional)</T></label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.teamId} onChange={(e) => setNewAssign({ ...newAssign, teamId: e.target.value, userId: e.target.value ? '' : newAssign.userId })}>
-                  <option value="">— No team —</option>
+                  <option value="">{/* @ts-ignore */}<T>— No team —</T></option>
                   {teamList.map((tm: any) => (
                     <option key={tm.id} value={tm.id}>{tm.name}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Or Select Personnel</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Or Select Personnel</T></label>
                 <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm" value={newAssign.userId} onChange={(e) => setNewAssign({ ...newAssign, userId: e.target.value, teamId: e.target.value ? '' : newAssign.teamId })}>
-                  <option value="">-- Browse Directory --</option>
+                  <option value="">{/* @ts-ignore */}<T>-- Browse Directory --</T></option>
                   {users?.map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name} - {u.designation}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Role on Shift</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Role on Shift</T></label>
                 <Input value={newAssign.roleOnShift} onChange={(e) => setNewAssign({ ...newAssign, roleOnShift: e.target.value })} placeholder="e.g. Supervisor" />
               </div>
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assigned Work</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assigned Work</T></label>
                 <Input value={newAssign.workNote} onChange={(e) => setNewAssign({ ...newAssign, workNote: e.target.value })} placeholder="Describe the work assigned for this shift" />
               </div>
               <div className="flex items-end">
                 <Button type="submit" disabled={assignShift.isPending || !newAssign.shiftId || (!newAssign.userId && !newAssign.teamId)}>
-                  Confirm Assignment
-                </Button>
+                  {/* @ts-ignore */}<T>Confirm Assignment</T></Button>
               </div>
             </form>
           </CardContent>
@@ -258,41 +254,40 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Name</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Name</T></label>
                 <Input value={shiftDraft.name} onChange={(e) => setShiftDraft({ ...shiftDraft, name: e.target.value })} placeholder="e.g. Morning" />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Start Time</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Start Time</T></label>
                 <Input type="time" value={shiftDraft.startTime} onChange={(e) => setShiftDraft({ ...shiftDraft, startTime: e.target.value })} />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">End Time</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>End Time</T></label>
                 <Input type="time" value={shiftDraft.endTime} onChange={(e) => setShiftDraft({ ...shiftDraft, endTime: e.target.value })} />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Location</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Location</T></label>
                 <Input value={shiftDraft.location} onChange={(e) => setShiftDraft({ ...shiftDraft, location: e.target.value })} placeholder="e.g. Factory Floor" />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Grace (min)</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Grace (min)</T></label>
                 <Input type="number" value={shiftDraft.graceMinutes} onChange={(e) => setShiftDraft({ ...shiftDraft, graceMinutes: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Break (min)</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Break (min)</T></label>
                 <Input type="number" value={shiftDraft.breakMinutes} onChange={(e) => setShiftDraft({ ...shiftDraft, breakMinutes: Number(e.target.value) })} />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Branch</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Branch</T></label>
                 <select value={shiftDraft.branchId} onChange={(e) => setShiftDraft({ ...shiftDraft, branchId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full cursor-pointer rounded-lg px-3 py-2.5 text-sm">
-                  <option value="">— No branch —</option>
+                  <option value="">{/* @ts-ignore */}<T>— No branch —</T></option>
                   {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
               <div className="flex flex-col gap-2">
                 <label className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
                   <input type="checkbox" checked={shiftDraft.isNightShift} onChange={(e) => setShiftDraft({ ...shiftDraft, isNightShift: e.target.checked })} />
-                  Night shift (night differential)
-                </label>
+                  {/* @ts-ignore */}<T>Night shift (night differential)</T></label>
                 <div className="flex flex-wrap gap-1.5">
                   {WEEKDAYS.map((d, i) => (
                     <button
@@ -313,7 +308,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => { setShowShiftEditor(false); setEditingShiftId(null); }}>Cancel</Button>
+              <Button variant="ghost" onClick={() => { setShowShiftEditor(false); setEditingShiftId(null); }}>{/* @ts-ignore */}<T>Cancel</T></Button>
               <Button onClick={saveShift} disabled={createShift.isPending || updateShift.isPending || !shiftDraft.name}>{editingShiftId ? 'Save Changes' : 'Create Shift'}</Button>
             </div>
           </CardContent>
@@ -322,7 +317,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
 
       <div className="space-y-8">
         {(assignLoading && isAdmin) ? (
-          <div className="py-12 text-center text-sm text-[var(--text-muted)]">Loading roster...</div>
+          <div className="py-12 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Loading roster...</T></div>
         ) : (
           shifts.map((shift: any) => {
             const shiftAssignments = groupedAssignments[shift.id] || [];
@@ -339,10 +334,10 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
                         {shift.startTime} - {shift.endTime} • {shift.location || 'HQ Building'}
                       </p>
                       <div className="mt-1 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">Grace {shift.graceMinutes ?? 10}m</span>
-                        <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">Break {shift.breakMinutes ?? 60}m</span>
-                        {shift.isNightShift && <span className="rounded-full bg-[var(--brand-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--brand-strong)]">Night</span>}
-                        {shift.recurringDays?.length > 0 && <span className="rounded-full bg-[var(--sky-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--sky)]">Recurring {shift.recurringDays.map((d: number) => WEEKDAYS[d]).join('/')}</span>}
+                        <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Grace</T>{shift.graceMinutes ?? 10}{/* @ts-ignore */}<T>m</T></span>
+                        <span className="rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[9px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Break</T>{shift.breakMinutes ?? 60}{/* @ts-ignore */}<T>m</T></span>
+                        {shift.isNightShift && <span className="rounded-full bg-[var(--brand-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--brand-strong)]">{/* @ts-ignore */}<T>Night</T></span>}
+                        {shift.recurringDays?.length > 0 && <span className="rounded-full bg-[var(--sky-soft)] px-2 py-0.5 text-[9px] uppercase text-[var(--sky)]">{/* @ts-ignore */}<T>Recurring</T>{shift.recurringDays.map((d: number) => WEEKDAYS[d]).join('/')}</span>}
                       </div>
                     </div>
                   </div>
@@ -358,7 +353,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
                       </>
                     )}
                     <div className="rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 py-2 text-center">
-                      <p className="text-xs text-[var(--text-muted)]">Headcount</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Headcount</T></p>
                       <p className="text-lg font-bold text-[var(--text-main)]">{shiftAssignments.length}</p>
                     </div>
                   </div>
@@ -367,8 +362,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
                 <CardContent>
                   {shiftAssignments.length === 0 ? (
                     <div className="py-8 text-center text-xs text-[var(--text-muted)]">
-                      No personnel assigned to this block.
-                    </div>
+                      {/* @ts-ignore */}<T>No personnel assigned to this block.</T></div>
                   ) : (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {shiftAssignments.map((assignment: any) => (
@@ -417,7 +411,7 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
         {(!shifts || shifts.length === 0) && (
           <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
             <CalendarDays className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
-            <h3 className="text-sm font-semibold text-[var(--text-muted)]">No shifts configured in the system.</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-muted)]">{/* @ts-ignore */}<T>No shifts configured in the system.</T></h3>
           </div>
         )}
       </div>

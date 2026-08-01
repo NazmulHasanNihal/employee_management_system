@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
 import type { NewsItem, Department } from '@/server/queries';
+import { T } from "@/components/Translate";
 
 type Priority = 'Low' | 'Medium' | 'High' | 'Emergency';
 type Category = 'Universal' | 'Team' | 'Other';
@@ -108,7 +109,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => setFilterPriority(null)} className={`rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase ${!filterPriority ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>All</button>
+          <button onClick={() => setFilterPriority(null)} className={`rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase ${!filterPriority ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{/* @ts-ignore */}<T>All</T></button>
           {(['Emergency', 'High', 'Medium', 'Low'] as Priority[]).map((p) => (
             <button key={p} onClick={() => setFilterPriority(filterPriority === p ? null : p)} className={`rounded-lg border px-3 py-1.5 text-[10px] font-semibold uppercase ${filterPriority === p ? `${PRIORITY_TONE[p].label} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p}</button>
           ))}
@@ -129,8 +130,8 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
             <div className="flex items-center gap-3 rounded-2xl border-2 border-[var(--rose)]/50 bg-[var(--rose-soft)] p-4">
               <AlertOctagon className="h-6 w-6 shrink-0 text-[var(--rose)]" />
               <div>
-                <p className="text-sm font-bold uppercase tracking-wide text-[var(--rose)]">Emergency Alert Active</p>
-                <p className="text-xs text-[var(--text-muted)]">There are emergency announcements requiring immediate attention.</p>
+                <p className="text-sm font-bold uppercase tracking-wide text-[var(--rose)]">{/* @ts-ignore */}<T>Emergency Alert Active</T></p>
+                <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>There are emergency announcements requiring immediate attention.</T></p>
               </div>
             </div>
           )}
@@ -141,7 +142,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
             <>
               {pinnedNews.length > 0 && (
                 <div className="space-y-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Pinned</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pinned</T></p>
                   {pinnedNews.map((ann) => {
                     const pConfig = PRIORITY_TONE[ann.priority as Priority] || PRIORITY_TONE.Medium;
                     const PriorityIcon = PRIORITY_ICON[ann.priority as Priority] || Info;
@@ -160,14 +161,14 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                               ))}
                             </div>
                             <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
-                              <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> Save</Button>
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>{/* @ts-ignore */}<T>Cancel</T></Button>
+                              <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Save</T></Button>
                             </div>
                           </div>
                         ) : (
                           <>
                             <div className="mb-3 flex items-start justify-between">
-                              <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
+                              <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>(edited)</T></span>}</h3>
                               <div className="flex items-center gap-2">
                                 <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
                                 <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
@@ -176,7 +177,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                             <p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-3">{ann.content}</p>
                             {ann.targetTeam && (
                               <div className="mt-3">
-                                <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>
+                                <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} {/* @ts-ignore */}<T>Team</T></span>
                               </div>
                             )}
                             <div className="mt-4 flex items-center justify-between border-t border-[var(--border-hairline)] pt-3 text-[10px] uppercase text-[var(--text-muted)]">
@@ -196,7 +197,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
               )}
               {regularNews.length > 0 && (
                 <div className="space-y-4">
-                  {pinnedNews.length > 0 && <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Recent Updates</p>}
+                  {pinnedNews.length > 0 && <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Recent Updates</T></p>}
                   {regularNews.map((ann) => {
                     const pConfig = PRIORITY_TONE[ann.priority as Priority] || PRIORITY_TONE.Medium;
                     const PriorityIcon = PRIORITY_ICON[ann.priority as Priority] || Info;
@@ -214,14 +215,14 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                               ))}
                             </div>
                             <div className="flex justify-end gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>Cancel</Button>
-                              <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> Save</Button>
+                              <Button variant="ghost" size="sm" onClick={() => setEditingId(null)}>{/* @ts-ignore */}<T>Cancel</T></Button>
+                              <Button variant="primary" size="sm" onClick={handleSaveEdit}><Check className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Save</T></Button>
                             </div>
                           </div>
                         ) : (
                           <>
                             <div className="mb-3 flex items-start justify-between">
-                              <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">(edited)</span>}</h3>
+                              <h3 className="truncate text-fluid-xl font-semibold text-[var(--text-main)]">{ann.title}{ann.isEdited && <span className="ml-1 text-[8px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>(edited)</T></span>}</h3>
                               <div className="flex items-center gap-2">
                                 <span className={`flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-semibold uppercase ${pConfig.label}`}><PriorityIcon className="h-3 w-3" /> {ann.priority}</span>
                                 <span className="flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--text-muted)]"><CatIcon className="h-2.5 w-2.5" /> {ann.category}</span>
@@ -230,7 +231,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                             <p className="mt-1 text-sm text-[var(--text-muted)] line-clamp-3">{ann.content}</p>
                             {ann.targetTeam && (
                               <div className="mt-3">
-                                <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} Team</span>
+                                <span className="flex w-max items-center gap-1 rounded-full bg-[var(--brand-soft)] px-2 py-1 text-[9px] font-semibold uppercase text-[var(--brand-strong)]"><Users className="h-2.5 w-2.5" /> {ann.targetTeam} {/* @ts-ignore */}<T>Team</T></span>
                               </div>
                             )}
                             <div className="mt-4 flex items-center justify-between border-t border-[var(--border-hairline)] pt-3 text-[10px] uppercase text-[var(--text-muted)]">
@@ -257,15 +258,14 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
           <div className="lg:col-span-1">
             <div className="sticky top-6 rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
               <h3 className="mb-4 flex items-center gap-2 border-b border-[var(--border-hairline)] pb-3 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]">
-                <Edit3 className="h-4 w-4 text-[var(--brand)]" /> Compose News
-              </h3>
+                <Edit3 className="h-4 w-4 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Compose News</T></h3>
               <div className="space-y-4">
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Subject</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Subject</T></label>
                   <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Enter news subject..." />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Priority Level</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Priority Level</T></label>
                   <div className="grid grid-cols-4 gap-2">
                     {(['Low', 'Medium', 'High', 'Emergency'] as Priority[]).map((p) => (
                       <button key={p} onClick={() => setPriority(p)} className={`rounded-xl py-2 text-[10px] font-semibold uppercase ${priority === p ? `${PRIORITY_TONE[p].label} border border-current` : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{p === 'Emergency' ? '🚨' : ''} {p}</button>
@@ -273,7 +273,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Category</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Category</T></label>
                   <div className="grid grid-cols-2 gap-2">
                     {(['Universal', 'Team', 'Other'] as Category[]).map((c) => (
                       <button key={c} onClick={() => setCategory(c)} className={`flex items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-semibold uppercase ${category === c ? 'border border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>
@@ -284,9 +284,9 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                 </div>
                 {category === 'Team' && (
                   <div>
-                    <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Target Team</label>
+                    <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Target Team</T></label>
                     <select value={targetTeam} onChange={(e) => setTargetTeam(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                      <option value="">Select department...</option>
+                      <option value="">{/* @ts-ignore */}<T>Select department...</T></option>
                       {departments.map((d) => (<option key={d.id} value={d.name}>{d.name}</option>))}
                     </select>
                   </div>
@@ -297,7 +297,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
                   </button>
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Message Body</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Message Body</T></label>
                   <textarea value={content} onChange={(e) => setContent(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-32 w-full resize-none rounded-xl px-3 py-2.5 text-sm" placeholder="Type the news content here..." />
                 </div>
                 <Button variant="primary" size="md" className="w-full" onClick={handlePost} disabled={!title || !content || isSubmitting}>

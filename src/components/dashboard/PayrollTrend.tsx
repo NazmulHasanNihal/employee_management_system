@@ -3,6 +3,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
+import { T } from "@/components/Translate";
 
 const axisTick = { fill: "var(--text-muted)", fontSize: 11 } as const;
 const tooltipStyle = {
@@ -30,7 +31,7 @@ export default function PayrollTrend({ data }: { data: { month: string; payroll:
   return (
     <Card className="animate-fade-up">
       <CardHeader>
-        <CardTitle>Payroll — Last 12 Months</CardTitle>
+        <CardTitle>{/* @ts-ignore */}<T>Payroll — Last 12 Months</T></CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-64 w-full">

@@ -5,6 +5,7 @@ import { Lock, Mail, ArrowRight, Eye, EyeOff, ShieldCheck, UserRound, KeyRound }
 import { createClient } from "@/lib/supabase/client";
 import { loginWithRateLimit } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
+import { T } from "@/components/Translate";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -143,8 +144,7 @@ export default function LoginPage() {
                     : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >
-                <UserRound size={15} /> Employee
-              </button>
+                <UserRound size={15} /> {/* @ts-ignore */}<T>Employee</T></button>
               <button
                 type="button"
                 onClick={() => setLoginType('admin')}
@@ -154,8 +154,7 @@ export default function LoginPage() {
                     : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
                 }`}
               >
-                <ShieldCheck size={15} /> Admin
-              </button>
+                <ShieldCheck size={15} /> {/* @ts-ignore */}<T>Admin</T></button>
             </div>
           )}
 
@@ -169,8 +168,7 @@ export default function LoginPage() {
             <form onSubmit={handlePasswordLogin} className="space-y-4">
               <div>
                 <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
-                  Email address
-                </label>
+                  {/* @ts-ignore */}<T>Email address</T></label>
                 <div className="relative">
                   <Mail size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                   <input
@@ -189,8 +187,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
-                  Password
-                </label>
+                  {/* @ts-ignore */}<T>Password</T></label>
                 <div className="relative">
                   <input
                     id="password"
@@ -215,15 +212,14 @@ export default function LoginPage() {
                 {passwordError && <p id="password-error" className="mt-1 text-xs text-[var(--rose)]">{passwordError}</p>}
               </div>
               <button type="submit" disabled={loading} className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-60">
-                {loading ? "Signing in…" : <>Sign in <ArrowRight size={16} /></>}
+                {loading ? "Signing in…" : <>{/* @ts-ignore */}<T>Sign in</T><ArrowRight size={16} /></>}
               </button>
             </form>
           ) : (
             <form onSubmit={handleCodeLogin} className="space-y-4">
               <div>
                 <label htmlFor="code" className="mb-1.5 block text-sm font-medium text-[var(--text-main)]">
-                  Verification Code
-                </label>
+                  {/* @ts-ignore */}<T>Verification Code</T></label>
                 <div className="relative">
                   <KeyRound size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                   <input
@@ -244,11 +240,10 @@ export default function LoginPage() {
                 {codeError && <p id="code-error" className="mt-1 text-xs text-[var(--rose)]">{codeError}</p>}
               </div>
               <button type="submit" disabled={loading} className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm disabled:opacity-60">
-                {loading ? "Verifying…" : <>Verify <ArrowRight size={16} /></>}
+                {loading ? "Verifying…" : <>{/* @ts-ignore */}<T>Verify</T><ArrowRight size={16} /></>}
               </button>
               <button type="button" onClick={handleBackToPassword} className="w-full text-center text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
-                Back to password
-              </button>
+                {/* @ts-ignore */}<T>Back to password</T></button>
             </form>
           )}
 
@@ -259,15 +254,13 @@ export default function LoginPage() {
                 onClick={handleForgotPassword}
                 className="text-sm font-medium text-[var(--brand)] transition-colors hover:underline"
               >
-                Forgot your password?
-              </button>
+                {/* @ts-ignore */}<T>Forgot your password?</T></button>
             </div>
           )}
         </div>
 
         <p className="mt-6 text-center text-xs text-[var(--text-muted)]">
-          OpsHub · Enterprise Operations Hub
-        </p>
+          {/* @ts-ignore */}<T>OpsHub · Enterprise Operations Hub</T></p>
       </div>
     </div>
   );

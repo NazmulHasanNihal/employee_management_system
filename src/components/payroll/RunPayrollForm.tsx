@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Cpu, Users, Building2, User, Briefcase, CheckCircle2, Download, Smartphone, Send } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { T } from "@/components/Translate";
 
 interface RunPayrollFormProps {
   onSuccess: () => void;
@@ -46,9 +47,8 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
         <div className="mb-6 border-b border-[var(--border-hairline)] pb-4 flex justify-between items-center">
           <div>
             <h3 className="text-base font-bold text-[var(--text-main)] flex items-center gap-2 uppercase tracking-wide">
-              <Cpu size={20} className="text-[var(--emerald)]" /> HR / Admin Payroll Payout Console
-            </h3>
-            <p className="text-xs text-[var(--text-muted)] mt-1">Step {step} of 4 — Select payout target & execute batch disbursement</p>
+              <Cpu size={20} className="text-[var(--emerald)]" /> {/* @ts-ignore */}<T>HR / Admin Payroll Payout Console</T></h3>
+            <p className="text-xs text-[var(--text-muted)] mt-1">{/* @ts-ignore */}<T>Step</T>{step} {/* @ts-ignore */}<T>of 4 — Select payout target & execute batch disbursement</T></p>
           </div>
           <div className="flex gap-2">
             {[1, 2, 3, 4].map((i) => (
@@ -61,7 +61,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Pay Period / Billing Cycle</Label>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pay Period / Billing Cycle</T></Label>
                 <Input
                   type="text"
                   required
@@ -73,7 +73,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Payout Target Selection</Label>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Payout Target Selection</T></Label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -84,8 +84,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                         : 'border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <Users size={14} /> All Employees
-                  </button>
+                    <Users size={14} /> {/* @ts-ignore */}<T>All Employees</T></button>
                   <button
                     type="button"
                     onClick={() => setTargetType('DEPARTMENT')}
@@ -95,8 +94,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                         : 'border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <Building2 size={14} /> By Department
-                  </button>
+                    <Building2 size={14} /> {/* @ts-ignore */}<T>By Department</T></button>
                   <button
                     type="button"
                     onClick={() => setTargetType('EMPLOYMENT_GROUP')}
@@ -106,8 +104,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                         : 'border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <Briefcase size={14} /> By Employment Group
-                  </button>
+                    <Briefcase size={14} /> {/* @ts-ignore */}<T>By Employment Group</T></button>
                   <button
                     type="button"
                     onClick={() => setTargetType('INDIVIDUAL')}
@@ -117,8 +114,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                         : 'border-[var(--border-hairline)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <User size={14} /> Individual Employee
-                  </button>
+                    <User size={14} /> {/* @ts-ignore */}<T>Individual Employee</T></button>
                 </div>
               </div>
             </div>
@@ -126,51 +122,51 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
             {/* Sub-selection based on targetType */}
             {targetType === 'DEPARTMENT' && (
               <div className="space-y-2 animate-fade-up">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Select Department to Pay Together</Label>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Department to Pay Together</T></Label>
                 <select
                   value={selectedDept}
                   onChange={(e) => setSelectedDept(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
-                  <option value="Engineering">Engineering</option>
-                  <option value="Human Resources">Human Resources</option>
-                  <option value="Finance & Accounting">Finance & Accounting</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Sales & Business Dev">Sales & Business Dev</option>
-                  <option value="Operations">Operations</option>
+                  <option value="Engineering">{/* @ts-ignore */}<T>Engineering</T></option>
+                  <option value="Human Resources">{/* @ts-ignore */}<T>Human Resources</T></option>
+                  <option value="Finance & Accounting">{/* @ts-ignore */}<T>Finance & Accounting</T></option>
+                  <option value="Marketing">{/* @ts-ignore */}<T>Marketing</T></option>
+                  <option value="Sales & Business Dev">{/* @ts-ignore */}<T>Sales & Business Dev</T></option>
+                  <option value="Operations">{/* @ts-ignore */}<T>Operations</T></option>
                 </select>
               </div>
             )}
 
             {targetType === 'EMPLOYMENT_GROUP' && (
               <div className="space-y-2 animate-fade-up">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Select Employment Group</Label>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Employment Group</T></Label>
                 <select
                   value={selectedGroup}
                   onChange={(e) => setSelectedGroup(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
-                  <option value="Full-Time">Full-Time Staff</option>
-                  <option value="Part-Time">Part-Time Staff</option>
-                  <option value="Contract">Contract / Contractor</option>
-                  <option value="Intern">Interns</option>
+                  <option value="Full-Time">{/* @ts-ignore */}<T>Full-Time Staff</T></option>
+                  <option value="Part-Time">{/* @ts-ignore */}<T>Part-Time Staff</T></option>
+                  <option value="Contract">{/* @ts-ignore */}<T>Contract / Contractor</T></option>
+                  <option value="Intern">{/* @ts-ignore */}<T>Interns</T></option>
                 </select>
               </div>
             )}
 
             {targetType === 'INDIVIDUAL' && (
               <div className="space-y-2 animate-fade-up">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Select Employee to Pay (by ID / Name)</Label>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Employee to Pay (by ID / Name)</T></Label>
                 <select
                   value={selectedEmpId}
                   onChange={(e) => setSelectedEmpId(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
-                  <option value="">Select Employee...</option>
+                  <option value="">{/* @ts-ignore */}<T>Select Employee...</T></option>
                   {employees.map((emp: any) => (
 
                     <option key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.department || emp.role} · ID: {emp.id.substring(0, 8)})
+                      {emp.name} ({emp.department || emp.role} {/* @ts-ignore */}<T>· ID:</T>{emp.id.substring(0, 8)})
                     </option>
                   ))}
                 </select>
@@ -179,22 +175,21 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
 
             <div className="flex justify-end">
               <Button onClick={nextStep} className="btn-primary rounded-xl px-6 py-2.5 text-xs font-semibold uppercase tracking-wider">
-                Next: Review Financials
-              </Button>
+                {/* @ts-ignore */}<T>Next: Review Financials</T></Button>
             </div>
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-6">
-            <h4 className="text-sm font-semibold text-[var(--text-main)]">Review Payout Scope & Aggregates</h4>
+            <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Review Payout Scope & Aggregates</T></h4>
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4 space-y-3 font-mono text-sm">
               <div className="flex justify-between">
-                <span className="text-[var(--text-muted)]">Pay Period:</span>
+                <span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pay Period:</T></span>
                 <span className="font-semibold text-[var(--text-main)]">{month}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[var(--text-muted)]">Payout Target:</span>
+                <span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Payout Target:</T></span>
                 <span className="font-semibold text-[var(--brand)]">
                   {targetType === 'ALL'
                     ? 'All Active Employees'
@@ -206,33 +201,29 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 </span>
               </div>
               <div className="flex justify-between border-t border-[var(--border-hairline)] pt-3 font-bold text-base">
-                <span className="text-[var(--text-main)]">Estimated Batch Total:</span>
+                <span className="text-[var(--text-main)]">{/* @ts-ignore */}<T>Estimated Batch Total:</T></span>
                 <span className="text-[var(--emerald)]">৳ 4,85,000.00</span>
               </div>
             </div>
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={prevStep} className="rounded-xl px-4 py-2 text-xs font-medium">
-                Back
-              </Button>
+                {/* @ts-ignore */}<T>Back</T></Button>
               <Button onClick={nextStep} className="btn-primary rounded-xl px-6 py-2.5 text-xs font-semibold uppercase tracking-wider">
-                Confirm & Authorize
-              </Button>
+                {/* @ts-ignore */}<T>Confirm & Authorize</T></Button>
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div className="space-y-6 text-center animate-fade-up">
-            <h4 className="text-sm font-semibold text-[var(--text-main)]">3. Execute Batch Payout Disbursement</h4>
+            <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>3. Execute Batch Payout Disbursement</T></h4>
             <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto">
-              Authorizing this payout will generate official itemized payslips and prepare the records for BEFTN / mobile financial transfer.
-            </p>
+              {/* @ts-ignore */}<T>Authorizing this payout will generate official itemized payslips and prepare the records for BEFTN / mobile financial transfer.</T></p>
 
             <div className="flex justify-center gap-4 mt-6">
               <Button variant="outline" onClick={prevStep} disabled={runAutomatedPayroll.isPending} className="rounded-xl px-4 py-2 text-xs">
-                Back
-              </Button>
+                {/* @ts-ignore */}<T>Back</T></Button>
               <Button
                 disabled={runAutomatedPayroll.isPending}
                 onClick={() => runAutomatedPayroll.mutate({ month, targetType, targetValue: selectedDept || selectedGroup || selectedEmpId })}
@@ -252,10 +243,9 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 <CheckCircle2 className="h-8 w-8 text-[var(--emerald)]" />
               </div>
             </div>
-            <h4 className="text-lg font-bold text-[var(--text-main)]">Payroll Officially Processed</h4>
+            <h4 className="text-lg font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Payroll Officially Processed</T></h4>
             <p className="text-xs text-[var(--text-muted)] max-w-md mx-auto mb-6">
-              The payroll batch for {month} has been successfully computed and logged. Choose your preferred disbursement method below.
-            </p>
+              {/* @ts-ignore */}<T>The payroll batch for</T>{month} {/* @ts-ignore */}<T>has been successfully computed and logged. Choose your preferred disbursement method below.</T></p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="bg-[var(--bg-app)] border border-[var(--border-hairline)] hover:border-[var(--brand)] transition-all cursor-pointer">
@@ -271,8 +261,8 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 }}>
                   <Download className="h-8 w-8 text-[var(--brand)]" />
                   <div>
-                    <h5 className="text-sm font-semibold text-[var(--text-main)]">BEFTN CSV</h5>
-                    <p className="text-[10px] text-[var(--text-muted)] mt-1">Download Bangladesh Bank format</p>
+                    <h5 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>BEFTN CSV</T></h5>
+                    <p className="text-[10px] text-[var(--text-muted)] mt-1">{/* @ts-ignore */}<T>Download Bangladesh Bank format</T></p>
                   </div>
                 </CardContent>
               </Card>
@@ -281,8 +271,8 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 <CardContent className="p-4 flex flex-col items-center text-center gap-3">
                   <Smartphone className="h-8 w-8 text-[#E2136E]" />
                   <div>
-                    <h5 className="text-sm font-semibold text-[#E2136E]">bKash B2B</h5>
-                    <p className="text-[10px] text-[#E2136E]/70 mt-1">Instant mobile wallet payout</p>
+                    <h5 className="text-sm font-semibold text-[#E2136E]">{/* @ts-ignore */}<T>bKash B2B</T></h5>
+                    <p className="text-[10px] text-[#E2136E]/70 mt-1">{/* @ts-ignore */}<T>Instant mobile wallet payout</T></p>
                   </div>
                 </CardContent>
               </Card>
@@ -291,8 +281,8 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                 <CardContent className="p-4 flex flex-col items-center text-center gap-3">
                   <Send className="h-8 w-8 text-[#F7931E]" />
                   <div>
-                    <h5 className="text-sm font-semibold text-[#F7931E]">Nagad Corporate</h5>
-                    <p className="text-[10px] text-[#F7931E]/70 mt-1">Instant mobile wallet payout</p>
+                    <h5 className="text-sm font-semibold text-[#F7931E]">{/* @ts-ignore */}<T>Nagad Corporate</T></h5>
+                    <p className="text-[10px] text-[#F7931E]/70 mt-1">{/* @ts-ignore */}<T>Instant mobile wallet payout</T></p>
                   </div>
                 </CardContent>
               </Card>
@@ -300,8 +290,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
 
             <div className="flex justify-center mt-6 pt-4 border-t border-[var(--border-hairline)]">
               <Button onClick={onSuccess} className="rounded-xl px-8 py-2 text-xs font-semibold bg-[var(--bg-hover)] text-[var(--text-main)] hover:bg-[var(--bg-app)] border border-[var(--border-hairline)]">
-                Close
-              </Button>
+                {/* @ts-ignore */}<T>Close</T></Button>
             </div>
           </div>
         )}

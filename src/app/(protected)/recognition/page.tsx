@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
 import RecognitionIsland from './RecognitionIsland';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -34,8 +35,7 @@ export default async function RecognitionPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-[var(--amber)]" /> Give a Shoutout
-              </CardTitle>
+                <Award className="h-4 w-4 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Give a Shoutout</T></CardTitle>
             </CardHeader>
             <CardContent>
               <RecognitionIsland />
@@ -45,12 +45,11 @@ export default async function RecognitionPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Crown className="h-4 w-4 text-[var(--amber)]" /> Top Recognized
-              </CardTitle>
+                <Crown className="h-4 w-4 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Top Recognized</T></CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {leaderboard.length === 0 ? (
-                <p className="text-sm text-[var(--text-muted)]">No kudos awarded yet.</p>
+                <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No kudos awarded yet.</T></p>
               ) : (
                 leaderboard.map((u: { userId: string; name: string; avatarUrl: string | null; count: number }, i: number) => (
                   <div key={u.userId} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3">
@@ -58,7 +57,7 @@ export default async function RecognitionPage() {
                     <Avatar src={u.avatarUrl} name={u.name} size="sm" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-[var(--text-main)]">{u.name}</p>
-                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{u.count} kudos</p>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{u.count} {/* @ts-ignore */}<T>kudos</T></p>
                     </div>
                     <Star size={16} className="text-[var(--amber)]" />
                   </div>
@@ -72,8 +71,7 @@ export default async function RecognitionPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-              <Award size={16} className="text-[var(--text-muted)]" /> Recent Accolades
-            </h3>
+              <Award size={16} className="text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Recent Accolades</T></h3>
           </div>
 
           {(!kudos || kudos.length === 0) ? (
@@ -88,7 +86,7 @@ export default async function RecognitionPage() {
                 <div key={kudo.id} className="relative overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 transition-all hover:border-[var(--amber)]/40 hover:shadow-md">
                   <div className="mb-4 flex items-start justify-between">
                     <div>
-                      <p className="mb-1 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">To</p>
+                      <p className="mb-1 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>To</T></p>
                       <p className="text-lg font-semibold text-[var(--text-main)]">{kudo.receiverName}</p>
                     </div>
                     <Avatar src={kudo.senderAvatar} name={kudo.senderName} size="sm" className="ring-1 ring-[var(--amber)]/30" />
@@ -96,12 +94,12 @@ export default async function RecognitionPage() {
 
                    <div className="relative mb-4 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                      <Heart size={16} className="absolute right-4 top-4 text-[var(--rose)]/40" />
-                     <p className="pr-8 text-sm italic leading-relaxed text-[var(--text-main)] line-clamp-3">&ldquo;{kudo.message}&rdquo;</p>
+                     <p className="pr-8 text-sm italic leading-relaxed text-[var(--text-main)] line-clamp-3">{/* @ts-ignore */}<T>&ldquo;</T>{kudo.message}{/* @ts-ignore */}<T>&rdquo;</T></p>
                    </div>
 
                   <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-4 mt-auto">
                     <div>
-                      <p className="mb-0.5 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">From</p>
+                      <p className="mb-0.5 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>From</T></p>
                       <p className="text-xs font-bold text-[var(--brand-strong)]">{kudo.senderName}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">

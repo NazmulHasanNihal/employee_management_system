@@ -1,4 +1,5 @@
 import { Clock, ShieldCheck, DollarSign, Users, Sparkles, CheckCircle2, TrendingUp, AlertTriangle } from "lucide-react";
+import { T } from "@/components/Translate";
 
 export default function ValuePropSection() {
   const painPoints = [
@@ -57,14 +58,11 @@ export default function ValuePropSection() {
         <div className="text-center max-w-3xl mx-auto mb-20">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-soft)] border border-[var(--brand)]/20 text-[var(--brand)] text-xs font-semibold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            Why Choose OpsHub
-          </div>
+            {/* @ts-ignore */}<T>Why Choose OpsHub</T></div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
-            Stop Fighting Legacy HR Software & Manual Spreadsheets
-          </h2>
+            {/* @ts-ignore */}<T>Stop Fighting Legacy HR Software & Manual Spreadsheets</T></h2>
           <p className="mt-4 text-lg text-[var(--text-muted)]">
-            OpsHub replaces fragmented tools with an all-in-one, intelligent workforce operating system built for growth.
-          </p>
+            {/* @ts-ignore */}<T>OpsHub replaces fragmented tools with an all-in-one, intelligent workforce operating system built for growth.</T></p>
         </div>
 
         {/* Problem vs Solution Comparison Overview */}
@@ -76,8 +74,8 @@ export default function ValuePropSection() {
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[var(--text-main)]">The Old Way (Without OpsHub)</h3>
-                <p className="text-xs text-[var(--rose)] font-medium">Slow, error-prone & expensive</p>
+                <h3 className="text-xl font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>The Old Way (Without OpsHub)</T></h3>
+                <p className="text-xs text-[var(--rose)] font-medium">{/* @ts-ignore */}<T>Slow, error-prone & expensive</T></p>
               </div>
             </div>
             <div className="space-y-4">
@@ -100,37 +98,37 @@ export default function ValuePropSection() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[var(--text-main)]">The OpsHub Advantage</h3>
-                <p className="text-xs text-[var(--brand)] font-medium">Automated, transparent & seamless</p>
+                <h3 className="text-xl font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>The OpsHub Advantage</T></h3>
+                <p className="text-xs text-[var(--brand)] font-medium">{/* @ts-ignore */}<T>Automated, transparent & seamless</T></p>
               </div>
             </div>
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--bg-app)] border border-[var(--brand)]/20 shadow-sm">
                 <CheckCircle2 className="w-4 h-4 text-[var(--brand)] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-semibold text-[var(--text-main)]">Single Source of Truth</h4>
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5">All attendance, payroll, benefits, assets, and performance logs synchronized instantly.</p>
+                  <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Single Source of Truth</T></h4>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>All attendance, payroll, benefits, assets, and performance logs synchronized instantly.</T></p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--bg-app)] border border-[var(--brand)]/20 shadow-sm">
                 <CheckCircle2 className="w-4 h-4 text-[var(--brand)] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-semibold text-[var(--text-main)]">Automated Localized Payroll & Bonuses</h4>
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Built-in festival bonus modules, tax structure presets, and multi-branch payroll runs.</p>
+                  <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Automated Localized Payroll & Bonuses</T></h4>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>Built-in festival bonus modules, tax structure presets, and multi-branch payroll runs.</T></p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--bg-app)] border border-[var(--brand)]/20 shadow-sm">
                 <CheckCircle2 className="w-4 h-4 text-[var(--brand)] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-semibold text-[var(--text-main)]">Enterprise Security & Role Permissions</h4>
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Fine-grained RBAC controls, IP allowlisting, 2FA verification, and audit logs.</p>
+                  <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Enterprise Security & Role Permissions</T></h4>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>Fine-grained RBAC controls, IP allowlisting, 2FA verification, and audit logs.</T></p>
                 </div>
               </div>
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[var(--bg-app)] border border-[var(--brand)]/20 shadow-sm">
                 <CheckCircle2 className="w-4 h-4 text-[var(--brand)] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-semibold text-[var(--text-main)]">Predictable Flat & Fair Pricing</h4>
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5">No hidden implementation fees, surprise per-seat gouging, or long-term lock-in contracts.</p>
+                  <h4 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Predictable Flat & Fair Pricing</T></h4>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>No hidden implementation fees, surprise per-seat gouging, or long-term lock-in contracts.</T></p>
                 </div>
               </div>
             </div>

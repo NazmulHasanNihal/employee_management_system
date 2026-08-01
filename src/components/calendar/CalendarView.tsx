@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc/client';
 import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 type ViewMode = 'month' | 'week' | 'agenda';
 export type EventType = 'Holiday' | 'Meeting' | 'Payroll' | 'Task' | 'Reminder' | 'Social' | 'General';
@@ -151,7 +152,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
   return (
     <div className="space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-        <p className="text-sm text-[var(--text-muted)]">Events, tasks, reminders, and team schedules.</p>
+        <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Events, tasks, reminders, and team schedules.</T></p>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex gap-1 rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-1">
             {([{ id: 'month' as ViewMode, icon: LayoutGrid, label: 'Month' }, { id: 'week' as ViewMode, icon: List, label: 'Week' }, { id: 'agenda' as ViewMode, icon: ListTodo, label: 'Agenda' }]).map((v) => (
@@ -168,25 +169,25 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
 
       {showAdd && (
         <div className="animate-scale-in rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] p-6">
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]"><Plus className="h-4 w-4 text-[var(--brand)]" /> Create Event</h3>
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]"><Plus className="h-4 w-4 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Create Event</T></h3>
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Event Title</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Event Title</T></label>
                 <input required value={title} onChange={(e) => setTitle(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="E.g. Q3 Planning" />
               </div>
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Start Date</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Start Date</T></label>
                 <input type="datetime-local" required value={date} onChange={(e) => setDate(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">End Date (Optional)</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>End Date (Optional)</T></label>
                 <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Type</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Type</T></label>
                 <div className="grid grid-cols-4 gap-1">
                   {(['Task', 'Meeting', 'Reminder', 'Holiday', 'Payroll', 'Social', 'General'] as EventType[]).map((t) => (
                     <button key={t} type="button" onClick={() => setType(t)} className={`rounded-lg py-1.5 text-[8px] font-semibold uppercase ${type === t ? `${EVENT_TYPE[t].tone} border border-current` : 'border border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{t}</button>
@@ -194,29 +195,29 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                 </div>
               </div>
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Assign To (Optional)</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign To (Optional)</T></label>
                 <select value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                  <option value="">No assignment</option>
+                  <option value="">{/* @ts-ignore */}<T>No assignment</T></option>
                   {teamMembers.map((m) => (<option key={m.id} value={m.id}>{m.name}</option>))}
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Reminder</label>
+                <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reminder</T></label>
                 <select value={reminderMinutes} onChange={(e) => setReminderMinutes(Number(e.target.value))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                  <option value={0}>No reminder</option>
-                  <option value={15}>15 min before</option>
-                  <option value={30}>30 min before</option>
-                  <option value={60}>1 hour before</option>
-                  <option value={1440}>1 day before</option>
+                  <option value={0}>{/* @ts-ignore */}<T>No reminder</T></option>
+                  <option value={15}>{/* @ts-ignore */}<T>15 min before</T></option>
+                  <option value={30}>{/* @ts-ignore */}<T>30 min before</T></option>
+                  <option value={60}>{/* @ts-ignore */}<T>1 hour before</T></option>
+                  <option value={1440}>{/* @ts-ignore */}<T>1 day before</T></option>
                 </select>
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Description</label>
+              <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Description</T></label>
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-20 w-full resize-none rounded-xl px-3 py-2.5 text-sm" placeholder="Additional details..." />
             </div>
             <div className="flex justify-end">
-              <Button variant="primary" size="md" type="submit"><Check className="h-4 w-4" /> Schedule</Button>
+              <Button variant="primary" size="md" type="submit"><Check className="h-4 w-4" /> {/* @ts-ignore */}<T>Schedule</T></Button>
             </div>
           </form>
         </div>
@@ -229,9 +230,9 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
               <div className="mb-6 flex items-center justify-between">
                 <h3 className="text-fluid-2xl font-semibold text-[var(--text-main)]">{monthName} {currentYear}</h3>
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => navigateMonth(-1)}><ChevronLeft className="h-3.5 w-3.5" /> Prev</Button>
-                  <Button variant="outline" size="sm" onClick={() => { setCurrentDate(new Date()); setSelectedDay(null); }}>Today</Button>
-                  <Button variant="ghost" size="sm" onClick={() => navigateMonth(1)}>Next <ChevronRight className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => navigateMonth(-1)}><ChevronLeft className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Prev</T></Button>
+                  <Button variant="outline" size="sm" onClick={() => { setCurrentDate(new Date()); setSelectedDay(null); }}>{/* @ts-ignore */}<T>Today</T></Button>
+                  <Button variant="ghost" size="sm" onClick={() => navigateMonth(1)}>{/* @ts-ignore */}<T>Next</T><ChevronRight className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
               <div className="mb-2 grid grid-cols-7 gap-2">
@@ -264,10 +265,10 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
           {viewMode === 'week' && (
             <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
               <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-[var(--text-main)]">Week of {weekDays[0]?.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</h3>
+                <h3 className="text-xl font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Week of</T>{weekDays[0]?.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</h3>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() - 7); setCurrentDate(d); }}><ChevronLeft className="h-3.5 w-3.5" /></Button>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>Today</Button>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>{/* @ts-ignore */}<T>Today</T></Button>
                   <Button variant="ghost" size="sm" onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() + 7); setCurrentDate(d); }}><ChevronRight className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
@@ -295,9 +296,9 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
 
           {viewMode === 'agenda' && (
             <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
-              <h3 className="mb-4 text-xl font-semibold text-[var(--text-main)]">Agenda</h3>
+              <h3 className="mb-4 text-xl font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Agenda</T></h3>
               {filteredEvents.length === 0 ? (
-                <p className="p-8 text-center text-xs uppercase text-[var(--text-muted)]">No events</p>
+                <p className="p-8 text-center text-xs uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>No events</T></p>
               ) : (
                 <div className="space-y-3">
                   {filteredEvents.map((event) => {
@@ -320,16 +321,16 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                           {event.description && <p className="mt-2 line-clamp-2 text-xs text-[var(--text-muted)]">{event.description}</p>}
                           {event.derived === 'event' && (
                             <div className="mt-2 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                              {event.status !== 'Done' && <button onClick={() => updateEventMutation.mutate({ id: event.id, status: 'Done' })} className="text-[8px] font-semibold uppercase text-[var(--emerald)] hover:bg-[var(--emerald-soft)] rounded px-2 py-1">✓ Done</button>}
-                              {event.status === 'Pending' && <button onClick={() => updateEventMutation.mutate({ id: event.id, status: 'InProgress' })} className="text-[8px] font-semibold uppercase text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded px-2 py-1">▶ Start</button>}
-                              <button onClick={() => { if (confirm('Delete this event?')) deleteEventMutation.mutate({ id: event.id }); }} className="text-[8px] font-semibold uppercase text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded px-2 py-1">✕ Delete</button>
+                              {event.status !== 'Done' && <button onClick={() => updateEventMutation.mutate({ id: event.id, status: 'Done' })} className="text-[8px] font-semibold uppercase text-[var(--emerald)] hover:bg-[var(--emerald-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>✓ Done</T></button>}
+                              {event.status === 'Pending' && <button onClick={() => updateEventMutation.mutate({ id: event.id, status: 'InProgress' })} className="text-[8px] font-semibold uppercase text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>▶ Start</T></button>}
+                              <button onClick={() => { if (confirm('Delete this event?')) deleteEventMutation.mutate({ id: event.id }); }} className="text-[8px] font-semibold uppercase text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>✕ Delete</T></button>
                             </div>
                           )}
                           {event.derived !== 'event' && (
                             <span className="mt-2 inline-flex items-center gap-1.5">
-                              <span className="inline-block rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--text-muted)]">{event.derived} · read-only</span>
+                              <span className="inline-block rounded-full bg-[var(--bg-hover)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--text-muted)]">{event.derived} {/* @ts-ignore */}<T>· read-only</T></span>
                               {event.isTentative && (
-                                <span className="inline-block rounded-full bg-[var(--amber-soft)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--amber)]">Tentative</span>
+                                <span className="inline-block rounded-full bg-[var(--amber-soft)] px-2 py-0.5 text-[7px] font-semibold uppercase text-[var(--amber)]">{/* @ts-ignore */}<T>Tentative</T></span>
                               )}
                             </span>
                           )}
@@ -345,15 +346,15 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
 
         <div className="space-y-6">
           <div className="relative overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
-            <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Wallet className="h-3.5 w-3.5 text-[var(--emerald)]" /> Next Payroll</h4>
+            <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Wallet className="h-3.5 w-3.5 text-[var(--emerald)]" /> {/* @ts-ignore */}<T>Next Payroll</T></h4>
             <div className="flex items-end gap-3">
-              {nextPayday !== null ? (<><span className="text-fluid-4xl font-bold text-[var(--text-main)]">{nextPayday}</span><span className="mb-1 text-sm uppercase text-[var(--text-muted)]">Days</span></>) : (<span className="text-sm uppercase text-[var(--text-muted)]">No upcoming payroll</span>)}
+              {nextPayday !== null ? (<><span className="text-fluid-4xl font-bold text-[var(--text-main)]">{nextPayday}</span><span className="mb-1 text-sm uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Days</T></span></>) : (<span className="text-sm uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>No upcoming payroll</T></span>)}
             </div>
           </div>
 
           {myUpcomingTasks.length > 0 && (
             <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
-              <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Target className="h-3.5 w-3.5 text-[var(--brand)]" /> My Tasks</h4>
+              <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Target className="h-3.5 w-3.5 text-[var(--brand)]" /> {/* @ts-ignore */}<T>My Tasks</T></h4>
               <div className="space-y-2">
                 {myUpcomingTasks.map((task) => (
                   <div key={task.id} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-2.5">
@@ -370,24 +371,24 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
           )}
 
           <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
-            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Filter className="h-3.5 w-3.5 text-[var(--brand)]" /> Quick Filters</h4>
+            <h4 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><Filter className="h-3.5 w-3.5 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Quick Filters</T></h4>
             <div className="space-y-3">
               <div>
-                <p className="mb-2 text-[9px] uppercase text-[var(--text-muted)]">By Type</p>
+                <p className="mb-2 text-[9px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>By Type</T></p>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setFilterType(null)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${!filterType ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>All</button>
+                  <button onClick={() => setFilterType(null)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${!filterType ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{/* @ts-ignore */}<T>All</T></button>
                   {Object.keys(EVENT_TYPE).map((t) => (<button key={t} onClick={() => setFilterType(filterType === t ? null : t)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${filterType === t ? `${EVENT_TYPE[t].tone} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{t}</button>))}
                 </div>
               </div>
               <div>
-                <p className="mb-2 text-[9px] uppercase text-[var(--text-muted)]">By Status</p>
+                <p className="mb-2 text-[9px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>By Status</T></p>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setFilterStatus(null)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${!filterStatus ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>All</button>
+                  <button onClick={() => setFilterStatus(null)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${!filterStatus ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{/* @ts-ignore */}<T>All</T></button>
                   {['Pending', 'InProgress', 'Done'].map((s) => (<button key={s} onClick={() => setFilterStatus(filterStatus === s ? null : s)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${filterStatus === s ? `${STATUS_TONE[s]} border-current` : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{s}</button>))}
                 </div>
               </div>
                 <div>
-                <p className="mb-2 text-[9px] uppercase text-[var(--text-muted)]">Source</p>
+                <p className="mb-2 text-[9px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Source</T></p>
                 <div className="flex flex-wrap gap-2">
                   {([{ id: null as Derived | null, label: 'All' }, { id: 'holiday' as Derived, label: 'Holidays' }, { id: 'birthday' as Derived, label: 'Birthdays' }, { id: 'shift' as Derived, label: 'Shifts' }]).map((src) => (
                     <button key={src.label} onClick={() => setFilterDerived(src.id)} className={`rounded-xl border px-3 py-1.5 text-[10px] font-semibold uppercase ${filterDerived === src.id ? 'border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-strong)]' : 'border-[var(--border-hairline)] text-[var(--text-muted)]'}`}>{src.label}</button>
@@ -398,19 +399,19 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
           </div>
 
           <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
-            <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><PartyPopper className="h-3.5 w-3.5 text-[var(--amber)]" /> Legend</h4>
+            <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><PartyPopper className="h-3.5 w-3.5 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Legend</T></h4>
             <div className="space-y-2 text-[10px] text-[var(--text-muted)]">
-              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--amber)]" /> Bangladesh Holidays</div>
-              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--rose)]" /> Birthdays</div>
-              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--brand)]" /> Shift Rosters</div>
-              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--sky)]" /> Tasks &amp; Meetings</div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--amber)]" /> {/* @ts-ignore */}<T>Bangladesh Holidays</T></div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--rose)]" /> {/* @ts-ignore */}<T>Birthdays</T></div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--brand)]" /> {/* @ts-ignore */}<T>Shift Rosters</T></div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[var(--sky)]" /> {/* @ts-ignore */}<T>Tasks &amp; Meetings</T></div>
             </div>
           </div>
 
            <div className="flex min-h-72 flex-1 flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-main)]"><CalendarCheck2 className="h-3.5 w-3.5 text-[var(--text-muted)]" /> {selectedDay ? `${monthName} ${selectedDay}` : 'Upcoming'}</h4>
-              {selectedDay && <button onClick={() => setSelectedDay(null)} className="text-[10px] uppercase text-[var(--brand)] hover:underline">Clear</button>}
+              {selectedDay && <button onClick={() => setSelectedDay(null)} className="text-[10px] uppercase text-[var(--brand)] hover:underline">{/* @ts-ignore */}<T>Clear</T></button>}
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto">
               {upcomingEvents.length === 0 ? (

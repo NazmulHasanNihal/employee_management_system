@@ -6,6 +6,7 @@ import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { downloadCSV, toFestivalBonusCsv } from '@/lib/export';
+import { T } from "@/components/Translate";
 
 interface Props {
   bonuses: any[];
@@ -38,17 +39,16 @@ export function FestivalBonusClient({ bonuses, isAdmin }: Props) {
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4" /> Export CSV</Button>
+        <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4" /> {/* @ts-ignore */}<T>Export CSV</T></Button>
         {isAdmin && (
           <Button variant="primary" size="sm" onClick={() => setShowForm((s) => !s)}>
-            <Plus className="h-4 w-4" /> Grant Bonus
-          </Button>
+            <Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>Grant Bonus</T></Button>
         )}
       </div>
 
       {showForm && isAdmin && (
         <div className="animate-scale-in rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] p-6">
-          <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]"><Gift className="h-4 w-4 text-[var(--amber)]" /> Grant Festival Bonus</h3>
+          <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]"><Gift className="h-4 w-4 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Grant Festival Bonus</T></h3>
           <form
             className="grid grid-cols-1 gap-4 md:grid-cols-2"
             onSubmit={(e) => {
@@ -64,26 +64,26 @@ export function FestivalBonusClient({ bonuses, isAdmin }: Props) {
             }}
           >
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Employee</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employee</T></label>
               <select required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" value={userId} onChange={(e) => setUserId(e.target.value)}>
-                <option value="">-- Select --</option>
+                <option value="">{/* @ts-ignore */}<T>-- Select --</T></option>
                 {users?.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Occasion (EN)</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Occasion (EN)</T></label>
               <Input value={occasion} onChange={(e) => setOccasion(e.target.value)} required />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Occasion (BN)</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Occasion (BN)</T></label>
               <Input value={occasionBn} onChange={(e) => setOccasionBn(e.target.value)} />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Year</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Year</T></label>
               <Input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} required />
             </div>
             <div className="md:col-span-2">
-              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Amount (BDT, leave blank = 1 month basic)</label>
+              <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Amount (BDT, leave blank = 1 month basic)</T></label>
               <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Auto = 1 month basic salary" />
             </div>
             <div className="md:col-span-2 flex justify-end">

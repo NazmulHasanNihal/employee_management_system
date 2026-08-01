@@ -1,4 +1,5 @@
 import { Check, X, Minus, Shield, Zap, Sparkles } from "lucide-react";
+import { T } from "@/components/Translate";
 
 export default function BrandComparisonSection() {
   const comparisonData = [
@@ -67,14 +68,11 @@ export default function BrandComparisonSection() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-soft)] border border-[var(--brand)]/20 text-[var(--brand)] text-xs font-semibold uppercase tracking-wider mb-4">
             <Zap className="w-3.5 h-3.5" />
-            Competitive Comparison
-          </div>
+            {/* @ts-ignore */}<T>Competitive Comparison</T></div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
-            How OpsHub Outperforms Legacy Software & Spreadsheets
-          </h2>
+            {/* @ts-ignore */}<T>How OpsHub Outperforms Legacy Software & Spreadsheets</T></h2>
           <p className="mt-4 text-lg text-[var(--text-muted)]">
-            Compare key features head-to-head and see why companies upgrade to OpsHub.
-          </p>
+            {/* @ts-ignore */}<T>Compare key features head-to-head and see why companies upgrade to OpsHub.</T></p>
         </div>
 
         {/* Comparison Table */}
@@ -82,21 +80,18 @@ export default function BrandComparisonSection() {
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]">
-                <th className="p-5 text-sm font-bold text-[var(--text-main)] w-2/5">Capabilities & Features</th>
+                <th className="p-5 text-sm font-bold text-[var(--text-main)] w-2/5">{/* @ts-ignore */}<T>Capabilities & Features</T></th>
                 <th className="p-5 text-base font-extrabold text-[var(--text-main)] bg-[var(--brand-soft)]/20 border-x border-[var(--brand)]/20 text-center w-1/5">
                   <div className="flex items-center justify-center gap-1.5 text-[var(--brand)]">
                     <Sparkles className="w-4 h-4" />
-                    OpsHub
-                  </div>
-                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">Modern All-In-One SaaS</span>
+                    {/* @ts-ignore */}<T>OpsHub</T></div>
+                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>Modern All-In-One SaaS</T></span>
                 </th>
                 <th className="p-5 text-sm font-bold text-[var(--text-main)] text-center w-1/5">
-                  Legacy HR Systems
-                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">Workday / BambooHR</span>
+                  {/* @ts-ignore */}<T>Legacy HR Systems</T><span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>Workday / BambooHR</T></span>
                 </th>
                 <th className="p-5 text-sm font-bold text-[var(--text-main)] text-center w-1/5">
-                  Excel & Manual
-                  <span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">Paper / Spreadsheets</span>
+                  {/* @ts-ignore */}<T>Excel & Manual</T><span className="block text-[11px] font-normal text-[var(--text-muted)] mt-0.5">{/* @ts-ignore */}<T>Paper / Spreadsheets</T></span>
                 </th>
               </tr>
             </thead>

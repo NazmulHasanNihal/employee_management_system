@@ -5,6 +5,7 @@ import { Building2, Hash, Plus, X, DollarSign, UserCircle, Users } from 'lucide-
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 interface Department {
   id: string;
@@ -47,8 +48,7 @@ export default function HierarchyManager({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-[var(--text-muted)]">
-          Configure operational units, budgets, and leadership.
-        </p>
+          {/* @ts-ignore */}<T>Configure operational units, budgets, and leadership.</T></p>
         <Button variant="primary" size="md" onClick={() => setShowCreate(!showCreate)}>
           {showCreate ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           {showCreate ? 'Cancel Unit' : 'New Operational Unit'}
@@ -58,8 +58,7 @@ export default function HierarchyManager({
       {showCreate && (
         <div className="animate-scale-in rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] p-6">
           <h3 className="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]">
-            <Hash className="h-4 w-4 text-[var(--brand)]" /> Unit Configuration
-          </h3>
+            <Hash className="h-4 w-4 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Unit Configuration</T></h3>
           <form
             className="space-y-4"
             onSubmit={(e) => {
@@ -69,7 +68,7 @@ export default function HierarchyManager({
           >
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Unit Designation</label>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Unit Designation</T></label>
                 <input
                   type="text" required placeholder="e.g. Cyber Security"
                   value={newDept.name}
@@ -78,7 +77,7 @@ export default function HierarchyManager({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Allocated Budget ($)</label>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Allocated Budget ($)</T></label>
                 <input
                   type="number" required min="0" step="10000"
                   value={newDept.budget}
@@ -87,13 +86,13 @@ export default function HierarchyManager({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Unit Commander (Head)</label>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Unit Commander (Head)</T></label>
                 <select
                   value={newDept.headId}
                   onChange={(e) => setNewDept({ ...newDept, headId: e.target.value })}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
                 >
-                  <option value="">Leave Unassigned...</option>
+                  <option value="">{/* @ts-ignore */}<T>Leave Unassigned...</T></option>
                   {liveEmployees.map((u) => (
                     <option key={u.id} value={u.id}>{u.name}</option>
                   ))}
@@ -101,8 +100,7 @@ export default function HierarchyManager({
               </div>
             </div>
             <Button type="submit" variant="primary" disabled={createDept.isPending || !newDept.name}>
-              <Plus className="h-4 w-4" /> Establish Unit
-            </Button>
+              <Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>Establish Unit</T></Button>
           </form>
         </div>
       )}
@@ -123,21 +121,21 @@ export default function HierarchyManager({
                 </div>
                 <div>
                   <h3 className="truncate text-xl font-semibold text-[var(--text-main)]">{dept.name}</h3>
-                  <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">UUID: {dept.id.slice(0, 8)}</p>
+                  <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{/* @ts-ignore */}<T>UUID:</T>{dept.id.slice(0, 8)}</p>
                 </div>
               </div>
               <div className="flex-1 space-y-3">
                 <div className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
                   <div className="flex items-center gap-2 text-[var(--text-muted)]">
                     <DollarSign className="h-4 w-4 text-[var(--emerald)]" />
-                    <span className="text-xs uppercase tracking-wide">Operating Budget</span>
+                    <span className="text-xs uppercase tracking-wide">{/* @ts-ignore */}<T>Operating Budget</T></span>
                   </div>
                   <span className="font-semibold text-[var(--text-main)]">${(dept.budget || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
                   <div className="flex items-center gap-2 text-[var(--text-muted)]">
                     <UserCircle className="h-4 w-4 text-[var(--brand)]" />
-                    <span className="text-xs uppercase tracking-wide">Unit Commander</span>
+                    <span className="text-xs uppercase tracking-wide">{/* @ts-ignore */}<T>Unit Commander</T></span>
                   </div>
                   <span className={`text-xs font-semibold ${dept.head ? 'text-[var(--text-main)]' : 'text-[var(--rose)] animate-pulse'}`}>
                     {dept.head?.name || 'UNASSIGNED'}
@@ -151,8 +149,7 @@ export default function HierarchyManager({
 
       <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
         <Users className="h-4 w-4" />
-        {liveEmployees.length} employees in directory
-      </div>
+        {liveEmployees.length} {/* @ts-ignore */}<T>employees in directory</T></div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StatusPill } from '@/components/ui/status-pill';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 interface Session {
   id: string;
@@ -87,8 +88,7 @@ export default function CalibrationIsland({ initialSessions }: CalibrationIsland
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <SlidersHorizontal size={16} className="text-[var(--brand-strong)]" /> Calibration Cycles
-            </CardTitle>
+              <SlidersHorizontal size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Calibration Cycles</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form
@@ -100,20 +100,19 @@ export default function CalibrationIsland({ initialSessions }: CalibrationIsland
               }}
             >
               <div className="space-y-1">
-                <Label className="text-[var(--text-muted)]">Cycle Label</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Cycle Label</T></Label>
                 <Input required placeholder="e.g. FY26 H1" value={newSession.label} onChange={(e) => setNewSession({ ...newSession, label: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[var(--text-muted)]">Review Period</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Review Period</T></Label>
                 <Input required placeholder="e.g. 2026-H1" value={newSession.reviewPeriod} onChange={(e) => setNewSession({ ...newSession, reviewPeriod: e.target.value })} />
               </div>
               <Button type="submit" variant="primary" className="w-full" disabled={createSession.isPending}>
-                <Plus size={16} /> New Cycle
-              </Button>
+                <Plus size={16} /> {/* @ts-ignore */}<T>New Cycle</T></Button>
             </form>
 
             <div className="space-y-2 border-t border-[var(--border-hairline)] pt-3">
-              {sessions.length === 0 && <p className="text-xs text-[var(--text-muted)]">No cycles yet.</p>}
+              {sessions.length === 0 && <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>No cycles yet.</T></p>}
               {sessions.map((s) => (
                 <button
                   key={s.id}
@@ -145,10 +144,9 @@ export default function CalibrationIsland({ initialSessions }: CalibrationIsland
                 </CardTitle>
                 {activeSession.status !== 'Locked' ? (
                   <Button variant="outline" size="sm" disabled={lockSession.isPending} onClick={() => lockSession.mutate({ id: activeSession.id, status: 'Locked' })}>
-                    <Lock size={14} /> Lock Cycle
-                  </Button>
+                    <Lock size={14} /> {/* @ts-ignore */}<T>Lock Cycle</T></Button>
                 ) : (
-                  <Badge variant="emerald">Locked</Badge>
+                  <Badge variant="emerald">{/* @ts-ignore */}<T>Locked</T></Badge>
                 )}
               </div>
             </CardHeader>
@@ -181,7 +179,7 @@ function CalibrationGrid({
   onSave: (reviewId: string, userId: string, raw: number, mult: number, note: string) => void;
 }) {
   if (!reviews || reviews.length === 0) {
-    return <p className="text-sm text-[var(--text-muted)]">No reviews available to calibrate.</p>;
+    return <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No reviews available to calibrate.</T></p>;
   }
   return (
     <div className="space-y-3">
@@ -224,21 +222,21 @@ function EntryRow({
           <User size={14} /> {review.reviewerName} — {review.reviewPeriod}
         </span>
         <span className="text-xs text-[var(--text-muted)]">
-          Calibrated: <strong className="text-[var(--brand-strong)]">{calibrated}</strong>
+          {/* @ts-ignore */}<T>Calibrated:</T><strong className="text-[var(--brand-strong)]">{calibrated}</strong>
         </span>
       </div>
-      <p className="mt-1 text-xs italic text-[var(--text-muted)]">&ldquo;{review.comments}&rdquo;</p>
+      <p className="mt-1 text-xs italic text-[var(--text-muted)]">{/* @ts-ignore */}<T>&ldquo;</T>{review.comments}{/* @ts-ignore */}<T>&rdquo;</T></p>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="space-y-1">
-          <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Raw</Label>
+          <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Raw</T></Label>
           <Input type="number" step="0.1" value={raw} disabled={locked} onChange={(e) => setRaw(e.target.value)} />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Multiplier</Label>
+          <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Multiplier</T></Label>
           <Input type="number" step="0.1" value={mult} disabled={locked} onChange={(e) => setMult(e.target.value)} />
         </div>
         <div className="col-span-2 space-y-1">
-          <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Note</Label>
+          <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Note</T></Label>
           <Input value={note} disabled={locked} onChange={(e) => setNote(e.target.value)} placeholder="Rationale…" />
         </div>
       </div>
@@ -249,8 +247,7 @@ function EntryRow({
           </Button>
           {!entry && (
             <Button variant="ghost" size="sm" onClick={() => setRaw(String(rawFromRating(review.rating)))}>
-              Use rating
-            </Button>
+              {/* @ts-ignore */}<T>Use rating</T></Button>
           )}
         </div>
       )}

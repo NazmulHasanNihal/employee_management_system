@@ -35,6 +35,7 @@ import { DelegationSettings } from '@/components/profile/DelegationSettings';
 import { SprintHeatmap } from '@/components/profile/SprintHeatmap';
 import { ReviewsRadarIsland, CombatStatsIsland } from '@/components/profile/ChartIslands';
 import { TwoFactorSettings } from '@/components/TwoFactorSettings';
+import { T } from "@/components/Translate";
 
 function maskSalary() {
   return '••••••••';
@@ -142,7 +143,7 @@ export default async function ProfilePage() {
         <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>{/* @ts-ignore */}<T>Contact Information</T></CardTitle>
             </CardHeader>
             <CardContent>
               <ContactSection user={user as ProfileUser} countries={countries} />
@@ -151,33 +152,33 @@ export default async function ProfilePage() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
-              <CardHeader><CardTitle>Emergency Contact</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{/* @ts-ignore */}<T>Emergency Contact</T></CardTitle></CardHeader>
               <CardContent>              <EmergencySection user={user as ProfileUser} /></CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle>Employment</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{/* @ts-ignore */}<T>Employment</T></CardTitle></CardHeader>
               <CardContent><EmploymentSection user={user as ProfileUser} managerName={manager?.name} branchName={branch?.name ?? null} branches={branches} managers={managers} /></CardContent>
             </Card>
           </div>
 
           <Card>
-            <CardHeader><CardTitle>Social Links</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{/* @ts-ignore */}<T>Social Links</T></CardTitle></CardHeader>
               <CardContent><SocialSection user={user as ProfileUser} /></CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>About</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{/* @ts-ignore */}<T>About</T></CardTitle></CardHeader>
               <CardContent><BioSection user={user as ProfileUser} /></CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Bangladesh Identity</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{/* @ts-ignore */}<T>Bangladesh Identity</T></CardTitle></CardHeader>
             <CardContent><IdentitySection user={user as ProfileUser} /></CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><ShieldCheck size={16} className="text-[var(--brand-strong)]" /> Security</CardTitle>
+              <CardTitle className="flex items-center gap-2"><ShieldCheck size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Security</T></CardTitle>
             </CardHeader>
             <CardContent>
               <TwoFactorSettings />
@@ -190,7 +191,7 @@ export default async function ProfilePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Zap size={16} className="text-[var(--amber)]" /> Skills</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Zap size={16} className="text-[var(--amber)]" /> {/* @ts-ignore */}<T>Skills</T></CardTitle>
           </CardHeader>
           <CardContent>
             <SkillsManager initialSkills={skills.map((s: { id: string; skill: string; level: number }) => ({ id: s.id, skill: s.skill, level: s.level }))} />
@@ -199,7 +200,7 @@ export default async function ProfilePage() {
 
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><FileText size={16} className="text-[var(--brand-strong)]" /> Document Vault</CardTitle>
+            <CardTitle className="flex items-center gap-2"><FileText size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Document Vault</T></CardTitle>
           </CardHeader>
           <CardContent>
             <DocumentVault documents={documents.map((d: { id: string; title: string; url: string; type: string; createdAt: Date }) => ({ id: d.id, title: d.title, url: d.url, type: d.type, createdAt: d.createdAt }))} />
@@ -208,7 +209,7 @@ export default async function ProfilePage() {
 
         <Card className="lg:col-span-1">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><CalendarDays size={16} className="text-[var(--emerald)]" /> Time Off</CardTitle>
+            <CardTitle className="flex items-center gap-2"><CalendarDays size={16} className="text-[var(--emerald)]" /> {/* @ts-ignore */}<T>Time Off</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {leaveBalance ? (
@@ -220,7 +221,7 @@ export default async function ProfilePage() {
                 <LeaveBar label="Optional Religious" used={leaveBalance.Optional?.used || 0} total={leaveBalance.Optional?.total || 0} color="var(--violet)" />
               </>
             ) : (
-              <p className="text-sm text-[var(--text-muted)]">Unavailable</p>
+              <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Unavailable</T></p>
             )}
           </CardContent>
         </Card>
@@ -230,22 +231,22 @@ export default async function ProfilePage() {
         {/* Compensation */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Banknote size={16} className="text-[var(--brand-strong)]" /> Compensation</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Banknote size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Compensation</T></CardTitle>
             {canViewSalary ? (
-              <Badge variant="brand" className="gap-1"><ShieldCheck size={12} /> Admin View</Badge>
+              <Badge variant="brand" className="gap-1"><ShieldCheck size={12} /> {/* @ts-ignore */}<T>Admin View</T></Badge>
             ) : (
-              <Badge variant="secondary" className="gap-1"><ShieldCheck size={12} /> Private</Badge>
+              <Badge variant="secondary" className="gap-1"><ShieldCheck size={12} /> {/* @ts-ignore */}<T>Private</T></Badge>
             )}
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
-              <p className="text-xs text-[var(--text-muted)]">Base Salary</p>
+              <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Base Salary</T></p>
               <p className="text-xl font-semibold text-[var(--text-main)]">
                 {canViewSalary ? (user.baseSalary ? formatCurrency(user.baseSalary, 'BDT', 'en') : '—') : maskSalary()}
               </p>
             </div>
             <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
-              <p className="text-xs text-[var(--text-muted)]">Next Review</p>
+              <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Next Review</T></p>
               <p className="text-sm font-medium text-[var(--text-main)]">
                 {reviews.reviews.length > 0 ? reviews.reviews[0].reviewPeriod : 'Not scheduled'}
               </p>
@@ -256,7 +257,7 @@ export default async function ProfilePage() {
         {/* Reviews radar */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Sparkles size={16} className="text-[var(--brand-strong)]" /> Performance Reviews</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Sparkles size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Performance Reviews</T></CardTitle>
           </CardHeader>
           <CardContent>
             {reviews.scores.length === 0 ? (

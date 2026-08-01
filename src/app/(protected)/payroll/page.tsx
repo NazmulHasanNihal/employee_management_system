@@ -11,6 +11,7 @@ import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTot
 import { getCaller } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -63,14 +64,12 @@ export default async function PayrollPage() {
           <Card>
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
-                Monthly Run-Rate
-              </p>
+                {/* @ts-ignore */}<T>Monthly Run-Rate</T></p>
                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {formatCurrency(adminStats.monthlyRunRate, 'BDT', 'en')}
               </p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">
-                Avg {formatCurrency(adminStats.avgPerEmployee, 'BDT', 'en')} / employee
-              </p>
+                {/* @ts-ignore */}<T>Avg</T>{formatCurrency(adminStats.avgPerEmployee, 'BDT', 'en')} {/* @ts-ignore */}<T>/ employee</T></p>
             </CardContent>
           </Card>
 
@@ -85,8 +84,7 @@ export default async function PayrollPage() {
               <p className="mt-1 inline-flex items-center gap-1 text-xs text-[var(--emerald)]">
                 {adminStats.lastRunStatus === 'PROCESSED' ? (
                   <>
-                    <CheckCircle2 className="h-3 w-3" /> Processed
-                  </>
+                    <CheckCircle2 className="h-3 w-3" /> {/* @ts-ignore */}<T>Processed</T></>
                 ) : (
                   adminStats.lastRunStatus
                 )}
@@ -101,14 +99,12 @@ export default async function PayrollPage() {
               </div>
               <div>
                 <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
-                  Payslips On File
-                </p>
+                  {/* @ts-ignore */}<T>Payslips On File</T></p>
                 <p className="mt-1 text-3xl font-semibold text-[var(--text-main)]">
                   {payrolls.length}
                 </p>
                 <p className="mt-1 text-xs text-[var(--text-muted)]">
-                  {adminStats.processedPct}% runs processed
-                </p>
+                  {adminStats.processedPct}{/* @ts-ignore */}<T>% runs processed</T></p>
               </div>
             </CardContent>
           </Card>
@@ -128,8 +124,7 @@ export default async function PayrollPage() {
 
       <div className="space-y-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-          Payslip Vault
-        </h2>
+          {/* @ts-ignore */}<T>Payslip Vault</T></h2>
 
         {payrolls.length === 0 ? (
           <EmptyState

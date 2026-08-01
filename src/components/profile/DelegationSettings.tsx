@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { setProxy } from '@/app/actions/profile';
+import { T } from "@/components/Translate";
 
 interface DelegationUser {
   proxyId?: string | null;
@@ -53,8 +54,7 @@ export function DelegationSettings({ user }: { user: DelegationUser }) {
   return (
     <div className="space-y-4">
       <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-        <Shield size={15} className="text-[var(--brand-strong)]" /> Delegation Settings
-      </h4>
+        <Shield size={15} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Delegation Settings</T></h4>
 
       {error && (
         <p className="rounded-lg bg-[var(--danger-soft)] px-3 py-2 text-xs text-[var(--danger)]">{error}</p>
@@ -63,10 +63,10 @@ export function DelegationSettings({ user }: { user: DelegationUser }) {
       {active.proxyId ? (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] px-3 py-2">
           <div className="text-sm">
-            <span className="font-medium text-[var(--emerald)]">Active Proxy:</span>{' '}
+            <span className="font-medium text-[var(--emerald)]">{/* @ts-ignore */}<T>Active Proxy:</T></span>{' '}
             <span className="text-[var(--text-main)]">{active.proxyName || active.proxyId}</span>
             <div className="text-xs text-[var(--text-muted)]">
-              Valid until: {active.proxyValidUntil ? new Date(active.proxyValidUntil).toLocaleDateString() : 'Indefinite'}
+              {/* @ts-ignore */}<T>Valid until:</T>{active.proxyValidUntil ? new Date(active.proxyValidUntil).toLocaleDateString() : 'Indefinite'}
             </div>
           </div>
           <Button size="icon-sm" variant="ghost" onClick={clear} disabled={saving} aria-label="Clear proxy">
@@ -76,7 +76,7 @@ export function DelegationSettings({ user }: { user: DelegationUser }) {
       ) : (
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label className="text-[var(--text-muted)]">Proxy User ID</Label>
+            <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Proxy User ID</T></Label>
             <Input
               value={proxyId}
               onChange={(e) => setProxyId(e.target.value)}
@@ -84,7 +84,7 @@ export function DelegationSettings({ user }: { user: DelegationUser }) {
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[var(--text-muted)]">Valid Until (Optional)</Label>
+            <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Valid Until (Optional)</T></Label>
             <Input
               type="date"
               value={validUntil}
@@ -93,8 +93,7 @@ export function DelegationSettings({ user }: { user: DelegationUser }) {
             />
           </div>
           <Button onClick={assign} disabled={!proxyId || saving} className="w-full" size="sm">
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />} Assign Proxy
-          </Button>
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />} {/* @ts-ignore */}<T>Assign Proxy</T></Button>
         </div>
       )}
     </div>

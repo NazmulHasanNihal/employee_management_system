@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
 import { CreateButton, SignButton } from './DocumentsIsland';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -38,8 +39,7 @@ export default async function DocumentsPage() {
       {pendingDocs.length > 0 && (
         <div className="space-y-4">
           <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--rose)]">
-            <Fingerprint size={16} /> Action Required (Awaiting Signature)
-          </h3>
+            <Fingerprint size={16} /> {/* @ts-ignore */}<T>Action Required (Awaiting Signature)</T></h3>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {pendingDocs.map((doc: { id: string; title: string; createdAt: Date }) => (
               <div key={doc.id} className="relative overflow-hidden rounded-2xl border border-[var(--rose)]/40 bg-[var(--bg-panel)] p-6 transition-colors">
@@ -47,11 +47,11 @@ export default async function DocumentsPage() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] text-[var(--rose)]">
                     <FileText size={24} />
                   </div>
-                  <Badge variant="rose">Pending</Badge>
+                  <Badge variant="rose">{/* @ts-ignore */}<T>Pending</T></Badge>
                 </div>
                 <h4 className="mb-2 text-lg font-semibold text-[var(--text-main)]">{doc.title}</h4>
                 <p className="mb-6 flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                  <Clock size={12} /> Received {new Date(doc.createdAt).toLocaleDateString()}
+                  <Clock size={12} /> {/* @ts-ignore */}<T>Received</T>{new Date(doc.createdAt).toLocaleDateString()}
                 </p>
                 <SignButton id={doc.id} />
               </div>
@@ -62,8 +62,7 @@ export default async function DocumentsPage() {
 
       <div className="space-y-4">
         <h3 className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-4 text-sm font-semibold text-[var(--text-main)]">
-          <FileText size={16} className="text-[var(--brand-strong)]" /> Vault Archive
-        </h3>
+          <FileText size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Vault Archive</T></h3>
 
         {completedDocs.length === 0 ? (
           <EmptyState
@@ -98,8 +97,7 @@ export default async function DocumentsPage() {
                   className="w-full"
                   onClick={() => window.open(doc.url, '_blank')}
                 >
-                  <Download size={14} /> Open Document
-                </Button>
+                  <Download size={14} /> {/* @ts-ignore */}<T>Open Document</T></Button>
               </div>
             ))}
           </div>

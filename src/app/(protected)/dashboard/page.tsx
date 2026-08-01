@@ -20,6 +20,7 @@ import { PulseAnalyticsChart } from '@/components/dashboard/PulseAnalyticsChart'
 import { formatCurrency, formatDate } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
 import { prisma } from '@/lib/prisma';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -135,8 +136,7 @@ export default async function DashboardPage() {
         actions={
           <ShimmerButton className="shadow-2xl">
             <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
-              ✨ Quick Action
-            </span>
+              {/* @ts-ignore */}<T>✨ Quick Action</T></span>
           </ShimmerButton>
         }
       />
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-[var(--brand)]" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">Key Metrics</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Key Metrics</T></h2>
         </div>
         <div className={`grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3`}>
           {statCards.map((s) => (
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <Activity className="h-4 w-4 text-[var(--emerald)]" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">Attendance & Department</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Attendance & Department</T></h2>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <LiveClock officeHours={officeHours} />
@@ -190,7 +190,7 @@ export default async function DashboardPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>My Department</CardTitle>
+                <CardTitle>{/* @ts-ignore */}<T>My Department</T></CardTitle>
               </CardHeader>
               <CardContent>
                 {stats.departmentBreakdown.length === 0 ? (
@@ -224,7 +224,7 @@ export default async function DashboardPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-[var(--brand)]" />
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">Organization Analytics</h2>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Organization Analytics</T></h2>
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <LeaveBreakdownDonut data={stats.leaveBreakdown} />
@@ -249,19 +249,19 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Card className="animate-fade-up">
               <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.payrollRunRate)}</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Monthly Payroll Run-Rate</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Monthly Payroll Run-Rate</T></p>
             </Card>
             <Card className="animate-fade-up">
               <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.payrollYTD)}</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Payroll YTD</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Payroll YTD</T></p>
             </Card>
             <Card className="animate-fade-up">
               <p className="text-2xl font-semibold text-[var(--text-main)]">{stats.leaveApprovalRate}%</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Leave Approval Rate (Mo)</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Leave Approval Rate (Mo)</T></p>
             </Card>
             <Card className="animate-fade-up">
               <p className="text-2xl font-semibold text-[var(--text-main)]">{currency(stats.pendingExpenseAmount)}</p>
-              <p className="mt-1 text-xs text-[var(--text-muted)]">Pending Expenses</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pending Expenses</T></p>
             </Card>
           </div>
         </section>
@@ -271,14 +271,14 @@ export default async function DashboardPage() {
       <section className="space-y-4">
         <div className="flex items-center gap-2">
           <ArrowUpRight className="h-4 w-4 text-[var(--brand)]" />
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">What's Happening</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>What's Happening</T></h2>
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6">
             <PulseSurveyWidget />
             <Card>
               <CardHeader>
-                <CardTitle>Upcoming Events</CardTitle>
+                <CardTitle>{/* @ts-ignore */}<T>Upcoming Events</T></CardTitle>
               </CardHeader>
             <CardContent>
               {stats.upcomingEvents.length === 0 ? (
@@ -307,7 +307,7 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Recent News</CardTitle>
+              <CardTitle>{/* @ts-ignore */}<T>Recent News</T></CardTitle>
             </CardHeader>
             <CardContent>
               {stats.recentNews.length === 0 ? (
@@ -345,29 +345,29 @@ export default async function DashboardPage() {
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                     <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                       <p className="text-xl font-semibold text-[var(--text-main)]">{myOverview.attendancePercent}%</p>
-                      <p className="text-xs text-[var(--text-muted)]">My Attendance</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>My Attendance</T></p>
                     </div>
                     <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                       <p className="text-xl font-semibold text-[var(--text-main)]">{myOverview.myPendingLeaves}</p>
-                      <p className="text-xs text-[var(--text-muted)]">Pending Leaves</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pending Leaves</T></p>
                     </div>
                     <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                       <p className="text-xl font-semibold text-[var(--text-main)]">{myOverview.myDoneTasks}/{myOverview.myTotalTasks}</p>
-                      <p className="text-xs text-[var(--text-muted)]">Tasks Done</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Tasks Done</T></p>
                     </div>
                     <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                       <p className="text-xl font-semibold text-[var(--text-main)]">{myOverview.myInProgressTasks}</p>
-                      <p className="text-xs text-[var(--text-muted)]">In Progress</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>In Progress</T></p>
                     </div>
                     <div className="rounded-xl bg-[var(--bg-hover)]/60 p-3">
                       <p className="text-xl font-semibold text-[var(--text-main)]">{stats.taskCompletionRate}%</p>
-                      <p className="text-xs text-[var(--text-muted)]">Task Completion</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Task Completion</T></p>
                     </div>
                   </div>
 
                   {myOverview.myRecentPayrolls.length > 0 && (
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Recent Payrolls</p>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Recent Payrolls</T></p>
                       <ul className="space-y-2">
                         {myOverview.myRecentPayrolls.map((p, i) => (
                           <li key={i} className="flex items-center justify-between text-sm">

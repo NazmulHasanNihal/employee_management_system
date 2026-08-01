@@ -8,6 +8,7 @@ import { StatusBadge } from '../StatusBadge';
 import { EmptyState } from '../EmptyState';
 import { toast } from '@/lib/toast';
 import { Card } from '@/components/ui/card';
+import { T } from "@/components/Translate";
 
 interface ApplicationsClientPageProps {
   initialApps: any[];
@@ -60,7 +61,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
             <Network className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="page-title">Operations Hub</h1>
+            <h1 className="page-title">{/* @ts-ignore */}<T>Operations Hub</T></h1>
             <p className="page-subtitle">
               {isAdmin ? 'Global request & authorization queue.' : 'My formal requests & authorizations.'}
             </p>
@@ -71,15 +72,13 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
             onClick={() => toast.info('CSV Export Triggered', 'Your export is being prepared.')}
             className="btn-secondary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
           >
-            <Download className="h-4 w-4" /> Export
-          </button>
+            <Download className="h-4 w-4" /> {/* @ts-ignore */}<T>Export</T></button>
           {!isAdmin && (
             <button
               onClick={() => setShowModal(true)}
               className="btn-primary inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
             >
-              <Plus className="h-4 w-4" /> New Request
-            </button>
+              <Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>New Request</T></button>
           )}
         </div>
       </header>
@@ -87,8 +86,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
       <Card className="overflow-hidden">
         <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-            <Server className="h-4 w-4 text-[var(--text-muted)]" /> Authorization Ledger
-          </h3>
+            <Server className="h-4 w-4 text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Authorization Ledger</T></h3>
         </div>
 
         <div className="overflow-x-auto">
@@ -105,12 +103,12 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
               <table className="w-full text-left table-responsive-card">
                 <thead>
                   <tr className="border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]">
-                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="ID">Trace ID</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Type">Vector / Type</th>
-                    {isAdmin && <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Origin">Origin Entity</th>}
-                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Details">Payload Details</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-[var(--text-muted)]" data-label="Status">Clearance Status</th>
-                    {isAdmin && <th className="px-6 py-4 text-right text-xs font-semibold text-[var(--text-muted)]" data-label="Actions">Overrides</th>}
+                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="ID">{/* @ts-ignore */}<T>Trace ID</T></th>
+                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Type">{/* @ts-ignore */}<T>Vector / Type</T></th>
+                    {isAdmin && <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Origin">{/* @ts-ignore */}<T>Origin Entity</T></th>}
+                    <th className="px-6 py-4 text-xs font-semibold text-[var(--text-muted)]" data-label="Details">{/* @ts-ignore */}<T>Payload Details</T></th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-[var(--text-muted)]" data-label="Status">{/* @ts-ignore */}<T>Clearance Status</T></th>
+                    {isAdmin && <th className="px-6 py-4 text-right text-xs font-semibold text-[var(--text-muted)]" data-label="Actions">{/* @ts-ignore */}<T>Overrides</T></th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-hairline)]">
@@ -128,11 +126,9 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                           {app.status.includes('Pending') ? (
                             <div className="flex justify-end gap-2">
                               <button onClick={() => handleUpdate(app.id, 'Approved')} className="flex items-center gap-1 rounded-lg bg-[var(--emerald-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--emerald)] transition-colors hover:bg-[var(--emerald)] hover:text-white" title="Approve">
-                                <Check className="h-3.5 w-3.5" /> Approve
-                              </button>
+                                <Check className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Approve</T></button>
                               <button onClick={() => handleUpdate(app.id, 'Rejected')} className="flex items-center gap-1 rounded-lg bg-[var(--rose-soft)] px-2.5 py-1.5 text-xs font-semibold text-[var(--rose)] transition-colors hover:bg-[var(--rose)] hover:text-white" title="Reject">
-                                <X className="h-3.5 w-3.5" /> Reject
-                              </button>
+                                <X className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Reject</T></button>
                             </div>
                           ) : (
                             <span className="text-xs text-[var(--text-muted)]">-</span>
@@ -152,8 +148,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
           <Card className="w-full max-w-lg overflow-hidden">
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-                <Fingerprint className="h-4 w-4 text-[var(--brand-strong)]" /> Authorize New Request
-              </h3>
+                <Fingerprint className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Authorize New Request</T></h3>
               <button onClick={() => setShowModal(false)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]">
                 <X className="h-5 w-5" />
               </button>
@@ -161,22 +156,22 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
 
             <form className="space-y-4 p-6" onSubmit={(e) => { e.preventDefault(); submitMutation.mutate(newApp); }}>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Request Vector</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Request Vector</T></label>
                 <select
                   value={newApp.type}
                   onChange={(e) => setNewApp({ ...newApp, type: e.target.value })}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <option value="Leave Request">Leave / PTO</option>
-                  <option value="Expense Claim">Expense Claim</option>
-                  <option value="Hardware Upgrade">Hardware Upgrade</option>
-                  <option value="Travel Authorization">Travel Authorization</option>
-                  <option value="Access Request">System Access Request</option>
+                  <option value="Leave Request">{/* @ts-ignore */}<T>Leave / PTO</T></option>
+                  <option value="Expense Claim">{/* @ts-ignore */}<T>Expense Claim</T></option>
+                  <option value="Hardware Upgrade">{/* @ts-ignore */}<T>Hardware Upgrade</T></option>
+                  <option value="Travel Authorization">{/* @ts-ignore */}<T>Travel Authorization</T></option>
+                  <option value="Access Request">{/* @ts-ignore */}<T>System Access Request</T></option>
                 </select>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Payload Specifications</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Payload Specifications</T></label>
                 <textarea
                   required
                   rows={4}
@@ -193,8 +188,7 @@ export default function ApplicationsClientPage({ initialApps, isAdmin }: Applica
                   disabled={submitMutation.isPending || !newApp.details.trim()}
                   className="btn-primary flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold disabled:opacity-50"
                 >
-                  <Send className="h-4 w-4" /> Transmit Request
-                </button>
+                  <Send className="h-4 w-4" /> {/* @ts-ignore */}<T>Transmit Request</T></button>
               </div>
             </form>
           </Card>

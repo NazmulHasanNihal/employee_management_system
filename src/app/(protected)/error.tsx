@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { ShieldAlert, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { T } from "@/components/Translate";
 
 export default function ErrorBoundary({
   error,
@@ -26,22 +27,19 @@ export default function ErrorBoundary({
         </div>
 
         <h2 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-          Something went wrong
-        </h2>
+          {/* @ts-ignore */}<T>Something went wrong</T></h2>
         <p className="mt-2 max-w-md text-sm text-[var(--text-muted)]">
-          A critical exception occurred while rendering this page. The error has been logged and our team has been notified.
-        </p>
+          {/* @ts-ignore */}<T>A critical exception occurred while rendering this page. The error has been logged and our team has been notified.</T></p>
 
         <div className="mt-5 w-full max-w-lg rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] p-4 text-left">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--rose)]">
-            Error details
-          </p>
+            {/* @ts-ignore */}<T>Error details</T></p>
           <p className="truncate text-xs text-[var(--text-muted)]">
             {error.message || "Unknown runtime error"}
           </p>
           {error.digest && (
             <p className="mt-1 text-xs text-[var(--text-muted)] opacity-70">
-              Digest: {error.digest}
+              {/* @ts-ignore */}<T>Digest:</T>{error.digest}
             </p>
           )}
         </div>
@@ -51,8 +49,7 @@ export default function ErrorBoundary({
           className="mt-2 rounded-xl px-8 py-3 text-sm"
         >
           <RefreshCw className="mr-2 h-4 w-4" />
-          Try again
-        </Button>
+          {/* @ts-ignore */}<T>Try again</T></Button>
       </div>
     </div>
   );

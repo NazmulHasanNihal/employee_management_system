@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { formatDate } from '@/lib/format';
+import { T } from "@/components/Translate";
 
 interface AssetsClientProps {
   assets: any[];
@@ -76,7 +77,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
         </div>
         {isAdmin && (
           <Button variant="primary" size="sm" onClick={() => setShowCreate((s) => !s)}>
-            {showCreate ? 'Cancel' : <><Plus className="h-4 w-4" /> Provision Asset</>}
+            {showCreate ? 'Cancel' : <><Plus className="h-4 w-4" /> {/* @ts-ignore */}<T>Provision Asset</T></>}
           </Button>
         )}
       </div>
@@ -84,12 +85,12 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
       {showCreate && isAdmin && (
         <Card className="animate-scale-in">
           <CardHeader>
-            <CardTitle>Provision Hardware</CardTitle>
+            <CardTitle>{/* @ts-ignore */}<T>Provision Hardware</T></CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Device Name / Model</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Device Name / Model</T></label>
                 <Input
                   placeholder="e.g. MacBook Pro M3 Max"
                   value={newAsset.name}
@@ -97,7 +98,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Purchase Price ($)</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Price ($)</T></label>
                 <Input
                   type="number"
                   step="0.01"
@@ -107,7 +108,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Purchase Date</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Date</T></label>
                 <Input
                   type="date"
                   onChange={(e) => setNewAsset({ ...newAsset, purchaseDate: e.target.value })}
@@ -117,13 +118,13 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
 
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Assign To</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign To</T></label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={newAsset.userId}
                   onChange={(e) => setNewAsset({ ...newAsset, userId: e.target.value })}
                 >
-                  <option value="">Unassigned (Inventory)</option>
+                  <option value="">{/* @ts-ignore */}<T>Unassigned (Inventory)</T></option>
                   {users?.map((u: any) => (
                     <option key={u.id} value={u.id}>{u.name} ({u.designation})</option>
                   ))}
@@ -144,8 +145,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                     })
                   }
                 >
-                  Execute Provisioning
-                </Button>
+                  {/* @ts-ignore */}<T>Execute Provisioning</T></Button>
               </div>
             </div>
           </CardContent>
@@ -155,7 +155,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
       {filteredAssets.length === 0 ? (
         <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-12 text-center">
           <Laptop className="mb-3 h-10 w-10 text-[var(--text-muted)]" />
-          <h3 className="text-sm font-semibold text-[var(--text-muted)]">No Hardware Assets Found</h3>
+          <h3 className="text-sm font-semibold text-[var(--text-muted)]">{/* @ts-ignore */}<T>No Hardware Assets Found</T></h3>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -176,21 +176,21 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                    <h4 className="truncate text-lg font-semibold text-[var(--text-main)]">{asset.name}</h4>
 
                    <div className="rounded-2xl bg-[var(--bg-hover)] p-4">
-                     <p className="text-xs text-[var(--text-muted)]">Assigned Personnel</p>
+                     <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assigned Personnel</T></p>
                      <p className="truncate text-sm font-semibold text-[var(--text-main)]">
-                       {asset.user?.name || <span className="italic text-[var(--amber)]">Unassigned (Inventory)</span>}
+                       {asset.user?.name || <span className="italic text-[var(--amber)]">{/* @ts-ignore */}<T>Unassigned (Inventory)</T></span>}
                      </p>
                    </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs text-[var(--text-muted)]">Acquired</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Acquired</T></p>
                       <p className="text-xs text-[var(--text-main)]">
                         {asset.purchaseDate ? formatDate(asset.purchaseDate, 'en') : 'N/A'}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs text-[var(--text-muted)]">Book Value</p>
+                      <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Book Value</T></p>
                       <p className={`text-sm font-semibold ${dep.current === 0 ? 'text-[var(--rose)]' : 'text-[var(--text-main)]'}`}>
                         {dep.current === null ? 'N/A' : `$${dep.current.toFixed(2)}`}
                       </p>
@@ -204,9 +204,9 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                         value={asset.status}
                         onChange={(e) => updateMutation.mutate({ id: asset.id, status: e.target.value })}
                       >
-                        <option value="Active">Active</option>
-                        <option value="Maintenance">Maintenance</option>
-                        <option value="Retired">Retired</option>
+                        <option value="Active">{/* @ts-ignore */}<T>Active</T></option>
+                        <option value="Maintenance">{/* @ts-ignore */}<T>Maintenance</T></option>
+                        <option value="Retired">{/* @ts-ignore */}<T>Retired</T></option>
                       </select>
                     </div>
                   )}

@@ -4,6 +4,7 @@ import React from 'react';
 import { TrendingUp, Award, Clock, CheckCircle2, Target, Star } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { T } from "@/components/Translate";
 
 interface Metric { label: string; value: number; icon: React.ReactNode; }
 interface Props { data: any; }
@@ -32,8 +33,7 @@ export function PromotionReadiness({ data }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Award className="h-4 w-4 text-[var(--amber)]" /> Promotion Readiness
-        </CardTitle>
+          <Award className="h-4 w-4 text-[var(--amber)]" /> {/* @ts-ignore */}<T>Promotion Readiness</T></CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="flex items-center gap-5">
@@ -47,14 +47,13 @@ export function PromotionReadiness({ data }: Props) {
             </svg>
             <div className="absolute text-center">
                <p className="text-fluid-2xl font-bold text-[var(--text-main)]">{data.score}</p>
-              <p className="text-[9px] uppercase text-[var(--text-muted)]">Score</p>
+              <p className="text-[9px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Score</T></p>
             </div>
           </div>
           <div>
             <Badge className={`${TIER_TONE[data.tier] || TIER_TONE['Developing']} border-current`}>{data.tier}</Badge>
             <p className="mt-2 text-xs text-[var(--text-muted)]">
-              Computed from your attendance, punctuality, on-time task delivery, objective progress and review scores over the last 3 months.
-            </p>
+              {/* @ts-ignore */}<T>Computed from your attendance, punctuality, on-time task delivery, objective progress and review scores over the last 3 months.</T></p>
           </div>
         </div>
 

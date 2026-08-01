@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Network, Search } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 interface Employee {
   id: string;
@@ -55,9 +56,8 @@ export default function PresenceGrid({ employees, active }: { employees: Employe
       <div className="flex items-end justify-between border-b border-[var(--border-hairline)] pb-4">
         <div>
           <h2 className="flex items-center gap-2 text-fluid-xl font-semibold text-[var(--text-main)]">
-            <Network className="h-6 w-6 text-[var(--brand)]" /> The Grid
-          </h2>
-          <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Spatial Presence & Telemetry</p>
+            <Network className="h-6 w-6 text-[var(--brand)]" /> {/* @ts-ignore */}<T>The Grid</T></h2>
+          <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Spatial Presence & Telemetry</T></p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] px-3 py-1">
@@ -77,9 +77,9 @@ export default function PresenceGrid({ employees, active }: { employees: Employe
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--border-hairline)_1px,_transparent_1px)] bg-[size:40px_40px] opacity-20" />
 
         <div className="relative z-10 mb-4 flex shrink-0 justify-end gap-4 text-[9px] uppercase tracking-wide text-[var(--text-muted)]">
-          <span className="flex items-center gap-1"><span className="h-2 w-2 animate-pulse rounded-full bg-[var(--emerald)] shadow-[0_0_8px_var(--emerald)]" /> Online</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--amber)]" /> Away</span>
-          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full border border-[var(--border-hairline)]" /> Offline</span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 animate-pulse rounded-full bg-[var(--emerald)] shadow-[0_0_8px_var(--emerald)]" /> {/* @ts-ignore */}<T>Online</T></span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[var(--amber)]" /> {/* @ts-ignore */}<T>Away</T></span>
+          <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full border border-[var(--border-hairline)]" /> {/* @ts-ignore */}<T>Offline</T></span>
         </div>
 
         <div className="relative z-10 flex flex-1 items-center justify-center overflow-auto p-4">

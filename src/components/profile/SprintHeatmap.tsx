@@ -1,4 +1,5 @@
 import React from 'react';
+import { T } from "@/components/Translate";
 
 interface SprintHeatmapProps {
   /** Real activity intensity per day (0-4) for the last 364 days. */
@@ -11,10 +12,9 @@ export function SprintHeatmap({ data }: SprintHeatmapProps) {
 
   return (
     <div className="flex flex-col">
-      <h3 className="mb-1 text-sm font-semibold text-[var(--text-main)]">Activity Heatmap</h3>
+      <h3 className="mb-1 text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Activity Heatmap</T></h3>
       <p className="mb-3 text-xs text-[var(--text-muted)]">
-        {totalActive} active {totalActive === 1 ? 'day' : 'days'} in the last 52 weeks
-      </p>
+        {totalActive} {/* @ts-ignore */}<T>active</T>{totalActive === 1 ? 'day' : 'days'} {/* @ts-ignore */}<T>in the last 52 weeks</T></p>
       <div className="flex-1 w-full overflow-x-auto custom-scrollbar">
         <div className="grid grid-flow-col grid-rows-7 w-max gap-1">
           {heatmapData.map((val: number, idx: number) => {
@@ -34,16 +34,16 @@ export function SprintHeatmap({ data }: SprintHeatmapProps) {
           })}
         </div>
         <div className="mt-2 flex w-max min-w-full items-center justify-between text-[10px] text-[var(--text-muted)]">
-          <span>52 WEEKS AGO</span>
+          <span>{/* @ts-ignore */}<T>52 WEEKS AGO</T></span>
           <div className="flex items-center gap-2">
-            <span>LESS</span>
+            <span>{/* @ts-ignore */}<T>LESS</T></span>
             <div className="flex gap-1">
               <div className="h-3 w-3 border border-[var(--border-hairline)] bg-[var(--bg-hover)]" />
               <div className="h-3 w-3 bg-[var(--emerald)]/30" />
               <div className="h-3 w-3 bg-[var(--emerald)]/60" />
               <div className="h-3 w-3 bg-[var(--emerald)]" />
             </div>
-            <span>MORE</span>
+            <span>{/* @ts-ignore */}<T>MORE</T></span>
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusPill } from '@/components/ui/status-pill';
 import { formatDate, formatCurrency } from '@/lib/format';
+import { T } from "@/components/Translate";
 
 const PERMISSIONS_LIST = [
   { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Hardware inventory & software licenses' },
@@ -224,12 +225,10 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
         </div>
         <div className="flex gap-3">
           <Button variant="outline" size="md" onClick={handleExportCsv}>
-            <Download className="h-4 w-4" /> Export
-          </Button>
+            <Download className="h-4 w-4" /> {/* @ts-ignore */}<T>Export</T></Button>
           {isAdmin && (
             <Button variant="primary" size="md" onClick={() => setIsProvisionModalOpen(true)} className="rounded-xl flex items-center gap-2 font-semibold">
-              <UserPlus className="h-4 w-4" /> + Add New Member
-            </Button>
+              <UserPlus className="h-4 w-4" /> {/* @ts-ignore */}<T>+ Add New Member</T></Button>
           )}
 
         </div>
@@ -291,16 +290,14 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     onClick={() => setEditingPermsFor(emp)}
                     className="flex-1 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] py-2.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--text-muted)] transition-colors hover:border-[var(--brand)]/30 hover:text-[var(--brand)]"
                   >
-                    <Settings className="mr-1 inline h-3 w-3" /> Access
-                  </button>
+                    <Settings className="mr-1 inline h-3 w-3" /> {/* @ts-ignore */}<T>Access</T></button>
                   {canModifyUser({ role: user.role, designation: user.designation ?? undefined, isOwner }, { role: emp.role, designation: emp.designation ?? undefined, isOwner: emp.isOwner }) && (
                     <button
                       onClick={() => handleDelete(emp.id)}
                       disabled={deleteStatus.loading}
                       className="flex-1 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] py-2.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--rose)] transition-colors hover:bg-[var(--rose)]/20 disabled:opacity-50"
                     >
-                      <Trash2 className="mr-1 inline h-3 w-3" /> Terminate
-                    </button>
+                      <Trash2 className="mr-1 inline h-3 w-3" /> {/* @ts-ignore */}<T>Terminate</T></button>
                   )}
                 </div>
               )}
@@ -343,7 +340,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Contact</p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Contact</T></p>
                     <div className="mt-2 space-y-2">
                       {selectedEmployee.email && (
                         <div className="flex items-center gap-2 text-sm text-[var(--text-main)]">
@@ -366,7 +363,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact</p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Emergency Contact</T></p>
                     <div className="mt-2 space-y-1 text-sm text-[var(--text-main)]">
                       <p>{selectedEmployee.emergencyContactName || '—'}</p>
                       <p className="font-mono text-xs text-[var(--text-muted)]">{selectedEmployee.emergencyContactPhone || '—'}</p>
@@ -374,7 +371,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   </div>
                   {selectedEmployee.manager && (
                     <div>
-                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Reports To</p>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reports To</T></p>
                       <p className="mt-2 text-sm font-medium text-[var(--text-main)]">{selectedEmployee.manager.name}</p>
                       <p className="text-xs text-[var(--text-muted)]">{selectedEmployee.manager.designation || selectedEmployee.manager.role}</p>
                     </div>
@@ -382,7 +379,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Employment</p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employment</T></p>
                     <div className="mt-2 space-y-2 text-sm text-[var(--text-main)]">
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-4 w-4 text-[var(--text-muted)]" />
@@ -391,7 +388,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                       {selectedEmployee.joinDate && (
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-[var(--text-muted)]" />
-                          <span>Joined {formatDate(selectedEmployee.joinDate)}</span>
+                          <span>{/* @ts-ignore */}<T>Joined</T>{formatDate(selectedEmployee.joinDate)}</span>
                         </div>
                       )}
                       {selectedEmployee.branchId && (
@@ -403,29 +400,29 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Personal</p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Personal</T></p>
                     <div className="mt-2 grid grid-cols-2 gap-2 text-sm text-[var(--text-main)]">
                       {selectedEmployee.dateOfBirth && (
                         <div>
-                          <span className="text-[var(--text-muted)]">DOB</span>
+                          <span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>DOB</T></span>
                           <p className="font-medium">{formatDate(selectedEmployee.dateOfBirth)}</p>
                         </div>
                       )}
                       {selectedEmployee.gender && (
                         <div>
-                          <span className="text-[var(--text-muted)]">Gender</span>
+                          <span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Gender</T></span>
                           <p className="font-medium">{selectedEmployee.gender}</p>
                         </div>
                       )}
                       {selectedEmployee.bloodGroup && (
                         <div>
-                          <span className="text-[var(--text-muted)]">Blood</span>
+                          <span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Blood</T></span>
                           <p className="font-medium flex items-center gap-1"><Heart className="h-3 w-3 text-[var(--rose)]" />{selectedEmployee.bloodGroup}</p>
                         </div>
                       )}
                       {selectedEmployee.religion && (
                         <div>
-                          <span className="text-[var(--text-muted)]">Religion</span>
+                          <span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Religion</T></span>
                           <p className="font-medium">{selectedEmployee.religion}</p>
                         </div>
                       )}
@@ -435,37 +432,33 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     )}
                   </div>
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Social</p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Social</T></p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {selectedEmployee.linkedin && (
                         <a href={selectedEmployee.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
-                          LinkedIn
-                        </a>
+                          {/* @ts-ignore */}<T>LinkedIn</T></a>
                       )}
                       {selectedEmployee.github && (
                         <a href={selectedEmployee.github} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
-                          GitHub
-                        </a>
+                          {/* @ts-ignore */}<T>GitHub</T></a>
                       )}
                       {selectedEmployee.twitter && (
                         <a href={selectedEmployee.twitter} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
-                          Twitter
-                        </a>
+                          {/* @ts-ignore */}<T>Twitter</T></a>
                       )}
                       {selectedEmployee.website && (
                         <a href={selectedEmployee.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-xs font-medium text-[var(--brand)] hover:text-[var(--brand-strong)]">
-                          Website
-                        </a>
+                          {/* @ts-ignore */}<T>Website</T></a>
                       )}
                     </div>
                   </div>
                   {isAdmin && (
                     <div>
-                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Admin Info</p>
+                      <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Admin Info</T></p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {selectedEmployee.twoFactorEnabled !== undefined && (
                           <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.twoFactorEnabled ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : 'bg-[var(--rose-soft)] text-[var(--rose)]'}`}>
-                            <Shield className="h-3 w-3" /> 2FA {selectedEmployee.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+                            <Shield className="h-3 w-3" /> {/* @ts-ignore */}<T>2FA</T>{selectedEmployee.twoFactorEnabled ? 'Enabled' : 'Disabled'}
                           </span>
                         )}
                         {selectedEmployee.nidMasked && (
@@ -475,7 +468,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                         )}
                         {selectedEmployee.lastSeen && (
                           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-2.5 py-1 text-[10px] font-medium text-[var(--text-muted)]">
-                            Last seen {formatDate(selectedEmployee.lastSeen)}
+                            {/* @ts-ignore */}<T>Last seen</T>{formatDate(selectedEmployee.lastSeen)}
                           </span>
                         )}
                       </div>
@@ -485,7 +478,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               </div>
             </div>
             <div className="flex justify-end gap-3 border-t border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4 sm:p-6">
-              <Button variant="ghost" size="md" onClick={() => setSelectedEmployee(null)}>Close</Button>
+              <Button variant="ghost" size="md" onClick={() => setSelectedEmployee(null)}>{/* @ts-ignore */}<T>Close</T></Button>
             </div>
           </div>
         </div>
@@ -497,16 +490,14 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
           <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
             <div className="border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]">
-                <ShieldAlert className="h-4 w-4 text-[var(--brand)]" /> Access Control Configuration
-              </h3>
+                <ShieldAlert className="h-4 w-4 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Access Control Configuration</T></h3>
               <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                Target: <span className="text-[var(--brand-strong)]">{editingPermsFor.name}</span>
+                {/* @ts-ignore */}<T>Target:</T><span className="text-[var(--brand-strong)]">{editingPermsFor.name}</span>
               </p>
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
               <p className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-2 text-xs uppercase tracking-wide text-[var(--text-muted)]">
-                <Key className="h-3.5 w-3.5" /> Security Clearances
-              </p>
+                <Key className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Security Clearances</T></p>
               {PERMISSIONS_LIST.map((perm) => {
                 let currentPerms = [];
                 try { if (editingPermsFor.permissions) currentPerms = JSON.parse(editingPermsFor.permissions); } catch (e) {}
@@ -527,7 +518,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               })}
             </div>
             <div className="flex gap-4 border-t border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
-                  <Button variant="ghost" size="md" onClick={() => setEditingPermsFor(null)} className="touch-target-sm">Cancel</Button>
+                  <Button variant="ghost" size="md" onClick={() => setEditingPermsFor(null)} className="touch-target-sm">{/* @ts-ignore */}<T>Cancel</T></Button>
               <Button variant="primary" size="md" disabled={updatePermsMutation.isPending} onClick={savePermissions}>
                 {updatePermsMutation.isPending ? 'Committing...' : 'Commit Changes'}
               </Button>
@@ -543,9 +534,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <div>
                 <h3 className="flex items-center gap-2 text-lg font-semibold uppercase tracking-wide text-[var(--text-main)]">
-                  <UserPlus className="h-5 w-5 text-[var(--brand)]" /> + Add New Employee Member
-                </h3>
-                <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Provision Member Credentials & System Profile</p>
+                  <UserPlus className="h-5 w-5 text-[var(--brand)]" /> {/* @ts-ignore */}<T>+ Add New Employee Member</T></h3>
+                <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Provision Member Credentials & System Profile</T></p>
               </div>
               <button onClick={() => setIsProvisionModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] touch-target-sm">
                 <X className="h-5 w-5" />
@@ -554,19 +544,17 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             <form onSubmit={handleProvisionSubmit} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
               {provisionStatus.error && (
                 <div className="rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-3 text-xs text-[var(--rose)]">
-                  ERROR: {provisionStatus.error}
+                  {/* @ts-ignore */}<T>ERROR:</T>{provisionStatus.error}
                 </div>
               )}
               {provisionStatus.success && !provisionStatus.inviteToken && (
                 <div className="flex items-center gap-2 rounded-xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] p-3 text-xs font-semibold text-[var(--emerald)]">
-                  <Check className="h-4 w-4" /> Member account created successfully! They can log in immediately.
-                </div>
+                  <Check className="h-4 w-4" /> {/* @ts-ignore */}<T>Member account created successfully! They can log in immediately.</T></div>
               )}
               {provisionStatus.success && provisionStatus.inviteToken && (
                 <div className="rounded-xl border border-[var(--brand)]/30 bg-[var(--brand-soft)] p-3 text-xs text-[var(--text-main)] space-y-2">
                   <p className="flex items-center gap-2 font-semibold text-[var(--brand-strong)]">
-                    <Check className="h-3.5 w-3.5" /> Invite created. Share this secure link with the employee:
-                  </p>
+                    <Check className="h-3.5 w-3.5" /> {/* @ts-ignore */}<T>Invite created. Share this secure link with the employee:</T></p>
                   <code className="block break-all rounded bg-[var(--bg-app)] p-2 text-[10px] font-mono">
                     {typeof window !== 'undefined' ? `${window.location.origin}/invite/${provisionStatus.inviteToken}` : provisionStatus.inviteToken}
                   </code>
@@ -574,13 +562,13 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     if (typeof navigator !== 'undefined' && navigator.clipboard) {
                       navigator.clipboard.writeText(`${window.location.origin}/invite/${provisionStatus.inviteToken}`);
                     }
-                  }}>Copy Link</Button>
+                  }}>{/* @ts-ignore */}<T>Copy Link</T></Button>
                 </div>
               )}
 
               {/* Mode Selection Tabs */}
               <div className="space-y-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Creation Mode</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Creation Mode</T></label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -591,8 +579,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                         : 'border-[var(--border-hairline)] bg-[var(--bg-app)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <span>Set Login Password</span>
-                    <span className="text-[10px] font-normal opacity-80 mt-0.5">Immediate Login Access</span>
+                    <span>{/* @ts-ignore */}<T>Set Login Password</T></span>
+                    <span className="text-[10px] font-normal opacity-80 mt-0.5">{/* @ts-ignore */}<T>Immediate Login Access</T></span>
                   </button>
                   <button
                     type="button"
@@ -603,14 +591,14 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                         : 'border-[var(--border-hairline)] bg-[var(--bg-app)] text-[var(--text-muted)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <span>Send Invite Link</span>
-                    <span className="text-[10px] font-normal opacity-80 mt-0.5">Self-Registration</span>
+                    <span>{/* @ts-ignore */}<T>Send Invite Link</T></span>
+                    <span className="text-[10px] font-normal opacity-80 mt-0.5">{/* @ts-ignore */}<T>Self-Registration</T></span>
                   </button>
                 </div>
 
                 {!provisionForm.invite && (
                   <div className="space-y-1.5 pt-2">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-strong)]">Member Login Password (min 8 chars)</label>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-strong)]">{/* @ts-ignore */}<T>Member Login Password (min 8 chars)</T></label>
                     <input
                       type="password"
                       required
@@ -620,23 +608,22 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                       placeholder="Enter password for initial login..."
                     />
                     <p className="text-[11px] text-[var(--text-muted)]">
-                      The employee will use their email and this password to log in right away.
-                    </p>
+                      {/* @ts-ignore */}<T>The employee will use their email and this password to log in right away.</T></p>
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Full Name</T></label>
                   <input required type="text" value={provisionForm.name} onChange={(e) => setProvisionForm({ ...provisionForm, name: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="John Doe" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Email Address</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Email Address</T></label>
                   <input required type="email" value={provisionForm.email} onChange={(e) => setProvisionForm({ ...provisionForm, email: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="john@company.com" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Department</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Department</T></label>
                   <input
                     required
                     list="department-suggestions"
@@ -658,7 +645,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   </datalist>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Designation</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Designation</T></label>
                   <input
                     required
                     list="designation-suggestions"
@@ -684,57 +671,57 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">System Role</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>System Role</T></label>
                   <select value={provisionForm.role} onChange={(e) => setProvisionForm({ ...provisionForm, role: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                    <option value="Employee">Employee</option>
-                    <option value="Manager">Manager</option>
-                    <option value="HR Manager">HR Manager</option>
-                    <option value="Admin">Admin</option>
+                    <option value="Employee">{/* @ts-ignore */}<T>Employee</T></option>
+                    <option value="Manager">{/* @ts-ignore */}<T>Manager</T></option>
+                    <option value="HR Manager">{/* @ts-ignore */}<T>HR Manager</T></option>
+                    <option value="Admin">{/* @ts-ignore */}<T>Admin</T></option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Manager</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Manager</T></label>
                   <select value={provisionForm.managerId} onChange={(e) => setProvisionForm({ ...provisionForm, managerId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                    <option value="">None</option>
+                    <option value="">{/* @ts-ignore */}<T>None</T></option>
                     {managerOptions.map((m) => (
                       <option key={m.id} value={m.id}>{m.name} ({m.role})</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Branch</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Branch</T></label>
                   <select value={provisionForm.branchId} onChange={(e) => setProvisionForm({ ...provisionForm, branchId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                    <option value="">None</option>
+                    <option value="">{/* @ts-ignore */}<T>None</T></option>
                     {branches.map((b) => (
                       <option key={b.id} value={b.id}>{b.name} ({b.city})</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Employment Type</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employment Type</T></label>
                   <select value={provisionForm.employmentType} onChange={(e) => setProvisionForm({ ...provisionForm, employmentType: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                    <option value="Full-Time">Full-Time</option>
-                    <option value="Part-Time">Part-Time</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Intern">Intern</option>
+                    <option value="Full-Time">{/* @ts-ignore */}<T>Full-Time</T></option>
+                    <option value="Part-Time">{/* @ts-ignore */}<T>Part-Time</T></option>
+                    <option value="Contract">{/* @ts-ignore */}<T>Contract</T></option>
+                    <option value="Intern">{/* @ts-ignore */}<T>Intern</T></option>
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Join Date</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Join Date</T></label>
                   <input type="date" value={provisionForm.joinDate} onChange={(e) => setProvisionForm({ ...provisionForm, joinDate: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Base Salary (BDT)</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Base Salary (BDT)</T></label>
                   <input type="number" min="0" value={provisionForm.baseSalary} onChange={(e) => setProvisionForm({ ...provisionForm, baseSalary: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="e.g. 50000" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">National ID (NID)</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>National ID (NID)</T></label>
                   <input type="text" value={provisionForm.nid} onChange={(e) => setProvisionForm({ ...provisionForm, nid: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)] flex items-center gap-1"><Monitor className="h-3 w-3" /> Assign Hardware (Optional)</label>
+                  <label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)] flex items-center gap-1"><Monitor className="h-3 w-3" /> {/* @ts-ignore */}<T>Assign Hardware (Optional)</T></label>
                   <select value={provisionForm.provisionAssetId} onChange={(e) => setProvisionForm({ ...provisionForm, provisionAssetId: e.target.value })} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                    <option value="">None (Unassigned)</option>
+                    <option value="">{/* @ts-ignore */}<T>None (Unassigned)</T></option>
                     {unassignedAssets.map((a: any) => (
                       <option key={a.id} value={a.id}>{a.name} ({a.status})</option>
                     ))}
@@ -742,7 +729,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
               </div>
               <div className="flex gap-4 border-t border-[var(--border-hairline)] pt-4">
-                <Button variant="ghost" size="md" type="button" onClick={() => setIsProvisionModalOpen(false)}>Cancel</Button>
+                <Button variant="ghost" size="md" type="button" onClick={() => setIsProvisionModalOpen(false)}>{/* @ts-ignore */}<T>Cancel</T></Button>
                 <Button variant="primary" size="md" type="submit" disabled={provisionStatus.loading || (provisionStatus.success && !provisionStatus.inviteToken)}>
                   {provisionStatus.loading ? 'Provisioning...' : provisionForm.invite ? 'Send Invite' : 'Provision Identity'}
                 </Button>

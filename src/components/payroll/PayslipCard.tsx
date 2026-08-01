@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/format';
+import { T } from "@/components/Translate";
 
 interface PayslipCardProps {
   pay: any;
@@ -134,13 +135,13 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
                   </Badge>
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">
-                  Employee: <span className="font-semibold text-[var(--text-main)]">{pay.user?.name || currentUser?.name}</span>
+                  {/* @ts-ignore */}<T>Employee:</T><span className="font-semibold text-[var(--text-main)]">{pay.user?.name || currentUser?.name}</span>
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Net Payable</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Net Payable</T></p>
               <p className="text-xl font-extrabold text-[var(--emerald)]">
                 {sym}{netPayable.toLocaleString()}
               </p>
@@ -150,15 +151,15 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           {/* Quick Summary Grid */}
           <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3 text-center text-xs">
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">Gross Earnings</p>
+              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Gross Earnings</T></p>
               <p className="font-bold text-[var(--brand)]">{sym}{totalEarnings.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">Deductions</p>
+              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Deductions</T></p>
               <p className="font-bold text-[var(--rose)]">{sym}{totalDeductions.toLocaleString()}</p>
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">PF Match</p>
+              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>PF Match</T></p>
               <p className="font-bold text-[var(--emerald)]">{sym}{pfDeduction.toLocaleString()}</p>
             </div>
           </div>
@@ -170,16 +171,14 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
               size="sm"
               className="flex-1 rounded-xl text-xs font-semibold"
             >
-              <FileText size={14} className="mr-1.5" /> View Itemized Slip
-            </Button>
+              <FileText size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>View Itemized Slip</T></Button>
             <Button
               onClick={handlePrint}
               variant="primary"
               size="sm"
               className="flex-1 rounded-xl text-xs font-semibold"
             >
-              <Printer size={14} className="mr-1.5" /> Print / Save PDF
-            </Button>
+              <Printer size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>Print / Save PDF</T></Button>
           </div>
         </CardContent>
       </Card>
@@ -190,57 +189,57 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           <table className="header-table">
             <tr>
               <td>
-                <div className="company-title">Enterprise Resource & Relationship Systems</div>
-                <div className="sub-title">HQ Tower, Level 12, Gulshan Avenue, Dhaka-1212, Bangladesh</div>
-                <div className="sub-title">Tax Reg / TIN: 48920194819 | BD Labour Act Compliant</div>
+                <div className="company-title">{/* @ts-ignore */}<T>Enterprise Resource & Relationship Systems</T></div>
+                <div className="sub-title">{/* @ts-ignore */}<T>HQ Tower, Level 12, Gulshan Avenue, Dhaka-1212, Bangladesh</T></div>
+                <div className="sub-title">{/* @ts-ignore */}<T>Tax Reg / TIN: 48920194819 | BD Labour Act Compliant</T></div>
               </td>
               <td style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827' }}>PAYSLIP STATEMENT</div>
-                <div style={{ fontSize: '12px', color: '#4b5563' }}>Period: {pay.month} {pay.year}</div>
-                <div style={{ fontSize: '11px', color: '#6b7280' }}>Ref: PAY-{pay.id.substring(0, 8).toUpperCase()}</div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#111827' }}>{/* @ts-ignore */}<T>PAYSLIP STATEMENT</T></div>
+                <div style={{ fontSize: '12px', color: '#4b5563' }}>{/* @ts-ignore */}<T>Period:</T>{pay.month} {pay.year}</div>
+                <div style={{ fontSize: '11px', color: '#6b7280' }}>{/* @ts-ignore */}<T>Ref: PAY-</T>{pay.id.substring(0, 8).toUpperCase()}</div>
               </td>
             </tr>
           </table>
 
           <table className="meta-grid">
             <tr>
-              <td className="meta-label">Employee Name</td>
+              <td className="meta-label">{/* @ts-ignore */}<T>Employee Name</T></td>
               <td>{pay.user?.name || currentUser?.name}</td>
-              <td className="meta-label">Employee ID</td>
-              <td>EMP-{pay.userId.substring(0, 6).toUpperCase()}</td>
+              <td className="meta-label">{/* @ts-ignore */}<T>Employee ID</T></td>
+              <td>{/* @ts-ignore */}<T>EMP-</T>{pay.userId.substring(0, 6).toUpperCase()}</td>
             </tr>
             <tr>
-              <td className="meta-label">Department</td>
+              <td className="meta-label">{/* @ts-ignore */}<T>Department</T></td>
               <td>{pay.user?.department || 'Operations'}</td>
-              <td className="meta-label">Designation</td>
+              <td className="meta-label">{/* @ts-ignore */}<T>Designation</T></td>
               <td>{pay.user?.designation || 'Staff Member'}</td>
             </tr>
             <tr>
-              <td className="meta-label">Payment Method</td>
-              <td>bKash / Bank ACH Transfer</td>
-              <td className="meta-label">Disbursement Date</td>
+              <td className="meta-label">{/* @ts-ignore */}<T>Payment Method</T></td>
+              <td>{/* @ts-ignore */}<T>bKash / Bank ACH Transfer</T></td>
+              <td className="meta-label">{/* @ts-ignore */}<T>Disbursement Date</T></td>
               <td>{new Date(pay.createdAt).toLocaleDateString()}</td>
             </tr>
           </table>
 
           <div style={{ display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
-              <div className="section-title">Earnings (+)</div>
+              <div className="section-title">{/* @ts-ignore */}<T>Earnings (+)</T></div>
               <table className="items-table">
                 <thead>
                   <tr>
-                    <th>Component</th>
-                    <th className="text-right">Amount ({sym})</th>
+                    <th>{/* @ts-ignore */}<T>Component</T></th>
+                    <th className="text-right">{/* @ts-ignore */}<T>Amount (</T>{sym})</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Basic Salary (50%)</td><td className="text-right">{basicSalary.toLocaleString()}</td></tr>
-                  <tr><td>House Rent Allowance (HRA)</td><td className="text-right">{hra.toLocaleString()}</td></tr>
-                  <tr><td>Medical Allowance</td><td className="text-right">{medical.toLocaleString()}</td></tr>
-                  <tr><td>Conveyance Allowance</td><td className="text-right">{conveyance.toLocaleString()}</td></tr>
-                  {festivalBonus > 0 && <tr><td>Festival Bonus</td><td className="text-right">{festivalBonus.toLocaleString()}</td></tr>}
+                  <tr><td>{/* @ts-ignore */}<T>Basic Salary (50%)</T></td><td className="text-right">{basicSalary.toLocaleString()}</td></tr>
+                  <tr><td>{/* @ts-ignore */}<T>House Rent Allowance (HRA)</T></td><td className="text-right">{hra.toLocaleString()}</td></tr>
+                  <tr><td>{/* @ts-ignore */}<T>Medical Allowance</T></td><td className="text-right">{medical.toLocaleString()}</td></tr>
+                  <tr><td>{/* @ts-ignore */}<T>Conveyance Allowance</T></td><td className="text-right">{conveyance.toLocaleString()}</td></tr>
+                  {festivalBonus > 0 && <tr><td>{/* @ts-ignore */}<T>Festival Bonus</T></td><td className="text-right">{festivalBonus.toLocaleString()}</td></tr>}
                   <tr style={{ fontWeight: 'bold', backgroundColor: '#f9fafb' }}>
-                    <td>Total Gross Earnings</td>
+                    <td>{/* @ts-ignore */}<T>Total Gross Earnings</T></td>
                     <td className="text-right">{totalEarnings.toLocaleString()}</td>
                   </tr>
                 </tbody>
@@ -248,20 +247,20 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             </div>
 
             <div style={{ flex: 1 }}>
-              <div className="section-title">Deductions (-)</div>
+              <div className="section-title">{/* @ts-ignore */}<T>Deductions (-)</T></div>
               <table className="items-table">
                 <thead>
                   <tr>
-                    <th>Component</th>
-                    <th className="text-right">Amount ({sym})</th>
+                    <th>{/* @ts-ignore */}<T>Component</T></th>
+                    <th className="text-right">{/* @ts-ignore */}<T>Amount (</T>{sym})</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Provident Fund (10%)</td><td className="text-right">{pfDeduction.toLocaleString()}</td></tr>
-                  <tr><td>Tax Deducted at Source (TDS)</td><td className="text-right">{taxDeduction.toLocaleString()}</td></tr>
-                  {penaltyDeduction > 0 && <tr><td>Lateness Fine</td><td className="text-right">{penaltyDeduction.toLocaleString()}</td></tr>}
+                  <tr><td>{/* @ts-ignore */}<T>Provident Fund (10%)</T></td><td className="text-right">{pfDeduction.toLocaleString()}</td></tr>
+                  <tr><td>{/* @ts-ignore */}<T>Tax Deducted at Source (TDS)</T></td><td className="text-right">{taxDeduction.toLocaleString()}</td></tr>
+                  {penaltyDeduction > 0 && <tr><td>{/* @ts-ignore */}<T>Lateness Fine</T></td><td className="text-right">{penaltyDeduction.toLocaleString()}</td></tr>}
                   <tr style={{ fontWeight: 'bold', backgroundColor: '#f9fafb' }}>
-                    <td>Total Deductions</td>
+                    <td>{/* @ts-ignore */}<T>Total Deductions</T></td>
                     <td className="text-right">{totalDeductions.toLocaleString()}</td>
                   </tr>
                 </tbody>
@@ -270,17 +269,16 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           </div>
 
           <div className="net-box">
-            <div style={{ fontSize: '12px', color: '#4b5563' }}>Net Salary Transfer</div>
+            <div style={{ fontSize: '12px', color: '#4b5563' }}>{/* @ts-ignore */}<T>Net Salary Transfer</T></div>
             <div className="net-amount">{sym} {netPayable.toLocaleString()}</div>
             <div style={{ fontSize: '11px', color: '#047857', fontStyle: 'italic', marginTop: '4px' }}>
-              Amount in words: <strong>{wordsInTaka}</strong>
+              {/* @ts-ignore */}<T>Amount in words:</T><strong>{wordsInTaka}</strong>
             </div>
           </div>
 
           <div className="footer-note">
-            This is a system-generated official payslip compliant with Bangladesh Labour Act 2006 (and 2013 amendments).<br />
-            Confidential · Enterprise Employee Management System
-          </div>
+            {/* @ts-ignore */}<T>This is a system-generated official payslip compliant with Bangladesh Labour Act 2006 (and 2013 amendments).</T><br />
+            {/* @ts-ignore */}<T>Confidential · Enterprise Employee Management System</T></div>
         </div>
       </div>
 
@@ -291,7 +289,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
               <div className="flex items-center gap-2">
                 <Building2 size={20} className="text-[var(--brand)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">Official Payslip Statement — {pay.month} {pay.year}</h3>
+                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Payslip Statement —</T>{pay.month} {pay.year}</h3>
               </div>
               <button onClick={() => setShowModal(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
                 ✕
@@ -300,38 +298,38 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <p className="text-[10px] uppercase text-[var(--text-muted)]">Employee</p>
+                <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employee</T></p>
                 <p className="font-bold text-[var(--text-main)]">{pay.user?.name || currentUser?.name}</p>
                 <p className="text-[11px] text-[var(--text-muted)]">{pay.user?.designation || 'Staff'}</p>
               </div>
               <div className="space-y-1 text-right">
-                <p className="text-[10px] uppercase text-[var(--text-muted)]">Disbursement Method</p>
-                <p className="font-bold text-[var(--emerald)]">bKash / Bank ACH</p>
-                <p className="text-[11px] text-[var(--text-muted)]">Ref: PAY-{pay.id.substring(0, 8).toUpperCase()}</p>
+                <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Disbursement Method</T></p>
+                <p className="font-bold text-[var(--emerald)]">{/* @ts-ignore */}<T>bKash / Bank ACH</T></p>
+                <p className="text-[11px] text-[var(--text-muted)]">{/* @ts-ignore */}<T>Ref: PAY-</T>{pay.id.substring(0, 8).toUpperCase()}</p>
               </div>
             </div>
 
             {/* Earnings vs Deductions Table */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                <p className="text-xs font-bold uppercase text-[var(--brand)] border-b border-[var(--border-hairline)] pb-2">Gross Earnings (+)</p>
+                <p className="text-xs font-bold uppercase text-[var(--brand)] border-b border-[var(--border-hairline)] pb-2">{/* @ts-ignore */}<T>Gross Earnings (+)</T></p>
                 <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between"><span>Basic Salary (50%)</span><span className="font-semibold">{sym}{basicSalary.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>House Rent (HRA)</span><span className="font-semibold">{sym}{hra.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>Medical Allowance</span><span className="font-semibold">{sym}{medical.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>Conveyance</span><span className="font-semibold">{sym}{conveyance.toLocaleString()}</span></div>
-                  {festivalBonus > 0 && <div className="flex justify-between text-[var(--emerald)]"><span>Festival Bonus</span><span className="font-semibold">{sym}{festivalBonus.toLocaleString()}</span></div>}
-                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-2 font-bold text-[var(--brand)]"><span>Total Earnings</span><span>{sym}{totalEarnings.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Basic Salary (50%)</T></span><span className="font-semibold">{sym}{basicSalary.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>House Rent (HRA)</T></span><span className="font-semibold">{sym}{hra.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Medical Allowance</T></span><span className="font-semibold">{sym}{medical.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Conveyance</T></span><span className="font-semibold">{sym}{conveyance.toLocaleString()}</span></div>
+                  {festivalBonus > 0 && <div className="flex justify-between text-[var(--emerald)]"><span>{/* @ts-ignore */}<T>Festival Bonus</T></span><span className="font-semibold">{sym}{festivalBonus.toLocaleString()}</span></div>}
+                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-2 font-bold text-[var(--brand)]"><span>{/* @ts-ignore */}<T>Total Earnings</T></span><span>{sym}{totalEarnings.toLocaleString()}</span></div>
                 </div>
               </div>
 
               <div className="space-y-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                <p className="text-xs font-bold uppercase text-[var(--rose)] border-b border-[var(--border-hairline)] pb-2">Statutory Deductions (-)</p>
+                <p className="text-xs font-bold uppercase text-[var(--rose)] border-b border-[var(--border-hairline)] pb-2">{/* @ts-ignore */}<T>Statutory Deductions (-)</T></p>
                 <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between"><span>Provident Fund (10%)</span><span className="font-semibold">{sym}{pfDeduction.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>Income Tax (TDS)</span><span className="font-semibold">{sym}{taxDeduction.toLocaleString()}</span></div>
-                  {penaltyDeduction > 0 && <div className="flex justify-between text-[var(--rose)]"><span>Lateness Fine</span><span className="font-semibold">{sym}{penaltyDeduction.toLocaleString()}</span></div>}
-                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-2 font-bold text-[var(--rose)]"><span>Total Deductions</span><span>{sym}{totalDeductions.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Provident Fund (10%)</T></span><span className="font-semibold">{sym}{pfDeduction.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Income Tax (TDS)</T></span><span className="font-semibold">{sym}{taxDeduction.toLocaleString()}</span></div>
+                  {penaltyDeduction > 0 && <div className="flex justify-between text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Lateness Fine</T></span><span className="font-semibold">{sym}{penaltyDeduction.toLocaleString()}</span></div>}
+                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-2 font-bold text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Total Deductions</T></span><span>{sym}{totalDeductions.toLocaleString()}</span></div>
                 </div>
               </div>
             </div>
@@ -339,7 +337,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             {/* Net Amount Box */}
             <div className="rounded-2xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] p-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase font-bold text-[var(--emerald)] tracking-wider">Net Amount Payable</p>
+                <p className="text-[10px] uppercase font-bold text-[var(--emerald)] tracking-wider">{/* @ts-ignore */}<T>Net Amount Payable</T></p>
                 <p className="text-xs italic text-[var(--text-muted)]">{wordsInTaka}</p>
               </div>
               <p className="text-2xl font-extrabold text-[var(--emerald)]">{sym} {netPayable.toLocaleString()}</p>
@@ -347,11 +345,9 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
             <div className="flex justify-end gap-3 pt-2">
               <Button onClick={() => setShowModal(false)} variant="outline" size="sm" className="rounded-xl">
-                Close
-              </Button>
+                {/* @ts-ignore */}<T>Close</T></Button>
               <Button onClick={handlePrint} variant="primary" size="sm" className="rounded-xl">
-                <Printer size={14} className="mr-1.5" /> Print / Export PDF
-              </Button>
+                <Printer size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>Print / Export PDF</T></Button>
             </div>
           </div>
         </div>

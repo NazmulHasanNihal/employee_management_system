@@ -5,6 +5,7 @@ import { Download, Calculator, FileSpreadsheet, PiggyBank } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { RunPayrollForm } from '@/components/payroll/RunPayrollForm';
 import { downloadCSV, toPfCsv, toGratuityCsv, toBeftnCsv } from '@/lib/export';
+import { T } from "@/components/Translate";
 
 interface PayrollActionsProps {
   payrolls: any[];
@@ -41,17 +42,13 @@ export function PayrollActions({ payrolls }: PayrollActionsProps) {
     <>
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="sm" onClick={exportPF} title="Provident Fund statement (CSV)" className="touch-target-sm">
-          <PiggyBank className="h-4 w-4" /> PF
-        </Button>
+          <PiggyBank className="h-4 w-4" /> {/* @ts-ignore */}<T>PF</T></Button>
         <Button variant="outline" size="sm" onClick={exportGratuity} title="Gratuity accrual report (CSV)" className="touch-target-sm">
-          <FileSpreadsheet className="h-4 w-4" /> Gratuity
-        </Button>
+          <FileSpreadsheet className="h-4 w-4" /> {/* @ts-ignore */}<T>Gratuity</T></Button>
         <Button variant="outline" size="sm" onClick={exportBEFTN} title="BEFTN Bank Batch Export" className="touch-target-sm bg-[var(--brand)]/10 text-[var(--brand)] hover:bg-[var(--brand)]/20 border-[var(--brand)]/30">
-          <Download className="h-4 w-4" /> BEFTN
-        </Button>
+          <Download className="h-4 w-4" /> {/* @ts-ignore */}<T>BEFTN</T></Button>
         <Button variant="outline" size="sm" onClick={exportFull} title="Full payroll export (CSV)" className="touch-target-sm">
-          <Download className="h-4 w-4" /> Export CSV
-        </Button>
+          <Download className="h-4 w-4" /> {/* @ts-ignore */}<T>Export CSV</T></Button>
         <Button variant="primary" size="sm" onClick={() => setShowGenerate((s) => !s)} className="touch-target-sm">
           <Calculator className="h-4 w-4" />
           {showGenerate ? 'Cancel Operation' : 'Run Payroll'}

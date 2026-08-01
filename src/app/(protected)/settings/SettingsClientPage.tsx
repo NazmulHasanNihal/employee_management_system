@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast';
+import { T } from "@/components/Translate";
 
 type FlagKey = 'maintenanceMode' | 'debugLogging' | 'strictAuth' | 'autoProvision';
 
@@ -224,19 +225,17 @@ export default function SettingsClientPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-[var(--brand)]" /> Office Geo-Fence & Location Settings
-                </span>
-                <Badge variant="brand">50m Radius Guard</Badge>
+                  <MapPin className="h-5 w-5 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Office Geo-Fence & Location Settings</T></span>
+                <Badge variant="brand">{/* @ts-ignore */}<T>50m Radius Guard</T></Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <p className="text-xs text-[var(--text-muted)]">
-                Set the exact GPS latitude and longitude coordinates for your office location. The attendance system evaluates employee distance against this point within the configured meter radius.
-              </p>
+                {/* @ts-ignore */}<T>Set the exact GPS latitude and longitude coordinates for your office location. The attendance system evaluates employee distance against this point within the configured meter radius.</T></p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Office Latitude (°N/S)</label>
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Office Latitude (°N/S)</T></label>
                   <input
                     type="text"
                     value={officeLat}
@@ -246,7 +245,7 @@ export default function SettingsClientPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Office Longitude (°E/W)</label>
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Office Longitude (°E/W)</T></label>
                   <input
                     type="text"
                     value={officeLng}
@@ -256,7 +255,7 @@ export default function SettingsClientPage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">Radius (Meters)</label>
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Radius (Meters)</T></label>
                   <input
                     type="number"
                     min="5"
@@ -292,8 +291,7 @@ export default function SettingsClientPage() {
                   </Button>
                   {geoSaved && (
                     <span className="flex items-center gap-1 text-xs font-bold text-[var(--emerald)]">
-                      <Check size={14} /> Saved!
-                    </span>
+                      <Check size={14} /> {/* @ts-ignore */}<T>Saved!</T></span>
                   )}
                 </div>
               </div>
@@ -337,19 +335,19 @@ export default function SettingsClientPage() {
               <p className="text-xs text-[var(--text-muted)]">{t('Set the standard working hours shown across OpsHub (dashboard clock, shifts, attendance).')}</p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Start</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Start</T></label>
                   <input type="time" value={officeStart} onChange={(e) => setOfficeStart(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">End</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>End</T></label>
                   <input type="time" value={officeEnd} onChange={(e) => setOfficeEnd(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Grace (min)</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Grace (min)</T></label>
                   <input type="number" min={0} max={60} value={officeGrace} onChange={(e) => setOfficeGrace(Number(e.target.value))} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Timezone</label>
+                  <label className="mb-1 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Timezone</T></label>
                   <input value={officeTimezone} onChange={(e) => setOfficeTimezone(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-lg px-3 py-2 text-sm" />
                 </div>
               </div>

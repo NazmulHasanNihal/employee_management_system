@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check, Sparkles, Zap, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
+import { T } from "@/components/Translate";
 
 export default function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(true);
@@ -76,14 +77,11 @@ export default function PricingSection() {
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--emerald-soft)] border border-[var(--emerald)]/20 text-[var(--emerald)] text-xs font-semibold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            Transparent SaaS Pricing
-          </div>
+            {/* @ts-ignore */}<T>Transparent SaaS Pricing</T></div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[var(--text-main)] tracking-tight">
-            Simple, Predictable Plans for Every Stage
-          </h2>
+            {/* @ts-ignore */}<T>Simple, Predictable Plans for Every Stage</T></h2>
           <p className="mt-4 text-lg text-[var(--text-muted)]">
-            No hidden setup fees. No per-employee surprise gouging. Cancel anytime.
-          </p>
+            {/* @ts-ignore */}<T>No hidden setup fees. No per-employee surprise gouging. Cancel anytime.</T></p>
 
           {/* Billing Frequency Toggle */}
           <div className="mt-8 inline-flex items-center p-1.5 rounded-2xl bg-[var(--bg-panel)] border border-[var(--border-hairline)]">
@@ -95,8 +93,7 @@ export default function PricingSection() {
                   : "text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
               }`}
             >
-              Monthly Billing
-            </button>
+              {/* @ts-ignore */}<T>Monthly Billing</T></button>
             <button
               onClick={() => setIsAnnual(true)}
               className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-semibold transition-all ${
@@ -105,10 +102,8 @@ export default function PricingSection() {
                   : "text-[var(--text-muted)] hover:text-[var(--text-main)] border border-transparent"
               }`}
             >
-              Annual Billing
-              <span className={`text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full ${isAnnual ? "bg-white text-[var(--brand)]" : "bg-[var(--emerald-soft)] text-[var(--emerald)]"}`}>
-                Save 20%
-              </span>
+              {/* @ts-ignore */}<T>Annual Billing</T><span className={`text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full ${isAnnual ? "bg-white text-[var(--brand)]" : "bg-[var(--emerald-soft)] text-[var(--emerald)]"}`}>
+                {/* @ts-ignore */}<T>Save 20%</T></span>
             </button>
           </div>
         </div>
@@ -145,7 +140,7 @@ export default function PricingSection() {
                 <div className="mb-8 p-4 rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-hairline)]">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-extrabold text-[var(--text-main)]">${price}</span>
-                    <span className="text-sm font-medium text-[var(--text-muted)]">/ month</span>
+                    <span className="text-sm font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>/ month</T></span>
                   </div>
                   <p className="text-xs text-[var(--text-muted)] mt-1">
                     {isAnnual ? "Billed annually ($" + price * 12 + "/yr)" : "Billed monthly"}
@@ -192,16 +187,15 @@ export default function PricingSection() {
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[var(--text-main)]">14-Day Risk-Free Trial</h4>
-              <p className="text-xs text-[var(--text-muted)]">Full feature access. No credit card required to start.</p>
+              <h4 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>14-Day Risk-Free Trial</T></h4>
+              <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Full feature access. No credit card required to start.</T></p>
             </div>
           </div>
           <Link
             href="/login?signup=true"
             className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] underline underline-offset-4 shrink-0"
           >
-            Need a custom enterprise demo? Contact Sales &rarr;
-          </Link>
+            {/* @ts-ignore */}<T>Need a custom enterprise demo? Contact Sales &rarr;</T></Link>
         </div>
       </div>
     </section>

@@ -7,6 +7,7 @@ import { useTranslation } from '@/lib/translations';
 import { trpc } from '@/lib/trpc/client';
 import { useAppStore } from '@/lib/store';
 import { validateNid } from '@/lib/nid';
+import { T } from "@/components/Translate";
 
 export default function OnboardingFlow({ user, requiresPassword }: { user: any, requiresPassword?: boolean }) {
   const router = useRouter();
@@ -128,8 +129,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
             {t('Your identity has been authenticated as')} <strong className="text-[var(--brand)]">{user?.name}</strong>.
           </p>
           <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
-            Step {step} of 4 — Complete your profile
-          </p>
+            {/* @ts-ignore */}<T>Step</T>{step} {/* @ts-ignore */}<T>of 4 — Complete your profile</T></p>
         </div>
 
         {error && (
@@ -142,34 +142,34 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
         {step === 1 && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <label htmlFor="onboarding-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Full Name</label>
+              <label htmlFor="onboarding-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Full Name</T></label>
               <input id="onboarding-name" value={form.name} onChange={(e) => update('name', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Your full name" aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'onboarding-name-error' : undefined} />
               {errors.name && <p id="onboarding-name-error" className="text-[10px] text-[var(--rose)]">{errors.name}</p>}
             </div>
             <div className="space-y-1">
-              <label htmlFor="onboarding-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Phone Number</label>
+              <label htmlFor="onboarding-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Phone Number</T></label>
               <input id="onboarding-phone" value={form.phone} onChange={(e) => update('phone', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? 'onboarding-phone-error' : undefined} />
               {errors.phone && <p id="onboarding-phone-error" className="text-[10px] text-[var(--rose)]">{errors.phone}</p>}
             </div>
             <div className="space-y-1">
-              <label htmlFor="onboarding-nid" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">National ID (NID)</label>
+              <label htmlFor="onboarding-nid" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>National ID (NID)</T></label>
               <input id="onboarding-nid" value={form.nid} onChange={(e) => update('nid', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="10 / 13 / 17 digits" aria-invalid={Boolean(errors.nid)} aria-describedby={errors.nid ? 'onboarding-nid-error' : undefined} />
               {errors.nid && <p id="onboarding-nid-error" className="text-[10px] text-[var(--rose)]">{errors.nid}</p>}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label htmlFor="onboarding-blood" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Blood Group</label>
+                <label htmlFor="onboarding-blood" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Blood Group</T></label>
                 <select id="onboarding-blood" value={form.bloodGroup} onChange={(e) => update('bloodGroup', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                  <option value="">Select</option>
+                  <option value="">{/* @ts-ignore */}<T>Select</T></option>
                   {['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'].map((b) => (
                     <option key={b} value={b}>{b}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-1">
-                <label htmlFor="onboarding-gender" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Gender</label>
+                <label htmlFor="onboarding-gender" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Gender</T></label>
                 <select id="onboarding-gender" value={form.gender} onChange={(e) => update('gender', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm">
-                  <option value="">Select</option>
+                  <option value="">{/* @ts-ignore */}<T>Select</T></option>
                   {['Male', 'Female', 'Non-Binary', 'Prefer Not to Say'].map((g) => (
                     <option key={g} value={g}>{g}</option>
                   ))}
@@ -179,12 +179,12 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
             {requiresPassword && (
               <div className="grid grid-cols-2 gap-4 border-t border-[var(--border-hairline)] pt-4 mt-2">
                 <div className="space-y-1">
-                  <label htmlFor="onboarding-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Set Password</label>
+                  <label htmlFor="onboarding-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Set Password</T></label>
                   <input id="onboarding-password" type="password" value={form.password} onChange={(e) => update('password', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'onboarding-password-error' : undefined} />
                   {errors.password && <p id="onboarding-password-error" className="text-[10px] text-[var(--rose)]">{errors.password}</p>}
                 </div>
                 <div className="space-y-1">
-                  <label htmlFor="onboarding-confirm-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Confirm Password</label>
+                  <label htmlFor="onboarding-confirm-password" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Confirm Password</T></label>
                   <input id="onboarding-confirm-password" type="password" value={form.confirmPassword} onChange={(e) => update('confirmPassword', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="••••••••" aria-invalid={Boolean(errors.confirmPassword)} aria-describedby={errors.confirmPassword ? 'onboarding-confirm-password-error' : undefined} />
                   {errors.confirmPassword && <p id="onboarding-confirm-password-error" className="text-[10px] text-[var(--rose)]">{errors.confirmPassword}</p>}
                 </div>
@@ -198,16 +198,16 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
         {step === 2 && (
           <div className="space-y-4">
             <div className="space-y-1">
-              <label htmlFor="onboarding-address" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Address</label>
+              <label htmlFor="onboarding-address" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Address</T></label>
               <input id="onboarding-address" value={form.address} onChange={(e) => update('address', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Street, City" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'onboarding-address-error' : undefined} />
               {errors.address && <p id="onboarding-address-error" className="text-[10px] text-[var(--rose)]">{errors.address}</p>}
             </div>
             <div className="space-y-1">
-              <label htmlFor="onboarding-emergency-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Name</label>
+              <label htmlFor="onboarding-emergency-name" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Emergency Contact Name</T></label>
               <input id="onboarding-emergency-name" value={form.emergencyContactName} onChange={(e) => update('emergencyContactName', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="Next of kin" />
             </div>
             <div className="space-y-1">
-              <label htmlFor="onboarding-emergency-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Emergency Contact Phone</label>
+              <label htmlFor="onboarding-emergency-phone" className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Emergency Contact Phone</T></label>
               <input id="onboarding-emergency-phone" value={form.emergencyContactPhone} onChange={(e) => update('emergencyContactPhone', e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm" placeholder="+880 1XXX-XXXXXX" aria-invalid={Boolean(errors.emergencyContactPhone)} aria-describedby={errors.emergencyContactPhone ? 'onboarding-emergency-phone-error' : undefined} />
               {errors.emergencyContactPhone && <p id="onboarding-emergency-phone-error" className="text-[10px] text-[var(--rose)]">{errors.emergencyContactPhone}</p>}
             </div>
@@ -223,8 +223,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
                 <div className="rounded-xl border border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 space-y-3">
                   <div className="flex items-center gap-2 text-[var(--brand-strong)] font-semibold text-sm">
                     <Monitor size={18} />
-                    Assigned Workstation
-                  </div>
+                    {/* @ts-ignore */}<T>Assigned Workstation</T></div>
                   {myAssets.map((asset: any) => (
                     <div key={asset.id} className="rounded-lg bg-background p-3 shadow-sm text-sm font-medium">
                       {asset.name}
@@ -240,15 +239,13 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
                     onChange={(e) => update('hardwareAcknowledged', e.target.checked ? 'true' : '')}
                   />
                   <label htmlFor="hardware-ack" className="text-xs text-[var(--text-muted)] leading-tight">
-                    I acknowledge that I have received the above IT hardware and agree to the Acceptable Use Policy.
-                  </label>
+                    {/* @ts-ignore */}<T>I acknowledge that I have received the above IT hardware and agree to the Acceptable Use Policy.</T></label>
                 </div>
                 {errors.hardwareAcknowledged && <p className="text-[10px] text-[var(--rose)]">{errors.hardwareAcknowledged}</p>}
               </>
             ) : (
               <div className="rounded-xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-center text-sm text-[var(--text-muted)]">
-                No IT hardware is currently assigned to your profile.
-              </div>
+                {/* @ts-ignore */}<T>No IT hardware is currently assigned to your profile.</T></div>
             )}
             <ButtonRow onBack={back} onNext={next} step={step} loading={loading} />
           </div>
@@ -267,8 +264,7 @@ export default function OnboardingFlow({ user, requiresPassword }: { user: any, 
             </div>
             <div className="flex gap-4">
               <button onClick={back} disabled={loading} className="flex-1 rounded-xl border border-[var(--border-hairline)] py-3 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] disabled:opacity-50">
-                Back
-              </button>
+                {/* @ts-ignore */}<T>Back</T></button>
               <button
                 onClick={completeOnboarding}
                 disabled={loading}
@@ -298,12 +294,10 @@ function ButtonRow({ onBack, onNext, step, loading }: { onBack: () => void; onNe
     <div className="flex gap-4">
       {step > 1 && (
         <button onClick={onBack} disabled={loading} className="flex-1 rounded-xl border border-[var(--border-hairline)] py-3 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] disabled:opacity-50">
-          Back
-        </button>
+          {/* @ts-ignore */}<T>Back</T></button>
       )}
       <button onClick={onNext} disabled={loading} className="btn-primary flex flex-1 items-center justify-center rounded-xl py-3 text-sm disabled:opacity-50">
-        Next
-      </button>
+        {/* @ts-ignore */}<T>Next</T></button>
     </div>
   );
 }

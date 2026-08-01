@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { getOfflineQueueCount, processOfflineQueue } from '@/lib/offline-sync';
+import { T } from "@/components/Translate";
 
 export function OfflineBanner() {
   const [isOffline, setIsOffline] = useState(false);
@@ -62,7 +63,7 @@ export function OfflineBanner() {
     return (
       <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-5 py-2.5 shadow-lg animate-in fade-in slide-in-from-bottom-8">
         <CheckCircle2 size={16} className="text-emerald-500" />
-        <span className="text-sm font-medium text-emerald-500">All offline actions synced</span>
+        <span className="text-sm font-medium text-emerald-500">{/* @ts-ignore */}<T>All offline actions synced</T></span>
       </div>
     );
   }

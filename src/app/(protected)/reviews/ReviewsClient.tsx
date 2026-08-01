@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
+import { T } from "@/components/Translate";
 
 interface Score {
   subject: string;
@@ -91,8 +92,7 @@ export default function ReviewsClient({
           <CardHeader>
             <CardTitle className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2">
-                <Send size={18} className="text-[var(--brand)]" /> Submit a Review
-              </span>
+                <Send size={18} className="text-[var(--brand)]" /> {/* @ts-ignore */}<T>Submit a Review</T></span>
               <Button variant="primary" size="sm" onClick={() => setShowForm((s) => !s)}>
                 {showForm ? 'Cancel' : 'New Review'}
               </Button>
@@ -107,13 +107,13 @@ export default function ReviewsClient({
               )}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Employee</label>
+                  <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employee</T></label>
                   <select
                     value={subjectId}
                     onChange={(e) => setSubjectId(e.target.value)}
                     className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-main)]"
                   >
-                    <option value="">Select employee…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select employee…</T></option>
                     {employees.map((emp) => (
                       <option key={emp.id} value={emp.id}>
                         {emp.name} {emp.designation ? `· ${emp.designation}` : ''}
@@ -122,7 +122,7 @@ export default function ReviewsClient({
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Review Period</label>
+                  <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Review Period</T></label>
                   <input
                     type="text"
                     value={period}
@@ -131,23 +131,22 @@ export default function ReviewsClient({
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Overall Rating</label>
+                  <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Overall Rating</T></label>
                   <select
                     value={rating}
                     onChange={(e) => setRating(e.target.value)}
                     className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-main)]"
                   >
-                    <option>Exceeds Expectations</option>
-                    <option>Meets Expectations</option>
-                    <option>Needs Improvement</option>
+                    <option>{/* @ts-ignore */}<T>Exceeds Expectations</T></option>
+                    <option>{/* @ts-ignore */}<T>Meets Expectations</T></option>
+                    <option>{/* @ts-ignore */}<T>Needs Improvement</T></option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="mb-2 block text-xs font-medium text-[var(--text-muted)]">
-                  Competency Scores (1–5)
-                </label>
+                  {/* @ts-ignore */}<T>Competency Scores (1–5)</T></label>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                   {REVIEW_DIMENSIONS.map((dim) => (
                     <div key={dim} className="flex items-center justify-between gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] px-3 py-2">
@@ -168,7 +167,7 @@ export default function ReviewsClient({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">Comments</label>
+                <label className="mb-1 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Comments</T></label>
                 <textarea
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
@@ -209,8 +208,7 @@ export default function ReviewsClient({
           <Card className="flex min-h-[30rem] flex-col">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity size={18} className="text-[var(--brand)]" /> Competency Radar
-              </CardTitle>
+                <Activity size={18} className="text-[var(--brand)]" /> {/* @ts-ignore */}<T>Competency Radar</T></CardTitle>
             </CardHeader>
             <CardContent className="flex-1">
               <ResponsiveContainer width="100%" height="100%">
@@ -238,31 +236,27 @@ export default function ReviewsClient({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle size={18} className="text-[var(--amber)]" /> Key Blind Spot
-                </CardTitle>
+                  <AlertTriangle size={18} className="text-[var(--amber)]" /> {/* @ts-ignore */}<T>Key Blind Spot</T></CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-                  You rated your <span className="font-semibold text-[var(--brand-strong)]">{blindSpot?.subject}</span> at {blindSpot?.A}, but peers rated you at {blindSpot?.B}.
-                  This is the largest gap ({Math.abs((blindSpot?.A ?? 0) - (blindSpot?.B ?? 0)).toFixed(1)} points). Consider asking your team for direct feedback.
-                </p>
+                  {/* @ts-ignore */}<T>You rated your</T><span className="font-semibold text-[var(--brand-strong)]">{blindSpot?.subject}</span> {/* @ts-ignore */}<T>at</T>{blindSpot?.A}{/* @ts-ignore */}<T>, but peers rated you at</T>{blindSpot?.B}{/* @ts-ignore */}<T>.
+                                                        This is the largest gap (</T>{Math.abs((blindSpot?.A ?? 0) - (blindSpot?.B ?? 0)).toFixed(1)} {/* @ts-ignore */}<T>points). Consider asking your team for direct feedback.</T></p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles size={18} className="text-[var(--brand)]" /> Hidden Strength
-                </CardTitle>
+                  <Sparkles size={18} className="text-[var(--brand)]" /> {/* @ts-ignore */}<T>Hidden Strength</T></CardTitle>
               </CardHeader>
               <CardContent>
                 {hiddenStrength ? (
                   <p className="text-sm leading-relaxed text-[var(--text-muted)]">
-                    You rated your <span className="font-semibold text-[var(--brand-strong)]">{hiddenStrength.subject}</span> at {hiddenStrength.A}, but peers rated you higher at {hiddenStrength.B}.
-                    Your team values this more than you realize (+{(hiddenStrength.B - hiddenStrength.A).toFixed(1)} points).
-                  </p>
+                    {/* @ts-ignore */}<T>You rated your</T><span className="font-semibold text-[var(--brand-strong)]">{hiddenStrength.subject}</span> {/* @ts-ignore */}<T>at</T>{hiddenStrength.A}{/* @ts-ignore */}<T>, but peers rated you higher at</T>{hiddenStrength.B}{/* @ts-ignore */}<T>.
+                                                              Your team values this more than you realize (+</T>{(hiddenStrength.B - hiddenStrength.A).toFixed(1)} {/* @ts-ignore */}<T>points).</T></p>
                 ) : (
-                  <p className="text-sm leading-relaxed text-[var(--text-muted)]">No dimension where peers rated you above your self-score yet.</p>
+                  <p className="text-sm leading-relaxed text-[var(--text-muted)]">{/* @ts-ignore */}<T>No dimension where peers rated you above your self-score yet.</T></p>
                 )}
               </CardContent>
             </Card>
@@ -273,12 +267,11 @@ export default function ReviewsClient({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <MessageSquare size={18} className="text-[var(--brand)]" /> Review History
-          </CardTitle>
+            <MessageSquare size={18} className="text-[var(--brand)]" /> {/* @ts-ignore */}<T>Review History</T></CardTitle>
         </CardHeader>
         <CardContent>
           {reviews.length === 0 ? (
-            <p className="text-sm text-[var(--text-muted)]">No individual reviews recorded yet.</p>
+            <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No individual reviews recorded yet.</T></p>
           ) : (
             <div className="space-y-4">
               {reviews.map((r) => (

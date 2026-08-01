@@ -9,6 +9,7 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from 'recharts';
+import { T } from "@/components/Translate";
 
 export interface RadarScore {
   subject: string;
@@ -21,8 +22,7 @@ export function ReviewsRadar({ scores }: { scores: RadarScore[] }) {
   if (!scores || scores.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-[var(--text-muted)]">
-        No review scores yet.
-      </div>
+        {/* @ts-ignore */}<T>No review scores yet.</T></div>
     );
   }
   return (

@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 interface Upcoming {
   id: string;
@@ -65,20 +66,18 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Sparkles size={16} className="text-[var(--brand-strong)]" /> Greeting Automation
-            </CardTitle>
+              <Sparkles size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Greeting Automation</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {rules.length === 0 ? (
-              <p className="text-sm text-[var(--text-muted)]">No greeting rules configured.</p>
+              <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No greeting rules configured.</T></p>
             ) : (
               rules.map((r) => (
                 <div key={r.id} className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-semibold capitalize text-[var(--text-main)]">
-                      {React.createElement(KIND_ICON[r.kind as keyof typeof KIND_ICON] || Sparkles, { size: 14 })} {r.kind} greetings
-                    </p>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">channel: {r.channel}</p>
+                      {React.createElement(KIND_ICON[r.kind as keyof typeof KIND_ICON] || Sparkles, { size: 14 })} {r.kind} {/* @ts-ignore */}<T>greetings</T></p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>channel:</T>{r.channel}</p>
                   </div>
                   <button
                     aria-label={`Toggle ${r.kind} greetings`}
@@ -92,8 +91,7 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
               ))
             )}
             <p className="text-xs text-[var(--text-muted)]">
-              Greetings are delivered daily by the <code className="rounded bg-[var(--bg-hover)] px-1">/api/cron/greetings</code> job. Contact an admin to wire an external cron.
-            </p>
+              {/* @ts-ignore */}<T>Greetings are delivered daily by the</T><code className="rounded bg-[var(--bg-hover)] px-1">{/* @ts-ignore */}<T>/api/cron/greetings</T></code> {/* @ts-ignore */}<T>job. Contact an admin to wire an external cron.</T></p>
           </CardContent>
         </Card>
       ) : (
@@ -101,8 +99,7 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
           <CardContent className="flex items-center gap-3 rounded-2xl bg-[var(--bg-hover)] p-4">
             <Sparkles size={18} className="text-[var(--brand-strong)]" />
             <p className="text-sm text-[var(--text-muted)]">
-              Greeting automation is configured by your HR/Admin team. Birthdays &amp; work anniversaries are celebrated automatically.
-            </p>
+              {/* @ts-ignore */}<T>Greeting automation is configured by your HR/Admin team. Birthdays &amp; work anniversaries are celebrated automatically.</T></p>
           </CardContent>
         </Card>
       )}
@@ -110,8 +107,7 @@ export default function EngagementIsland({ initialRules, initialHistory, initial
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
-            <PartyPopper size={16} className="text-[var(--amber)]" /> Recent Greetings
-          </CardTitle>
+            <PartyPopper size={16} className="text-[var(--amber)]" /> {/* @ts-ignore */}<T>Recent Greetings</T></CardTitle>
         </CardHeader>
         <CardContent>
           {history.length === 0 ? (
@@ -147,7 +143,7 @@ function UpcomingCard({ title, icon: Icon, color, items }: { title: string; icon
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">Nothing scheduled in the next 30 days.</p>
+          <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Nothing scheduled in the next 30 days.</T></p>
         ) : (
           <div className="space-y-3">
             {items.map((u) => (
@@ -159,7 +155,7 @@ function UpcomingCard({ title, icon: Icon, color, items }: { title: string; icon
                     {new Date(u.date).toLocaleDateString()} {u.tenureYears ? `· ${u.tenureYears} yrs` : ''}
                   </p>
                 </div>
-                {u.kind === 'birthday' ? <Badge variant="rose">Birthday</Badge> : <Badge variant="brand">Anniversary</Badge>}
+                {u.kind === 'birthday' ? <Badge variant="rose">{/* @ts-ignore */}<T>Birthday</T></Badge> : <Badge variant="brand">{/* @ts-ignore */}<T>Anniversary</T></Badge>}
               </div>
             ))}
           </div>

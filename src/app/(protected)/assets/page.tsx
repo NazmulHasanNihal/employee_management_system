@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getAssets } from '@/server/queries';
 import { getCaller } from '@/lib/auth';
 import { AssetsClient } from '@/components/assets/AssetsClient';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -41,14 +42,14 @@ export default async function AssetsPage() {
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <Card>
             <CardContent>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Fleet Size</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Fleet Size</T></p>
                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{totalAssets}</p>
-              <p className="text-sm text-[var(--text-muted)]">Units</p>
+              <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Units</T></p>
             </CardContent>
           </Card>
           <Card>
             <CardContent>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Original Value</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Original Value</T></p>
                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>
@@ -56,7 +57,7 @@ export default async function AssetsPage() {
           </Card>
           <Card>
             <CardContent>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Current Book Value</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Current Book Value</T></p>
                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--rose)]">
                 ${currentFleetValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </p>

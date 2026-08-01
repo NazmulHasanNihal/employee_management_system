@@ -1,5 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { T } from "@/components/Translate";
 
 export default function SetupPage() {
   return (
@@ -12,40 +13,34 @@ export default function SetupPage() {
               <AlertCircle size={22} />
             </div>
              <h1 className="text-fluid-2xl font-extrabold tracking-tight text-[var(--text-main)]">
-              Setup incomplete
-            </h1>
+              {/* @ts-ignore */}<T>Setup incomplete</T></h1>
             <p className="mt-1 text-sm text-[var(--text-muted)]">
-              Critical environment variables are missing
-            </p>
+              {/* @ts-ignore */}<T>Critical environment variables are missing</T></p>
           </div>
 
           <div className="space-y-4 text-sm text-[var(--text-main)]">
             <p>
-              The edge middleware intercepted this request because the server is missing your Supabase credentials.
-            </p>
+              {/* @ts-ignore */}<T>The edge middleware intercepted this request because the server is missing your Supabase credentials.</T></p>
             <p className="text-[var(--text-main)] font-medium">
-              Even if you added them to your hosting dashboard, you must{' '}
-              <strong>redeploy</strong> your application for them to take effect.
-            </p>
+              {/* @ts-ignore */}<T>Even if you added them to your hosting dashboard, you must</T>{' '}
+              <strong>{/* @ts-ignore */}<T>redeploy</T></strong> {/* @ts-ignore */}<T>your application for them to take effect.</T></p>
 
             <div className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
-                How to fix this
-              </h2>
+                {/* @ts-ignore */}<T>How to fix this</T></h2>
               <ol className="list-decimal space-y-2 pl-4">
-                <li>Open your hosting dashboard and go to your project.</li>
-                <li>Navigate to <strong>Settings &gt; Environment Variables</strong>.</li>
-                <li>Ensure both <code>NEXT_PUBLIC_SUPABASE_URL</code> and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> are saved and enabled for the <strong>Production</strong> environment.</li>
-                <li>Go to the <strong>Deployments</strong> tab.</li>
-                <li>Click the <code>...</code> on your latest deployment and select <strong>Redeploy</strong> (do not use &ldquo;Use existing Build Cache&rdquo;).</li>
+                <li>{/* @ts-ignore */}<T>Open your hosting dashboard and go to your project.</T></li>
+                <li>{/* @ts-ignore */}<T>Navigate to</T><strong>{/* @ts-ignore */}<T>Settings &gt; Environment Variables</T></strong>.</li>
+                <li>{/* @ts-ignore */}<T>Ensure both</T><code>{/* @ts-ignore */}<T>NEXT_PUBLIC_SUPABASE_URL</T></code> {/* @ts-ignore */}<T>and</T><code>{/* @ts-ignore */}<T>NEXT_PUBLIC_SUPABASE_ANON_KEY</T></code> {/* @ts-ignore */}<T>are saved and enabled for the</T><strong>{/* @ts-ignore */}<T>Production</T></strong> {/* @ts-ignore */}<T>environment.</T></li>
+                <li>{/* @ts-ignore */}<T>Go to the</T><strong>{/* @ts-ignore */}<T>Deployments</T></strong> {/* @ts-ignore */}<T>tab.</T></li>
+                <li>{/* @ts-ignore */}<T>Click the</T><code>...</code> {/* @ts-ignore */}<T>on your latest deployment and select</T><strong>{/* @ts-ignore */}<T>Redeploy</T></strong> {/* @ts-ignore */}<T>(do not use &ldquo;Use existing Build Cache&rdquo;).</T></li>
               </ol>
             </div>
           </div>
 
           <div className="mt-8 text-center">
             <Link href="/" className="btn-primary inline-block rounded-xl px-8 py-2.5 text-sm">
-              Retry connection
-            </Link>
+              {/* @ts-ignore */}<T>Retry connection</T></Link>
           </div>
         </div>
       </div>

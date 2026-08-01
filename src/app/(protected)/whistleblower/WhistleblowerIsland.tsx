@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StatusPill } from '@/components/ui/status-pill';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 interface Report {
   id: string;
@@ -102,27 +103,27 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
                   <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--text-muted)]">
                     <span>{new Date(r.createdAt).toLocaleDateString()}</span>
                     <span className="flex items-center gap-1">
-                      Assigned: <Badge variant={r.assignedTo ? 'sky' : 'rose'}>{r.assignedTo || 'Unassigned'}</Badge>
+                      {/* @ts-ignore */}<T>Assigned:</T><Badge variant={r.assignedTo ? 'sky' : 'rose'}>{r.assignedTo || 'Unassigned'}</Badge>
                     </span>
                   </div>
 
                   <div className="flex flex-col gap-3 border-t border-[var(--border-hairline)] pt-3 sm:flex-row sm:items-end">
                     <div className="flex-1 space-y-1">
-                      <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Assign to</Label>
+                      <Label className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign to</T></Label>
                       <select
                         aria-label="Assign report to committee member"
                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                         value={r.assignedTo || ''}
                         onChange={(e) => assign.mutate({ id: r.id, assignedTo: e.target.value || null })}
                       >
-                        <option value="">Unassigned</option>
+                        <option value="">{/* @ts-ignore */}<T>Unassigned</T></option>
                         {members.map((m) => (
                           <option key={m.id} value={m.name}>{m.name}</option>
                         ))}
                       </select>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => advanceStatus(r)} disabled={r.status === 'Resolved'}>
-                      Advance <ChevronRight size={14} />
+                      {/* @ts-ignore */}<T>Advance</T><ChevronRight size={14} />
                     </Button>
                   </div>
 
@@ -148,8 +149,7 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Users size={16} className="text-[var(--brand-strong)]" /> Ethics Committee
-            </CardTitle>
+              <Users size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Ethics Committee</T></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form
@@ -161,16 +161,15 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
               }}
             >
               <div className="space-y-1">
-                <Label className="text-[var(--text-muted)]">Member Name</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Member Name</T></Label>
                 <Input required placeholder="e.g. Jane Doe" value={newMember.name} onChange={(e) => setNewMember({ ...newMember, name: e.target.value })} />
               </div>
               <div className="space-y-1">
-                <Label className="text-[var(--text-muted)]">Role</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Role</T></Label>
                 <Input required placeholder="e.g. External Auditor" value={newMember.role} onChange={(e) => setNewMember({ ...newMember, role: e.target.value })} />
               </div>
               <Button type="submit" variant="primary" className="w-full" disabled={addMember.isPending}>
-                <UserPlus size={16} /> Add Member
-              </Button>
+                <UserPlus size={16} /> {/* @ts-ignore */}<T>Add Member</T></Button>
             </form>
 
             <div className="space-y-2 border-t border-[var(--border-hairline)] pt-3">

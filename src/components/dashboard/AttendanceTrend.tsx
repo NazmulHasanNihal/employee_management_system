@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { T } from "@/components/Translate";
 
 interface TrendPoint {
   day: string;
@@ -35,7 +36,7 @@ export default function AttendanceTrend({ data }: { data: TrendPoint[] }) {
   return (
     <Card className="animate-fade-up">
       <CardHeader>
-        <CardTitle>Attendance Trend (7 days)</CardTitle>
+        <CardTitle>{/* @ts-ignore */}<T>Attendance Trend (7 days)</T></CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-56 sm:h-64 w-full">

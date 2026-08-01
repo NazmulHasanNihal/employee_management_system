@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MailCheck, RefreshCw, LogOut, ShieldAlert } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { T } from "@/components/Translate";
 
 /**
  * Verify-email gate (P0). Reached when an authenticated user's auth email is
@@ -66,22 +67,18 @@ export default function VerifyEmailPage() {
             <MailCheck size={26} />
           </div>
           <h1 className="text-xl font-extrabold tracking-tight text-[var(--text-main)]">
-            Verify your email
-          </h1>
+            {/* @ts-ignore */}<T>Verify your email</T></h1>
           <p className="mt-1 text-sm text-[var(--text-muted)]">
-            Confirmation required to continue
-          </p>
+            {/* @ts-ignore */}<T>Confirmation required to continue</T></p>
 
           <p className="mt-5 text-sm text-[var(--text-muted)]">
-            We sent a verification link to{' '}
-            <span className="font-semibold text-[var(--text-main)]">{email || 'your email'}</span>.
-            Click the link in that email, then refresh below.
-          </p>
+            {/* @ts-ignore */}<T>We sent a verification link to</T>{' '}
+            <span className="font-semibold text-[var(--text-main)]">{email || 'your email'}</span>{/* @ts-ignore */}<T>.
+                                  Click the link in that email, then refresh below.</T></p>
 
           {sent && (
             <p className="mt-4 rounded-xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] px-3 py-2 text-sm font-medium text-[var(--emerald)]">
-              ✔ Confirmation email resent
-            </p>
+              {/* @ts-ignore */}<T>✔ Confirmation email resent</T></p>
           )}
           {error && (
             <p className="mt-4 flex items-center justify-center gap-1.5 rounded-xl border border-[var(--rose)]/40 bg-[var(--rose-soft)] px-3 py-2 text-sm font-medium text-[var(--rose)]">
@@ -94,8 +91,7 @@ export default function VerifyEmailPage() {
               onClick={refresh}
               className="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm"
             >
-              <RefreshCw size={15} /> I&apos;ve verified — refresh
-            </button>
+              <RefreshCw size={15} /> {/* @ts-ignore */}<T>I&apos;ve verified — refresh</T></button>
             <button
               onClick={resend}
               disabled={loading}
@@ -107,8 +103,7 @@ export default function VerifyEmailPage() {
               onClick={logout}
               className="inline-flex items-center justify-center gap-2 text-sm font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--rose)]"
             >
-              <LogOut size={14} /> Sign out
-            </button>
+              <LogOut size={14} /> {/* @ts-ignore */}<T>Sign out</T></button>
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/format';
+import { T } from "@/components/Translate";
 
 interface PaymentHubProps {
   isAdmin: boolean;
@@ -68,16 +69,15 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
       <Card className="lg:col-span-1">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
-            <TrendingUp size={16} className="text-[var(--brand-strong)]" /> My Sales
-          </CardTitle>
+            <TrendingUp size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>My Sales</T></CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-2xl bg-[var(--brand-soft)] p-4">
-            <p className="text-[10px] uppercase tracking-wide text-[var(--brand-strong)]">This Month</p>
+            <p className="text-[10px] uppercase tracking-wide text-[var(--brand-strong)]">{/* @ts-ignore */}<T>This Month</T></p>
             <p className="text-fluid-2xl font-bold text-[var(--text-main)]">{formatCurrency(salesThisMonth, 'BDT', 'en')}</p>
           </div>
           <div className="rounded-2xl bg-[var(--bg-hover)] p-4">
-            <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Last Month</p>
+            <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Last Month</T></p>
             <p className="text-fluid-2xl font-bold text-[var(--text-main)]">{formatCurrency(salesLastMonth, 'BDT', 'en')}</p>
           </div>
         </CardContent>
@@ -87,26 +87,25 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
-            <Wallet size={16} className="text-[var(--brand-strong)]" /> Payment Hub
-          </CardTitle>
+            <Wallet size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Payment Hub</T></CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
             <div>
-              <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Latest Payslip ({month}/{year})</p>
+              <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Latest Payslip (</T>{month}/{year})</p>
               <p className="text-xl font-bold text-[var(--text-main)]">{formatCurrency(amountDue, 'BDT', 'en')}</p>
             </div>
             {isPaid ? (
-              <Badge variant="emerald" className="gap-1"><CheckCircle2 size={12} /> Paid {relatedPayment ? `via ${METHOD_META[relatedPayment.method]?.label || relatedPayment.method}` : ''}</Badge>
+              <Badge variant="emerald" className="gap-1"><CheckCircle2 size={12} /> {/* @ts-ignore */}<T>Paid</T>{relatedPayment ? `via ${METHOD_META[relatedPayment.method]?.label || relatedPayment.method}` : ''}</Badge>
             ) : (
-              <Badge variant="amber" className="gap-1"><AlertCircle size={12} /> Balance Due</Badge>
+              <Badge variant="amber" className="gap-1"><AlertCircle size={12} /> {/* @ts-ignore */}<T>Balance Due</T></Badge>
             )}
           </div>
 
           {!isPaid && (
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Pay Using</label>
+                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Pay Using</T></label>
                 <div className="grid grid-cols-3 gap-2">
                   {(['BKASH', 'ROCKET', 'BANK'] as const).map((m) => (
                     <button
@@ -121,11 +120,11 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Amount (auto = due)</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Amount (auto = due)</T></label>
                   <Input value={amount} placeholder={String(amountDue)} onChange={(e) => setAmount(e.target.value)} />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">Reference / Account No.</label>
+                  <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Reference / Account No.</T></label>
                   <Input value={reference} placeholder="e.g. 01XXXXXXXXX" onChange={(e) => setReference(e.target.value)} />
                 </div>
               </div>
@@ -133,14 +132,13 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
                 <CreditCard size={16} className="mr-2" /> {recordPayment.isPending ? 'Processing…' : 'Pay Now'}
               </Button>
               <p className="text-[10px] text-[var(--text-muted)]">
-                Payments are recorded for reconciliation. Live gateway integration (bKash/Rocket API) can be enabled via admin settings.
-              </p>
+                {/* @ts-ignore */}<T>Payments are recorded for reconciliation. Live gateway integration (bKash/Rocket API) can be enabled via admin settings.</T></p>
             </div>
           )}
 
           {payments.length > 0 && (
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Payment History</p>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Payment History</T></p>
               <div className="space-y-2">
                 {payments.slice(0, 5).map((p: any) => (
                   <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 py-2.5">

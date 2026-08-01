@@ -2,6 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { T } from "@/components/Translate";
 
 const PALETTE = [
   "var(--emerald)",
@@ -30,7 +31,7 @@ export default function AttendanceMixDonut({ data }: { data: { status: string; c
   return (
     <Card className="animate-fade-up">
       <CardHeader>
-        <CardTitle>Attendance Mix (7d)</CardTitle>
+        <CardTitle>{/* @ts-ignore */}<T>Attendance Mix (7d)</T></CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-64 w-full">

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { LayoutDashboard, LogIn, ArrowRight, Menu, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { T } from "@/components/Translate";
 
 export default function LandingHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -51,34 +52,27 @@ export default function LandingHeader() {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-xl tracking-tight text-[var(--text-main)] flex items-center gap-1">
-                OpsHub<span className="text-[var(--brand)]">.</span>
+                {/* @ts-ignore */}<T>OpsHub</T><span className="text-[var(--brand)]">.</span>
               </span>
               <span className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-widest -mt-1">
-                Workforce SaaS
-              </span>
+                {/* @ts-ignore */}<T>Workforce SaaS</T></span>
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">
-              Features
-            </Link>
+              {/* @ts-ignore */}<T>Features</T></Link>
             <Link href="#why-opshub" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">
-              Why OpsHub
-            </Link>
+              {/* @ts-ignore */}<T>Why OpsHub</T></Link>
             <Link href="#about" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">
-              About Us
-            </Link>
+              {/* @ts-ignore */}<T>About Us</T></Link>
             <Link href="#pricing" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">
-              Pricing
-            </Link>
+              {/* @ts-ignore */}<T>Pricing</T></Link>
             <Link href="#faq" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">
-              FAQ
-            </Link>
+              {/* @ts-ignore */}<T>FAQ</T></Link>
             <Link href="#contact" className="text-sm font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors">
-              Contact
-            </Link>
+              {/* @ts-ignore */}<T>Contact</T></Link>
           </nav>
 
           {/* Auth Action Buttons */}
@@ -89,8 +83,7 @@ export default function LandingHeader() {
                 className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200"
               >
                 <LayoutDashboard className="w-4 h-4" />
-                Go to Dashboard
-              </Link>
+                {/* @ts-ignore */}<T>Go to Dashboard</T></Link>
             ) : (
               <>
                 <Link
@@ -98,14 +91,12 @@ export default function LandingHeader() {
                   className="btn-secondary inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all"
                 >
                   <LogIn className="w-4 h-4" />
-                  Log In
-                </Link>
+                  {/* @ts-ignore */}<T>Log In</T></Link>
                 <Link
                   href="/login?signup=true"
                   className="btn-primary inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 transform hover:-translate-y-0.5"
                 >
-                  Start Free Trial
-                  <ArrowRight className="w-4 h-4" />
+                  {/* @ts-ignore */}<T>Start Free Trial</T><ArrowRight className="w-4 h-4" />
                 </Link>
               </>
             )}
@@ -129,43 +120,37 @@ export default function LandingHeader() {
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] px-2 py-1"
             >
-              Features
-            </Link>
+              {/* @ts-ignore */}<T>Features</T></Link>
             <Link
               href="#why-opshub"
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] px-2 py-1"
             >
-              Why OpsHub
-            </Link>
+              {/* @ts-ignore */}<T>Why OpsHub</T></Link>
             <Link
               href="#about"
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] px-2 py-1"
             >
-              About Us
-            </Link>
+              {/* @ts-ignore */}<T>About Us</T></Link>
             <Link
               href="#pricing"
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] px-2 py-1"
             >
-              Pricing
-            </Link>
+              {/* @ts-ignore */}<T>Pricing</T></Link>
             <Link
               href="#faq"
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] px-2 py-1"
             >
-              FAQ
-            </Link>
+              {/* @ts-ignore */}<T>FAQ</T></Link>
             <Link
               href="#contact"
               onClick={() => setMobileMenuOpen(false)}
               className="text-base font-medium text-[var(--text-muted)] hover:text-[var(--text-main)] px-2 py-1"
             >
-              Contact
-            </Link>
+              {/* @ts-ignore */}<T>Contact</T></Link>
 
             <div className="pt-4 border-t border-[var(--border-hairline)] flex flex-col gap-3">
               {isLoggedIn ? (
@@ -174,8 +159,7 @@ export default function LandingHeader() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-3 rounded-xl font-semibold btn-primary"
                 >
-                  Go to Dashboard
-                </Link>
+                  {/* @ts-ignore */}<T>Go to Dashboard</T></Link>
               ) : (
                 <>
                   <Link
@@ -183,15 +167,13 @@ export default function LandingHeader() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center py-2.5 rounded-xl font-medium btn-secondary"
                   >
-                    Log In
-                  </Link>
+                    {/* @ts-ignore */}<T>Log In</T></Link>
                   <Link
                     href="/login?signup=true"
                     onClick={() => setMobileMenuOpen(false)}
                     className="w-full text-center py-3 rounded-xl font-semibold btn-primary"
                   >
-                    Start 14-Day Free Trial
-                  </Link>
+                    {/* @ts-ignore */}<T>Start 14-Day Free Trial</T></Link>
                 </>
               )}
             </div>

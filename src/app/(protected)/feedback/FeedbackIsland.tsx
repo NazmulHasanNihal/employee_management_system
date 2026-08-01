@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Send, CheckCircle, EyeOff } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
+import { T } from "@/components/Translate";
 
 interface FeedbackIslandProps {
   isAdmin: boolean;
@@ -37,8 +38,8 @@ export default function FeedbackIsland({ isAdmin }: FeedbackIslandProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <CheckCircle className="mb-4 text-[var(--emerald)]" size={48} />
-        <h4 className="text-lg font-bold text-[var(--text-main)]">Securely Transmitted</h4>
-        <p className="mt-2 text-center text-sm text-[var(--text-muted)]">Your feedback has been encrypted and delivered.</p>
+        <h4 className="text-lg font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Securely Transmitted</T></h4>
+        <p className="mt-2 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Your feedback has been encrypted and delivered.</T></p>
       </div>
     );
   }
@@ -46,7 +47,7 @@ export default function FeedbackIsland({ isAdmin }: FeedbackIslandProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Classification</label>
+        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Classification</T></label>
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
@@ -59,7 +60,7 @@ export default function FeedbackIsland({ isAdmin }: FeedbackIslandProps) {
       </div>
 
       <div>
-        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Message Payload</label>
+        <label className="mb-2 block text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Message Payload</T></label>
         <textarea
           required
           rows={5}
@@ -80,15 +81,13 @@ export default function FeedbackIsland({ isAdmin }: FeedbackIslandProps) {
             className="h-5 w-5 rounded border-[var(--border-hairline)] accent-[var(--rose)]"
           />
           <label htmlFor="anon" className="cursor-pointer select-none text-xs font-bold uppercase tracking-wide text-[var(--text-main)]">
-            Ghost Mode (Anonymous)
-          </label>
+            {/* @ts-ignore */}<T>Ghost Mode (Anonymous)</T></label>
         </div>
         <EyeOff size={16} className={isAnonymous ? 'text-[var(--rose)]' : 'text-[var(--text-muted)]'} />
       </div>
 
       <Button type="submit" disabled={submitFeedback.isPending || !message.trim()} variant="primary" className="w-full">
-        <Send size={18} /> Transmit Payload
-      </Button>
+        <Send size={18} /> {/* @ts-ignore */}<T>Transmit Payload</T></Button>
     </form>
   );
 }
@@ -106,7 +105,6 @@ export function FeedbackMarkReviewedButton({ id }: { id: string }) {
       onClick={() => updateStatus.mutate({ id, status: 'REVIEWED' })}
       disabled={updateStatus.isPending}
     >
-      Mark Reviewed
-    </Button>
+      {/* @ts-ignore */}<T>Mark Reviewed</T></Button>
   );
 }

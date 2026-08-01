@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUser } from '@/components/UserProvider';
 import { updateProfileField, updateProfileBatch } from '@/app/actions/profile';
+import { T } from "@/components/Translate";
 
 export type ProfileUser = {
   id: string;
@@ -252,11 +253,9 @@ function TextAreaRow({
           />
           <div className="flex justify-end gap-2">
             <Button size="sm" variant="ghost" onClick={() => { setDraft(value ?? ''); setEditing(false); }} disabled={saving}>
-              <X size={14} /> Cancel
-            </Button>
+              <X size={14} /> {/* @ts-ignore */}<T>Cancel</T></Button>
             <Button size="sm" onClick={save} disabled={saving}>
-              <Check size={14} /> Save
-            </Button>
+              <Check size={14} /> {/* @ts-ignore */}<T>Save</T></Button>
           </div>
         </div>
       ) : (
@@ -282,7 +281,7 @@ export function ContactSection({
       <FieldRow label="Full Name" field="name" value={user.name} placeholder="Your full name" />
       <FieldRow label="Phone" field="phone" value={user.phone} placeholder="+1…" />
       <div className="flex items-center justify-between gap-3 py-2">
-        <Label className="text-[var(--text-muted)]">Email</Label>
+        <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Email</T></Label>
         <span className="truncate text-sm font-medium text-[var(--text-main)] opacity-70" title="Email is managed by your account">
           {user.email}
         </span>
@@ -363,15 +362,15 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-[var(--text-muted)]">Bangladesh Identity</Label>
+        <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Bangladesh Identity</T></Label>
         {!editing ? (
           <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label="Edit identity">
             <Pencil size={13} />
           </button>
         ) : (
           <div className="flex gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}><X size={14} /> Cancel</Button>
-            <Button size="sm" onClick={save} disabled={saving}><Check size={14} /> Save</Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}><X size={14} /> {/* @ts-ignore */}<T>Cancel</T></Button>
+            <Button size="sm" onClick={save} disabled={saving}><Check size={14} /> {/* @ts-ignore */}<T>Save</T></Button>
           </div>
         )}
       </div>
@@ -379,27 +378,27 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
       {editing ? (
         <div className="space-y-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
           <div>
-            <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">National ID (NID)</Label>
+            <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>National ID (NID)</T></Label>
             <Input value={nid} onChange={(e) => setNid(e.target.value)} placeholder={user.nidMasked ? `Current: ${user.nidMasked} (re-enter to change)` : 'e.g. 1234567890'} className="text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">Blood Group</Label>
+              <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Blood Group</T></Label>
               <select value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-2 py-2 text-sm outline-none">
-                <option value="">Select</option>
+                <option value="">{/* @ts-ignore */}<T>Select</T></option>
                 {BLOOD_GROUPS.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
             <div>
-              <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">Religion</Label>
+              <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Religion</T></Label>
               <select value={religion} onChange={(e) => setReligion(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-2 py-2 text-sm outline-none">
-                <option value="">Select</option>
+                <option value="">{/* @ts-ignore */}<T>Select</T></option>
                 {RELIGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">Preferred Language</Label>
+            <Label className="mb-1 block text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Preferred Language</T></Label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-2 py-2 text-sm outline-none">
               {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
             </select>
@@ -520,7 +519,7 @@ function BranchSelectRow({
 
   return (
     <div className="flex items-center justify-between gap-3 py-2">
-      <Label className="text-[var(--text-muted)]">Branch</Label>
+      <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Branch</T></Label>
       <div className="flex items-center gap-2">
         {editing ? (
           <>
@@ -530,7 +529,7 @@ function BranchSelectRow({
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
               autoFocus
             >
-              <option value="">None</option>
+              <option value="">{/* @ts-ignore */}<T>None</T></option>
               {options.map((b) => (
                 <option key={b.id} value={b.id}>{b.name}</option>
               ))}
@@ -580,7 +579,7 @@ function ManagerSelectRow({
 
   return (
     <div className="flex items-center justify-between gap-3 py-2">
-      <Label className="text-[var(--text-muted)]">Manager</Label>
+      <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Manager</T></Label>
       <div className="flex items-center gap-2">
         {editing ? (
           <>
@@ -590,7 +589,7 @@ function ManagerSelectRow({
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-8 w-44 rounded-xl px-2 text-right text-sm outline-none"
               autoFocus
             >
-              <option value="">None</option>
+              <option value="">{/* @ts-ignore */}<T>None</T></option>
               {options.map((m) => (
                 <option key={m.id} value={m.id}>{m.name}</option>
               ))}

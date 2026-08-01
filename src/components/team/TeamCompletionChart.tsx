@@ -2,6 +2,7 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { T } from "@/components/Translate";
 
 const PALETTE = [
   "var(--emerald)",
@@ -34,7 +35,7 @@ export default function TeamCompletionChart({ data }: { data: { name: string; co
   return (
     <Card className="animate-fade-up">
       <CardHeader>
-        <CardTitle>Task Completion by Member</CardTitle>
+        <CardTitle>{/* @ts-ignore */}<T>Task Completion by Member</T></CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-56 sm:h-72 w-full">

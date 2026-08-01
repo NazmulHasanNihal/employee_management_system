@@ -2,6 +2,7 @@
 
 import { Target, Lightbulb, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { T } from "@/components/Translate";
 
 export default function AboutSection() {
   return (
@@ -16,26 +17,21 @@ export default function AboutSection() {
           {/* Left Content */}
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--brand-soft)] border border-[var(--brand)]/20 text-[var(--brand)] text-xs font-semibold uppercase tracking-wider mb-6">
-              Our Story
-            </div>
+              {/* @ts-ignore */}<T>Our Story</T></div>
             <h2 className="text-3xl sm:text-5xl font-extrabold text-[var(--text-main)] tracking-tight leading-tight">
-              Built for <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--brand)] to-[var(--sky)]">People</span>, <br />
-              Powered by Data.
-            </h2>
+              {/* @ts-ignore */}<T>Built for</T><span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--brand)] to-[var(--sky)]">{/* @ts-ignore */}<T>People</T></span>, <br />
+              {/* @ts-ignore */}<T>Powered by Data.</T></h2>
             <p className="mt-6 text-lg text-[var(--text-muted)] leading-relaxed">
-              At OpsHub, we believe that managing your workforce shouldn't be a nightmare of spreadsheets, lost time cards, and disconnected tools. Our mission is to democratize enterprise-grade HR operations for growing businesses.
-            </p>
+              {/* @ts-ignore */}<T>At OpsHub, we believe that managing your workforce shouldn't be a nightmare of spreadsheets, lost time cards, and disconnected tools. Our mission is to democratize enterprise-grade HR operations for growing businesses.</T></p>
             <p className="mt-4 text-lg text-[var(--text-muted)] leading-relaxed">
-              We started by fixing the broken payroll and attendance systems we experienced first-hand, evolving into a unified platform that HR leaders and operational teams genuinely love using every day.
-            </p>
+              {/* @ts-ignore */}<T>We started by fixing the broken payroll and attendance systems we experienced first-hand, evolving into a unified platform that HR leaders and operational teams genuinely love using every day.</T></p>
             
             <div className="mt-10">
               <Link
                 href="/login?signup=true"
                 className="inline-flex items-center gap-2 text-[var(--brand)] font-semibold hover:text-[var(--brand-strong)] transition-colors group"
               >
-                Join our journey
-                <ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
+                {/* @ts-ignore */}<T>Join our journey</T><ArrowRight className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
@@ -46,30 +42,27 @@ export default function AboutSection() {
               <div className="w-12 h-12 rounded-xl bg-[var(--emerald-soft)] text-[var(--emerald)] flex items-center justify-center">
                 <Target className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-[var(--text-main)]">Mission</h3>
+              <h3 className="text-xl font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Mission</T></h3>
               <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                To eliminate manual HR busywork so leaders can focus on building incredible workplace cultures.
-              </p>
+                {/* @ts-ignore */}<T>To eliminate manual HR busywork so leaders can focus on building incredible workplace cultures.</T></p>
             </div>
 
             <div className="bg-card text-card-foreground border border-border p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300 sm:mt-12">
               <div className="w-12 h-12 rounded-xl bg-[var(--amber-soft)] text-[var(--amber)] flex items-center justify-center">
                 <Lightbulb className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-[var(--text-main)]">Innovation</h3>
+              <h3 className="text-xl font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Innovation</T></h3>
               <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                Continuously delivering smart automation, from 1-click payroll to intelligent shift rosters.
-              </p>
+                {/* @ts-ignore */}<T>Continuously delivering smart automation, from 1-click payroll to intelligent shift rosters.</T></p>
             </div>
 
             <div className="bg-card text-card-foreground border border-border p-8 rounded-2xl flex flex-col gap-4 shadow-sm hover:-translate-y-1 transition-transform duration-300 sm:-mt-12">
               <div className="w-12 h-12 rounded-xl bg-[var(--sky-soft)] text-[var(--sky)] flex items-center justify-center">
                 <Users className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-[var(--text-main)]">Community</h3>
+              <h3 className="text-xl font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Community</T></h3>
               <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                Building a supportive network of modern operators who put their people first.
-              </p>
+                {/* @ts-ignore */}<T>Building a supportive network of modern operators who put their people first.</T></p>
             </div>
           </div>
 

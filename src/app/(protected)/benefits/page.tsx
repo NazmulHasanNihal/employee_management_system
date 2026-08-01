@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -52,20 +53,20 @@ export default async function BenefitsPage() {
               <Clock size={24} />
             </div>
             <div>
-              <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--emerald)]">{enrollmentPeriod.name} is Active</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--emerald)]">{enrollmentPeriod.name} {/* @ts-ignore */}<T>is Active</T></h3>
               <p className="mt-1 text-sm text-[var(--text-main)]">
-                Make your selections before the deadline on <span className="font-bold">{new Date(enrollmentPeriod.endDate).toLocaleDateString()}</span>.
+                {/* @ts-ignore */}<T>Make your selections before the deadline on</T><span className="font-bold">{new Date(enrollmentPeriod.endDate).toLocaleDateString()}</span>.
               </p>
             </div>
           </div>
-          <Button variant="primary" className="shrink-0" disabled title="Enrollment portal opens during an active window">Portal Active</Button>
+          <Button variant="primary" className="shrink-0" disabled title="Enrollment portal opens during an active window">{/* @ts-ignore */}<T>Portal Active</T></Button>
         </div>
       ) : (
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-4">
           <AlertCircle className="text-[var(--rose)]" size={20} />
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--rose)]">Enrollment Window Closed</h3>
-            <p className="text-xs text-[var(--text-muted)]">Benefits selections remain active. Modifiable during open enrollment or qualifying life events.</p>
+            <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--rose)]">{/* @ts-ignore */}<T>Enrollment Window Closed</T></h3>
+            <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Benefits selections remain active. Modifiable during open enrollment or qualifying life events.</T></p>
           </div>
         </div>
       )}
@@ -74,30 +75,28 @@ export default async function BenefitsPage() {
         {/* Equity Section */}
         <div className="space-y-6">
           <h3 className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-4 text-sm font-semibold text-[var(--text-main)]">
-            <TrendingUp size={16} className="text-[var(--brand-strong)]" /> Vested Equity & ESOP Tracker
-          </h3>
+            <TrendingUp size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Vested Equity & ESOP Tracker</T></h3>
 
           <Card>
             {equityGrants.length > 0 ? (
               <CardContent className="p-6">
                 <div className="mb-8">
-                  <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Estimated Current Value (Vested)</p>
+                  <p className="mb-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Estimated Current Value (Vested)</T></p>
                   <h4 className="flex items-center gap-2 text-5xl font-extrabold tracking-tight text-[var(--text-main)]">
                     ৳{vestedValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </h4>
                   <p className="mt-2 flex items-center gap-2 text-xs uppercase tracking-wide text-[var(--brand-strong)]">
-                    <Activity size={12} /> {equityGrants.length} grant{equityGrants.length > 1 ? 's' : ''} on record
-                  </p>
+                    <Activity size={12} /> {equityGrants.length} {/* @ts-ignore */}<T>grant</T>{equityGrants.length > 1 ? 's' : ''} {/* @ts-ignore */}<T>on record</T></p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                     <div>
-                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Total Grant Options</p>
+                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Grant Options</T></p>
                       <p className="text-lg font-bold text-[var(--text-main)]">{equityGrants.reduce((s: number, g: { totalShares: number }) => s + g.totalShares, 0).toLocaleString()}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Total Potential Value</p>
+                      <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Potential Value</T></p>
                       <p className="text-lg font-bold text-[var(--text-main)]">৳{totalValue.toLocaleString()}</p>
                     </div>
                   </div>
@@ -105,11 +104,11 @@ export default async function BenefitsPage() {
                   {equityGrants.map((g: { id: string; totalShares: number; vestedShares: number; currentStrikePrice: number; grantDate: Date }) => (
                     <div key={g.id} className="flex justify-between items-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                       <div>
-                        <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Vested Shares</p>
+                        <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Vested Shares</T></p>
                         <p className="text-lg font-bold text-[var(--emerald)]">{g.vestedShares.toLocaleString()}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">Grant Date</p>
+                        <p className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Grant Date</T></p>
                         <p className="text-sm font-bold text-[var(--text-main)]">{new Date(g.grantDate).toLocaleDateString()}</p>
                       </div>
                     </div>
@@ -131,8 +130,7 @@ export default async function BenefitsPage() {
         {/* Perks Section */}
         <div className="space-y-6">
           <h3 className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-4 text-sm font-semibold text-[var(--text-main)]">
-            <Gem size={16} className="text-[var(--emerald)]" /> Active Perks & Insurance
-          </h3>
+            <Gem size={16} className="text-[var(--emerald)]" /> {/* @ts-ignore */}<T>Active Perks & Insurance</T></h3>
 
           <div className="grid grid-cols-1 gap-4">
             {(benefits && benefits.length > 0 ? benefits : [
@@ -186,7 +184,7 @@ export default async function BenefitsPage() {
                     <h4 className="text-base md:text-lg font-semibold text-[var(--text-main)]">{eb.benefit.name}</h4>
                     <p className="mt-1 text-sm text-[var(--text-muted)]">{eb.benefit.description}</p>
                     <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[var(--brand-strong)]">
-                      Provider: {eb.benefit.provider || 'Internal'}
+                      {/* @ts-ignore */}<T>Provider:</T>{eb.benefit.provider || 'Internal'}
                     </p>
                   </div>
                 </div>

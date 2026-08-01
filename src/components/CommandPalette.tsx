@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { toast } from "@/lib/toast";
 import { navCategories } from "@/components/nav-config";
 import { useUser } from "@/components/UserProvider";
+import { T } from "@/components/Translate";
 
 interface NavItem {
   label: string;
@@ -201,7 +202,7 @@ export default function CommandPalette() {
       <div className="flex max-h-[70vh] w-full max-w-2xl flex-col border border-[var(--brand)] shadow-[0_0_20px_color-mix(in_srgb,var(--brand)_30%,transparent)]">
         <div className="flex items-center gap-3 border-b border-[var(--brand)]/30 p-4">
           <Terminal className="animate-pulse text-[var(--brand)]" size={20} />
-          <h2 id="cmd-title" className="sr-only">Command palette</h2>
+          <h2 id="cmd-title" className="sr-only">{/* @ts-ignore */}<T>Command palette</T></h2>
           <input
             ref={inputRef}
             role="combobox"
@@ -243,8 +244,8 @@ export default function CommandPalette() {
           ))}
         </div>
         <div className="flex justify-between border-t border-[var(--brand)]/30 bg-[var(--bg-app)] p-2 text-xs font-mono text-[var(--text-muted)]">
-          <span>EMS COMMAND CENTER v1.0</span>
-          <span>Type to search · &uarr;&darr; navigate · &crarr; select · ESC close</span>
+          <span>{/* @ts-ignore */}<T>EMS COMMAND CENTER v1.0</T></span>
+          <span>{/* @ts-ignore */}<T>Type to search · &uarr;&darr; navigate · &crarr; select · ESC close</T></span>
         </div>
       </div>
     </div>

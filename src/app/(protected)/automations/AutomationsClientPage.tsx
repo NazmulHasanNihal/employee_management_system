@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
+import { T } from "@/components/Translate";
 
 type RuleStatus = 'Active' | 'Paused';
 
@@ -121,8 +122,7 @@ export default function AutomationsClientPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 text-center text-sm text-[var(--text-muted)] sm:px-6">
-        Initializing Automation Engine…
-      </div>
+        {/* @ts-ignore */}<T>Initializing Automation Engine…</T></div>
     );
   }
 
@@ -141,7 +141,7 @@ export default function AutomationsClientPage() {
         icon={<Workflow size={20} />}
         actions={
           <Button onClick={() => setShowBuilder(!showBuilder)}>
-            {showBuilder ? 'Cancel Workflow' : <><Plus size={16} /> Build Workflow</>}
+            {showBuilder ? 'Cancel Workflow' : <><Plus size={16} /> {/* @ts-ignore */}<T>Build Workflow</T></>}
           </Button>
         }
       />
@@ -150,13 +150,12 @@ export default function AutomationsClientPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Zap size={18} className="text-[var(--brand-strong)]" /> Logic Builder
-            </CardTitle>
+              <Zap size={18} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Logic Builder</T></CardTitle>
           </CardHeader>
           <CardContent>
             <form className="space-y-6" onSubmit={saveRule}>
               <div className="space-y-1">
-                <Label className="text-[var(--text-muted)]">Workflow Name</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Workflow Name</T></Label>
                 <Input
                   required
                   placeholder="e.g. Birthday Notifier"
@@ -166,7 +165,7 @@ export default function AutomationsClientPage() {
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[var(--text-muted)]">Description (optional)</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Description (optional)</T></Label>
                 <Input
                   placeholder="Describe what this rule does"
                   value={newRule.description}
@@ -178,15 +177,14 @@ export default function AutomationsClientPage() {
                 <div className="space-y-2">
                   <p className="flex items-center gap-2 text-sm font-semibold text-[var(--brand-strong)]">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--brand-soft)] text-xs font-bold">1</span>
-                    Trigger (IF)
-                  </p>
+                    {/* @ts-ignore */}<T>Trigger (IF)</T></p>
                   <select
                     required
                     value={newRule.trigger}
                     onChange={(e) => setNewRule({ ...newRule, trigger: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value="">Select Trigger Event…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select Trigger Event…</T></option>
                     {TRIGGER_OPTIONS.map((t) => (
                       <option key={t} value={t}>{t}</option>
                     ))}
@@ -202,15 +200,14 @@ export default function AutomationsClientPage() {
                 <div className="space-y-2">
                   <p className="flex items-center gap-2 text-sm font-semibold text-[var(--sky)]">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--sky-soft)] text-xs font-bold">2</span>
-                    Action (THEN)
-                  </p>
+                    {/* @ts-ignore */}<T>Action (THEN)</T></p>
                   <select
                     required
                     value={newRule.action}
                     onChange={(e) => setNewRule({ ...newRule, action: e.target.value })}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 w-full rounded-xl px-3 text-sm outline-none"
                   >
-                    <option value="">Select Executable Action…</option>
+                    <option value="">{/* @ts-ignore */}<T>Select Executable Action…</T></option>
                     {ACTION_OPTIONS.map((a) => (
                       <option key={a} value={a}>{a}</option>
                     ))}
@@ -219,7 +216,7 @@ export default function AutomationsClientPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[var(--text-muted)]">Initial Status</Label>
+                <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Initial Status</T></Label>
                 <div className="flex gap-2">
                   {(['Active', 'Paused'] as RuleStatus[]).map((s) => (
                     <button
@@ -255,8 +252,7 @@ export default function AutomationsClientPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-            <Workflow size={16} className="text-[var(--brand-strong)]" /> Active Logic Matrix
-          </h3>
+            <Workflow size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Active Logic Matrix</T></h3>
           <div className="relative w-full sm:w-64">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
             <Input
@@ -288,7 +284,7 @@ export default function AutomationsClientPage() {
                     <div>
                       <h4 className="text-lg font-semibold text-[var(--text-main)]">{rule.name}</h4>
                       {rule.description && <p className="text-xs text-[var(--text-muted)]">{rule.description}</p>}
-                      <p className="mt-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]">UUID: {rule.id}</p>
+                      <p className="mt-1 text-[10px] uppercase tracking-widest text-[var(--text-muted)]">{/* @ts-ignore */}<T>UUID:</T>{rule.id}</p>
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -314,21 +310,21 @@ export default function AutomationsClientPage() {
 
                   <div className="space-y-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4 text-sm">
                     <div className="flex items-start gap-4">
-                      <span className="w-12 shrink-0 text-xs font-bold uppercase tracking-widest text-[var(--brand-strong)]">IF</span>
+                      <span className="w-12 shrink-0 text-xs font-bold uppercase tracking-widest text-[var(--brand-strong)]">{/* @ts-ignore */}<T>IF</T></span>
                       <span className="rounded-lg border border-[var(--brand)]/20 bg-[var(--brand-soft)] px-3 py-1.5 text-[var(--brand-strong)]">{rule.trigger}</span>
                     </div>
                     <div className="flex items-start gap-4">
-                      <span className="w-12 shrink-0 text-xs font-bold uppercase tracking-widest text-[var(--sky)]">THEN</span>
+                      <span className="w-12 shrink-0 text-xs font-bold uppercase tracking-widest text-[var(--sky)]">{/* @ts-ignore */}<T>THEN</T></span>
                       <span className="rounded-lg border border-[var(--sky)]/20 bg-[var(--sky-soft)] px-3 py-1.5 text-[var(--sky)]">{rule.action}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-3">
                     <Badge variant={rule.status === 'Active' ? 'emerald' : 'amber'}>
-                      {rule.status === 'Active' ? <><span className="mr-1 h-2 w-2 rounded-full bg-[var(--emerald)]" />Active</> : 'Paused'}
+                      {rule.status === 'Active' ? <><span className="mr-1 h-2 w-2 rounded-full bg-[var(--emerald)]" />{/* @ts-ignore */}<T>Active</T></> : 'Paused'}
                     </Badge>
                     <span className="text-[10px] uppercase tracking-widest text-[var(--text-muted)]">
-                      Last run: {rule.lastRunAt ? new Date(rule.lastRunAt).toLocaleDateString() : 'N/A'}
+                      {/* @ts-ignore */}<T>Last run:</T>{rule.lastRunAt ? new Date(rule.lastRunAt).toLocaleDateString() : 'N/A'}
                     </span>
                   </div>
                 </CardContent>

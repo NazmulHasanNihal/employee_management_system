@@ -3,6 +3,7 @@
 import React from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
+import { T } from "@/components/Translate";
 
 /**
  * Animated live clock for the OpsHub dashboard.
@@ -60,7 +61,7 @@ export default function LiveClock({ officeHours }: { officeHours?: { start?: str
           {officeHours?.start && officeHours?.end && (
             <div className="mt-3 inline-flex w-fit items-center gap-1.5 rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-muted)]">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand)]" />
-              Office hours: {officeHours.start} – {officeHours.end}
+              {/* @ts-ignore */}<T>Office hours:</T>{officeHours.start} – {officeHours.end}
             </div>
           )}
         </div>

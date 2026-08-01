@@ -11,6 +11,7 @@ import { DeltaBadge } from '@/components/ui/delta-badge';
 import AttendanceSparklineDynamic from '@/components/attendance/AttendanceSparklineDynamic';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { toast } from '@/lib/toast';
+import { T } from "@/components/Translate";
 
 interface EmployeeOption {
   id: string;
@@ -244,8 +245,8 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
             <Activity className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="page-title">Time &amp; Attendance</h1>
-            <p className="page-subtitle">Biometric authorization, geo-location, and HR record management.</p>
+            <h1 className="page-title">{/* @ts-ignore */}<T>Time &amp; Attendance</T></h1>
+            <p className="page-subtitle">{/* @ts-ignore */}<T>Biometric authorization, geo-location, and HR record management.</T></p>
           </div>
         </div>
         {isAdmin && (
@@ -254,11 +255,9 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
               onClick={() => handleOpenAddModal()}
               className="btn-primary flex items-center gap-2 rounded-xl text-xs font-semibold"
             >
-              <UserPlus size={16} /> Record Employee Attendance
-            </Button>
+              <UserPlus size={16} /> {/* @ts-ignore */}<T>Record Employee Attendance</T></Button>
             <Button variant="outline" size="sm" onClick={handleDownloadPDF} className="rounded-xl">
-              Generate PDF Report
-            </Button>
+              {/* @ts-ignore */}<T>Generate PDF Report</T></Button>
           </div>
         )}
       </div>
@@ -279,11 +278,11 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
             <CardContent className="relative overflow-hidden p-8">
               {isScanning && <div className="absolute inset-0 animate-pulse bg-[var(--brand-soft)]" />}
               <div className="relative z-10 mb-8 text-center">
-                <p className="text-sm uppercase tracking-wide text-[var(--text-muted)]">Local Server Time</p>
+                <p className="text-sm uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Local Server Time</T></p>
                 <h3 className="font-mono text-fluid-4xl font-bold tracking-widest text-[var(--text-main)]">
                   {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
                 </h3>
-                <p className="mt-2 text-xs uppercase text-[var(--brand-strong)]">SYS_SYNC_OK</p>
+                <p className="mt-2 text-xs uppercase text-[var(--brand-strong)]">{/* @ts-ignore */}<T>SYS_SYNC_OK</T></p>
               </div>
 
               <div className="relative z-10 flex justify-center">
@@ -318,8 +317,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
               <div className="relative z-10 mt-8 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="flex items-center gap-1 text-xs uppercase tracking-wide text-[var(--text-muted)]">
-                    <MapPin className="h-3 w-3 text-[var(--brand-strong)]" /> Location Data
-                  </span>
+                    <MapPin className="h-3 w-3 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Location Data</T></span>
                   <span className="rounded bg-[var(--emerald-soft)] px-1.5 py-0.5 text-xs font-bold uppercase text-[var(--emerald)]">
                     {location ? 'Detected' : 'Pending'}
                   </span>
@@ -334,8 +332,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-[var(--emerald)]" /> Live Office Status
-                  </span>
+                    <Users className="h-4 w-4 text-[var(--emerald)]" /> {/* @ts-ignore */}<T>Live Office Status</T></span>
                   <span className={`flex items-center gap-1 text-[9px] font-mono uppercase tracking-widest ${socket.connected ? 'text-[var(--emerald)]' : 'text-[var(--text-muted)]'}`}>
                     <span className={`h-1.5 w-1.5 rounded-full ${socket.connected ? 'bg-[var(--emerald)] animate-pulse' : 'bg-[var(--text-muted)]'}`} />
                     {socket.connected ? 'Live' : 'Offline'}
@@ -347,11 +344,10 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm text-[var(--text-main)]">
                       <div className="h-2 w-2 animate-pulse rounded-full bg-[var(--emerald)]" />
-                      Currently On-Shift
-                    </div>
+                      {/* @ts-ignore */}<T>Currently On-Shift</T></div>
                     <span className="flex items-center gap-2 text-xl font-bold text-[var(--text-main)]">
                       {stats.onShift}
-                      <span className="text-xs font-normal text-[var(--text-muted)]">{onShiftPct}% of staff</span>
+                      <span className="text-xs font-normal text-[var(--text-muted)]">{onShiftPct}{/* @ts-ignore */}<T>% of staff</T></span>
                     </span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--bg-hover)]">
@@ -360,26 +356,26 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   <AttendanceSparklineDynamic data={stats.attendanceTrend || []} />
                   <div className="grid grid-cols-3 gap-3 border-t border-[var(--border-hairline)] pt-4">
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Present Rate</p>
+                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Present Rate</T></p>
                       <p className="flex items-center gap-2 text-lg font-bold text-[var(--emerald)]">
                         {stats.presentRate}% <CheckCircle2 className="h-3 w-3" />
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Late Arrivals</p>
+                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Late Arrivals</T></p>
                       <p className="flex items-center gap-2 text-lg font-bold text-[var(--amber)]">
                         {stats.lateArrivals} <AlertTriangle className="h-3 w-3" />
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">Absent</p>
+                      <p className="text-xs uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Absent</T></p>
                       <p className="flex items-center gap-2 text-lg font-bold text-[var(--rose)]">
                         {stats.absent} <XCircle className="h-3 w-3" />
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between rounded-xl bg-[var(--bg-hover)]/60 p-3">
-                    <span className="text-xs text-[var(--text-muted)]">Absenteeism Rate</span>
+                    <span className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Absenteeism Rate</T></span>
                     <DeltaBadge value={stats.absenteeismRate} label="of workforce" goodWhen="down" />
                   </div>
                 </div>
@@ -393,12 +389,10 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
             <CardHeader>
               <CardTitle className="flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-[var(--brand-strong)]" /> Attendance Log
-                </span>
+                  <Clock className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Attendance Log</T></span>
                 {isAdmin && (
                   <span className="text-xs font-normal text-[var(--text-muted)]">
-                    HR / Admin Override Enabled
-                  </span>
+                    {/* @ts-ignore */}<T>HR / Admin Override Enabled</T></span>
                 )}
               </CardTitle>
             </CardHeader>
@@ -406,15 +400,15 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    {isAdmin && <TableHead>Employee</TableHead>}
-                    <TableHead>Status</TableHead>
-                    <TableHead>Clock In</TableHead>
-                    <TableHead>Clock Out</TableHead>
-                    {isAdmin && <TableHead title="Late minutes">Late</TableHead>}
-                    {isAdmin && <TableHead title="Overtime minutes">OT</TableHead>}
-                    {isAdmin && <TableHead title="Geo-fence verification">Geo</TableHead>}
-                    {isAdmin && <TableHead className="text-right">Manage</TableHead>}
+                    <TableHead>{/* @ts-ignore */}<T>Date</T></TableHead>
+                    {isAdmin && <TableHead>{/* @ts-ignore */}<T>Employee</T></TableHead>}
+                    <TableHead>{/* @ts-ignore */}<T>Status</T></TableHead>
+                    <TableHead>{/* @ts-ignore */}<T>Clock In</T></TableHead>
+                    <TableHead>{/* @ts-ignore */}<T>Clock Out</T></TableHead>
+                    {isAdmin && <TableHead title="Late minutes">{/* @ts-ignore */}<T>Late</T></TableHead>}
+                    {isAdmin && <TableHead title="Overtime minutes">{/* @ts-ignore */}<T>OT</T></TableHead>}
+                    {isAdmin && <TableHead title="Geo-fence verification">{/* @ts-ignore */}<T>Geo</T></TableHead>}
+                    {isAdmin && <TableHead className="text-right">{/* @ts-ignore */}<T>Manage</T></TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -440,9 +434,9 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                       {isAdmin && (
                         <TableCell>
                           {log.geoVerified === undefined ? '—' : log.geoVerified ? (
-                            <span className="rounded-full bg-[var(--emerald-soft)] px-2 py-0.5 text-[9px] font-semibold uppercase text-[var(--emerald)]">Verified</span>
+                            <span className="rounded-full bg-[var(--emerald-soft)] px-2 py-0.5 text-[9px] font-semibold uppercase text-[var(--emerald)]">{/* @ts-ignore */}<T>Verified</T></span>
                           ) : (
-                            <span className="rounded-full bg-[var(--rose-soft)] px-2 py-0.5 text-[9px] font-semibold uppercase text-[var(--rose)]">Unverified</span>
+                            <span className="rounded-full bg-[var(--rose-soft)] px-2 py-0.5 text-[9px] font-semibold uppercase text-[var(--rose)]">{/* @ts-ignore */}<T>Unverified</T></span>
                           )}
                         </TableCell>
                       )}
@@ -462,8 +456,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   {(!logs || logs.length === 0) && (
                     <TableRow>
                       <TableCell colSpan={isAdmin ? 9 : 5} className="py-8 text-center text-xs text-[var(--text-muted)]">
-                        No logs found in archive. HR/Admin can record entries using the top button.
-                      </TableCell>
+                        {/* @ts-ignore */}<T>No logs found in archive. HR/Admin can record entries using the top button.</T></TableCell>
                     </TableRow>
                   )}
                 </TableBody>
@@ -480,7 +473,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <div className="flex items-center gap-2">
                 <UserPlus size={20} className="text-[var(--brand)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">HR / Admin Attendance Record Entry</h3>
+                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>HR / Admin Attendance Record Entry</T></h3>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
                 <X size={18} />
@@ -490,7 +483,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
             <div className="space-y-4">
               {/* Employee Selector */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Select Employee</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Employee</T></label>
                 <div className="relative">
                   <Search size={14} className="absolute left-3 top-3 text-[var(--text-muted)]" />
                   <input
@@ -506,7 +499,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   onChange={(e) => setSelectedEmpId(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
-                  <option value="">Select Employee...</option>
+                  <option value="">{/* @ts-ignore */}<T>Select Employee...</T></option>
                   {filteredEmployees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} ({emp.department || emp.role} · {emp.designation || 'Staff'})
@@ -517,7 +510,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
 
               {/* Date Selection */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Attendance Date</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Attendance Date</T></label>
                 <input
                   type="date"
                   value={entryDate}
@@ -528,7 +521,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
 
               {/* Status Selector */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Status</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Status</T></label>
                 <div className="flex gap-2">
                   {['Present', 'Late', 'Absent'].map((st) => (
                     <button
@@ -555,7 +548,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
               {entryStatus !== 'Absent' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">In Time</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>In Time</T></label>
                     <input
                       type="time"
                       value={clockInTime}
@@ -564,7 +557,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Out Time</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Out Time</T></label>
                     <input
                       type="time"
                       value={clockOutTime}
@@ -577,7 +570,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
 
               {/* HR Verification Note */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">HR Verification Note / Reason</label>
+                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>HR Verification Note / Reason</T></label>
                 <input
                   type="text"
                   placeholder="e.g. Verified In/Out by HR Admin"
@@ -594,8 +587,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                 onClick={() => setIsModalOpen(false)}
                 className="flex-1 rounded-xl border border-[var(--border-hairline)] py-2.5 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
               >
-                Cancel
-              </button>
+                {/* @ts-ignore */}<T>Cancel</T></button>
               <button
                 type="button"
                 onClick={handleSaveManualEntry}

@@ -10,6 +10,7 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from 'recharts';
+import { T } from "@/components/Translate";
 
 export function CombatStats({ user }: { user: any }) {
   const level = Number(user?.rpgLevel || 1);
@@ -23,8 +24,7 @@ export function CombatStats({ user }: { user: any }) {
   return (
     <div className="flex h-full flex-col">
       <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
-        <Shield size={15} className="text-[var(--brand-strong)]" /> Combat Stats
-      </h4>
+        <Shield size={15} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Combat Stats</T></h4>
       <div className="min-h-56 w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart data={data} outerRadius="72%">

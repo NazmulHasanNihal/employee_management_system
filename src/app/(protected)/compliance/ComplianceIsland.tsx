@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { T } from "@/components/Translate";
 
 interface ComplianceIslandProps {
   isAdmin: boolean;
@@ -54,22 +55,19 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
           onClick={() => setActiveTab('CERTS')}
           className={`rounded-lg px-6 py-3 text-[10px] font-bold uppercase tracking-wide transition-all ${activeTab === 'CERTS' ? 'bg-[var(--brand)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
         >
-          Certifications
-        </button>
+          {/* @ts-ignore */}<T>Certifications</T></button>
         <button
           onClick={() => setActiveTab('WHISTLEBLOWER')}
           className={`flex items-center gap-2 rounded-lg px-6 py-3 text-[10px] font-bold uppercase tracking-wide transition-all ${activeTab === 'WHISTLEBLOWER' ? 'bg-[var(--rose)] text-white' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
         >
-          <EyeOff size={14} /> Whistleblower
-        </button>
+          <EyeOff size={14} /> {/* @ts-ignore */}<T>Whistleblower</T></button>
       </div>
 
       {activeTab === 'CERTS' && (
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           <div className="space-y-6">
             <h3 className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-4 text-sm font-semibold text-[var(--text-main)]">
-              <Award size={16} className="text-[var(--brand-strong)]" /> My Compliance Portfolio
-            </h3>
+              <Award size={16} className="text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>My Compliance Portfolio</T></h3>
 
             <Card>
               <CardContent>
@@ -79,14 +77,12 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                     <Input type="date" required value={newCert.expiryDate} onChange={(e) => setNewCert({ ...newCert, expiryDate: e.target.value })} />
                   </div>
                   <Button type="submit" variant="primary" className="w-full" disabled={addCert.isPending || !newCert.name || !newCert.expiryDate}>
-                    Register Certification
-                  </Button>
+                    {/* @ts-ignore */}<T>Register Certification</T></Button>
                 </form>
 
                 {(!myCerts || myCerts.length === 0) ? (
                   <div className="rounded-xl border border-dashed border-[var(--border-hairline)] bg-[var(--bg-panel)]/50 p-8 text-center text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                    No active certifications.
-                  </div>
+                    {/* @ts-ignore */}<T>No active certifications.</T></div>
                 ) : (
                   <div className="space-y-3">
                     {myCerts.map((cert: { id: string; name: string; expiryDate: Date }) => {
@@ -97,7 +93,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                           <div>
                             <p className="text-sm font-semibold text-[var(--text-main)]">{cert.name}</p>
                             <p className={`mt-1 text-[10px] uppercase tracking-wide ${isExpiring ? 'text-[var(--rose)]' : 'text-[var(--text-muted)]'}`}>
-                              Exp: {new Date(cert.expiryDate).toLocaleDateString()}
+                              {/* @ts-ignore */}<T>Exp:</T>{new Date(cert.expiryDate).toLocaleDateString()}
                             </p>
                           </div>
                           <ShieldCheck size={20} className={isExpiring ? 'animate-pulse text-[var(--rose)]' : 'text-[var(--emerald)]'} />
@@ -113,16 +109,14 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
           {isAdmin && (
             <div className="space-y-6">
               <h3 className="flex items-center gap-2 border-b border-[var(--border-hairline)] pb-4 text-sm font-semibold uppercase tracking-wide text-[var(--rose)]">
-                <AlertTriangle size={16} /> Audit: Expiring Soon (&lt; 30 Days)
-              </h3>
+                <AlertTriangle size={16} /> {/* @ts-ignore */}<T>Audit: Expiring Soon (&lt; 30 Days)</T></h3>
 
               <Card className="border-[var(--rose)]/30">
                 <CardContent>
                   {(!expiringCerts || expiringCerts.length === 0) ? (
                     <div className="flex flex-col items-center justify-center py-12 text-[10px] uppercase tracking-wide text-[var(--emerald)]">
                       <CheckCircle size={32} className="mb-3 opacity-50" />
-                      All Personnel Fully Compliant.
-                    </div>
+                      {/* @ts-ignore */}<T>All Personnel Fully Compliant.</T></div>
                   ) : (
                     <div className="space-y-4">
                         {expiringCerts.map((cert: { id: string; name: string; expiryDate: Date; user?: { name: string; department: string | null } }) => (
@@ -130,14 +124,13 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                            <div className="flex-1">
                              <h4 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
                                {cert.user?.name}
-                               <Badge variant="rose">Critical</Badge>
+                               <Badge variant="rose">{/* @ts-ignore */}<T>Critical</T></Badge>
                              </h4>
                             <p className="mt-1 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{cert.name}</p>
                           </div>
                           <div className="shrink-0 text-right">
                             <p className="mb-1 flex items-center justify-end gap-1 text-[9px] uppercase tracking-wide text-[var(--rose)]">
-                              <Clock size={10} /> Deadline
-                            </p>
+                              <Clock size={10} /> {/* @ts-ignore */}<T>Deadline</T></p>
                             <p className="text-xs font-bold text-[var(--text-main)]">{new Date(cert.expiryDate).toLocaleDateString()}</p>
                           </div>
                         </div>
@@ -160,25 +153,23 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                   <EyeOff size={32} className="text-[var(--rose)]" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-extrabold uppercase tracking-wide text-[var(--rose)]">Confidential Disclosure</h3>
+                  <h3 className="text-xl font-extrabold uppercase tracking-wide text-[var(--rose)]">{/* @ts-ignore */}<T>Confidential Disclosure</T></h3>
                   <p className="mt-1 text-sm leading-relaxed text-[var(--text-muted)]">
-                    Submissions are cryptographically decoupled from your session. IP addresses are not logged. Reports route directly to the Ethics Committee.
-                  </p>
+                    {/* @ts-ignore */}<T>Submissions are cryptographically decoupled from your session. IP addresses are not logged. Reports route directly to the Ethics Committee.</T></p>
                 </div>
               </div>
 
               {reportSubmitted ? (
                 <div className="py-16 text-center">
                   <ShieldCheck size={64} className="mx-auto mb-6 opacity-80 text-[var(--rose)]" />
-                   <h4 className="mb-2 text-fluid-2xl font-extrabold uppercase tracking-wide text-[var(--text-main)]">Transmission Secure</h4>
-                  <p className="text-sm text-[var(--text-muted)]">Your disclosure has been encrypted and successfully routed.</p>
+                   <h4 className="mb-2 text-fluid-2xl font-extrabold uppercase tracking-wide text-[var(--text-main)]">{/* @ts-ignore */}<T>Transmission Secure</T></h4>
+                  <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Your disclosure has been encrypted and successfully routed.</T></p>
                 </div>
               ) : (
                 <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); submitReport.mutate({ report: reportText }); }}>
                   <div>
                     <label className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-wide text-[var(--text-muted)]">
-                      <ShieldAlert size={12} className="text-[var(--rose)]" /> Secure Input Area
-                    </label>
+                      <ShieldAlert size={12} className="text-[var(--rose)]" /> {/* @ts-ignore */}<T>Secure Input Area</T></label>
                     <textarea
                       required
                       rows={6}
@@ -189,8 +180,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
                     />
                   </div>
                   <Button type="submit" variant="danger" className="w-full" disabled={submitReport.isPending || !reportText.trim()}>
-                    <EyeOff size={16} /> Execute Anonymous Transmission
-                  </Button>
+                    <EyeOff size={16} /> {/* @ts-ignore */}<T>Execute Anonymous Transmission</T></Button>
                 </form>
               )}
             </CardContent>
@@ -198,7 +188,7 @@ export default function ComplianceIsland({ isAdmin, initialMyCerts, initialExpir
 
           {isAdmin && whistleblower.length > 0 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-[var(--text-main)]">Received Reports</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Received Reports</T></h3>
               {whistleblower.map((r: { id: string; report: string; createdAt: Date; status: string }) => (
                 <div key={r.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4">
                   <p className="text-sm text-[var(--text-main)]">{r.report}</p>

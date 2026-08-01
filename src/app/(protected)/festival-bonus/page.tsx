@@ -9,6 +9,7 @@ import { requireAdmin } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
 import { getLanguage } from '@/lib/i18n-server';
 import { FestivalBonusClient } from '@/components/payroll/FestivalBonusClient';
+import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
@@ -32,9 +33,9 @@ export default async function FestivalBonusPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
           <CardContent>
-            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">Total Bonus Paid</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Bonus Paid</T></p>
             <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{formatCurrency(totalPaid, 'BDT', 'en')}</p>
-            <p className="mt-1 text-xs text-[var(--text-muted)]">{bonuses.length} record(s)</p>
+            <p className="mt-1 text-xs text-[var(--text-muted)]">{bonuses.length} {/* @ts-ignore */}<T>record(s)</T></p>
           </CardContent>
         </Card>
       </div>
@@ -43,7 +44,7 @@ export default async function FestivalBonusPage() {
         <EmptyState title="No festival bonuses yet" description="Admins can grant festival bonuses from the action bar above." />
       ) : (
         <Card>
-          <CardHeader><CardTitle>Festival Bonus Register</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{/* @ts-ignore */}<T>Festival Bonus Register</T></CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {bonuses.map((b: { id: string; user?: { name: string }; occasion: string; occasionBn: string | null; year: number; amount: number; status: string }) => (

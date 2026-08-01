@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import { FileText, Download, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { uploadDocument } from '@/app/actions/profile';
+import { T } from "@/components/Translate";
 
 interface DocRow {
   id: string;
@@ -47,7 +48,7 @@ export function DocumentVault({ documents }: { documents: DocRow[] }) {
   return (
     <div className="space-y-3">
       {localDocs.length === 0 ? (
-        <p className="text-sm text-[var(--text-muted)]">No documents stored yet.</p>
+        <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No documents stored yet.</T></p>
       ) : (
         <ul className="space-y-2">
           {localDocs.map((doc) => (

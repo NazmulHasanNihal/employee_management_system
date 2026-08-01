@@ -3,21 +3,21 @@
 import React from 'react';
 import { Target, User } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
+import { T } from "@/components/Translate";
 
 export function InternalMatches({ jobId }: { jobId: string }) {
   const { data: matches, isLoading } = trpc.recruitment.findInternalMatches.useQuery({ jobId });
 
-  if (isLoading) return <div className="text-xs font-mono text-[var(--text-muted)] animate-pulse">Scanning internal talent pool...</div>;
+  if (isLoading) return <div className="text-xs font-mono text-[var(--text-muted)] animate-pulse">{/* @ts-ignore */}<T>Scanning internal talent pool...</T></div>;
 
   if (!matches || matches.length === 0) {
-    return <div className="text-xs font-mono text-[var(--text-muted)] italic">No internal skill matches found.</div>;
+    return <div className="text-xs font-mono text-[var(--text-muted)] italic">{/* @ts-ignore */}<T>No internal skill matches found.</T></div>;
   }
 
   return (
     <div className="mt-6 border-t border-white/10 pt-4">
       <h4 className="text-xs font-bold font-mono uppercase tracking-widest text-teal-400 mb-4 flex items-center gap-2">
-        <Target size={14} /> Internal Talent Matches
-      </h4>
+        <Target size={14} /> {/* @ts-ignore */}<T>Internal Talent Matches</T></h4>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {matches.map((match: any, idx: number) => (
           <div key={match.id || idx} className="p-3 bg-white/5 border border-teal-500/20 rounded-xl relative overflow-hidden">
@@ -33,12 +33,11 @@ export function InternalMatches({ jobId }: { jobId: string }) {
                 </div>
               </div>
               <div className="text-xs font-mono font-bold text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/30">
-                {match.matchedSkills.length} matched
-              </div>
+                {match.matchedSkills.length} {/* @ts-ignore */}<T>matched</T></div>
             </div>
 
             <div className="mt-2 text-[10px] font-mono">
-              <div className="text-white mb-1"><span className="text-[var(--text-muted)]">Matched:</span> {match.matchedSkills.join(', ')}</div>
+              <div className="text-white mb-1"><span className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Matched:</T></span> {match.matchedSkills.join(', ')}</div>
             </div>
           </div>
         ))}
