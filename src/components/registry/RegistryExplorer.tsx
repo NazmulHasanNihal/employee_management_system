@@ -94,11 +94,11 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
   const managerOptions = liveEmployees.filter((e) => e.role === 'Manager' || e.role === 'Admin' || e.role === 'HR Manager');
 
   const updatePermsMutation = trpc.registry.updatePermissions.useMutation({
-    onSuccess: () => utils.registry.getAll.invalidate(),
+    onSuccess: () => utils.invalidate('registry'),
   });
   const deleteMutation = trpc.registry.deleteEmployee.useMutation({
     onSuccess: () => {
-      utils.registry.getAll.invalidate();
+      utils.invalidate('registry');
       setDeleteStatus({ loading: false, error: null });
     },
   });
@@ -202,7 +202,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
   const openProfile = (emp: Employee) => {
     setSelectedEmployee(emp);
-    utils.registry.getAll.invalidate();
+    utils.invalidate('registry');
   };
 
   const roleLabel = (status?: string) => {
@@ -256,7 +256,12 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     <p className="text-[10px] uppercase tracking-wide text-[var(--brand)]">{emp.designation || 'Staff'}</p>
                   </div>
                 </div>
-                <Badge variant={roleVariant(emp.role)}>{emp.role}</Badge>
+                <div className="flex flex-col items-end gap-1">
+                  <Badge variant={roleVariant(emp.role)}>{emp.role}</Badge>
+                  {(emp.role === 'CEO' || emp.isOwner) && emp.role !== 'Admin' && (
+                    <Badge variant="rose">Admin</Badge>
+                  )}
+                </div>
               </div>
 
               <div className="mb-4 flex-1 space-y-2.5">
@@ -318,6 +323,9 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   <p className="text-xs text-[var(--text-muted)]">{selectedEmployee.designation || 'Staff'} · {selectedEmployee.department || 'No Department'}</p>
                   <div className="mt-1 flex items-center gap-2">
                     <Badge variant={roleVariant(selectedEmployee.role)}>{selectedEmployee.role}</Badge>
+                    {(selectedEmployee.role === 'CEO' || selectedEmployee.isOwner) && selectedEmployee.role !== 'Admin' && (
+                      <Badge variant="rose">Admin</Badge>
+                    )}
                     {selectedEmployee.status && (
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${selectedEmployee.status === 'active' || selectedEmployee.status === 'Active' ? 'bg-[var(--emerald-soft)] text-[var(--emerald)]' : selectedEmployee.status === 'Terminated' ? 'bg-[var(--rose-soft)] text-[var(--rose)]' : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'}`}>
                         {selectedEmployee.status}
