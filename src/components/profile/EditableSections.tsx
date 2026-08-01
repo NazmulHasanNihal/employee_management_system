@@ -86,9 +86,9 @@ function FieldRow({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2">
-      <Label className="text-[var(--text-muted)]">{label}</Label>
-      <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 w-full items-center justify-between gap-3 py-2">
+      <Label className="shrink-0 text-[var(--text-muted)]">{label}</Label>
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
         {editing ? (
           <>
             <Input
@@ -160,9 +160,9 @@ function SelectRow({
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2">
-      <Label className="text-[var(--text-muted)]">{label}</Label>
-      <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 w-full items-center justify-between gap-3 py-2">
+      <Label className="shrink-0 text-[var(--text-muted)]">{label}</Label>
+      <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
         {editing ? (
           <>
             <select

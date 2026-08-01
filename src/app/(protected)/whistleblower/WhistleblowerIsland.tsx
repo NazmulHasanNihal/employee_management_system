@@ -162,7 +162,7 @@ export default function WhistleblowerIsland({ initialReports, initialMembers }: 
             >
               <div className="space-y-1">
                 <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Member Name</T></Label>
-                <Input required placeholder="e.g. Jane Doe" value={newMember.name} onChange={(e) => setNewMember({ ...newMember, name: e.target.value })} />
+                <Input required placeholder="e.g. Sarah Jenkins" value={newMember.name} onChange={(e) => setNewMember({ ...newMember, name: e.target.value })} />
               </div>
               <div className="space-y-1">
                 <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Role</T></Label>

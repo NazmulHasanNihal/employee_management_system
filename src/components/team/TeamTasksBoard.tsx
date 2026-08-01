@@ -130,7 +130,7 @@ export default function TeamTasksBoard({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2 text-sm"
-                placeholder="Task title..."
+                placeholder="e.g. Update Q3 financials..."
               />
             </div>
             <div>
@@ -223,8 +223,8 @@ export default function TeamTasksBoard({
             <div className="space-y-3">
               {tasksByStatus[status].map((task) => (
                 <div key={task.id} className="group rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-3 transition-colors hover:border-[var(--brand)]/30">
-                  <div className="mb-2 flex items-start justify-between">
-                    <p className="text-sm font-semibold text-[var(--text-main)]">{task.title}</p>
+                  <div className="mb-2 flex min-w-0 items-start justify-between gap-2">
+                    <p className="min-w-0 break-words text-sm font-semibold text-[var(--text-main)]">{task.title}</p>
                     <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                       {isManager && (
                         <button onClick={() => { if (confirm('Delete this task?')) deleteMutation.mutate({ id: task.id }); }} className="p-1 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded">

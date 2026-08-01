@@ -48,11 +48,11 @@ export function EditableName({ name }: { name: string }) {
     <button
       type="button"
       onClick={() => setEditing(true)}
-      className="group inline-flex items-center gap-2 text-xl font-semibold text-[var(--text-main)]"
+      className="group inline-flex min-w-0 max-w-full items-center gap-2 text-xl font-semibold text-[var(--text-main)]"
       aria-label="Edit name"
     >
-      {name}
-      <Pencil size={14} className="text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100" />
+      <span className="truncate">{name}</span>
+      <Pencil size={14} className="shrink-0 text-[var(--text-muted)] opacity-0 transition-opacity group-hover:opacity-100" />
     </button>
   );
 }

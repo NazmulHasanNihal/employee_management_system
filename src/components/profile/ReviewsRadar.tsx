@@ -26,7 +26,7 @@ export function ReviewsRadar({ scores }: { scores: RadarScore[] }) {
     );
   }
   return (
-    <div className="h-64 w-full">
+    <div className="h-64 w-full min-w-0">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart data={scores} outerRadius="75%">
           <PolarGrid stroke="var(--border-hairline)" />

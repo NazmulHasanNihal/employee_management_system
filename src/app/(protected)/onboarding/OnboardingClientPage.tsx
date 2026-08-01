@@ -442,7 +442,7 @@ export default function OnboardingClientPage() {
                   <Input 
                     type="text" 
                     required 
-                    placeholder="John Doe" 
+                    placeholder="Alex Mercer" 
                     value={signatureText}
                     onChange={(e) => setSignatureText(e.target.value)}
                     className="font-mono"
