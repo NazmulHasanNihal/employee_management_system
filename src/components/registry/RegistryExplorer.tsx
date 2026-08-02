@@ -251,7 +251,17 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             >
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <Avatar src={emp.avatarUrl} name={emp.name} size="lg" />
+                  <div className="relative shrink-0">
+                    <Avatar src={emp.avatarUrl} name={emp.name} size="lg" />
+                    <span
+                      className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-[var(--bg-panel)] ${
+                        emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active')
+                          ? 'bg-emerald-500 ring-2 ring-emerald-500/30 animate-pulse'
+                          : 'bg-gray-400'
+                      }`}
+                      title={emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'Active (Online)' : 'Offline'}
+                    />
+                  </div>
                   <div>
                      <h4 className="max-w-[12rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
                      <div className="mt-0.5">
@@ -284,14 +294,12 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     <span className="truncate font-mono text-xs">{emp.phone}</span>
                   </div>
                 )}
-                {emp.status && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Activity className="h-3.5 w-3.5 text-[var(--text-muted)]" />
-                    <span className={emp.status.toLowerCase() === 'active' ? 'text-[var(--emerald)]' : emp.status.toLowerCase() === 'terminated' ? 'text-[var(--rose)]' : 'text-[var(--text-muted)]'}>
-                      {emp.status}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 text-xs pt-1">
+                  <span className={`h-2.5 w-2.5 rounded-full ${emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+                  <span className={`font-semibold ${emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'text-[var(--emerald)]' : 'text-[var(--text-muted)]'}`}>
+                    {emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'Active (Online)' : 'Offline'}
+                  </span>
+                </div>
               </div>
 
               {isAdmin && (

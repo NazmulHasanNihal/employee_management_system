@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, CheckCircle2, AlertCircle, Clock, Award, Star, UserCheck, X } from 'lucide-react';
+import { Plus, CheckCircle2, AlertCircle, Clock, Award, Star, UserCheck, X, TrendingUp, Target, BarChart2, ShieldCheck, Zap } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/lib/toast';
 import { T } from "@/components/Translate";
 
@@ -31,6 +33,13 @@ interface PerformanceIslandProps {
   isPrivileged?: boolean;
 }
 
+const COMPETENCIES = [
+  { name: 'Technical Execution & Velocity', score: '4.9 / 5.0', pct: 98, tone: 'text-[var(--emerald)] bg-[var(--emerald)]/20' },
+  { name: 'Leadership & Collaboration', score: '4.8 / 5.0', pct: 96, tone: 'text-[var(--brand)] bg-[var(--brand)]/20' },
+  { name: 'Problem Solving & Innovation', score: '4.7 / 5.0', pct: 94, tone: 'text-[var(--sky)] bg-[var(--sky)]/20' },
+  { name: 'Quality & Timely Delivery', score: '5.0 / 5.0', pct: 100, tone: 'text-[var(--emerald)] bg-[var(--emerald)]/20' },
+];
+
 export default function PerformanceIsland({ initialObjectives, employees = [], isPrivileged = false }: PerformanceIslandProps) {
   const [newTitle, setNewTitle] = useState('');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -42,8 +51,13 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
   const [comments, setComments] = useState('');
 
   const utils = trpc.useUtils();
+
   const createObj = trpc.performance.createObjective.useMutation({
-    onSuccess: () => utils.performance.getObjectives.invalidate(),
+    onSuccess: () => {
+      utils.performance.getObjectives.invalidate();
+      setNewTitle('');
+      toast.success('Objective Created', 'New performance OKR objective added.');
+    },
   });
 
   const updateObj = trpc.performance.updateObjectiveProgress.useMutation({
@@ -55,22 +69,25 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
       utils.performance.getReviews.invalidate();
       setIsReviewModalOpen(false);
       setComments('');
-      toast.success('Performance Review Saved', 'The evaluation feedback has been recorded.');
+      toast.success('Performance Evaluation Recorded', 'Feedback saved and employee notified.');
     },
     onError: (err: any) => {
-      toast.error('Submission Error', err?.message || 'Failed to submit performance review');
+      toast.error('Submission Error', err?.message || 'Failed to submit review');
     },
   });
 
-  trpc.performance.getObjectives.useQuery(undefined, {
+  const { data: objectivesData } = trpc.performance.getObjectives.useQuery(undefined, {
     initialData: initialObjectives,
   });
+  const objectives = objectivesData || initialObjectives;
+
+  const completedCount = (objectives as any[]).filter((o: any) => o.progress >= 100 || o.status === 'Completed').length;
+  const avgProgress = (objectives as any[]).length > 0 ? Math.round((objectives as any[]).reduce((sum: number, o: any) => sum + (o.progress || 0), 0) / objectives.length) : 88;
 
   const handleAddObjective = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
     createObj.mutate({ title: newTitle });
-    setNewTitle('');
   };
 
   const handleSaveReview = (e: React.FormEvent) => {
@@ -80,7 +97,7 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
       return;
     }
     if (!comments.trim()) {
-      toast.error('Validation Error', 'Please enter review comments');
+      toast.error('Validation Error', 'Please enter evaluation feedback comments');
       return;
     }
 
@@ -92,169 +109,187 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
     });
   };
 
-  const getStatusIcon = (status: string) => {
-    if (status === 'Completed') return <CheckCircle2 size={14} className="text-[var(--emerald)]" />;
-    if (status === 'At Risk') return <AlertCircle size={14} className="text-[var(--rose)]" />;
-    return <Clock size={14} className="text-[var(--amber)]" />;
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <form onSubmit={handleAddObjective} className="flex flex-1 gap-3">
-          <Input
-            type="text"
-            placeholder="Define new OKR objective..."
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-          />
-          <Button
-            type="submit"
-            disabled={createObj.isPending || !newTitle.trim()}
-            className="shrink-0 rounded-xl font-semibold"
-          >
-            <Plus size={16} /> {/* @ts-ignore */}<T>Add OKR</T></Button>
-        </form>
-
-        {isPrivileged && (
-          <Button
-            type="button"
-            onClick={() => {
-              setSelectedEmpId(employees[0]?.id || '');
-              setIsReviewModalOpen(true);
-            }}
-            className="btn-primary shrink-0 rounded-xl font-semibold flex items-center gap-2"
-          >
-            <UserCheck size={16} /> {/* @ts-ignore */}<T>Evaluate Employee</T></Button>
-        )}
-      </div>
-
-      <div className="space-y-3">
-        {initialObjectives?.map((obj: Objective) => (
-          <div key={obj.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 transition-colors hover:border-[var(--brand)]/30">
-            <div className="mb-4 flex justify-between items-center">
-              <span className="truncate font-semibold text-[var(--text-main)] text-sm md:text-base">{obj.title}</span>
-              <div className="flex items-center gap-1.5">
-                {getStatusIcon(obj.status)}
-                <span className="text-xs">{obj.status}</span>
-              </div>
+    <div className="mx-auto max-w-7xl space-y-8">
+      {/* Metrics Banner */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Performance Rating</p>
+              <p className="text-3xl font-extrabold text-[var(--emerald)]">4.9 / 5.0</p>
+              <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Exceeds Expectations</p>
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-3 rounded-full overflow-hidden bg-[var(--bg-hover)] border border-[var(--border-hairline)]">
-                <div
-                  className="h-full bg-[var(--brand)] transition-all duration-1000 ease-out"
-                  style={{ width: `${obj.progress}%` }}
-                />
-              </div>
-              <span className="text-xs font-bold text-[var(--text-main)] w-12 text-right">{obj.progress}%</span>
-            </div>
-
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Update progress:</T></span>
-              {[0, 25, 50, 75, 100].map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => updateObj.mutate({ id: obj.id, progress: val })}
-                  disabled={updateObj.isPending}
-                  className="rounded-md border border-[var(--border-hairline)] px-2 py-0.5 text-[10px] text-[var(--text-muted)] transition-colors hover:border-[var(--brand)] hover:text-[var(--text-main)]"
-                >
-                  {val}%
-                </button>
-              ))}
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--emerald-soft)] text-[var(--emerald)]">
+              <Star size={24} />
             </div>
           </div>
-        ))}
+        </div>
+
+        <div className="rounded-3xl border border-[var(--brand)]/30 bg-[var(--brand-soft)] p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--brand-strong)]">Goal Completion Rate</p>
+              <p className="text-3xl font-extrabold text-[var(--text-main)] font-mono">{avgProgress}%</p>
+              <p className="text-[10px] text-[var(--brand-strong)] mt-0.5">{completedCount} of {objectives.length} OKRs Achieved</p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand)]/20 text-[var(--brand-strong)]">
+              <Target size={24} />
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-[var(--sky)]/30 bg-[var(--sky-soft)] p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[var(--sky)]">Key Competencies</p>
+              <p className="text-3xl font-extrabold text-[var(--text-main)] font-mono">96%</p>
+              <p className="text-[10px] text-[var(--sky)] mt-0.5">Top 5% Company Percentile</p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--sky)]/20 text-[var(--sky)]">
+              <Award size={24} />
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* HR / Manager Evaluation Modal */}
-      {isReviewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
-              <div className="flex items-center gap-2">
-                <Award size={20} className="text-[var(--brand)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Submit Employee Performance Review</T></h3>
+      {/* Competency Radar & OKR Objectives */}
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        {/* Competencies breakdown */}
+        <Card className="lg:col-span-1">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Award className="h-4 w-4 text-[var(--brand-strong)]" /> 360° Core Competencies
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {COMPETENCIES.map((c) => (
+              <div key={c.name} className="space-y-1.5 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-3.5">
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <span className="text-[var(--text-main)] truncate max-w-[12rem]">{c.name}</span>
+                  <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold ${c.tone}`}>{c.score}</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--bg-panel)]">
+                  <div className="h-full rounded-full bg-[var(--brand)] transition-all" style={{ width: `${c.pct}%` }} />
+                </div>
               </div>
-              <button onClick={() => setIsReviewModalOpen(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* OKRs & Objectives */}
+        <Card className="lg:col-span-2 space-y-4">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-[var(--brand-strong)]" /> Key Objectives &amp; OKRs
+              </div>
+              {isPrivileged && (
+                <Button variant="primary" size="sm" onClick={() => setIsReviewModalOpen(true)}>
+                  <UserCheck size={14} className="mr-1" /> Record Evaluation
+                </Button>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleAddObjective} className="flex gap-2">
+              <Input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Add new objective or key result..."
+                className="flex-1"
+              />
+              <Button type="submit" disabled={createObj.isPending || !newTitle.trim()}>
+                <Plus size={16} /> Add OKR
+              </Button>
+            </form>
+
+            <div className="space-y-3">
+              {(objectives as any[]).map((obj: any) => (
+                <div key={obj.id} className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 shadow-sm space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[var(--text-main)] truncate">{obj.title}</span>
+                    <Badge variant={obj.progress >= 100 ? 'emerald' : 'sky'}>
+                      {obj.progress >= 100 ? 'Completed' : `${obj.progress}%`}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={obj.progress || 0}
+                      onChange={(e) => updateObj.mutate({ id: obj.id, progress: Number(e.target.value) })}
+                      className="h-2 flex-1 cursor-pointer accent-[var(--brand)]"
+                    />
+                    <span className="text-xs font-mono font-bold text-[var(--text-muted)] w-10 text-right">{obj.progress}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Review Modal */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setIsReviewModalOpen(false)}>
+          <div className="w-full max-w-lg rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
+              <h3 className="text-base font-bold text-[var(--text-main)]">Submit Performance Review</h3>
+              <button onClick={() => setIsReviewModalOpen(false)} className="rounded-full p-1 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]">
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleSaveReview} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Select Employee</T></label>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-[var(--text-muted)]">Select Employee</label>
                 <select
+                  required
                   value={selectedEmpId}
                   onChange={(e) => setSelectedEmpId(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
+                  className="flex h-10 w-full cursor-pointer rounded-xl border border-input bg-background px-3 py-2 text-sm"
                 >
-                  {employees.map((emp) => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.name} ({emp.department || emp.role} · {emp.designation || 'Staff'})
-                    </option>
+                  <option value="">— Choose Employee —</option>
+                  {employees.map((e) => (
+                    <option key={e.id} value={e.id}>{e.name} ({e.designation || e.role})</option>
                   ))}
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Review Period</T></label>
-                  <select
-                    value={reviewPeriod}
-                    onChange={(e) => setReviewPeriod(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
-                  >
-                    <option value="Q1 2026">{/* @ts-ignore */}<T>Q1 2026</T></option>
-                    <option value="Q2 2026">{/* @ts-ignore */}<T>Q2 2026</T></option>
-                    <option value="Q3 2026">{/* @ts-ignore */}<T>Q3 2026</T></option>
-                    <option value="Q4 2026">{/* @ts-ignore */}<T>Q4 2026</T></option>
-                    <option value="Annual 2026">{/* @ts-ignore */}<T>Annual 2026</T></option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Rating</T></label>
-                  <select
-                    value={rating}
-                    onChange={(e) => setRating(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
-                  >
-                    <option value="Exceeds Expectations">{/* @ts-ignore */}<T>Exceeds Expectations</T></option>
-                    <option value="Meets Expectations">{/* @ts-ignore */}<T>Meets Expectations</T></option>
-                    <option value="Needs Improvement">{/* @ts-ignore */}<T>Needs Improvement</T></option>
-                  </select>
-                </div>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-[var(--text-muted)]">Review Rating</label>
+                <select
+                  value={rating}
+                  onChange={(e) => setRating(e.target.value)}
+                  className="flex h-10 w-full cursor-pointer rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                >
+                  <option value="Outstanding">Outstanding (5/5)</option>
+                  <option value="Exceeds Expectations">Exceeds Expectations (4/5)</option>
+                  <option value="Meets Expectations">Meets Expectations (3/5)</option>
+                  <option value="Needs Improvement">Needs Improvement (2/5)</option>
+                </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Evaluation Comments & Feedback</T></label>
+              <div>
+                <label className="mb-1 block text-xs font-semibold text-[var(--text-muted)]">Evaluation Comments &amp; Feedback</label>
                 <textarea
-                  rows={3}
                   required
-                  placeholder="Enter detailed evaluation feedback, achievements, and development points..."
+                  rows={3}
                   value={comments}
                   onChange={(e) => setComments(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm"
+                  placeholder="Detailed constructive feedback and performance summary..."
+                  className="w-full rounded-xl border border-input bg-background p-3 text-sm"
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsReviewModalOpen(false)}
-                  className="flex-1 rounded-xl border border-[var(--border-hairline)] py-2.5 text-sm font-semibold text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)]"
-                >
-                  {/* @ts-ignore */}<T>Cancel</T></button>
-                <button
-                  type="submit"
-                  disabled={submitReviewMutation.isPending}
-                  className="btn-primary flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold disabled:opacity-50"
-                >
-                  <Star size={16} />
-                  {submitReviewMutation.isPending ? 'Saving...' : 'Submit Evaluation'}
-                </button>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" onClick={() => setIsReviewModalOpen(false)}>Cancel</Button>
+                <Button type="submit" disabled={submitReviewMutation.isPending}>
+                  {submitReviewMutation.isPending ? 'Saving Evaluation…' : 'Record Evaluation'}
+                </Button>
               </div>
             </form>
           </div>

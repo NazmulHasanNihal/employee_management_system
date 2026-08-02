@@ -1237,18 +1237,46 @@ async function runMutation(path: string, input: any) {
       const { isOwner, role, status, ...safeData } = input || {};
       const tenantId = caller?.tenantId || undefined;
       const newUser = await prisma.user.create({ data: { ...safeData, tenantId } as any });
+      
+      const adminUsers = await prisma.user.findMany({ where: mergeWhere({ role: { in: ['Admin', 'CEO', 'HR'] } }, tenantWhere) });
+      const notifData = adminUsers.map(a => ({
+        userId: a.id,
+        message: `👤 New Employee Onboarded: ${newUser.name} (${newUser.designation || 'Staff'})`,
+        type: 'employee',
+        link: '/registry',
+      }));
+      if (notifData.length > 0) {
+        await prisma.notification.createMany({ data: notifData });
+      }
+      
       revalidateTag('org-tree');
       return newUser;
     }
     if (path === 'registry.updateEmployee') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       // Non-admins may only edit a narrow allow-list of safe fields.
-      const allowed = ['name', 'designation', 'department', 'avatarUrl', 'employmentType', 'phone', 'location', 'managerId'];
+      const allowed = ['name', 'designation', 'department', 'avatarUrl', 'employmentType', 'phone', 'location', 'managerId', 'role', 'status'];
       const data: Record<string, unknown> = {};
       for (const key of allowed) {
         if (input?.data?.[key] !== undefined) data[key] = input.data[key];
       }
       const updatedUser = await prisma.user.update({ where: { id: input.id }, data });
+      
+      const targetUserIds = new Set<string>();
+      targetUserIds.add(updatedUser.id);
+      const adminUsers = await prisma.user.findMany({ where: mergeWhere({ role: { in: ['Admin', 'CEO', 'HR'] } }, tenantWhere) });
+      adminUsers.forEach(a => targetUserIds.add(a.id));
+
+      const notifData = Array.from(targetUserIds).map(uid => ({
+        userId: uid,
+        message: `👤 Employee Profile Updated: ${updatedUser.name} (${updatedUser.designation || updatedUser.role})`,
+        type: 'employee',
+        link: '/registry',
+      }));
+      if (notifData.length > 0) {
+        await prisma.notification.createMany({ data: notifData });
+      }
+
       revalidateTag('org-tree');
       return updatedUser;
     }
@@ -1784,24 +1812,24 @@ async function runMutation(path: string, input: any) {
         }
       });
 
-      // Send notifications
+      // Send notifications to ALL target users (including author so their bell updates)
       let targetUsers;
       if (input.category === 'Team' && input.targetTeam) {
-        targetUsers = await prisma.user.findMany({ where: mergeWhere({ department: input.targetTeam, NOT: { id: userId } }, tenantWhere) });
+        targetUsers = await prisma.user.findMany({ where: mergeWhere({ department: input.targetTeam }, tenantWhere) });
       } else {
-        targetUsers = await prisma.user.findMany({ where: mergeWhere({ NOT: { id: userId } }, tenantWhere) });
+        targetUsers = await prisma.user.findMany({ where: tenantWhere });
       }
 
       const priorityLabel = input.priority === 'Emergency' ? '🚨 EMERGENCY' : input.priority === 'High' ? '⚠️ HIGH PRIORITY' : '';
-      for (const targetUser of targetUsers) {
-        await prisma.notification.create({
-          data: {
-            userId: targetUser.id,
-            message: `${priorityLabel} New ${input.category || 'company'} news: ${input.title}`.trim(),
-            type: 'news',
-            link: '/announcements',
-          }
-        });
+      const notifData = targetUsers.map((u) => ({
+        userId: u.id,
+        message: `${priorityLabel} ${input.title}`.trim(),
+        type: 'news',
+        link: '/announcements',
+      }));
+
+      if (notifData.length > 0) {
+        await prisma.notification.createMany({ data: notifData });
       }
 
       return news;
@@ -2017,6 +2045,19 @@ async function runMutation(path: string, input: any) {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.id) throw new Error('Missing assignment id');
       return await prisma.shiftAssignment.delete({ where: { id: input.id } });
+    }
+    if (path === 'shifts.updateAssignment') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing assignment id');
+      return await prisma.shiftAssignment.update({
+        where: { id: input.id },
+        data: {
+          shiftId: input.shiftId || undefined,
+          teamId: input.teamId !== undefined ? (input.teamId || null) : undefined,
+          workNote: input.workNote !== undefined ? (input.workNote || null) : undefined,
+          roleOnShift: input.roleOnShift !== undefined ? (input.roleOnShift || null) : undefined,
+        },
+      });
     }
     if (path === 'shifts.autoGenerateRoster') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
@@ -2639,6 +2680,11 @@ async function runMutation(path: string, input: any) {
       if (!input?.id) throw new Error('Missing payment id');
       return await prisma.payment.update({ where: { id: input.id }, data: { status: 'PAID' } });
     }
+    if (path === 'payroll.deletePayment') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing payment id');
+      return await prisma.payment.delete({ where: { id: input.id } });
+    }
     if (path === 'payroll.recordSale') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.userId || !input?.amount || !input?.month || !input?.year) throw new Error('Missing sale details');
@@ -2657,7 +2703,7 @@ async function runMutation(path: string, input: any) {
     if (path === 'assets.createAsset') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.name) throw new Error('Asset name required');
-      return await prisma.asset.create({
+      const asset = await prisma.asset.create({
         data: {
           name: input.name,
           status: input.status || 'Active',
@@ -2666,16 +2712,56 @@ async function runMutation(path: string, input: any) {
           userId: input.userId || null
         }
       });
+      if (asset.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: asset.userId,
+            message: `📦 Asset Assigned: You have been assigned ${asset.name}.`,
+            type: 'asset',
+            link: '/assets',
+          }
+        });
+      }
+      return asset;
     }
     if (path === 'assets.updateAsset') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.id) throw new Error('Asset id required');
+      const existing = await prisma.asset.findUnique({ where: { id: input.id } });
+      if (!existing) throw new Error('Asset not found');
+
       const data: any = {};
       if (input.name !== undefined) data.name = input.name;
       if (input.status !== undefined) data.status = input.status;
       if (input.userId !== undefined) data.userId = input.userId || null;
       if (input.purchasePrice !== undefined) data.purchasePrice = Number(input.purchasePrice);
-      return await prisma.asset.update({ where: { id: input.id }, data });
+      
+      const updated = await prisma.asset.update({ where: { id: input.id }, data });
+
+      // If assignment changed, send notifications
+      if (input.userId !== undefined && input.userId !== existing.userId) {
+        if (existing.userId) {
+          await prisma.notification.create({
+            data: {
+              userId: existing.userId,
+              message: `📦 Asset Returned: ${existing.name} has been unassigned and returned to inventory.`,
+              type: 'asset',
+              link: '/assets',
+            }
+          });
+        }
+        if (updated.userId) {
+          await prisma.notification.create({
+            data: {
+              userId: updated.userId,
+              message: `📦 Asset Assigned: You have been assigned ${updated.name}.`,
+              type: 'asset',
+              link: '/assets',
+            }
+          });
+        }
+      }
+      return updated;
     }
 
     // ── TEAM (delegation proxy) ──
