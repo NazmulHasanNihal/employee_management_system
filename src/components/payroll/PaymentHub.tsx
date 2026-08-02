@@ -121,9 +121,9 @@ export function PaymentHub({ isAdmin, latestPayslip, salesThisMonth, salesLastMo
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="rounded-2xl border border-[var(--emerald)]/30 bg-[var(--emerald-soft)] p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--emerald)]">{/* @ts-ignore */}<T>Payroll Fund Balance (10 Lakh Initial)</T></p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--emerald)]">{/* @ts-ignore */}<T>Real Payroll Fund Balance</T></p>
             <p className="text-2xl font-extrabold text-[var(--text-main)] font-mono">{formatCurrency(fundBalance, 'BDT', 'en')}</p>
-            <p className="mt-1 text-[10px] text-[var(--emerald)]/80">Available for live employee disbursements</p>
+            <p className="mt-1 text-[10px] text-[var(--emerald)]/80">Active liquid balance for employee payouts</p>
           </div>
 
           <div className="rounded-2xl bg-[var(--brand-soft)] p-4">

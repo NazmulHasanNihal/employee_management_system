@@ -435,6 +435,7 @@ export const getOrgTree = unstable_cache(
       return false;
     };
 
+    // Real office hierarchy: COO, CTO, CFO, VP report directly to CEO root if managerId is unassigned
     users.forEach((u) => {
       if (root && u.id === root.id) return;
       
@@ -443,7 +444,7 @@ export const getOrgTree = unstable_cache(
           userMap[u.managerId].children.push(userMap[u.id]);
         }
       } else {
-        // No managerId, or manager not found? Attach to root so they don't disappear
+        // Unassigned or executive role (COO/CTO/CFO/VP/Director) -> Attach to CEO root
         if (root && !isDescendant(u.id, root.id)) {
           root.children.push(userMap[u.id]);
         }

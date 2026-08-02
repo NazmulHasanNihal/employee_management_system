@@ -397,6 +397,18 @@ export function ShiftsClient({ shifts, initialAssignments, branches, teams, isAd
                   <div className="flex items-center gap-2">
                     {isAdmin && (
                       <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setNewAssign({ ...newAssign, shiftId: shift.id });
+                            setShowAssignForm(true);
+                            window.scrollTo({ top: 120, behavior: 'smooth' });
+                          }}
+                          className="text-xs gap-1 border-[var(--brand)]/40 text-[var(--brand-strong)] hover:bg-[var(--brand-soft)]"
+                        >
+                          <Plus className="h-3.5 w-3.5" /> Add Person
+                        </Button>
                         <Button variant="ghost" size="icon-sm" onClick={() => openEditor(shift)} aria-label="Edit shift">
                           <Pencil className="h-4 w-4" />
                         </Button>

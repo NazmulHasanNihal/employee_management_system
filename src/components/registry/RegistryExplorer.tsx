@@ -243,64 +243,66 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
         />
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredList.map((emp) => (
-            <div
-              key={emp.id}
-              onClick={() => openProfile(emp)}
-              className="cursor-pointer flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
-            >
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="relative shrink-0">
-                    <Avatar src={emp.avatarUrl} name={emp.name} size="lg" />
-                    <span
-                      className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-[var(--bg-panel)] ${
-                        emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active')
-                          ? 'bg-emerald-500 ring-2 ring-emerald-500/30 animate-pulse'
-                          : 'bg-gray-400'
-                      }`}
-                      title={emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'Active (Online)' : 'Offline'}
-                    />
+          {filteredList.map((emp) => {
+            const isLiveOnline = Boolean(emp.isOnline) || (Boolean(emp.lastSeen) && (new Date().getTime() - new Date(emp.lastSeen!).getTime() < 5 * 60 * 1000));
+            return (
+              <div
+                key={emp.id}
+                onClick={() => openProfile(emp)}
+                className="cursor-pointer flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
+              >
+                <div className="mb-4 flex items-start justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="relative shrink-0">
+                      <Avatar src={emp.avatarUrl} name={emp.name} size="lg" />
+                      <span
+                        className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-[var(--bg-panel)] ${
+                          isLiveOnline
+                            ? 'bg-emerald-500 ring-2 ring-emerald-500/30 animate-pulse'
+                            : 'bg-gray-400'
+                        }`}
+                        title={isLiveOnline ? 'Online Now' : 'Offline'}
+                      />
+                    </div>
+                    <div>
+                       <h4 className="max-w-[12rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
+                       <div className="mt-0.5">
+                         <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
+                           {emp.designation || 'Staff'}
+                         </span>
+                       </div>
+                    </div>
                   </div>
-                  <div>
-                     <h4 className="max-w-[12rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
-                     <div className="mt-0.5">
-                       <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
-                         {emp.designation || 'Staff'}
-                       </span>
-                     </div>
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge variant={roleVariant(emp.role)}>{emp.role}</Badge>
+                    {(emp.role === 'CEO' || emp.isOwner) && emp.role !== 'Admin' && (
+                      <Badge variant="rose">Admin</Badge>
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <Badge variant={roleVariant(emp.role)}>{emp.role}</Badge>
-                  {(emp.role === 'CEO' || emp.isOwner) && emp.role !== 'Admin' && (
-                    <Badge variant="rose">Admin</Badge>
-                  )}
-                </div>
-              </div>
 
-              <div className="mb-4 flex-1 space-y-2.5">
-                <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
-                  <Briefcase className="h-3.5 w-3.5" />
-                  <span className="truncate">{emp.department || 'No Department Assigned'}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
-                  <Mail className="h-3.5 w-3.5" />
-                  <span className="truncate font-mono text-xs">{emp.email}</span>
-                </div>
-                {emp.phone && (
+                <div className="mb-4 flex-1 space-y-2.5">
                   <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
-                    <Phone className="h-3.5 w-3.5" />
-                    <span className="truncate font-mono text-xs">{emp.phone}</span>
+                    <Briefcase className="h-3.5 w-3.5" />
+                    <span className="truncate">{emp.department || 'No Department Assigned'}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-xs pt-1">
-                  <span className={`h-2.5 w-2.5 rounded-full ${emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
-                  <span className={`font-semibold ${emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'text-[var(--emerald)]' : 'text-[var(--text-muted)]'}`}>
-                    {emp.isOnline || (emp.status && emp.status.toLowerCase() === 'active') ? 'Active (Online)' : 'Offline'}
-                  </span>
+                  <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
+                    <Mail className="h-3.5 w-3.5" />
+                    <span className="truncate font-mono text-xs">{emp.email}</span>
+                  </div>
+                  {emp.phone && (
+                    <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
+                      <Phone className="h-3.5 w-3.5" />
+                      <span className="truncate font-mono text-xs">{emp.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs pt-1">
+                    <span className={`h-2.5 w-2.5 rounded-full ${isLiveOnline ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+                    <span className={`font-semibold ${isLiveOnline ? 'text-[var(--emerald)]' : 'text-[var(--text-muted)]'}`}>
+                      {isLiveOnline ? 'Online Now' : 'Offline'}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
               {isAdmin && (
                 <div className="flex gap-2 border-t border-[var(--border-hairline)] pt-4" onClick={(e) => e.stopPropagation()}>
@@ -320,7 +322,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
