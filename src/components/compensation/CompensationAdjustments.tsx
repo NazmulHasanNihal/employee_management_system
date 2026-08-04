@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, Plus, Check, X, Clock, Trash2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, Check, X, Clock, Trash2, Users, Edit3 } from 'lucide-react';
 import { trpc } from '@/lib/trpc/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { EmptyState } from '@/components/EmptyState';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { CreateAdjustmentForm } from '@/components/compensation/CreateAdjustmentForm';
+import { BulkAdjustmentModal } from '@/components/compensation/BulkAdjustmentModal';
+import { EditAdjustmentModal } from '@/components/compensation/EditAdjustmentModal';
 import { toast } from '@/lib/toast';
 import { T } from '@/components/Translate';
 
@@ -33,6 +35,8 @@ interface Adjustment {
 export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { adjustments: Adjustment[]; isAdmin: boolean; canApprove: boolean }) {
   const utils = trpc.useUtils();
   const [showForm, setShowForm] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [editingAdj, setEditingAdj] = useState<Adjustment | null>(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
@@ -44,7 +48,8 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
   const updateStatus = trpc.compensation.updateAdjustmentStatus.useMutation({
     onSuccess: () => {
       utils.compensation.getAdjustments.invalidate();
-      toast.success('Status Updated', 'Compensation adjustment status changed.');
+      utils.invalidate('registry');
+      toast.success('Status Updated', 'Compensation adjustment implemented successfully.');
       setActionLoadingId(null);
     },
     onError: (err: any) => {
@@ -56,10 +61,12 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
   const deleteAdjustment = trpc.compensation.deleteAdjustment.useMutation({
     onSuccess: () => {
       utils.compensation.getAdjustments.invalidate();
-      toast.success('Deleted', 'Adjustment removed.');
+      toast.success('Deleted', 'Adjustment record removed.');
+      setActionLoadingId(null);
     },
     onError: (err: any) => {
       toast.error('Delete Failed', err?.message || 'Could not delete the adjustment.');
+      setActionLoadingId(null);
     },
   });
 
@@ -76,6 +83,7 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
 
   const handleDelete = (id: string) => {
     if (!confirm('Delete this adjustment record? This cannot be undone for implemented adjustments.')) return;
+    setActionLoadingId(id);
     deleteAdjustment.mutate({ id });
   };
 
@@ -119,13 +127,6 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
             {/* @ts-ignore */}<T>Pending</T>
           </Button>
           <Button
-            variant={statusFilter === 'APPROVED' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setStatusFilter('APPROVED')}
-          >
-            {/* @ts-ignore */}<T>Approved</T>
-          </Button>
-          <Button
             variant={statusFilter === 'IMPLEMENTED' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setStatusFilter('IMPLEMENTED')}
@@ -140,11 +141,17 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
             {/* @ts-ignore */}<T>Rejected</T>
           </Button>
         </div>
-        {isAdmin && (
-          <Button variant="primary" size="sm" onClick={() => setShowForm(true)}>
-            <Plus className="h-4 w-4" />
-            {/* @ts-ignore */}<T>New Adjustment</T>
-          </Button>
+        {canApprove && (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowBulkModal(true)} className="rounded-xl">
+              <Users className="h-4 w-4" />
+              {/* @ts-ignore */}<T>Bulk Adjustment</T>
+            </Button>
+            <Button variant="primary" size="sm" onClick={() => setShowForm(true)} className="rounded-xl">
+              <Plus className="h-4 w-4" />
+              {/* @ts-ignore */}<T>New Adjustment</T>
+            </Button>
+          </div>
         )}
       </div>
 
@@ -152,6 +159,29 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in">
           <div className="w-full max-w-3xl overflow-y-auto max-h-[90vh]">
             <CreateAdjustmentForm onSuccess={() => setShowForm(false)} />
+          </div>
+        </div>
+      )}
+
+      {showBulkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-4xl overflow-y-auto max-h-[90vh]">
+            <BulkAdjustmentModal
+              onSuccess={() => setShowBulkModal(false)}
+              onClose={() => setShowBulkModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {editingAdj && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg overflow-y-auto max-h-[90vh]">
+            <EditAdjustmentModal
+              adjustment={editingAdj}
+              onSuccess={() => setEditingAdj(null)}
+              onClose={() => setEditingAdj(null)}
+            />
           </div>
         </div>
       )}
@@ -172,61 +202,81 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
               {filtered.map((adj) => (
                 <div
                   key={adj.id}
-                  className="flex items-center justify-between rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 hover:border-[var(--brand)]/30 transition-all"
                 >
-                  <div className="flex items-center gap-4">
-                    {typeIcon(adj.type)}
+                  <div className="flex items-start sm:items-center gap-4">
+                    <div className="mt-1 sm:mt-0">{typeIcon(adj.type)}</div>
                     <div>
                       <p className="font-semibold text-[var(--text-main)]">
                         {adj.user?.name ?? 'Employee'} ({adj.user?.email ?? '—'})
                       </p>
                       <p className="text-xs text-[var(--text-muted)]">
                         {adj.user?.department && <span>{adj.user.department} · </span>}
-                        {adj.type} · {adj.reason}
+                        <span className="font-semibold">{adj.type}</span> · {adj.reason}
                       </p>
                       {adj.notes && (
-                        <p className="text-xs text-[var(--text-muted)] mt-1">{adj.notes}</p>
+                        <p className="text-xs text-[var(--text-muted)] mt-1 italic">{adj.notes}</p>
                       )}
                       <p className="text-xs text-[var(--text-muted)] mt-1">
                         {formatCurrency(adj.oldSalary, 'BDT', 'en')} →{' '}
-                        <span className={adj.delta >= 0 ? 'text-[var(--emerald)]' : 'text-[var(--rose)]'}>
+                        <span className={adj.delta >= 0 ? 'font-bold text-[var(--emerald)]' : 'font-bold text-[var(--rose)]'}>
                           {formatCurrency(adj.newSalary, 'BDT', 'en')}
                         </span>
                         {' '}({adj.delta >= 0 ? '+' : ''}{adj.percentage ?? 0}%){' '}
                         · Effective {formatDate(adj.effectiveDate)}
-                        {' '}· Requested {formatDate(adj.createdAt)}
+                        {' '}· Created {formatDate(adj.createdAt)}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-end sm:self-center">
                     {statusBadge(adj.status)}
-                    {canApprove && adj.status === 'PENDING' && (
-                      <>
+                    {canApprove && (
+                      <div className="flex items-center gap-1">
+                        {(adj.status === 'PENDING' || adj.status === 'DRAFT') && (
+                          <>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              title="Approve & Implement"
+                              onClick={() => handleApprove(adj.id)}
+                              disabled={actionLoadingId === adj.id}
+                              className="text-[var(--emerald)] hover:bg-[var(--emerald)]/10"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              title="Reject"
+                              onClick={() => handleReject(adj.id)}
+                              disabled={actionLoadingId === adj.id}
+                              className="text-[var(--rose)] hover:bg-[var(--rose)]/10"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                         <Button
                           size="xs"
                           variant="ghost"
-                          onClick={() => handleApprove(adj.id)}
+                          title="Edit Adjustment Record"
+                          onClick={() => setEditingAdj(adj)}
                           disabled={actionLoadingId === adj.id}
                         >
-                          <Check className="h-3 w-3" />
+                          <Edit3 className="h-3.5 w-3.5 text-[var(--text-muted)]" />
                         </Button>
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => handleReject(adj.id)}
-                          disabled={actionLoadingId === adj.id}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => handleDelete(adj.id)}
-                          disabled={actionLoadingId === adj.id || !isAdmin}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </>
+                        {adj.status !== 'IMPLEMENTED' && (
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            title="Delete Record"
+                            onClick={() => handleDelete(adj.id)}
+                            disabled={actionLoadingId === adj.id}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 text-[var(--rose)]" />
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

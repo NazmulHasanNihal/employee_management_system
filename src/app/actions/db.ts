@@ -19,6 +19,9 @@ import {
   validateSalaryAdjustment,
   inferAdjustmentType,
   computeAnnualCostImpact,
+  calculateNewSalaryFromPercentage,
+  calculateNewSalaryFromAmount,
+  type SalaryChangeResult,
 } from '@/lib/compensation';
 
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -2781,38 +2784,72 @@ async function runMutation(path: string, input: any) {
         : 0;
       const inferredType = inferAdjustmentType(delta);
 
-      const adjustment = await prisma.compensationAdjustment.create({
-        data: {
-          userId: input.userId,
-          type: inferredType,
-          oldSalary,
-          newSalary,
-          delta,
-          percentage,
-          reason: input.reason,
-          effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
-          notes: input.notes || null,
-          status: 'PENDING',
-          requestedById: userId ?? null,
-        },
-        include: {
-          user: { select: { id: true, name: true, email: true } },
-        },
-      });
+      const autoImplement = Boolean(input.autoImplement);
+
+      let adjustment;
+      if (autoImplement) {
+        adjustment = await prisma.$transaction(async (tx) => {
+          const created = await tx.compensationAdjustment.create({
+            data: {
+              userId: input.userId,
+              type: inferredType,
+              oldSalary,
+              newSalary,
+              delta,
+              percentage,
+              reason: input.reason,
+              effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
+              notes: input.notes || null,
+              status: 'IMPLEMENTED',
+              requestedById: userId ?? null,
+              approvedById: userId ?? null,
+              approvedAt: new Date(),
+            },
+            include: {
+              user: { select: { id: true, name: true, email: true } },
+            },
+          });
+          await tx.user.update({
+            where: { id: input.userId },
+            data: { baseSalary: newSalary },
+          });
+          return created;
+        });
+      } else {
+        adjustment = await prisma.compensationAdjustment.create({
+          data: {
+            userId: input.userId,
+            type: inferredType,
+            oldSalary,
+            newSalary,
+            delta,
+            percentage,
+            reason: input.reason,
+            effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
+            notes: input.notes || null,
+            status: 'PENDING',
+            requestedById: userId ?? null,
+          },
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        });
+      }
 
       await logSecureAuditEvent({
-        action: `Compensation ${inferredType} Created`,
+        action: autoImplement ? `Compensation ${inferredType} Implemented Instantly` : `Compensation ${inferredType} Created`,
         target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary}, annual impact: ${computeAnnualCostImpact(delta).toLocaleString()} BDT)`,
         user: caller?.email || 'System',
-        severity: 'HIGH',
+        severity: autoImplement ? 'CRITICAL' : 'HIGH',
       });
 
       const effDateStr = adjustment.effectiveDate.toISOString().split('T')[0];
 
-      // Notify the employee and HR/admins.
       const notifData: { userId: string; message: string; type: string; link: string }[] = [{
         userId: input.userId,
-        message: `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Proposed: Your salary is set to change from ${oldSalary.toLocaleString()} to ${newSalary.toLocaleString()} BDT. Effective ${effDateStr}. Pending approval.`,
+        message: autoImplement
+          ? `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Implemented: Your salary has been updated to ${newSalary.toLocaleString()} BDT effective ${effDateStr}.`
+          : `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Proposed: Your salary is set to change from ${oldSalary.toLocaleString()} to ${newSalary.toLocaleString()} BDT. Effective ${effDateStr}. Pending approval.`,
         type: 'payroll',
         link: '/compensation',
       }];
@@ -2821,12 +2858,16 @@ async function runMutation(path: string, input: any) {
         select: { id: true },
       });
       for (const a of adminUsers) {
-        notifData.push({
-          userId: a.id,
-          message: `💰 New compensation ${inferredType.toLowerCase()} request for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT. Requires approval.`,
-          type: 'payroll',
-          link: '/compensation',
-        });
+        if (a.id !== userId) {
+          notifData.push({
+            userId: a.id,
+            message: autoImplement
+              ? `💰 Compensation ${inferredType.toLowerCase()} implemented for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT by ${caller?.email || 'Admin/HR'}.`
+              : `💰 New compensation ${inferredType.toLowerCase()} request for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT. Requires approval.`,
+            type: 'payroll',
+            link: '/compensation',
+          });
+        }
       }
       if (notifData.length > 0) {
         await prisma.notification.createMany({ data: notifData });
@@ -2850,21 +2891,18 @@ async function runMutation(path: string, input: any) {
       });
       if (!existing) throw new Error('Adjustment not found');
 
-      // Status transition guard: only PENDING → APPROVED / REJECTED is allowed
-      // via this endpoint. APPROVED → IMPLEMENTED is applied automatically inside
-      // the APPROVED branch below (atomic transaction with the salary update).
-      if (existing.status !== 'PENDING') {
-        throw new Error(`Cannot change status from ${existing.status} directly. Current status: ${existing.status}`);
+      if (existing.status !== 'PENDING' && existing.status !== 'DRAFT') {
+        throw new Error(`Cannot change status from ${existing.status} directly.`);
       }
-      if (input.status !== 'APPROVED' && input.status !== 'REJECTED') {
-        throw new Error(`Invalid target status. Expected APPROVED or REJECTED, got ${input.status}`);
+      if (input.status !== 'APPROVED' && input.status !== 'REJECTED' && input.status !== 'IMPLEMENTED') {
+        throw new Error(`Invalid target status. Expected APPROVED, REJECTED, or IMPLEMENTED, got ${input.status}`);
       }
 
       const updateData: Record<string, unknown> = {
         status: input.status,
         updatedAt: new Date(),
       };
-      if (input.status === 'APPROVED') {
+      if (input.status === 'APPROVED' || input.status === 'IMPLEMENTED') {
         updateData.approvedById = userId ?? input.approvedById;
         updateData.approvedAt = new Date();
       }
@@ -2872,18 +2910,12 @@ async function runMutation(path: string, input: any) {
         updateData.rejectionReason = input.rejectionReason || null;
       }
 
-      const updated = await prisma.compensationAdjustment.update({
-        where: { id: input.id },
-        data: updateData,
-      });
-
-      // When approved, apply the new salary to the user record (in a transaction
-      // so the salary change and status update are atomic).
-      if (input.status === 'APPROVED') {
+      let updated;
+      if (input.status === 'APPROVED' || input.status === 'IMPLEMENTED') {
         await prisma.$transaction(async (tx) => {
-          await tx.compensationAdjustment.update({
+          updated = await tx.compensationAdjustment.update({
             where: { id: input.id },
-            data: { status: 'IMPLEMENTED' },
+            data: { ...updateData, status: 'IMPLEMENTED' },
           });
           await tx.user.update({
             where: { id: existing.userId },
@@ -2898,7 +2930,6 @@ async function runMutation(path: string, input: any) {
           severity: 'CRITICAL',
         });
 
-        // Notify the employee that their salary change is now live.
         await prisma.notification.create({
           data: {
             userId: existing.userId,
@@ -2908,9 +2939,13 @@ async function runMutation(path: string, input: any) {
           },
         });
 
-        // Return the final implemented record.
         return prisma.compensationAdjustment.findUnique({ where: { id: input.id } });
       }
+
+      updated = await prisma.compensationAdjustment.update({
+        where: { id: input.id },
+        data: updateData,
+      });
 
       await logSecureAuditEvent({
         action: `Compensation Adjustment Status → ${input.status}`,
@@ -2919,13 +2954,12 @@ async function runMutation(path: string, input: any) {
         severity: input.status === 'REJECTED' ? 'HIGH' : 'INFO',
       });
 
-      // Notify the employee of approval / rejection.
       await prisma.notification.create({
         data: {
           userId: existing.userId,
           message: input.status === 'REJECTED'
             ? `❌ Your salary adjustment request was rejected${input.rejectionReason ? `: ${input.rejectionReason}` : ''}.`
-            : `✅ Your salary adjustment was approved and is being processed.`,
+            : `✅ Your salary adjustment was updated to ${input.status}.`,
           type: 'payroll',
           link: '/compensation',
         },
@@ -2934,8 +2968,215 @@ async function runMutation(path: string, input: any) {
       return updated;
     }
 
+    if (path === 'compensation.editAdjustment') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.id) throw new Error('Missing adjustment id');
+
+      const existing = await prisma.compensationAdjustment.findUnique({
+        where: { id: input.id },
+        include: { user: { select: { name: true, baseSalary: true } } },
+      });
+      if (!existing) throw new Error('Adjustment not found');
+
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+
+      if (input.reason) updateData.reason = input.reason;
+      if (input.effectiveDate) updateData.effectiveDate = new Date(input.effectiveDate);
+      if (input.notes !== undefined) updateData.notes = input.notes;
+
+      if (input.newSalary !== undefined && Number(input.newSalary) !== existing.newSalary) {
+        const newSalary = Number(input.newSalary);
+        if (isNaN(newSalary) || newSalary < 0) throw new Error('Invalid newSalary');
+        const oldSalary = existing.oldSalary;
+        const delta = Math.round((newSalary - oldSalary) * 100) / 100;
+        const percentage = oldSalary > 0 ? Math.round(((delta / oldSalary) * 100) * 100) / 100 : 0;
+        const inferredType = inferAdjustmentType(delta);
+
+        updateData.newSalary = newSalary;
+        updateData.delta = delta;
+        updateData.percentage = percentage;
+        updateData.type = inferredType;
+
+        if (existing.status === 'IMPLEMENTED') {
+          await prisma.user.update({
+            where: { id: existing.userId },
+            data: { baseSalary: newSalary },
+          });
+        }
+      }
+
+      const updated = await prisma.compensationAdjustment.update({
+        where: { id: input.id },
+        data: updateData,
+      });
+
+      await logSecureAuditEvent({
+        action: 'Compensation Adjustment Edited',
+        target: `${existing.user?.name || 'Employee'} (id: ${input.id})`,
+        user: caller?.email || 'System',
+        severity: 'MEDIUM',
+      });
+
+      return updated;
+    }
+
+    if (path === 'compensation.bulkAdjust') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.method || !input?.value || !input?.reason || !input?.effectiveDate) {
+        throw new Error('Missing bulk adjustment details');
+      }
+
+      const filter: Record<string, any> = {};
+      if (input.userFilter?.department) filter.department = input.userFilter.department;
+      if (input.userFilter?.branchId) filter.branchId = input.userFilter.branchId;
+      if (input.userFilter?.role) filter.role = input.userFilter.role;
+      if (input.userFilter?.userIds && Array.isArray(input.userFilter.userIds) && input.userFilter.userIds.length > 0) {
+        filter.id = { in: input.userFilter.userIds };
+      }
+
+      const targetUsers = await prisma.user.findMany({
+        where: mergeWhere(filter, tenantWhere),
+        select: { id: true, name: true, email: true, baseSalary: true },
+      });
+
+      if (targetUsers.length === 0) {
+        throw new Error('No employees matched the selected filter criteria');
+      }
+
+      const autoImplement = Boolean(input.autoImplement);
+      const effectiveDate = new Date(input.effectiveDate);
+      const method = input.method;
+      const val = Number(input.value);
+
+      const recordsToCreate: any[] = [];
+      const userUpdates: { id: string; newSalary: number }[] = [];
+
+      for (const u of targetUsers) {
+        const oldSalary = u.baseSalary || 0;
+        let result: SalaryChangeResult;
+        if (method === 'percentage') {
+          result = calculateNewSalaryFromPercentage(oldSalary, val);
+        } else {
+          result = calculateNewSalaryFromAmount(oldSalary, val);
+        }
+
+        if (result.oldSalary === result.newSalary) continue;
+
+        const inferredType = inferAdjustmentType(result.delta);
+        recordsToCreate.push({
+          userId: u.id,
+          type: inferredType,
+          oldSalary: result.oldSalary,
+          newSalary: result.newSalary,
+          delta: result.delta,
+          percentage: result.percentage,
+          reason: input.reason,
+          effectiveDate,
+          notes: input.notes ? `[Bulk] ${input.notes}` : '[Bulk Adjustment]',
+          status: autoImplement ? 'IMPLEMENTED' : 'PENDING',
+          requestedById: userId ?? null,
+          approvedById: autoImplement ? (userId ?? null) : null,
+          approvedAt: autoImplement ? new Date() : null,
+        });
+
+        if (autoImplement) {
+          userUpdates.push({ id: u.id, newSalary: result.newSalary });
+        }
+      }
+
+      if (recordsToCreate.length === 0) {
+        throw new Error('No salary changes resulted from the calculation');
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.compensationAdjustment.createMany({ data: recordsToCreate });
+        if (autoImplement && userUpdates.length > 0) {
+          for (const uu of userUpdates) {
+            await tx.user.update({
+              where: { id: uu.id },
+              data: { baseSalary: uu.newSalary },
+            });
+          }
+        }
+      });
+
+      await logSecureAuditEvent({
+        action: `Bulk Salary Adjustment (${autoImplement ? 'Implemented' : 'Pending'})`,
+        target: `${recordsToCreate.length} employees updated (${input.reason})`,
+        user: caller?.email || 'System',
+        severity: 'CRITICAL',
+      });
+
+      return {
+        success: true,
+        count: recordsToCreate.length,
+        autoImplemented: autoImplement,
+      };
+    }
+
+    if (path === 'registry.updateBaseSalary') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.userId || input?.baseSalary === undefined) {
+        throw new Error('Missing userId or baseSalary');
+      }
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { id: true, name: true, baseSalary: true, email: true },
+      });
+      if (!targetUser) throw new Error('Employee not found');
+
+      const oldSalary = targetUser.baseSalary || 0;
+      const newSalary = Number(input.baseSalary);
+      if (isNaN(newSalary) || newSalary < 0) throw new Error('Invalid base salary');
+
+      const delta = Math.round((newSalary - oldSalary) * 100) / 100;
+      const percentage = oldSalary > 0 ? Math.round(((delta / oldSalary) * 100) * 100) / 100 : 0;
+      const inferredType = inferAdjustmentType(delta);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: input.userId },
+          data: { baseSalary: newSalary },
+        });
+        if (delta !== 0) {
+          await tx.compensationAdjustment.create({
+            data: {
+              userId: input.userId,
+              type: inferredType,
+              oldSalary,
+              newSalary,
+              delta,
+              percentage,
+              reason: input.reason || 'Direct Admin/HR Base Salary Update',
+              effectiveDate: new Date(),
+              status: 'IMPLEMENTED',
+              requestedById: userId ?? null,
+              approvedById: userId ?? null,
+              approvedAt: new Date(),
+            },
+          });
+        }
+      });
+
+      await logSecureAuditEvent({
+        action: 'Direct Base Salary Update',
+        target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary})`,
+        user: caller?.email || 'System',
+        severity: 'CRITICAL',
+      });
+
+      return { success: true, baseSalary: newSalary };
+    }
+
     if (path === 'compensation.deleteAdjustment') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
       if (!input?.id) throw new Error('Missing adjustment id');
 
       const existing = await prisma.compensationAdjustment.findUnique({
@@ -2944,7 +3185,6 @@ async function runMutation(path: string, input: any) {
       });
       if (!existing) throw new Error('Adjustment not found');
 
-      // Only allow deletion of DRAFT or PENDING records (never IMPLEMENTED).
       if (existing.status === 'IMPLEMENTED') {
         throw new Error('Cannot delete an implemented adjustment');
       }

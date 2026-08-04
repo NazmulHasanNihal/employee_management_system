@@ -104,6 +104,32 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
     },
   });
 
+  const updateSalaryMutation = trpc.registry.updateBaseSalary.useMutation({
+    onSuccess: () => {
+      utils.invalidate('registry');
+      utils.compensation.getAdjustments.invalidate();
+      toast.success('Salary Updated', 'Employee base salary updated successfully.');
+    },
+    onError: (err: any) => {
+      toast.error('Update Failed', err?.message || 'Could not update salary.');
+    },
+  });
+
+  const handleQuickSalaryUpdate = (emp: Employee) => {
+    const inputVal = window.prompt(
+      `Enter new monthly base salary (BDT) for ${emp.name}:\nCurrent Base Salary: ${emp.baseSalary ? emp.baseSalary.toLocaleString() : '0'} BDT`,
+      String(emp.baseSalary || '')
+    );
+    if (!inputVal) return;
+    const newSalary = Number(inputVal);
+    if (isNaN(newSalary) || newSalary < 0) {
+      toast.error('Invalid Amount', 'Please enter a valid non-negative number.');
+      return;
+    }
+    const reason = window.prompt('Reason for salary adjustment:', 'Direct Admin/HR Update') || 'Direct Admin/HR Update';
+    updateSalaryMutation.mutate({ userId: emp.id, baseSalary: newSalary, reason });
+  };
+
   const list = liveEmployees;
 
   const handleDelete = async (targetId: string) => {
@@ -426,7 +452,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employment</T></p>
+                    <p className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employment & Compensation</T></p>
                     <div className="mt-2 space-y-2 text-sm text-[var(--text-main)]">
                       <div className="flex items-center gap-2">
                         <Briefcase className="h-4 w-4 text-[var(--text-muted)]" />
@@ -444,6 +470,24 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                           <span>{branches.find(b => b.id === selectedEmployee.branchId)?.name || 'Branch assigned'}</span>
                         </div>
                       )}
+                      <div className="flex items-center justify-between border-t border-[var(--border-hairline)] pt-2 mt-2">
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wide text-[var(--text-muted)]">Base Salary</span>
+                          <p className="font-bold text-sm text-[var(--emerald)]">
+                            {formatCurrency(selectedEmployee.baseSalary || 0, 'BDT', 'en')}
+                          </p>
+                        </div>
+                        {(isAdmin || isOwner || user?.role === 'HR Manager') && (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            onClick={() => handleQuickSalaryUpdate(selectedEmployee)}
+                            className="rounded-lg text-xs"
+                          >
+                            Update Base Salary
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div>

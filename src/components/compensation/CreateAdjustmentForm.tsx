@@ -46,6 +46,7 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
   const [customReason, setCustomReason] = useState('');
   const [effectiveDate, setEffectiveDate] = useState('');
   const [notes, setNotes] = useState('');
+  const [autoImplement, setAutoImplement] = useState(true);
 
   const { data: employees = [] } = trpc.registry.searchEmployees.useQuery({ query: '' });
 
@@ -53,10 +54,13 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
     onSuccess: (result: any) => {
       if (result?.offline) {
         toast.success('Queued', 'Adjustment queued for sync (offline).');
+      } else if (autoImplement) {
+        toast.success('Salary Updated', 'Adjustment implemented immediately and base salary updated.');
       } else {
-        toast.success('Adjustment Created', 'Compensation adjustment has been recorded.');
+        toast.success('Adjustment Created', 'Compensation adjustment recorded and pending approval.');
       }
       utils.compensation.getAdjustments.invalidate();
+      utils.invalidate('registry');
       onSuccess();
     },
     onError: (err: any) => {
@@ -65,25 +69,25 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
   });
 
   const empList = Array.isArray(employees) ? employees : [];
-  const selectedEmp = empList.find((e: any) => e.id === userId) || empList[0];
+  const selectedEmp = userId ? empList.find((e: any) => e.id === userId) || null : null;
   const currentSalary = selectedEmp?.baseSalary ?? 0;
 
   const computeResult = (): SalaryChangeResult | null => {
+    if (!userId || !selectedEmp) return null;
     const old = Number(currentSalary) || 0;
-    if (!old) return null;
 
     if (method === 'percentage') {
       const pct = Number(percentage);
-      if (isNaN(pct)) return null;
+      if (isNaN(pct) || percentage === '') return null;
       return calculateNewSalaryFromPercentage(old, pct);
     }
     if (method === 'amount') {
       const amt = Number(amount);
-      if (isNaN(amt)) return null;
+      if (isNaN(amt) || amount === '') return null;
       return calculateNewSalaryFromAmount(old, amt);
     }
     const tgt = Number(targetSalary);
-    if (isNaN(tgt)) return null;
+    if (isNaN(tgt) || targetSalary === '') return null;
     return calculateNewSalaryFromTarget(old, tgt);
   };
 
@@ -94,12 +98,8 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) {
+    if (!userId || !selectedEmp) {
       toast.error('Missing Employee', 'Please select an employee.');
-      return;
-    }
-    if (!currentSalary) {
-      toast.error('Missing Salary', 'Employee must have a base salary set.');
       return;
     }
     if (!result) {
@@ -121,6 +121,7 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
       reason: finalReason,
       effectiveDate: effectiveDate || new Date().toISOString().split('T')[0],
       notes: notes || undefined,
+      autoImplement,
     });
   };
 
@@ -311,14 +312,34 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional details for the approver..."
+                placeholder="Additional details for the record..."
                 rows={3}
                 className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
               />
             </div>
+
+            <div className="md:col-span-2 rounded-2xl border border-[var(--brand)]/20 bg-[var(--brand)]/5 p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-[var(--text-main)] flex items-center gap-2">
+                  ⚡ {/* @ts-ignore */}<T>Apply Immediately (Instant Payout/Update)</T>
+                </p>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                  {/* @ts-ignore */}<T>Update base salary right now without waiting for approval.</T>
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={autoImplement}
+                  onChange={(e) => setAutoImplement(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-[var(--border-hairline)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--emerald)]"></div>
+              </label>
+            </div>
           </div>
 
-          {currentSalary > 0 && result && (
+          {userId && selectedEmp && result && (
             <div className="rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-4">
               <div className="flex justify-between">
                 <span className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Current Salary:</T></span>
@@ -346,10 +367,10 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
             <Button
               type="submit"
               size="sm"
-              disabled={createMutation.isPending || !userId || !currentSalary || !result}
+              disabled={createMutation.isPending || !userId || !result}
               className="rounded-xl"
             >
-              {createMutation.isPending ? 'Saving...' : 'Create Adjustment'}
+              {createMutation.isPending ? 'Saving...' : autoImplement ? 'Apply Salary Update' : 'Submit for Approval'}
             </Button>
           </div>
         </form>

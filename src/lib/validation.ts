@@ -167,6 +167,7 @@ export const createAdjustmentSchema = z.object({
   effectiveDate: z.string().min(1),
   notes: z.string().max(2000).optional(),
   requestedById: z.string().optional(),
+  autoImplement: z.boolean().optional(),
 });
 
 export const updateAdjustmentStatusSchema = z.object({
@@ -176,6 +177,36 @@ export const updateAdjustmentStatusSchema = z.object({
   rejectionReason: z.string().max(1000).optional(),
 });
 
+export const editAdjustmentSchema = z.object({
+  id: z.string().min(1),
+  newSalary: z.number().min(0).optional(),
+  reason: z.string().min(1).max(500).optional(),
+  effectiveDate: z.string().min(1).optional(),
+  notes: z.string().max(2000).optional(),
+});
+
+export const bulkAdjustmentSchema = z.object({
+  userFilter: z.object({
+    department: z.string().optional(),
+    branchId: z.string().optional(),
+    role: z.string().optional(),
+    userIds: z.array(z.string()).optional(),
+  }),
+  method: z.enum(['percentage', 'amount']),
+  value: z.number(),
+  reason: z.string().min(1).max(500),
+  effectiveDate: z.string().min(1),
+  notes: z.string().max(2000).optional(),
+  autoImplement: z.boolean().optional(),
+});
+
+export const updateBaseSalarySchema = z.object({
+  userId: z.string().min(1),
+  baseSalary: z.number().min(0),
+  reason: z.string().min(1).max(500).optional(),
+});
+
 export const deleteAdjustmentSchema = z.object({
   id: z.string().min(1),
 });
+
