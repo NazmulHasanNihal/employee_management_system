@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { getTranslation, LANG_COOKIE, type Lang } from '@/lib/translations';
 
@@ -12,8 +13,8 @@ export async function getLanguage(): Promise<Lang> {
   return value === 'bn' ? 'bn' : 'en';
 }
 
-/** Convenience: get a `t()` bound to the request's language. */
-export async function getServerT() {
+/** Convenience: get a `t()` bound to the request's language (cached per request). */
+export const getServerT = cache(async () => {
   const lang = await getLanguage();
   return getTranslation(lang);
-}
+});

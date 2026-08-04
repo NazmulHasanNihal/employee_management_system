@@ -1125,7 +1125,22 @@ export async function getPenalties(caller: Caller | null) {
 }
 
 export async function getAssets() {
-  return prisma.asset.findMany({ include: { user: true } });
+  return prisma.asset.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          designation: true,
+          department: true,
+          avatarUrl: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
 }
 
 export async function getTickets(caller: Caller | null) {

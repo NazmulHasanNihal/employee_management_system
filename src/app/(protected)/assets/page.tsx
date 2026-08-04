@@ -9,7 +9,7 @@ import { T } from "@/components/Translate";
 
 export const dynamic = 'force-dynamic';
 
-function calculateDepreciation(asset: { purchasePrice: number; purchaseDate: Date; depreciationYears?: number }) {
+function calculateDepreciation(asset: { purchasePrice?: number | null; purchaseDate?: Date | string | null; depreciationYears?: number | null }) {
   if (!asset.purchasePrice || !asset.purchaseDate) return 0;
   const purchaseDate = new Date(asset.purchaseDate);
   const now = new Date();
@@ -24,9 +24,9 @@ export default async function AssetsPage() {
   const assets = await getAssets();
 
   const totalAssets = assets.length;
-  const totalValue = assets.reduce((acc: number, curr: { purchasePrice?: number }) => acc + (curr.purchasePrice || 0), 0);
+  const totalValue = assets.reduce((acc: number, curr: { purchasePrice?: number | null }) => acc + (curr.purchasePrice || 0), 0);
   const currentFleetValue = assets.reduce(
-    (acc: number, curr: { purchasePrice: number; purchaseDate: Date; depreciationYears?: number }) => acc + calculateDepreciation(curr),
+    (acc: number, curr: any) => acc + calculateDepreciation(curr),
     0
   );
 
@@ -51,7 +51,7 @@ export default async function AssetsPage() {
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Original Value</T></p>
                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
-                ${totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                ${Number(totalValue).toLocaleString('en-US', { maximumFractionDigits: 0 })}
               </p>
             </CardContent>
           </Card>
@@ -59,7 +59,7 @@ export default async function AssetsPage() {
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Current Book Value</T></p>
                <p className="mt-2 text-fluid-3xl font-semibold text-[var(--rose)]">
-                ${currentFleetValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                ${Number(currentFleetValue).toLocaleString('en-US', { maximumFractionDigits: 0 })}
               </p>
             </CardContent>
           </Card>

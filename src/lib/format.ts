@@ -42,13 +42,17 @@ export function formatDate(
   opts?: Intl.DateTimeFormatOptions
 ): string {
   if (!date) return '—';
-  const d = typeof date === 'object' ? date : new Date(date);
-  if (Number.isNaN(d.getTime())) return '—';
-  return new Intl.DateTimeFormat(LOCALE[lang] || 'en-US', opts || {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(d);
+  try {
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return '—';
+    return new Intl.DateTimeFormat(LOCALE[lang] || 'en-US', opts || {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(d);
+  } catch {
+    return '—';
+  }
 }
 
 export function formatDateTime(
@@ -56,13 +60,17 @@ export function formatDateTime(
   lang: Lang = 'en'
 ): string {
   if (!date) return '—';
-  const d = typeof date === 'object' ? date : new Date(date);
-  if (Number.isNaN(d.getTime())) return '—';
-  return new Intl.DateTimeFormat(LOCALE[lang] || 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(d);
+  try {
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return '—';
+    return new Intl.DateTimeFormat(LOCALE[lang] || 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return '—';
+  }
 }

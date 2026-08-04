@@ -19,13 +19,20 @@ export default async function CompensationPage() {
   const isHR = caller?.isHR ?? false;
   const privileged = isAdmin || isCEO || isHR;
 
-  const adjustments = await getCompensationAdjustments(caller);
+  let adjustments: any[] = [];
+  try {
+    const raw = await getCompensationAdjustments(caller);
+    adjustments = Array.isArray(raw) ? raw : [];
+  } catch (err) {
+    console.error('Failed to load compensation adjustments:', err);
+    adjustments = [];
+  }
 
-  const totalIncrements = adjustments.filter((a: { type: string }) => a.type === 'INCREMENT').length;
-  const totalDecrements = adjustments.filter((a: { type: string }) => a.type === 'DECREMENT').length;
+  const totalIncrements = adjustments.filter((a: { type: string }) => a?.type === 'INCREMENT').length;
+  const totalDecrements = adjustments.filter((a: { type: string }) => a?.type === 'DECREMENT').length;
   const totalCostImpact = adjustments
-    .filter((a: { status: string }) => a.status === 'IMPLEMENTED')
-    .reduce((sum: number, a: { delta: number }) => sum + a.delta, 0);
+    .filter((a: { status: string }) => a?.status === 'IMPLEMENTED')
+    .reduce((sum: number, a: { delta?: number }) => sum + (Number(a?.delta) || 0), 0);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">

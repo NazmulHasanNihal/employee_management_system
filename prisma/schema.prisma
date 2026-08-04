@@ -272,14 +272,28 @@ model Penalty {
 }
 
 model Asset {
-  id            String   @id @default(cuid())
-  name          String
-  status        String   @default("Active") // Active, Maintenance, Retired
-  purchasePrice Float
-  purchaseDate  DateTime
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
+  id             String    @id @default(cuid())
+  name           String
+  assetTag       String?   @unique
+  serialNumber   String?
+  category       String    @default("Laptop") // Laptop, Desktop, Smartphone, Tablet, Monitor, AudioVisual, Peripheral, NetworkServer, License, Other
+  brand          String?
+  condition      String    @default("Good") // New, Excellent, Good, Fair, RepairNeeded, Damaged
+  location       String?
+  notes          String?
+  status         String    @default("Active") // Active, Maintenance, Retired
+  purchasePrice  Float     @default(0)
+  purchaseDate   DateTime?
+  warrantyExpiry DateTime?
+  assignedDate   DateTime?
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
 }
 
 model LeaveRequest {
@@ -1050,4 +1064,5 @@ model CompensationAdjustment {
   @@index([userId, effectiveDate])
   @@index([status])
   @@index([effectiveDate])
+  @@index([createdAt])
 }

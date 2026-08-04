@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
@@ -36,27 +37,15 @@ export const OWNER_EMAIL = process.env.OWNER_EMAIL || 'nazmulhas36@gmail.com';
 
 /**
  * Resolves the authenticated user and pre-computes privilege flags.
- *
- * Security model:
- *  - `isOwner` comes from the DB flag only (set during seed / provisioning).
- *  - `isCEO` is true only when the DB `role` is 'CEO' or the user is the owner.
- *    It is intentionally NOT derived from the free-text `designation` field,
- *    which users can edit on their own profile.
- *  - `isAdmin` = role Admin OR HR Manager.
+ * Memoized per request using React cache() to prevent redundant DB & Auth roundtrips.
  */
-export async function getCaller(): Promise<Caller | null> {
+export const getCaller = cache(async (): Promise<Caller | null> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  // Resolve the Prisma user by email (authoritative, from the verified Supabase
-  // session) first, then fall back to the Supabase auth id. Matching by email
-  // keeps login working even when the Prisma `id` differs from the Supabase
-  // `user.id` (e.g. a seeded owner whose id was set before the auth account
-  // existed). The session is already verified by Supabase, so trusting the
-  // email is safe.
   const dbUser =
     (user.email
       ? await prisma.user.findUnique({ where: { email: user.email } })
@@ -90,7 +79,7 @@ export async function getCaller(): Promise<Caller | null> {
     createdAt: dbUser.createdAt,
     updatedAt: dbUser.updatedAt,
   };
-}
+});
 
 export function isManagerOrAbove(caller: Caller): boolean {
   return caller.isAdmin || caller.isCEO || caller.role === 'Manager' || caller.role === 'Director';

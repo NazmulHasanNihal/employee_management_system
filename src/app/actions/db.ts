@@ -622,8 +622,8 @@ export async function runQuery(
           where: mergeWhere({}, withTenantUserScope(caller)),
           include: {
             user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
-            requestedBy: { select: { id: true, name: true } },
-            approvedBy: { select: { id: true, name: true } },
+            requestedBy: { select: { id: true, name: true, role: true } },
+            approvedBy: { select: { id: true, name: true, role: true } },
           },
           orderBy: { createdAt: 'desc' },
         });
@@ -633,8 +633,8 @@ export async function runQuery(
         where: { userId },
         include: {
           user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
-          requestedBy: { select: { id: true, name: true } },
-          approvedBy: { select: { id: true, name: true } },
+          requestedBy: { select: { id: true, name: true, role: true } },
+          approvedBy: { select: { id: true, name: true, role: true } },
         },
         orderBy: { createdAt: 'desc' },
       });
@@ -667,7 +667,25 @@ export async function runQuery(
     }
 
     // ── ASSETS ──
-    if (path === 'assets.getAssets') return await prisma.asset.findMany({ where: withTenantUserScope(caller), include: { user: true } });
+    if (path === 'assets.getAssets') {
+      return await prisma.asset.findMany({
+        where: withTenantUserScope(caller),
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              designation: true,
+              department: true,
+              avatarUrl: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
 
     // ── HELPDESK ──
     if (path === 'helpdesk.getTickets') {
@@ -1738,6 +1756,858 @@ async function runMutation(path: string, input: any) {
       if (!input?.id) throw new Error('Penalty id required');
       return await prisma.penalty.update({ where: { id: input.id }, data: { status: input.status } });
     }
+    if (path === 'committee.removeMember') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Member id required');
+      return await prisma.committeeMember.delete({ where: { id: input.id } });
+    }
+    if (path === 'committee.setChair') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.id) throw new Error('Missing fields');
+      await prisma.committeeMember.updateMany({ where: { isChair: true }, data: { isChair: false } });
+      return await prisma.committeeMember.update({ where: { id: input.id }, data: { isChair: true } });
+    }
+
+    // ── ENGAGEMENT GREETING RULES (P10) ──
+    if (path === 'engagement.setRuleActive') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.id || typeof input.isActive !== 'boolean') throw new Error('Missing fields');
+      return await prisma.greetingRule.update({ where: { id: input.id }, data: { isActive: input.isActive } });
+    }
+
+    // ── FEEDBACK (mutations) ──
+    if (path === 'feedback.submitFeedback') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.content || !input.content.trim()) throw new Error('Feedback required');
+      return await prisma.feedback.create({
+        data: {
+          content: input.content.trim(),
+          type: input.type || 'Suggestion',
+          anonymous: input.anonymous !== false,
+          authorId: userId!,
+          recipientId: input.recipientId || null
+        }
+      });
+    }
+    if (path === 'feedback.updateFeedbackStatus') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.id || !input?.status) throw new Error('Missing fields');
+      return await prisma.feedback.update({ where: { id: input.id }, data: { status: input.status } });
+    }
+
+    // ── DOCUMENTS (mutations) ──
+    if (path === 'documents.createDocument') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.title || !input?.url) throw new Error('Title and URL required');
+      return await prisma.document.create({
+        data: {
+          title: input.title,
+          url: input.url,
+          fileName: input.fileName || input.title,
+          size: input.size || null,
+          mimeType: input.mimeType || null,
+          type: input.type || 'General',
+          category: input.category || 'General',
+          status: input.status || 'ACTIVE',
+          ownerId: input.ownerId || userId!
+        }
+      });
+    }
+    if (path === 'documents.signDocument') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      const doc = await prisma.document.findUnique({ where: { id: input.id } });
+      if (!doc) throw new Error('Document not found');
+      if (doc.ownerId !== userId && !isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      return await prisma.document.update({ where: { id: input.id }, data: { signed: true, signedAt: new Date() } });
+    }
+
+    // ── PROFILE (skills/documents) ──
+    if (path === 'profile.addSkill') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.skill || !input.skill.trim()) throw new Error('Skill required');
+      const level = Math.max(1, Math.min(5, Number(input.level) || 1));
+      return await prisma.skill.create({
+        data: { userId: userId!, skill: input.skill.trim(), level }
+      });
+    }
+    if (path === 'profile.removeSkill') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      const skillName = input?.skill;
+      if (!skillName) throw new Error('Skill required');
+      return await prisma.skill.deleteMany({ where: { userId, skill: skillName } });
+    }
+    if (path === 'profile.uploadDocument') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.title || !input?.url) throw new Error('Title and URL required');
+      return await prisma.document.create({
+        data: { title: input.title, url: input.url, type: input.type || 'General', ownerId: userId! }
+      });
+    }
+
+    // ── PAYROLL STRUCTURES ──
+    if (path === 'payroll.createStructure') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.name || !input?.baseSalary || !input?.heads) throw new Error('Missing fields');
+      return await prisma.salaryStructure.create({
+        data: {
+          name: input.name,
+          baseSalary: Number(input.baseSalary),
+          heads: input.heads
+        }
+      });
+    }
+    if (path === 'payroll.grantFestivalBonus') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.userId || !input?.occasion || !input?.year) throw new Error('Missing fields');
+      const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { baseSalary: true, name: true } });
+      const base = user?.baseSalary ?? 0;
+      const bonus = input.amount != null ? Number(input.amount) : estimateFestivalBonus(base);
+      return await prisma.festivalBonus.create({
+        data: {
+          userId: input.userId,
+          year: Number(input.year),
+          occasion: input.occasion,
+          occasionBn: input.occasionBn || null,
+          amount: bonus,
+          baseSalarySnapshot: base,
+          status: input.status || 'PAID',
+        },
+      });
+    }
+    if (path === 'payroll.runAutomatedPayroll') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      const year = input?.year || new Date().getFullYear();
+      const rawMonth = input?.month || new Date().toLocaleString('en', { month: 'short' });
+      const monthIndex = new Date(`${rawMonth} 1, ${year}`).getMonth();
+      const month = new Date(2000, monthIndex, 1).toLocaleString('en', { month: 'short' });
+      const periodStart = new Date(year, monthIndex, 1);
+      const periodEnd = new Date(year, monthIndex + 1, 1);
+
+      const structures = await prisma.salaryStructure.findMany();
+      const headMeta = await prisma.salaryHead.findMany();
+      const headByName = new Map(headMeta.map((h) => [h.name, h]));
+
+      const WORKING_DAYS = 30;
+
+      let created = 0;
+      for (const s of structures) {
+        const rawHeads = (s.heads as Record<string, number>) || {};
+        const baseEntries = Object.entries(rawHeads).map(([name, amount]) => {
+          const meta = headByName.get(name);
+          return {
+            name,
+            amount,
+            type: (meta?.type as 'EARNING' | 'DEDUCTION') || (amount >= 0 ? 'EARNING' : 'DEDUCTION'),
+          };
+        });
+
+        const users = await prisma.user.findMany({
+          where: { status: 'active' },
+          select: { id: true, baseSalary: true, name: true, createdAt: true },
+        });
+
+        for (const u of users) {
+          const exists = await prisma.payroll.findFirst({ where: { userId: u.id, month, year } });
+          if (exists) continue;
+
+          const base = u.baseSalary ?? s.baseSalary;
+          const hourlyRate = base / (WORKING_DAYS * 8);
+
+          const attendances = await prisma.attendance.findMany({
+            where: { userId: u.id, date: { gte: periodStart, lt: periodEnd } },
+          });
+          const overtimeMinutes = attendances.reduce((sum, a) => sum + (a.overtimeMinutes || 0), 0);
+          const nightMinutes = attendances.reduce((sum, a) => sum + (a.nightMinutes || 0), 0);
+          const lateDays = attendances.filter((a) => (a.lateMinutes || 0) > 0).length;
+          const overtimeHours = Math.round((overtimeMinutes / 60) * 100) / 100;
+          const nightHours = Math.round((nightMinutes / 60) * 100) / 100;
+
+          const otEarning = overtimeHours * hourlyRate * 1.5;
+          const nightEarning = nightHours * hourlyRate * 1.25;
+
+          const approvedLeaves = await prisma.leaveRequest.findMany({
+            where: {
+              userId: u.id,
+              status: 'Approved',
+              startDate: { lt: periodEnd },
+              endDate: { gte: periodStart },
+            },
+          });
+          const PAID_CATEGORIES = new Set(['Casual', 'Earned', 'Sick', 'Festival', 'Maternity', 'Paternity']);
+          let lwpDays = 0;
+          for (const lv of approvedLeaves) {
+            const category = await resolveLeaveCategory(lv.type);
+            if (category && !PAID_CATEGORIES.has(category)) {
+              const start = new Date(lv.startDate) < periodStart ? periodStart : new Date(lv.startDate);
+              const end = new Date(lv.endDate) >= periodEnd ? new Date(periodEnd.getTime() - 1) : new Date(lv.endDate);
+              const days = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+              lwpDays += days;
+            }
+          }
+          const lwpDeduction = lwpDays * (base / WORKING_DAYS);
+
+          const entries = [...baseEntries];
+          if (otEarning > 0) entries.push({ name: 'Overtime', amount: Math.round(otEarning * 100) / 100, type: 'EARNING' });
+          if (nightEarning > 0) entries.push({ name: 'Night Differential', amount: Math.round(nightEarning * 100) / 100, type: 'EARNING' });
+          if (lwpDeduction > 0) entries.push({ name: 'Leave Without Pay', amount: -Math.round(lwpDeduction * 100) / 100, type: 'DEDUCTION' });
+
+          const { earnings, deductions, tax, net } = calculatePayroll(base, entries);
+
+          const pf = estimateProvidentFund(base);
+          const employeePf = pf.monthlyEmployee;
+          const employerPf = pf.monthlyEmployer;
+          const pfDeductionEntry = { head: 'Provident Fund (Employee)', amount: employeePf };
+
+          const finalDeductions = deductions + employeePf;
+          const finalNet = Math.round((net - employeePf) * 100) / 100;
+
+          const festivalRecord = await prisma.festivalBonus.findFirst({
+            where: { userId: u.id, year, status: 'PAID' },
+          });
+          const festival = festivalRecord?.amount ?? 0;
+
+          const earningsBreakdown = entries
+            .filter((e) => e.amount >= 0)
+            .map((e) => ({ head: e.name, amount: e.amount }));
+          const deductionsBreakdown = [
+            ...entries.filter((e) => e.amount < 0).map((e) => ({ head: e.name, amount: Math.abs(e.amount) })),
+            pfDeductionEntry,
+          ];
+
+          await prisma.payroll.create({
+            data: {
+              month,
+              year,
+              earnings,
+              deductions: Math.round(finalDeductions * 100) / 100,
+              totalAmount: finalNet + festival,
+              netPay: finalNet + festival,
+              tax,
+              providentFund: employerPf,
+              gratuityAccrued: Math.round(estimateGratuity(base, yearsOfService(u)) * 100) / 100,
+              festivalBonus: festival,
+              overtimeHours,
+              nightHours,
+              lateDays,
+              earningsBreakdown,
+              deductionsBreakdown,
+              salaryStructureId: s.id,
+              userId: u.id,
+            },
+          });
+          created++;
+        }
+      }
+
+      await logSecureAuditEvent({
+        action: 'Automated Payroll Run',
+        target: `${month} ${year}`,
+        user: caller?.email || 'System',
+        severity: 'CRITICAL',
+      });
+
+      return { success: true, created };
+    }
+
+    if (path === 'settings.setSystemSetting') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.key) throw new Error('Setting key is required');
+      await prisma.systemSetting.upsert({
+        where: { key: input.key },
+        create: { key: input.key, value: String(input.value), updatedById: userId },
+        update: { value: String(input.value), updatedById: userId },
+      });
+      return { success: true };
+    }
+
+    // ── PAYMENT HUB (payments + sales) ──
+    if (path === 'payroll.recordPayment') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      const targetUserId = isAdmin || isCEO ? (input.userId || userId) : userId;
+      if (!input?.amount || !input?.month || !input?.year) throw new Error('Missing payment details');
+      return await prisma.payment.create({
+        data: {
+          userId: targetUserId,
+          payrollId: input.payrollId || null,
+          month: Number(input.month),
+          year: Number(input.year),
+          amount: Number(input.amount),
+          method: input.method || 'BKASH',
+          reference: input.reference || null,
+          status: input.status || 'PAID',
+          details: input.details || null,
+        },
+      });
+    }
+    if (path === 'payroll.markPaymentPaid') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing payment id');
+      return await prisma.payment.update({ where: { id: input.id }, data: { status: 'PAID' } });
+    }
+    if (path === 'payroll.deletePayment') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing payment id');
+      return await prisma.payment.delete({ where: { id: input.id } });
+    }
+    if (path === 'payroll.recordSale') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.userId || !input?.amount || !input?.month || !input?.year) throw new Error('Missing sale details');
+      return await prisma.sale.create({
+        data: {
+          userId: input.userId,
+          month: Number(input.month),
+          year: Number(input.year),
+          amount: Number(input.amount),
+          note: input.note || null,
+        },
+      });
+    }
+
+    // ── COMPENSATION (mutations) ──
+    if (path === 'compensation.createAdjustment') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      if (!input?.userId || !input?.type || !input?.reason) {
+        throw new Error('Missing required fields: userId, type, reason');
+      }
+
+      const validTypes = ['INCREMENT', 'DECREMENT', 'ADJUSTMENT'];
+      if (!validTypes.includes(input.type)) throw new Error('Invalid adjustment type');
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { id: true, name: true, baseSalary: true, department: true, role: true, email: true },
+      });
+      if (!targetUser) throw new Error('Employee not found');
+
+      const oldSalary = Number(input.oldSalary) || targetUser.baseSalary || 0;
+      const newSalary = Number(input.newSalary);
+      if (isNaN(newSalary)) throw new Error('newSalary is required and must be a number');
+
+      const validationError = validateSalaryAdjustment(oldSalary, newSalary);
+      if (validationError) throw new Error(validationError);
+
+      const delta = Math.round((newSalary - oldSalary) * 100) / 100;
+      const percentage = oldSalary > 0
+        ? Math.round(((delta / oldSalary) * 100) * 100) / 100
+        : 0;
+      const inferredType = inferAdjustmentType(delta);
+
+      const autoImplement = Boolean(input.autoImplement);
+
+      let adjustment;
+      if (autoImplement) {
+        adjustment = await prisma.$transaction(async (tx) => {
+          const created = await tx.compensationAdjustment.create({
+            data: {
+              userId: input.userId,
+              type: inferredType,
+              oldSalary,
+              newSalary,
+              delta,
+              percentage,
+              reason: input.reason,
+              effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
+              notes: input.notes || null,
+              status: 'IMPLEMENTED',
+              requestedById: userId ?? null,
+              approvedById: userId ?? null,
+              approvedAt: new Date(),
+            },
+            include: {
+              user: { select: { id: true, name: true, email: true } },
+            },
+          });
+          await tx.user.update({
+            where: { id: input.userId },
+            data: { baseSalary: newSalary },
+          });
+          return created;
+        });
+      } else {
+        adjustment = await prisma.compensationAdjustment.create({
+          data: {
+            userId: input.userId,
+            type: inferredType,
+            oldSalary,
+            newSalary,
+            delta,
+            percentage,
+            reason: input.reason,
+            effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
+            notes: input.notes || null,
+            status: 'PENDING',
+            requestedById: userId ?? null,
+          },
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        });
+      }
+
+      await logSecureAuditEvent({
+        action: autoImplement ? `Compensation ${inferredType} Implemented Instantly` : `Compensation ${inferredType} Created`,
+        target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary}, annual impact: ${computeAnnualCostImpact(delta).toLocaleString()} BDT)`,
+        user: caller?.email || 'System',
+        severity: autoImplement ? 'CRITICAL' : 'HIGH',
+      });
+
+      const effDateStr = adjustment.effectiveDate.toISOString().split('T')[0];
+
+      const notifData: { userId: string; message: string; type: string; link: string }[] = [{
+        userId: input.userId,
+        message: autoImplement
+          ? `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Implemented: Your salary has been updated to ${newSalary.toLocaleString()} BDT effective ${effDateStr}.`
+          : `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Proposed: Your salary is set to change from ${oldSalary.toLocaleString()} to ${newSalary.toLocaleString()} BDT. Effective ${effDateStr}. Pending approval.`,
+        type: 'payroll',
+        link: '/compensation',
+      }];
+      const adminUsers = await prisma.user.findMany({
+        where: mergeWhere({ role: { in: ['Admin', 'HR Manager', 'CEO'] } }, callerTenantWhere(caller)),
+        select: { id: true },
+      });
+      for (const a of adminUsers) {
+        if (a.id !== userId) {
+          notifData.push({
+            userId: a.id,
+            message: autoImplement
+              ? `💰 Compensation ${inferredType.toLowerCase()} implemented for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT by ${caller?.email || 'Admin/HR'}.`
+              : `💰 New compensation ${inferredType.toLowerCase()} request for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT. Requires approval.`,
+            type: 'payroll',
+            link: '/compensation',
+          });
+        }
+      }
+      if (notifData.length > 0) {
+        await prisma.notification.createMany({ data: notifData });
+      }
+
+      return adjustment;
+    }
+
+    if (path === 'compensation.updateAdjustmentStatus') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.id || !input?.status) throw new Error('Missing adjustment id or status');
+
+      const validStatuses = ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED', 'IMPLEMENTED'];
+      if (!validStatuses.includes(input.status)) throw new Error('Invalid status');
+
+      const existing = await prisma.compensationAdjustment.findUnique({
+        where: { id: input.id },
+        include: { user: { select: { name: true } } },
+      });
+      if (!existing) throw new Error('Adjustment not found');
+
+      if (existing.status !== 'PENDING' && existing.status !== 'DRAFT') {
+        throw new Error(`Cannot change status from ${existing.status} directly.`);
+      }
+      if (input.status !== 'APPROVED' && input.status !== 'REJECTED' && input.status !== 'IMPLEMENTED') {
+        throw new Error(`Invalid target status. Expected APPROVED, REJECTED, or IMPLEMENTED, got ${input.status}`);
+      }
+
+      const updateData: Record<string, unknown> = {
+        status: input.status,
+        updatedAt: new Date(),
+      };
+      if (input.status === 'APPROVED' || input.status === 'IMPLEMENTED') {
+        updateData.approvedById = userId ?? input.approvedById;
+        updateData.approvedAt = new Date();
+      }
+      if (input.status === 'REJECTED') {
+        updateData.rejectionReason = input.rejectionReason || null;
+      }
+
+      let updated;
+      if (input.status === 'APPROVED' || input.status === 'IMPLEMENTED') {
+        await prisma.$transaction(async (tx) => {
+          updated = await tx.compensationAdjustment.update({
+            where: { id: input.id },
+            data: { ...updateData, status: 'IMPLEMENTED' },
+          });
+          await tx.user.update({
+            where: { id: existing.userId },
+            data: { baseSalary: existing.newSalary },
+          });
+        });
+
+        await logSecureAuditEvent({
+          action: 'Compensation Adjustment Implemented',
+          target: `${existing.user?.name || 'Employee'} (salary: ${existing.oldSalary} → ${existing.newSalary})`,
+          user: caller?.email || 'System',
+          severity: 'CRITICAL',
+        });
+
+        await prisma.notification.create({
+          data: {
+            userId: existing.userId,
+            message: `💰 Your salary has been updated to ${existing.newSalary.toLocaleString()} BDT effective ${existing.effectiveDate.toISOString().split('T')[0]}.`,
+            type: 'payroll',
+            link: '/compensation',
+          },
+        });
+
+        return prisma.compensationAdjustment.findUnique({ where: { id: input.id } });
+      }
+
+      updated = await prisma.compensationAdjustment.update({
+        where: { id: input.id },
+        data: updateData,
+      });
+
+      await logSecureAuditEvent({
+        action: `Compensation Adjustment Status → ${input.status}`,
+        target: `${existing.user?.name || 'Employee'}`,
+        user: caller?.email || 'System',
+        severity: input.status === 'REJECTED' ? 'HIGH' : 'INFO',
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: existing.userId,
+          message: input.status === 'REJECTED'
+            ? `❌ Your salary adjustment request was rejected${input.rejectionReason ? `: ${input.rejectionReason}` : ''}.`
+            : `✅ Your salary adjustment was updated to ${input.status}.`,
+          type: 'payroll',
+          link: '/compensation',
+        },
+      });
+
+      return updated;
+    }
+
+    if (path === 'compensation.editAdjustment') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.id) throw new Error('Missing adjustment id');
+
+      const existing = await prisma.compensationAdjustment.findUnique({
+        where: { id: input.id },
+        include: { user: { select: { name: true, baseSalary: true } } },
+      });
+      if (!existing) throw new Error('Adjustment not found');
+
+      const updateData: Record<string, any> = { updatedAt: new Date() };
+
+      if (input.reason) updateData.reason = input.reason;
+      if (input.effectiveDate) updateData.effectiveDate = new Date(input.effectiveDate);
+      if (input.notes !== undefined) updateData.notes = input.notes;
+
+      if (input.newSalary !== undefined && Number(input.newSalary) !== existing.newSalary) {
+        const newSalary = Number(input.newSalary);
+        if (isNaN(newSalary) || newSalary < 0) throw new Error('Invalid newSalary');
+        const oldSalary = existing.oldSalary;
+        const delta = Math.round((newSalary - oldSalary) * 100) / 100;
+        const percentage = oldSalary > 0 ? Math.round(((delta / oldSalary) * 100) * 100) / 100 : 0;
+        const inferredType = inferAdjustmentType(delta);
+
+        updateData.newSalary = newSalary;
+        updateData.delta = delta;
+        updateData.percentage = percentage;
+        updateData.type = inferredType;
+
+        if (existing.status === 'IMPLEMENTED') {
+          await prisma.user.update({
+            where: { id: existing.userId },
+            data: { baseSalary: newSalary },
+          });
+        }
+      }
+
+      const updated = await prisma.compensationAdjustment.update({
+        where: { id: input.id },
+        data: updateData,
+      });
+
+      await logSecureAuditEvent({
+        action: 'Compensation Adjustment Edited',
+        target: `${existing.user?.name || 'Employee'} (id: ${input.id})`,
+        user: caller?.email || 'System',
+        severity: 'MEDIUM',
+      });
+
+      return updated;
+    }
+
+    if (path === 'compensation.bulkAdjust') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.method || !input?.value || !input?.reason || !input?.effectiveDate) {
+        throw new Error('Missing bulk adjustment details');
+      }
+
+      const filter: Record<string, any> = {};
+      if (input.userFilter?.department) filter.department = input.userFilter.department;
+      if (input.userFilter?.branchId) filter.branchId = input.userFilter.branchId;
+      if (input.userFilter?.role) filter.role = input.userFilter.role;
+      if (input.userFilter?.userIds && Array.isArray(input.userFilter.userIds) && input.userFilter.userIds.length > 0) {
+        filter.id = { in: input.userFilter.userIds };
+      }
+
+      const targetUsers = await prisma.user.findMany({
+        where: mergeWhere(filter, callerTenantWhere(caller)),
+        select: { id: true, name: true, email: true, baseSalary: true },
+      });
+
+      if (targetUsers.length === 0) {
+        throw new Error('No employees matched the selected filter criteria');
+      }
+
+      const autoImplement = Boolean(input.autoImplement);
+      const effectiveDate = new Date(input.effectiveDate);
+      const method = input.method;
+      const val = Number(input.value);
+
+      const recordsToCreate: any[] = [];
+      const userUpdates: { id: string; newSalary: number }[] = [];
+
+      for (const u of targetUsers) {
+        const oldSalary = u.baseSalary || 0;
+        let result: SalaryChangeResult;
+        if (method === 'percentage') {
+          result = calculateNewSalaryFromPercentage(oldSalary, val);
+        } else {
+          result = calculateNewSalaryFromAmount(oldSalary, val);
+        }
+
+        if (result.oldSalary === result.newSalary) continue;
+
+        const inferredType = inferAdjustmentType(result.delta);
+        recordsToCreate.push({
+          userId: u.id,
+          type: inferredType,
+          oldSalary: result.oldSalary,
+          newSalary: result.newSalary,
+          delta: result.delta,
+          percentage: result.percentage,
+          reason: input.reason,
+          effectiveDate,
+          notes: input.notes ? `[Bulk] ${input.notes}` : '[Bulk Adjustment]',
+          status: autoImplement ? 'IMPLEMENTED' : 'PENDING',
+          requestedById: userId ?? null,
+          approvedById: autoImplement ? (userId ?? null) : null,
+          approvedAt: autoImplement ? new Date() : null,
+        });
+
+        if (autoImplement) {
+          userUpdates.push({ id: u.id, newSalary: result.newSalary });
+        }
+      }
+
+      if (recordsToCreate.length === 0) {
+        throw new Error('No salary changes resulted from the calculation');
+      }
+
+      await prisma.$transaction(async (tx) => {
+        await tx.compensationAdjustment.createMany({ data: recordsToCreate });
+        if (autoImplement && userUpdates.length > 0) {
+          for (const uu of userUpdates) {
+            await tx.user.update({
+              where: { id: uu.id },
+              data: { baseSalary: uu.newSalary },
+            });
+          }
+        }
+      });
+
+      await logSecureAuditEvent({
+        action: `Bulk Salary Adjustment (${autoImplement ? 'Implemented' : 'Pending'})`,
+        target: `${recordsToCreate.length} employees updated (${input.reason})`,
+        user: caller?.email || 'System',
+        severity: 'CRITICAL',
+      });
+
+      return {
+        success: true,
+        count: recordsToCreate.length,
+        autoImplemented: autoImplement,
+      };
+    }
+
+    if (path === 'registry.updateBaseSalary') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.userId || input?.baseSalary === undefined) {
+        throw new Error('Missing userId or baseSalary');
+      }
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { id: true, name: true, baseSalary: true, email: true },
+      });
+      if (!targetUser) throw new Error('Employee not found');
+
+      const oldSalary = targetUser.baseSalary || 0;
+      const newSalary = Number(input.baseSalary);
+      if (isNaN(newSalary) || newSalary < 0) throw new Error('Invalid base salary');
+
+      const delta = Math.round((newSalary - oldSalary) * 100) / 100;
+      const percentage = oldSalary > 0 ? Math.round(((delta / oldSalary) * 100) * 100) / 100 : 0;
+      const inferredType = inferAdjustmentType(delta);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.user.update({
+          where: { id: input.userId },
+          data: { baseSalary: newSalary },
+        });
+        if (delta !== 0) {
+          await tx.compensationAdjustment.create({
+            data: {
+              userId: input.userId,
+              type: inferredType,
+              oldSalary,
+              newSalary,
+              delta,
+              percentage,
+              reason: input.reason || 'Direct Admin/HR Base Salary Update',
+              effectiveDate: new Date(),
+              status: 'IMPLEMENTED',
+              requestedById: userId ?? null,
+              approvedById: userId ?? null,
+              approvedAt: new Date(),
+            },
+          });
+        }
+      });
+
+      await logSecureAuditEvent({
+        action: 'Direct Base Salary Update',
+        target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary})`,
+        user: caller?.email || 'System',
+        severity: 'CRITICAL',
+      });
+
+      return { success: true, baseSalary: newSalary };
+    }
+
+    if (path === 'compensation.deleteAdjustment') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      if (!input?.id) throw new Error('Missing adjustment id');
+
+      const existing = await prisma.compensationAdjustment.findUnique({
+        where: { id: input.id },
+        select: { id: true, status: true, user: { select: { name: true } } },
+      });
+      if (!existing) throw new Error('Adjustment not found');
+
+      if (existing.status === 'IMPLEMENTED') {
+        throw new Error('Cannot delete an implemented adjustment');
+      }
+
+      await logSecureAuditEvent({
+        action: 'Compensation Adjustment Deleted',
+        target: `${existing.user?.name || 'Employee'}`,
+        user: caller?.email || 'System',
+        severity: 'HIGH',
+      });
+
+      return await prisma.compensationAdjustment.delete({ where: { id: input.id } });
+    }
+
+    // ── ASSETS (mutations) ──
+    if (path === 'assets.createAsset') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      if (!input?.name) throw new Error('Asset name required');
+
+      const tag = input.assetTag || `AST-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const asset = await prisma.asset.create({
+        data: {
+          name: input.name,
+          assetTag: tag,
+          serialNumber: input.serialNumber || null,
+          category: input.category || 'Laptop',
+          brand: input.brand || null,
+          condition: input.condition || 'Good',
+          location: input.location || null,
+          notes: input.notes || null,
+          status: input.status || 'Active',
+          purchasePrice: Number(input.purchasePrice) || 0,
+          purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : new Date(),
+          warrantyExpiry: input.warrantyExpiry ? new Date(input.warrantyExpiry) : null,
+          assignedDate: input.userId ? new Date() : null,
+          userId: input.userId || null,
+        },
+      });
+
+      if (asset.userId) {
+        await prisma.notification.create({
+          data: {
+            userId: asset.userId,
+            message: `📦 Asset Assigned: You have been assigned ${asset.name} (${asset.assetTag}).`,
+            type: 'asset',
+            link: '/assets',
+          },
+        });
+      }
+      return asset;
+    }
+
+    if (path === 'assets.updateAsset') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      if (!input?.id) throw new Error('Asset id required');
+      const existing = await prisma.asset.findUnique({ where: { id: input.id } });
+      if (!existing) throw new Error('Asset not found');
+
+      const data: any = {};
+      if (input.name !== undefined) data.name = input.name;
+      if (input.assetTag !== undefined) data.assetTag = input.assetTag;
+      if (input.serialNumber !== undefined) data.serialNumber = input.serialNumber || null;
+      if (input.category !== undefined) data.category = input.category;
+      if (input.brand !== undefined) data.brand = input.brand || null;
+      if (input.condition !== undefined) data.condition = input.condition;
+      if (input.location !== undefined) data.location = input.location || null;
+      if (input.notes !== undefined) data.notes = input.notes || null;
+      if (input.status !== undefined) data.status = input.status;
+      if (input.purchasePrice !== undefined) data.purchasePrice = Number(input.purchasePrice);
+      if (input.purchaseDate !== undefined) data.purchaseDate = input.purchaseDate ? new Date(input.purchaseDate) : null;
+      if (input.warrantyExpiry !== undefined) data.warrantyExpiry = input.warrantyExpiry ? new Date(input.warrantyExpiry) : null;
+
+      if (input.userId !== undefined) {
+        data.userId = input.userId || null;
+        if (input.userId && input.userId !== existing.userId) {
+          data.assignedDate = new Date();
+        } else if (!input.userId) {
+          data.assignedDate = null;
+        }
+      }
+
+      const updated = await prisma.asset.update({ where: { id: input.id }, data });
+
+      // If assignment changed, send notifications
+      if (input.userId !== undefined && input.userId !== existing.userId) {
+        if (existing.userId) {
+          await prisma.notification.create({
+            data: {
+              userId: existing.userId,
+              message: `📦 Asset Returned: ${existing.name} has been unassigned and returned to inventory.`,
+              type: 'asset',
+              link: '/assets',
+            },
+          });
+        }
+        if (updated.userId) {
+          await prisma.notification.create({
+            data: {
+              userId: updated.userId,
+              message: `📦 Asset Assigned: You have been assigned ${updated.name}.`,
+              type: 'asset',
+              link: '/assets',
+            },
+          });
+        }
+      }
+      return updated;
+    }
+
+    if (path === 'assets.deleteAsset') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      if (!input?.id) throw new Error('Asset id required');
+      return await prisma.asset.delete({ where: { id: input.id } });
+    }
 
     if (path === 'departments.createDepartment') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
@@ -2430,838 +3300,6 @@ async function runMutation(path: string, input: any) {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       if (!input?.name || !input?.role) throw new Error('Name and role required');
       return await prisma.committeeMember.create({ data: { name: input.name, role: input.role, isChair: !!input.isChair, email: input.email || null } });
-    }
-    if (path === 'committee.removeMember') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.id) throw new Error('Missing fields');
-      return await prisma.committeeMember.delete({ where: { id: input.id } });
-    }
-    if (path === 'committee.setChair') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.id) throw new Error('Missing fields');
-      await prisma.committeeMember.updateMany({ where: { isChair: true }, data: { isChair: false } });
-      return await prisma.committeeMember.update({ where: { id: input.id }, data: { isChair: true } });
-    }
-
-    // ── ENGAGEMENT GREETING RULES (P10) ──
-    if (path === 'engagement.setRuleActive') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.id || typeof input.isActive !== 'boolean') throw new Error('Missing fields');
-      return await prisma.greetingRule.update({ where: { id: input.id }, data: { isActive: input.isActive } });
-    }
-
-    // ── FEEDBACK (mutations) ──
-    if (path === 'feedback.submitFeedback') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.content || !input.content.trim()) throw new Error('Feedback required');
-      return await prisma.feedback.create({
-        data: {
-          content: input.content.trim(),
-          type: input.type || 'Suggestion',
-          anonymous: input.anonymous !== false,
-          authorId: userId!,
-          recipientId: input.recipientId || null
-        }
-      });
-    }
-    if (path === 'feedback.updateFeedbackStatus') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.id || !input?.status) throw new Error('Missing fields');
-      return await prisma.feedback.update({ where: { id: input.id }, data: { status: input.status } });
-    }
-
-    // ── DOCUMENTS (mutations) ──
-    if (path === 'documents.createDocument') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.title || !input?.url) throw new Error('Title and URL required');
-      return await prisma.document.create({
-        data: {
-          title: input.title,
-          url: input.url,
-          fileName: input.fileName || input.title,
-          size: input.size || null,
-          mimeType: input.mimeType || null,
-          type: input.type || 'General',
-          category: input.category || 'General',
-          status: input.status || 'ACTIVE',
-          // Admin distributes to a target employee; otherwise the uploader owns it.
-          ownerId: input.ownerId || userId!
-        }
-      });
-    }
-    if (path === 'documents.signDocument') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      const doc = await prisma.document.findUnique({ where: { id: input.id } });
-      if (!doc) throw new Error('Document not found');
-      if (doc.ownerId !== userId && !isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      return await prisma.document.update({ where: { id: input.id }, data: { signed: true, signedAt: new Date() } });
-    }
-
-    // ── PROFILE (skills/documents) ──
-    if (path === 'profile.addSkill') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.skill || !input.skill.trim()) throw new Error('Skill required');
-      const level = Math.max(1, Math.min(5, Number(input.level) || 1));
-      return await prisma.skill.create({
-        data: { userId: userId!, skill: input.skill.trim(), level }
-      });
-    }
-    if (path === 'profile.removeSkill') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      // Remove by skill name for the current user.
-      const skillName = input?.skill;
-      if (!skillName) throw new Error('Skill required');
-      return await prisma.skill.deleteMany({ where: { userId, skill: skillName } });
-    }
-    if (path === 'profile.uploadDocument') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.title || !input?.url) throw new Error('Title and URL required');
-      return await prisma.document.create({
-        data: { title: input.title, url: input.url, type: input.type || 'General', ownerId: userId! }
-      });
-    }
-
-    // ── PAYROLL STRUCTURES ──
-    if (path === 'payroll.createStructure') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.name || !input?.baseSalary || !input?.heads) throw new Error('Missing fields');
-      return await prisma.salaryStructure.create({
-        data: {
-          name: input.name,
-          baseSalary: Number(input.baseSalary),
-          heads: input.heads // JSON map of head name -> amount
-        }
-      });
-    }
-    if (path === 'payroll.grantFestivalBonus') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.userId || !input?.occasion || !input?.year) throw new Error('Missing fields');
-      const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { baseSalary: true, name: true } });
-      const base = user?.baseSalary ?? 0;
-      const bonus = input.amount != null ? Number(input.amount) : estimateFestivalBonus(base);
-      return await prisma.festivalBonus.create({
-        data: {
-          userId: input.userId,
-          year: Number(input.year),
-          occasion: input.occasion,
-          occasionBn: input.occasionBn || null,
-          amount: bonus,
-          baseSalarySnapshot: base,
-          status: input.status || 'PAID',
-        },
-      });
-    }
-    if (path === 'payroll.runAutomatedPayroll') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      const year = input?.year || new Date().getFullYear();
-      // Normalize the month to a canonical 3-letter short name (e.g. "Jul") so
-      // that numeric inputs from the UI (7) and default string inputs ("Jul")
-      // dedupe consistently. `new Date(7 1, 2025)` parses as July.
-      const rawMonth = input?.month || new Date().toLocaleString('en', { month: 'short' });
-      const monthIndex = new Date(`${rawMonth} 1, ${year}`).getMonth();
-      const month = new Date(2000, monthIndex, 1).toLocaleString('en', { month: 'short' });
-      const periodStart = new Date(year, monthIndex, 1);
-      const periodEnd = new Date(year, monthIndex + 1, 1);
-
-      const structures = await prisma.salaryStructure.findMany();
-      const headMeta = await prisma.salaryHead.findMany();
-      const headByName = new Map(headMeta.map((h) => [h.name, h]));
-
-      const WORKING_DAYS = 30; // standard BD monthly working days for LWP math
-
-      let created = 0;
-      for (const s of structures) {
-        const rawHeads = (s.heads as Record<string, number>) || {};
-        const baseEntries = Object.entries(rawHeads).map(([name, amount]) => {
-          const meta = headByName.get(name);
-          return {
-            name,
-            amount,
-            type: (meta?.type as 'EARNING' | 'DEDUCTION') || (amount >= 0 ? 'EARNING' : 'DEDUCTION'),
-          };
-        });
-
-        const users = await prisma.user.findMany({
-          where: { status: 'active' },
-          select: { id: true, baseSalary: true, name: true, createdAt: true },
-        });
-
-        for (const u of users) {
-          const exists = await prisma.payroll.findFirst({ where: { userId: u.id, month, year } });
-          if (exists) continue;
-
-          const base = u.baseSalary ?? s.baseSalary;
-          const hourlyRate = base / (WORKING_DAYS * 8); // 8h standard day
-
-          // ── Attendance linkage ──
-          const attendances = await prisma.attendance.findMany({
-            where: { userId: u.id, date: { gte: periodStart, lt: periodEnd } },
-          });
-          const overtimeMinutes = attendances.reduce((sum, a) => sum + (a.overtimeMinutes || 0), 0);
-          const nightMinutes = attendances.reduce((sum, a) => sum + (a.nightMinutes || 0), 0);
-          const lateDays = attendances.filter((a) => (a.lateMinutes || 0) > 0).length;
-          const overtimeHours = Math.round((overtimeMinutes / 60) * 100) / 100;
-          const nightHours = Math.round((nightMinutes / 60) * 100) / 100;
-
-          const otEarning = overtimeHours * hourlyRate * 1.5; // 1.5x OT
-          const nightEarning = nightHours * hourlyRate * 1.25; // 1.25x night differential
-
-          // ── Leave linkage (LWP = leave without pay) ──
-          const approvedLeaves = await prisma.leaveRequest.findMany({
-            where: {
-              userId: u.id,
-              status: 'Approved',
-              startDate: { lt: periodEnd },
-              endDate: { gte: periodStart },
-            },
-          });
-          // Only unpaid leave types reduce pay. Casual/Sick/Earned/Festival/Maternity/
-          // Paternity are paid (statutory), so LWP applies to any custom unpaid type
-          // or when a leave type is flagged unpaid. We treat only leaves whose type
-          // maps to a clearly unpaid bucket as LWP; paid statutory buckets are excluded.
-          const PAID_CATEGORIES = new Set(['Casual', 'Earned', 'Sick', 'Festival', 'Maternity', 'Paternity']);
-          let lwpDays = 0;
-          for (const lv of approvedLeaves) {
-            const category = await resolveLeaveCategory(lv.type);
-            if (category && !PAID_CATEGORIES.has(category)) {
-              // Overlap with the period window.
-              const start = new Date(lv.startDate) < periodStart ? periodStart : new Date(lv.startDate);
-              const end = new Date(lv.endDate) >= periodEnd ? new Date(periodEnd.getTime() - 1) : new Date(lv.endDate);
-              const days = Math.max(0, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
-              lwpDays += days;
-            }
-          }
-          const lwpDeduction = lwpDays * (base / WORKING_DAYS);
-
-          // ── Build final salary-head entries ──
-          const entries = [...baseEntries];
-          if (otEarning > 0) entries.push({ name: 'Overtime', amount: Math.round(otEarning * 100) / 100, type: 'EARNING' });
-          if (nightEarning > 0) entries.push({ name: 'Night Differential', amount: Math.round(nightEarning * 100) / 100, type: 'EARNING' });
-          if (lwpDeduction > 0) entries.push({ name: 'Leave Without Pay', amount: -Math.round(lwpDeduction * 100) / 100, type: 'DEDUCTION' });
-
-          const { earnings, deductions, tax, net } = calculatePayroll(base, entries);
-
-          // ── PF: employer 10% + employee 10% match deducted from net ──
-          const pf = estimateProvidentFund(base);
-          const employeePf = pf.monthlyEmployee;
-          const employerPf = pf.monthlyEmployer;
-          const pfDeductionEntry = { head: 'Provident Fund (Employee)', amount: employeePf };
-
-          // Re-run payroll math with the employee PF deduction included.
-          const finalDeductions = deductions + employeePf;
-          const finalNet = Math.round((net - employeePf) * 100) / 100;
-
-          // ── Festival bonus: only if a FestivalBonus record exists for this period ──
-          const festivalRecord = await prisma.festivalBonus.findFirst({
-            where: { userId: u.id, year, status: 'PAID' },
-          });
-          const festival = festivalRecord?.amount ?? 0;
-
-          const earningsBreakdown = entries
-            .filter((e) => e.amount >= 0)
-            .map((e) => ({ head: e.name, amount: e.amount }));
-          const deductionsBreakdown = [
-            ...entries.filter((e) => e.amount < 0).map((e) => ({ head: e.name, amount: Math.abs(e.amount) })),
-            pfDeductionEntry,
-          ];
-
-          await prisma.payroll.create({
-            data: {
-              month,
-              year,
-              earnings,
-              deductions: Math.round(finalDeductions * 100) / 100,
-              totalAmount: finalNet + festival,
-              netPay: finalNet + festival,
-              tax,
-              providentFund: employerPf, // employer portion recorded; employee portion already deducted
-              gratuityAccrued: Math.round(estimateGratuity(base, yearsOfService(u)) * 100) / 100,
-              festivalBonus: festival,
-              overtimeHours,
-              nightHours,
-              lateDays,
-              earningsBreakdown,
-              deductionsBreakdown,
-              salaryStructureId: s.id,
-              userId: u.id,
-            },
-          });
-          created++;
-        }
-      }
-
-      await logSecureAuditEvent({
-        action: 'Automated Payroll Run',
-        target: `${month} ${year}`,
-        user: caller?.email || 'System',
-        severity: 'CRITICAL',
-      });
-
-      return { success: true, created };
-    }
-
-    if (path === 'settings.setSystemSetting') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.key) throw new Error('Setting key is required');
-      await prisma.systemSetting.upsert({
-        where: { key: input.key },
-        create: { key: input.key, value: String(input.value), updatedById: userId },
-        update: { value: String(input.value), updatedById: userId },
-      });
-      return { success: true };
-    }
-
-    // ── PAYMENT HUB (payments + sales) ──
-    if (path === 'payroll.recordPayment') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      // Employee can record their own payment; admin/HR can record for anyone.
-      const targetUserId = isAdmin || isCEO ? (input.userId || userId) : userId;
-      if (!input?.amount || !input?.month || !input?.year) throw new Error('Missing payment details');
-      return await prisma.payment.create({
-        data: {
-          userId: targetUserId,
-          payrollId: input.payrollId || null,
-          month: Number(input.month),
-          year: Number(input.year),
-          amount: Number(input.amount),
-          method: input.method || 'BKASH',
-          reference: input.reference || null,
-          status: input.status || 'PAID',
-          details: input.details || null,
-        },
-      });
-    }
-    if (path === 'payroll.markPaymentPaid') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.id) throw new Error('Missing payment id');
-      return await prisma.payment.update({ where: { id: input.id }, data: { status: 'PAID' } });
-    }
-    if (path === 'payroll.deletePayment') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.id) throw new Error('Missing payment id');
-      return await prisma.payment.delete({ where: { id: input.id } });
-    }
-    if (path === 'payroll.recordSale') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.userId || !input?.amount || !input?.month || !input?.year) throw new Error('Missing sale details');
-      return await prisma.sale.create({
-        data: {
-          userId: input.userId,
-          month: Number(input.month),
-          year: Number(input.year),
-          amount: Number(input.amount),
-          note: input.note || null,
-        },
-      });
-    }
-
-    // ── COMPENSATION (mutations) ──
-    if (path === 'compensation.createAdjustment') {
-      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      if (!input?.userId || !input?.type || !input?.reason) {
-        throw new Error('Missing required fields: userId, type, reason');
-      }
-
-      const validTypes = ['INCREMENT', 'DECREMENT', 'ADJUSTMENT'];
-      if (!validTypes.includes(input.type)) throw new Error('Invalid adjustment type');
-
-      const targetUser = await prisma.user.findUnique({
-        where: { id: input.userId },
-        select: { id: true, name: true, baseSalary: true, department: true, role: true, email: true },
-      });
-      if (!targetUser) throw new Error('Employee not found');
-
-      const oldSalary = Number(input.oldSalary) || targetUser.baseSalary || 0;
-      const newSalary = Number(input.newSalary);
-      if (isNaN(newSalary)) throw new Error('newSalary is required and must be a number');
-
-      const validationError = validateSalaryAdjustment(oldSalary, newSalary);
-      if (validationError) throw new Error(validationError);
-
-      const delta = Math.round((newSalary - oldSalary) * 100) / 100;
-      const percentage = oldSalary > 0
-        ? Math.round(((delta / oldSalary) * 100) * 100) / 100
-        : 0;
-      const inferredType = inferAdjustmentType(delta);
-
-      const autoImplement = Boolean(input.autoImplement);
-
-      let adjustment;
-      if (autoImplement) {
-        adjustment = await prisma.$transaction(async (tx) => {
-          const created = await tx.compensationAdjustment.create({
-            data: {
-              userId: input.userId,
-              type: inferredType,
-              oldSalary,
-              newSalary,
-              delta,
-              percentage,
-              reason: input.reason,
-              effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
-              notes: input.notes || null,
-              status: 'IMPLEMENTED',
-              requestedById: userId ?? null,
-              approvedById: userId ?? null,
-              approvedAt: new Date(),
-            },
-            include: {
-              user: { select: { id: true, name: true, email: true } },
-            },
-          });
-          await tx.user.update({
-            where: { id: input.userId },
-            data: { baseSalary: newSalary },
-          });
-          return created;
-        });
-      } else {
-        adjustment = await prisma.compensationAdjustment.create({
-          data: {
-            userId: input.userId,
-            type: inferredType,
-            oldSalary,
-            newSalary,
-            delta,
-            percentage,
-            reason: input.reason,
-            effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
-            notes: input.notes || null,
-            status: 'PENDING',
-            requestedById: userId ?? null,
-          },
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-          },
-        });
-      }
-
-      await logSecureAuditEvent({
-        action: autoImplement ? `Compensation ${inferredType} Implemented Instantly` : `Compensation ${inferredType} Created`,
-        target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary}, annual impact: ${computeAnnualCostImpact(delta).toLocaleString()} BDT)`,
-        user: caller?.email || 'System',
-        severity: autoImplement ? 'CRITICAL' : 'HIGH',
-      });
-
-      const effDateStr = adjustment.effectiveDate.toISOString().split('T')[0];
-
-      const notifData: { userId: string; message: string; type: string; link: string }[] = [{
-        userId: input.userId,
-        message: autoImplement
-          ? `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Implemented: Your salary has been updated to ${newSalary.toLocaleString()} BDT effective ${effDateStr}.`
-          : `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Proposed: Your salary is set to change from ${oldSalary.toLocaleString()} to ${newSalary.toLocaleString()} BDT. Effective ${effDateStr}. Pending approval.`,
-        type: 'payroll',
-        link: '/compensation',
-      }];
-      const adminUsers = await prisma.user.findMany({
-        where: mergeWhere({ role: { in: ['Admin', 'HR Manager', 'CEO'] } }, tenantWhere),
-        select: { id: true },
-      });
-      for (const a of adminUsers) {
-        if (a.id !== userId) {
-          notifData.push({
-            userId: a.id,
-            message: autoImplement
-              ? `💰 Compensation ${inferredType.toLowerCase()} implemented for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT by ${caller?.email || 'Admin/HR'}.`
-              : `💰 New compensation ${inferredType.toLowerCase()} request for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT. Requires approval.`,
-            type: 'payroll',
-            link: '/compensation',
-          });
-        }
-      }
-      if (notifData.length > 0) {
-        await prisma.notification.createMany({ data: notifData });
-      }
-
-      return adjustment;
-    }
-
-    if (path === 'compensation.updateAdjustmentStatus') {
-      if (!isAdmin && !isCEO && !isHR) {
-        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      }
-      if (!input?.id || !input?.status) throw new Error('Missing adjustment id or status');
-
-      const validStatuses = ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED', 'IMPLEMENTED'];
-      if (!validStatuses.includes(input.status)) throw new Error('Invalid status');
-
-      const existing = await prisma.compensationAdjustment.findUnique({
-        where: { id: input.id },
-        include: { user: { select: { name: true } } },
-      });
-      if (!existing) throw new Error('Adjustment not found');
-
-      if (existing.status !== 'PENDING' && existing.status !== 'DRAFT') {
-        throw new Error(`Cannot change status from ${existing.status} directly.`);
-      }
-      if (input.status !== 'APPROVED' && input.status !== 'REJECTED' && input.status !== 'IMPLEMENTED') {
-        throw new Error(`Invalid target status. Expected APPROVED, REJECTED, or IMPLEMENTED, got ${input.status}`);
-      }
-
-      const updateData: Record<string, unknown> = {
-        status: input.status,
-        updatedAt: new Date(),
-      };
-      if (input.status === 'APPROVED' || input.status === 'IMPLEMENTED') {
-        updateData.approvedById = userId ?? input.approvedById;
-        updateData.approvedAt = new Date();
-      }
-      if (input.status === 'REJECTED') {
-        updateData.rejectionReason = input.rejectionReason || null;
-      }
-
-      let updated;
-      if (input.status === 'APPROVED' || input.status === 'IMPLEMENTED') {
-        await prisma.$transaction(async (tx) => {
-          updated = await tx.compensationAdjustment.update({
-            where: { id: input.id },
-            data: { ...updateData, status: 'IMPLEMENTED' },
-          });
-          await tx.user.update({
-            where: { id: existing.userId },
-            data: { baseSalary: existing.newSalary },
-          });
-        });
-
-        await logSecureAuditEvent({
-          action: 'Compensation Adjustment Implemented',
-          target: `${existing.user?.name || 'Employee'} (salary: ${existing.oldSalary} → ${existing.newSalary})`,
-          user: caller?.email || 'System',
-          severity: 'CRITICAL',
-        });
-
-        await prisma.notification.create({
-          data: {
-            userId: existing.userId,
-            message: `💰 Your salary has been updated to ${existing.newSalary.toLocaleString()} BDT effective ${existing.effectiveDate.toISOString().split('T')[0]}.`,
-            type: 'payroll',
-            link: '/compensation',
-          },
-        });
-
-        return prisma.compensationAdjustment.findUnique({ where: { id: input.id } });
-      }
-
-      updated = await prisma.compensationAdjustment.update({
-        where: { id: input.id },
-        data: updateData,
-      });
-
-      await logSecureAuditEvent({
-        action: `Compensation Adjustment Status → ${input.status}`,
-        target: `${existing.user?.name || 'Employee'}`,
-        user: caller?.email || 'System',
-        severity: input.status === 'REJECTED' ? 'HIGH' : 'INFO',
-      });
-
-      await prisma.notification.create({
-        data: {
-          userId: existing.userId,
-          message: input.status === 'REJECTED'
-            ? `❌ Your salary adjustment request was rejected${input.rejectionReason ? `: ${input.rejectionReason}` : ''}.`
-            : `✅ Your salary adjustment was updated to ${input.status}.`,
-          type: 'payroll',
-          link: '/compensation',
-        },
-      });
-
-      return updated;
-    }
-
-    if (path === 'compensation.editAdjustment') {
-      if (!isAdmin && !isCEO && !isHR) {
-        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      }
-      if (!input?.id) throw new Error('Missing adjustment id');
-
-      const existing = await prisma.compensationAdjustment.findUnique({
-        where: { id: input.id },
-        include: { user: { select: { name: true, baseSalary: true } } },
-      });
-      if (!existing) throw new Error('Adjustment not found');
-
-      const updateData: Record<string, any> = { updatedAt: new Date() };
-
-      if (input.reason) updateData.reason = input.reason;
-      if (input.effectiveDate) updateData.effectiveDate = new Date(input.effectiveDate);
-      if (input.notes !== undefined) updateData.notes = input.notes;
-
-      if (input.newSalary !== undefined && Number(input.newSalary) !== existing.newSalary) {
-        const newSalary = Number(input.newSalary);
-        if (isNaN(newSalary) || newSalary < 0) throw new Error('Invalid newSalary');
-        const oldSalary = existing.oldSalary;
-        const delta = Math.round((newSalary - oldSalary) * 100) / 100;
-        const percentage = oldSalary > 0 ? Math.round(((delta / oldSalary) * 100) * 100) / 100 : 0;
-        const inferredType = inferAdjustmentType(delta);
-
-        updateData.newSalary = newSalary;
-        updateData.delta = delta;
-        updateData.percentage = percentage;
-        updateData.type = inferredType;
-
-        if (existing.status === 'IMPLEMENTED') {
-          await prisma.user.update({
-            where: { id: existing.userId },
-            data: { baseSalary: newSalary },
-          });
-        }
-      }
-
-      const updated = await prisma.compensationAdjustment.update({
-        where: { id: input.id },
-        data: updateData,
-      });
-
-      await logSecureAuditEvent({
-        action: 'Compensation Adjustment Edited',
-        target: `${existing.user?.name || 'Employee'} (id: ${input.id})`,
-        user: caller?.email || 'System',
-        severity: 'MEDIUM',
-      });
-
-      return updated;
-    }
-
-    if (path === 'compensation.bulkAdjust') {
-      if (!isAdmin && !isCEO && !isHR) {
-        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      }
-      if (!input?.method || !input?.value || !input?.reason || !input?.effectiveDate) {
-        throw new Error('Missing bulk adjustment details');
-      }
-
-      const filter: Record<string, any> = {};
-      if (input.userFilter?.department) filter.department = input.userFilter.department;
-      if (input.userFilter?.branchId) filter.branchId = input.userFilter.branchId;
-      if (input.userFilter?.role) filter.role = input.userFilter.role;
-      if (input.userFilter?.userIds && Array.isArray(input.userFilter.userIds) && input.userFilter.userIds.length > 0) {
-        filter.id = { in: input.userFilter.userIds };
-      }
-
-      const targetUsers = await prisma.user.findMany({
-        where: mergeWhere(filter, tenantWhere),
-        select: { id: true, name: true, email: true, baseSalary: true },
-      });
-
-      if (targetUsers.length === 0) {
-        throw new Error('No employees matched the selected filter criteria');
-      }
-
-      const autoImplement = Boolean(input.autoImplement);
-      const effectiveDate = new Date(input.effectiveDate);
-      const method = input.method;
-      const val = Number(input.value);
-
-      const recordsToCreate: any[] = [];
-      const userUpdates: { id: string; newSalary: number }[] = [];
-
-      for (const u of targetUsers) {
-        const oldSalary = u.baseSalary || 0;
-        let result: SalaryChangeResult;
-        if (method === 'percentage') {
-          result = calculateNewSalaryFromPercentage(oldSalary, val);
-        } else {
-          result = calculateNewSalaryFromAmount(oldSalary, val);
-        }
-
-        if (result.oldSalary === result.newSalary) continue;
-
-        const inferredType = inferAdjustmentType(result.delta);
-        recordsToCreate.push({
-          userId: u.id,
-          type: inferredType,
-          oldSalary: result.oldSalary,
-          newSalary: result.newSalary,
-          delta: result.delta,
-          percentage: result.percentage,
-          reason: input.reason,
-          effectiveDate,
-          notes: input.notes ? `[Bulk] ${input.notes}` : '[Bulk Adjustment]',
-          status: autoImplement ? 'IMPLEMENTED' : 'PENDING',
-          requestedById: userId ?? null,
-          approvedById: autoImplement ? (userId ?? null) : null,
-          approvedAt: autoImplement ? new Date() : null,
-        });
-
-        if (autoImplement) {
-          userUpdates.push({ id: u.id, newSalary: result.newSalary });
-        }
-      }
-
-      if (recordsToCreate.length === 0) {
-        throw new Error('No salary changes resulted from the calculation');
-      }
-
-      await prisma.$transaction(async (tx) => {
-        await tx.compensationAdjustment.createMany({ data: recordsToCreate });
-        if (autoImplement && userUpdates.length > 0) {
-          for (const uu of userUpdates) {
-            await tx.user.update({
-              where: { id: uu.id },
-              data: { baseSalary: uu.newSalary },
-            });
-          }
-        }
-      });
-
-      await logSecureAuditEvent({
-        action: `Bulk Salary Adjustment (${autoImplement ? 'Implemented' : 'Pending'})`,
-        target: `${recordsToCreate.length} employees updated (${input.reason})`,
-        user: caller?.email || 'System',
-        severity: 'CRITICAL',
-      });
-
-      return {
-        success: true,
-        count: recordsToCreate.length,
-        autoImplemented: autoImplement,
-      };
-    }
-
-    if (path === 'registry.updateBaseSalary') {
-      if (!isAdmin && !isCEO && !isHR) {
-        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      }
-      if (!input?.userId || input?.baseSalary === undefined) {
-        throw new Error('Missing userId or baseSalary');
-      }
-
-      const targetUser = await prisma.user.findUnique({
-        where: { id: input.userId },
-        select: { id: true, name: true, baseSalary: true, email: true },
-      });
-      if (!targetUser) throw new Error('Employee not found');
-
-      const oldSalary = targetUser.baseSalary || 0;
-      const newSalary = Number(input.baseSalary);
-      if (isNaN(newSalary) || newSalary < 0) throw new Error('Invalid base salary');
-
-      const delta = Math.round((newSalary - oldSalary) * 100) / 100;
-      const percentage = oldSalary > 0 ? Math.round(((delta / oldSalary) * 100) * 100) / 100 : 0;
-      const inferredType = inferAdjustmentType(delta);
-
-      await prisma.$transaction(async (tx) => {
-        await tx.user.update({
-          where: { id: input.userId },
-          data: { baseSalary: newSalary },
-        });
-        if (delta !== 0) {
-          await tx.compensationAdjustment.create({
-            data: {
-              userId: input.userId,
-              type: inferredType,
-              oldSalary,
-              newSalary,
-              delta,
-              percentage,
-              reason: input.reason || 'Direct Admin/HR Base Salary Update',
-              effectiveDate: new Date(),
-              status: 'IMPLEMENTED',
-              requestedById: userId ?? null,
-              approvedById: userId ?? null,
-              approvedAt: new Date(),
-            },
-          });
-        }
-      });
-
-      await logSecureAuditEvent({
-        action: 'Direct Base Salary Update',
-        target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary})`,
-        user: caller?.email || 'System',
-        severity: 'CRITICAL',
-      });
-
-      return { success: true, baseSalary: newSalary };
-    }
-
-    if (path === 'compensation.deleteAdjustment') {
-      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      if (!input?.id) throw new Error('Missing adjustment id');
-
-      const existing = await prisma.compensationAdjustment.findUnique({
-        where: { id: input.id },
-        select: { id: true, status: true, user: { select: { name: true } } },
-      });
-      if (!existing) throw new Error('Adjustment not found');
-
-      if (existing.status === 'IMPLEMENTED') {
-        throw new Error('Cannot delete an implemented adjustment');
-      }
-
-      await logSecureAuditEvent({
-        action: 'Compensation Adjustment Deleted',
-        target: `${existing.user?.name || 'Employee'}`,
-        user: caller?.email || 'System',
-        severity: 'HIGH',
-      });
-
-      return await prisma.compensationAdjustment.delete({ where: { id: input.id } });
-    }
-
-    // ── ASSETS (mutations) ──
-    if (path === 'assets.createAsset') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.name) throw new Error('Asset name required');
-      const asset = await prisma.asset.create({
-        data: {
-          name: input.name,
-          status: input.status || 'Active',
-          purchasePrice: Number(input.purchasePrice) || 0,
-          purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : new Date(),
-          userId: input.userId || null
-        }
-      });
-      if (asset.userId) {
-        await prisma.notification.create({
-          data: {
-            userId: asset.userId,
-            message: `📦 Asset Assigned: You have been assigned ${asset.name}.`,
-            type: 'asset',
-            link: '/assets',
-          }
-        });
-      }
-      return asset;
-    }
-    if (path === 'assets.updateAsset') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.id) throw new Error('Asset id required');
-      const existing = await prisma.asset.findUnique({ where: { id: input.id } });
-      if (!existing) throw new Error('Asset not found');
-
-      const data: any = {};
-      if (input.name !== undefined) data.name = input.name;
-      if (input.status !== undefined) data.status = input.status;
-      if (input.userId !== undefined) data.userId = input.userId || null;
-      if (input.purchasePrice !== undefined) data.purchasePrice = Number(input.purchasePrice);
-      
-      const updated = await prisma.asset.update({ where: { id: input.id }, data });
-
-      // If assignment changed, send notifications
-      if (input.userId !== undefined && input.userId !== existing.userId) {
-        if (existing.userId) {
-          await prisma.notification.create({
-            data: {
-              userId: existing.userId,
-              message: `📦 Asset Returned: ${existing.name} has been unassigned and returned to inventory.`,
-              type: 'asset',
-              link: '/assets',
-            }
-          });
-        }
-        if (updated.userId) {
-          await prisma.notification.create({
-            data: {
-              userId: updated.userId,
-              message: `📦 Asset Assigned: You have been assigned ${updated.name}.`,
-              type: 'asset',
-              link: '/assets',
-            }
-          });
-        }
-      }
-      return updated;
     }
 
     // ── TEAM (delegation proxy) ──
