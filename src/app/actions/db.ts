@@ -118,12 +118,13 @@ export async function executeServerBatch(
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
 
   return Promise.all(
     parsed.data.map(async (q) => {
       try {
-        const data = await runQuery(caller, isAdmin, isCEO, userId, q.path, q.args);
+        const data = await runQuery(caller, isAdmin, isCEO, isHR, userId, q.path, q.args);
         return { ok: true, data };
       } catch (err: any) {
         return { ok: false, error: err?.message ?? 'Query failed' };
