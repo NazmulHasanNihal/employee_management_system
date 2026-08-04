@@ -2751,7 +2751,7 @@ async function runMutation(path: string, input: any) {
 
     // ── COMPENSATION (mutations) ──
     if (path === 'compensation.createAdjustment') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
       if (!input?.userId || !input?.type || !input?.reason) {
         throw new Error('Missing required fields: userId, type, reason');
       }
