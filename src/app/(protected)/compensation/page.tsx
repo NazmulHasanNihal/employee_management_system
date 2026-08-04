@@ -77,7 +77,7 @@ export default async function CompensationPage() {
       </div>
 
       {privileged ? (
-        <CompensationAdjustments adjustments={adjustments} isAdmin={privileged} />
+        <CompensationAdjustments adjustments={adjustments} isAdmin={isAdmin || isCEO} canApprove={privileged} />
       ) : (
         <EmptyState
           title={t('Access Restricted')}

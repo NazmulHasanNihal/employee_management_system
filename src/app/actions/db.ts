@@ -94,8 +94,9 @@ export async function executeServerQuery(path: string, args?: any) {
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  return runQuery(caller, isAdmin, isCEO, userId, path, args);
+  return runQuery(caller, isAdmin, isCEO, isHR, userId, path, args);
 }
 
 /**
@@ -140,6 +141,7 @@ export async function runQuery(
   caller: Caller | null,
   isAdmin: boolean,
   isCEO: boolean,
+  isHR: boolean,
   userId: string | undefined,
   path: string,
   args?: any,
@@ -611,7 +613,7 @@ export async function runQuery(
     // ── COMPENSATION (queries) ──
     if (path === 'compensation.getAdjustments') {
       // Admins / HR / CEO see all; regular employees see only their own.
-      if (isAdmin || isCEO) {
+      if (isAdmin || isCEO || isHR) {
         return await prisma.compensationAdjustment.findMany({
           where: mergeWhere({}, withTenantUserScope(caller)),
           include: {
@@ -2786,7 +2788,7 @@ async function runMutation(path: string, input: any) {
           reason: input.reason,
           effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
           notes: input.notes || null,
-          status: input.status || 'PENDING',
+           status: 'PENDING',
           requestedById: userId ?? null,
         },
         include: {

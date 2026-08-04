@@ -30,7 +30,7 @@ interface Adjustment {
   approvedBy?: { id: string; name: string; role: string } | null;
 }
 
-export function CompensationAdjustments({ adjustments, isAdmin }: { adjustments: Adjustment[]; isAdmin: boolean }) {
+export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { adjustments: Adjustment[]; isAdmin: boolean; canApprove: boolean }) {
   const utils = trpc.useUtils();
   const [showForm, setShowForm] = useState(false);
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -200,7 +200,7 @@ export function CompensationAdjustments({ adjustments, isAdmin }: { adjustments:
                   </div>
                   <div className="flex items-center gap-2">
                     {statusBadge(adj.status)}
-                    {isAdmin && adj.status === 'PENDING' && (
+                    {canApprove && adj.status === 'PENDING' && (
                       <>
                         <Button
                           size="xs"
@@ -222,7 +222,7 @@ export function CompensationAdjustments({ adjustments, isAdmin }: { adjustments:
                           size="xs"
                           variant="ghost"
                           onClick={() => handleDelete(adj.id)}
-                          disabled={actionLoadingId === adj.id}
+                          disabled={actionLoadingId === adj.id || !isAdmin}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
