@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, FileDigit, Search, ShieldCheck, UserPlus, Crown, Check, ShieldAlert, Loader2, Link as LinkIcon } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { executeServerMutation } from '@/app/actions/db';
 import { trpc } from '@/lib/trpc/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,7 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
   }, [initialEvents]);
 
   const { data: employees = [] } = trpc.registry.searchEmployees.useQuery({ query: '' }, { enabled: isCEO });
-  const updatePermissions = trpc.user.updatePermissions.useMutation({
+  const updatePermissions = trpc.registry.updatePermissions.useMutation({
     onSuccess: () => {
       toast.success('Access Granted', 'Audit Log viewing permission successfully assigned.');
       setShowGrantModal(false);
@@ -56,17 +55,6 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
   const handleGrantAccess = () => {
     if (!selectedUserId) return;
     updatePermissions.mutate({ userId: selectedUserId, permissions: ['AUDIT_LOG_ACCESS'] });
-  };
-
-  const handleTamper = async () => {
-    try {
-      await executeServerMutation('audit.tamperDatabase', {});
-      toast.success('Database Tampered', 'A record was maliciously altered. Run Verify Ledger to catch it!');
-      // Typically we'd invalidate queries here, but a hard reload is fine for demo
-      window.location.reload();
-    } catch (e: any) {
-      toast.error('Tamper Failed', e.message);
-    }
   };
 
   const handleVerifyLedger = async () => {
@@ -169,12 +157,8 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
           </Button>
 
           {isCEO && (
-            <>
-              <Button onClick={() => setShowGrantModal(true)} variant="outline" className="rounded-xl flex items-center gap-2 border-[var(--border-hairline)] bg-[var(--bg-panel)]">
+            <Button onClick={() => setShowGrantModal(true)} variant="outline" className="rounded-xl flex items-center gap-2 border-[var(--border-hairline)] bg-[var(--bg-panel)]">
                 <UserPlus size={16} className="text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Grant Audit Access</T></Button>
-              <Button onClick={handleTamper} variant="outline" className="rounded-xl flex items-center gap-2 border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10">
-                <ShieldAlert size={16} /> {/* @ts-ignore */}<T>Tamper Database</T></Button>
-            </>
           )}
         </div>
       </div>

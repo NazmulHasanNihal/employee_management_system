@@ -669,6 +669,7 @@ export async function runQuery(
     // ── HELPDESK ──
     if (path === 'helpdesk.getTickets') {
       if (isAdmin) return await prisma.ticket.findMany({ where: withTenantUserScope(caller), include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
+      if (!userId) return [];
       return await prisma.ticket.findMany({ where: { userId }, include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
     }
 
@@ -1169,13 +1170,6 @@ export async function runQuery(
       });
     }
 
-    // ── HELPDESK ──
-    if (path === 'helpdesk.getTickets') {
-      if (isAdmin) return await prisma.ticket.findMany({ where: withTenantUserScope(caller), include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
-      if (!userId) return [];
-      return await prisma.ticket.findMany({ where: { userId }, include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
-    }
-
     // ── TEAM (proxy status) ──
     if (path === 'team.getProxyStatus') {
       if (!userId) return null;
@@ -1234,6 +1228,20 @@ export async function runQuery(
       const map: Record<string, string> = {};
       for (const r of rows) map[r.key] = r.value;
       return map;
+    }
+
+    // ── WORKFLOWS (onboarding tasks) ──
+    if (path === 'workflows.getOnboardingTasks') {
+      const targetUserId = args?.userId;
+      if (!targetUserId) throw new Error('Missing userId');
+      if (isAdmin || isCEO) {
+        return await prisma.onboardingTask.findMany({
+          where: mergeWhere({ userId: targetUserId }, withTenantUserScope(caller)),
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+      if (targetUserId !== userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      return await prisma.onboardingTask.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
     }
 
     return [];
@@ -1375,7 +1383,6 @@ async function runMutation(path: string, input: any) {
         user: caller?.email || 'System',
         severity: 'HIGH',
       });
-      return updated;
       // Keep the cached employee list (used by the registry/hierarchy/grid) fresh.
       try { revalidateTag('employees'); } catch { /* revalidateTag unavailable outside a request scope */ }
       return updated;
@@ -2523,10 +2530,6 @@ async function runMutation(path: string, input: any) {
         }
       });
     }
-    if (path === 'payroll.getStructures') {
-      if (!isAdmin && !isCEO) return [];
-      return await prisma.salaryStructure.findMany({ orderBy: { createdAt: 'desc' } });
-    }
     if (path === 'payroll.grantFestivalBonus') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
       if (!input?.userId || !input?.occasion || !input?.year) throw new Error('Missing fields');
@@ -2789,7 +2792,7 @@ async function runMutation(path: string, input: any) {
           reason: input.reason,
           effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
           notes: input.notes || null,
-           status: 'PENDING',
+          status: 'PENDING',
           requestedById: userId ?? null,
         },
         include: {
@@ -3176,33 +3179,13 @@ async function runMutation(path: string, input: any) {
           score,
           userId,
           tenantId: caller.tenantId,
-          department: caller.department, // Snapshot their department for analytics
+          department: caller.department,
         }
       });
-    }
-    if (path === 'audit.tamperDatabase') {
-      if (!isCEO) throw new MutationError('UNAUTHORIZED', 'CEO only');
-      
-      const record = await prisma.auditLog.findFirst({
-        orderBy: { timestamp: 'desc' },
-        skip: 1 // pick the 2nd most recent so we break the chain
-      });
-      
-      if (!record) return { success: false };
-      
-      // Deliberately tamper with the database record
-      await prisma.auditLog.update({
-        where: { id: record.id },
-        data: { 
-          action: 'TAMPERED: Payroll Executed $999,999' 
-        }
-      });
-      
-      return { success: true, tamperedId: record.id };
     }
 
-    throw new MutationError('NOT_FOUND', `Unknown mutation: ${path}`);
-  } catch (error: any) {
+     throw new MutationError('NOT_FOUND', `Unknown mutation: ${path}`);
+   } catch (error: any) {
     const typed = error instanceof MutationError ? error : classifyError(error);
     // Surface to observability with structured context (not a raw console dump).
     Sentry.captureException(typed, { extra: { path, code: typed.code } });
@@ -3226,8 +3209,8 @@ function revalidateForPath(path: string) {
     registry: ['/registry', '/team', '/hierarchy', '/org-chart'],
     attendance: ['/attendance', '/dashboard'],
     leave: ['/leave', '/dashboard', '/team'],
-     payroll: ['/payroll', '/payroll-settings', '/dashboard'],
-     compensation: ['/compensation', '/payroll', '/dashboard'],
+    payroll: ['/payroll', '/payroll-settings', '/dashboard'],
+    compensation: ['/compensation', '/payroll', '/dashboard'],
     performance: ['/performance', '/reviews', '/dashboard'],
     recruitment: ['/recruitment', '/dashboard'],
     expenses: ['/expenses', '/dashboard'],
@@ -3237,7 +3220,7 @@ function revalidateForPath(path: string) {
     calendar: ['/calendar', '/dashboard'],
     documents: ['/documents'],
     shifts: ['/shifts', '/attendance', '/dashboard'],
-    training: ['/training', '/lms'],
+    training: ['/training'],
     helpdesk: ['/helpdesk'],
     audit: ['/audit'],
     hierarchy: ['/hierarchy', '/org-chart', '/team'],
@@ -3256,7 +3239,7 @@ function revalidateForPath(path: string) {
   const routes = routeMap[domain] ?? ['/dashboard'];
   for (const route of routes) {
     try {
-      revalidatePath('/', 'layout');
+    revalidatePath(route, 'layout');
     } catch {
       // revalidatePath is a no-op outside a request scope; ignore.
     }
