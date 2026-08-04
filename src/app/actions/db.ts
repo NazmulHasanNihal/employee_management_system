@@ -15,6 +15,11 @@ import { computeAttendance } from '@/lib/attendance';
 import { computeBdLeaveBalance } from '@/server/leaveBalance';
 import { parseServerAction, ValidationError, BatchSchema } from '@/lib/validation';
 import { logSecureAuditEvent } from '@/lib/audit';
+import {
+  validateSalaryAdjustment,
+  inferAdjustmentType,
+  computeAnnualCostImpact,
+} from '@/lib/compensation';
 
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
@@ -601,6 +606,48 @@ export async function runQuery(
         lastRunMonth: lastRun ? `${lastRun.month} ${lastRun.year}` : 'Never',
         lastRunStatus: lastRun?.status || 'N/A'
       };
+    }
+
+    // ── COMPENSATION (queries) ──
+    if (path === 'compensation.getAdjustments') {
+      // Admins / HR / CEO see all; regular employees see only their own.
+      if (isAdmin || isCEO) {
+        return await prisma.compensationAdjustment.findMany({
+          where: mergeWhere({}, withTenantUserScope(caller)),
+          include: {
+            user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
+            requestedBy: { select: { id: true, name: true } },
+            approvedBy: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+      if (!userId) return [];
+      return await prisma.compensationAdjustment.findMany({
+        where: { userId },
+        include: {
+          user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
+          requestedBy: { select: { id: true, name: true } },
+          approvedBy: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+    if (path === 'compensation.getEmployeeHistory') {
+      const targetUserId = args?.userId;
+      if (!targetUserId) throw new Error('Missing userId');
+      // Regular employees can only view their own history.
+      if (!isAdmin && !isCEO && targetUserId !== userId) {
+        throw new MutationError('UNAUTHORIZED', 'You can only view your own compensation history');
+      }
+      return await prisma.compensationAdjustment.findMany({
+        where: { userId: targetUserId },
+        include: {
+          requestedBy: { select: { id: true, name: true, role: true } },
+          approvedBy: { select: { id: true, name: true, role: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
     }
 
     // ── EXPENSES ──
@@ -2699,6 +2746,213 @@ async function runMutation(path: string, input: any) {
       });
     }
 
+    // ── COMPENSATION (mutations) ──
+    if (path === 'compensation.createAdjustment') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.userId || !input?.type || !input?.reason) {
+        throw new Error('Missing required fields: userId, type, reason');
+      }
+
+      const validTypes = ['INCREMENT', 'DECREMENT', 'ADJUSTMENT'];
+      if (!validTypes.includes(input.type)) throw new Error('Invalid adjustment type');
+
+      const targetUser = await prisma.user.findUnique({
+        where: { id: input.userId },
+        select: { id: true, name: true, baseSalary: true, department: true, role: true, email: true },
+      });
+      if (!targetUser) throw new Error('Employee not found');
+
+      const oldSalary = Number(input.oldSalary) || targetUser.baseSalary || 0;
+      const newSalary = Number(input.newSalary);
+      if (isNaN(newSalary)) throw new Error('newSalary is required and must be a number');
+
+      const validationError = validateSalaryAdjustment(oldSalary, newSalary);
+      if (validationError) throw new Error(validationError);
+
+      const delta = Math.round((newSalary - oldSalary) * 100) / 100;
+      const percentage = oldSalary > 0
+        ? Math.round(((delta / oldSalary) * 100) * 100) / 100
+        : 0;
+      const inferredType = inferAdjustmentType(delta);
+
+      const adjustment = await prisma.compensationAdjustment.create({
+        data: {
+          userId: input.userId,
+          type: inferredType,
+          oldSalary,
+          newSalary,
+          delta,
+          percentage,
+          reason: input.reason,
+          effectiveDate: input.effectiveDate ? new Date(input.effectiveDate) : new Date(),
+          notes: input.notes || null,
+          status: input.status || 'PENDING',
+          requestedById: userId ?? null,
+        },
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      });
+
+      await logSecureAuditEvent({
+        action: `Compensation ${inferredType} Created`,
+        target: `${targetUser.name} (salary: ${oldSalary} → ${newSalary}, annual impact: ${computeAnnualCostImpact(delta).toLocaleString()} BDT)`,
+        user: caller?.email || 'System',
+        severity: 'HIGH',
+      });
+
+      const effDateStr = adjustment.effectiveDate.toISOString().split('T')[0];
+
+      // Notify the employee and HR/admins.
+      const notifData: { userId: string; message: string; type: string; link: string }[] = [{
+        userId: input.userId,
+        message: `💰 Salary ${inferredType === 'INCREMENT' ? 'Increase' : inferredType === 'DECREMENT' ? 'Decrease' : 'Adjustment'} Proposed: Your salary is set to change from ${oldSalary.toLocaleString()} to ${newSalary.toLocaleString()} BDT. Effective ${effDateStr}. Pending approval.`,
+        type: 'payroll',
+        link: '/compensation',
+      }];
+      const adminUsers = await prisma.user.findMany({
+        where: mergeWhere({ role: { in: ['Admin', 'HR Manager', 'CEO'] } }, tenantWhere),
+        select: { id: true },
+      });
+      for (const a of adminUsers) {
+        notifData.push({
+          userId: a.id,
+          message: `💰 New compensation ${inferredType.toLowerCase()} request for ${targetUser.name}: ${oldSalary.toLocaleString()} → ${newSalary.toLocaleString()} BDT. Requires approval.`,
+          type: 'payroll',
+          link: '/compensation',
+        });
+      }
+      if (notifData.length > 0) {
+        await prisma.notification.createMany({ data: notifData });
+      }
+
+      return adjustment;
+    }
+
+    if (path === 'compensation.updateAdjustmentStatus') {
+      if (!isAdmin && !isCEO && !isHR) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
+      }
+      if (!input?.id || !input?.status) throw new Error('Missing adjustment id or status');
+
+      const validStatuses = ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED', 'IMPLEMENTED'];
+      if (!validStatuses.includes(input.status)) throw new Error('Invalid status');
+
+      const existing = await prisma.compensationAdjustment.findUnique({
+        where: { id: input.id },
+        include: { user: { select: { name: true } } },
+      });
+      if (!existing) throw new Error('Adjustment not found');
+
+      // Status transition guard: only PENDING → APPROVED / REJECTED is allowed
+      // via this endpoint. APPROVED → IMPLEMENTED is applied automatically inside
+      // the APPROVED branch below (atomic transaction with the salary update).
+      if (existing.status !== 'PENDING') {
+        throw new Error(`Cannot change status from ${existing.status} directly. Current status: ${existing.status}`);
+      }
+      if (input.status !== 'APPROVED' && input.status !== 'REJECTED') {
+        throw new Error(`Invalid target status. Expected APPROVED or REJECTED, got ${input.status}`);
+      }
+
+      const updateData: Record<string, unknown> = {
+        status: input.status,
+        updatedAt: new Date(),
+      };
+      if (input.status === 'APPROVED') {
+        updateData.approvedById = userId ?? input.approvedById;
+        updateData.approvedAt = new Date();
+      }
+      if (input.status === 'REJECTED') {
+        updateData.rejectionReason = input.rejectionReason || null;
+      }
+
+      const updated = await prisma.compensationAdjustment.update({
+        where: { id: input.id },
+        data: updateData,
+      });
+
+      // When approved, apply the new salary to the user record (in a transaction
+      // so the salary change and status update are atomic).
+      if (input.status === 'APPROVED') {
+        await prisma.$transaction(async (tx) => {
+          await tx.compensationAdjustment.update({
+            where: { id: input.id },
+            data: { status: 'IMPLEMENTED' },
+          });
+          await tx.user.update({
+            where: { id: existing.userId },
+            data: { baseSalary: existing.newSalary },
+          });
+        });
+
+        await logSecureAuditEvent({
+          action: 'Compensation Adjustment Implemented',
+          target: `${existing.user?.name || 'Employee'} (salary: ${existing.oldSalary} → ${existing.newSalary})`,
+          user: caller?.email || 'System',
+          severity: 'CRITICAL',
+        });
+
+        // Notify the employee that their salary change is now live.
+        await prisma.notification.create({
+          data: {
+            userId: existing.userId,
+            message: `💰 Your salary has been updated to ${existing.newSalary.toLocaleString()} BDT effective ${existing.effectiveDate.toISOString().split('T')[0]}.`,
+            type: 'payroll',
+            link: '/compensation',
+          },
+        });
+
+        // Return the final implemented record.
+        return prisma.compensationAdjustment.findUnique({ where: { id: input.id } });
+      }
+
+      await logSecureAuditEvent({
+        action: `Compensation Adjustment Status → ${input.status}`,
+        target: `${existing.user?.name || 'Employee'}`,
+        user: caller?.email || 'System',
+        severity: input.status === 'REJECTED' ? 'HIGH' : 'INFO',
+      });
+
+      // Notify the employee of approval / rejection.
+      await prisma.notification.create({
+        data: {
+          userId: existing.userId,
+          message: input.status === 'REJECTED'
+            ? `❌ Your salary adjustment request was rejected${input.rejectionReason ? `: ${input.rejectionReason}` : ''}.`
+            : `✅ Your salary adjustment was approved and is being processed.`,
+          type: 'payroll',
+          link: '/compensation',
+        },
+      });
+
+      return updated;
+    }
+
+    if (path === 'compensation.deleteAdjustment') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!input?.id) throw new Error('Missing adjustment id');
+
+      const existing = await prisma.compensationAdjustment.findUnique({
+        where: { id: input.id },
+        select: { id: true, status: true, user: { select: { name: true } } },
+      });
+      if (!existing) throw new Error('Adjustment not found');
+
+      // Only allow deletion of DRAFT or PENDING records (never IMPLEMENTED).
+      if (existing.status === 'IMPLEMENTED') {
+        throw new Error('Cannot delete an implemented adjustment');
+      }
+
+      await logSecureAuditEvent({
+        action: 'Compensation Adjustment Deleted',
+        target: `${existing.user?.name || 'Employee'}`,
+        user: caller?.email || 'System',
+        severity: 'HIGH',
+      });
+
+      return await prisma.compensationAdjustment.delete({ where: { id: input.id } });
+    }
+
     // ── ASSETS (mutations) ──
     if (path === 'assets.createAsset') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
@@ -2969,7 +3223,8 @@ function revalidateForPath(path: string) {
     registry: ['/registry', '/team', '/hierarchy', '/org-chart'],
     attendance: ['/attendance', '/dashboard'],
     leave: ['/leave', '/dashboard', '/team'],
-    payroll: ['/payroll', '/payroll-settings', '/dashboard'],
+     payroll: ['/payroll', '/payroll-settings', '/dashboard'],
+     compensation: ['/compensation', '/payroll', '/dashboard'],
     performance: ['/performance', '/reviews', '/dashboard'],
     recruitment: ['/recruitment', '/dashboard'],
     expenses: ['/expenses', '/dashboard'],

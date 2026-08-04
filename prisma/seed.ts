@@ -38,8 +38,9 @@ async function main() {
   await prisma.committeeMember.deleteMany();
   await prisma.greetingRule.deleteMany();
   await prisma.greetingLog.deleteMany();
-  await prisma.festivalBonus.deleteMany();
-  await prisma.branchRelations.deleteMany();
+   await prisma.festivalBonus.deleteMany();
+   await prisma.compensationAdjustment.deleteMany();
+   await prisma.branchRelations.deleteMany();
   await prisma.branch.deleteMany();
   await prisma.employeeOptionalHoliday.deleteMany();
   await prisma.festivalWorkLog.deleteMany();

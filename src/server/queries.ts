@@ -1006,6 +1006,55 @@ export async function getFestivalBonuses(caller: Caller | null) {
   return prisma.festivalBonus.findMany({ where: { userId: caller?.id }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
 }
 
+// ── Compensation ──
+export async function getCompensationAdjustments(caller: Caller | null) {
+  const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
+  const userId = caller?.id;
+
+  if (isAdmin || isCEO || isHR) {
+    return prisma.compensationAdjustment.findMany({
+      include: {
+        user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
+        requestedBy: { select: { id: true, name: true, role: true } },
+        approvedBy: { select: { id: true, name: true, role: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+  if (!userId) return [];
+  return prisma.compensationAdjustment.findMany({
+    where: { userId },
+    include: {
+      user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
+      requestedBy: { select: { id: true, name: true, role: true } },
+      approvedBy: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function getEmployeeCompensationHistory(caller: Caller | null, targetUserId: string) {
+  const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  const userId = caller?.id;
+
+  // Regular employees can only view their own history.
+  if (!isAdmin && !isCEO && targetUserId !== userId) {
+    return [];
+  }
+
+  return prisma.compensationAdjustment.findMany({
+    where: { userId: targetUserId },
+    include: {
+      requestedBy: { select: { id: true, name: true, role: true } },
+      approvedBy: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
 // ── Training ──
 export async function getTrainingCatalog(caller: Caller | null) {
   const courses = await prisma.trainingCourse.findMany({ where: { isActive: true }, orderBy: { category: 'asc' } });
@@ -1965,6 +2014,8 @@ export const q = {
   trainingCompliance: () => getCaller().then((c) => getTrainingCompliance(c)),
   calibrationSessions: () => getCaller().then((c) => getCalibrationSessions(c)),
   calibrationEntries: (sessionId: string) => getCaller().then((c) => getCalibrationEntries(c, sessionId)),
+  compensationAdjustments: () => getCaller().then((c) => getCompensationAdjustments(c)),
+  employeeCompensationHistory: (targetUserId: string) => getCaller().then((c) => getEmployeeCompensationHistory(c, targetUserId)),
   branches: getBranches,
   'pulse.getStatus': () => getCaller().then((c) => getPulseStatus(c)),
   'pulse.getAnalytics': () => getCaller().then((c) => getPulseAnalytics(c)),

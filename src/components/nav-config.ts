@@ -8,6 +8,7 @@ import {
   Laptop, BookOpen, Briefcase, TrendingUp, PieChart,
   BrainCircuit, Handshake, Calculator, Flame, Scale, Brain, Target, Map, Lightbulb,
   MessageCircle, Award, CheckSquare, ChevronDown, ChevronRight, Sun, Moon, PenLine, Ban,
+  PiggyBank,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -52,6 +53,7 @@ export const navCategories: NavCategory[] = [
     title: 'Finance & Assets',
     items: [
       { label: 'Payroll', icon: Bitcoin, path: '/payroll', hideForContractor: true },
+      { label: 'Compensation', icon: PiggyBank, path: '/compensation', hideForContractor: true, adminOnly: true },
       { label: 'Festival Bonus', icon: Gift, path: '/festival-bonus', adminOnly: true, hideForContractor: true },
       { label: 'Payroll Config', icon: Settings, path: '/payroll-settings', adminOnly: true },
       { label: 'Expenses', icon: Receipt, path: '/expenses', adminOnly: true },

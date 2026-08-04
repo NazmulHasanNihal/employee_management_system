@@ -153,3 +153,29 @@ export const notifySchema = z.object({
   body: z.string().min(1).max(1000),
   url: z.string().max(500).optional(),
 });
+
+// ── Compensation adjustment schemas ──
+export const AdjustmentTypeSchema = z.enum(['INCREMENT', 'DECREMENT', 'ADJUSTMENT']);
+export const AdjustmentStatusSchema = z.enum(['DRAFT', 'PENDING', 'APPROVED', 'REJECTED', 'IMPLEMENTED']);
+
+export const createAdjustmentSchema = z.object({
+  userId: z.string().min(1),
+  type: AdjustmentTypeSchema,
+  oldSalary: z.number().min(0),
+  newSalary: z.number().min(0),
+  reason: z.string().min(1).max(500),
+  effectiveDate: z.string().min(1),
+  notes: z.string().max(2000).optional(),
+  requestedById: z.string().optional(),
+});
+
+export const updateAdjustmentStatusSchema = z.object({
+  id: z.string().min(1),
+  status: AdjustmentStatusSchema,
+  approvedById: z.string().optional(),
+  rejectionReason: z.string().max(1000).optional(),
+});
+
+export const deleteAdjustmentSchema = z.object({
+  id: z.string().min(1),
+});

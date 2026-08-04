@@ -121,8 +121,13 @@ model User {
   calibrationEntries  CalibrationEntry[]
 
   // Bangladesh leave / holiday compliance (B3)
-  optionalHolidaySelections EmployeeOptionalHoliday[]
-  festivalWorkLogs          FestivalWorkLog[]
+   optionalHolidaySelections EmployeeOptionalHoliday[]
+   festivalWorkLogs          FestivalWorkLog[]
+
+   // ── Compensation adjustment history (salary increments / decrements) ──
+   compensationAdjustments  CompensationAdjustment[]
+   requestedAdjustments     CompensationAdjustment[] @relation("RequestedBy")
+   approvedAdjustments      CompensationAdjustment[] @relation("ApprovedBy")
 
   // Performance indexes: managerId (org-chart / chain-of-command / team
   // lookups), branchId + tenantId (tenant/branch-scoped queries), nid lookups.
@@ -1012,4 +1017,37 @@ model PulseSurveyResponse {
   @@index([tenantId])
   @@index([userId])
   @@index([createdAt])
+}
+
+// ── Compensation Adjustments (salary increments / decrements / ad-hoc) ──
+// Records every salary change for an employee with an approval workflow and
+// full audit trail. The adjustment is applied to User.baseSalary only when its
+// status transitions to IMPLEMENTED, preserving data integrity and a clear
+// chain of history before the live salary is mutated.
+model CompensationAdjustment {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String // INCREMENT, DECREMENT, ADJUSTMENT
+  oldSalary       Float // baseSalary snapshot at the time of the request
+  newSalary       Float // proposed new baseSalary
+  delta           Float // newSalary - oldSalary (signed)
+  percentage      Float? // percentage change, computed from old->new (nullable for manual overrides)
+  reason          String // e.g. "Annual Review", "Performance Bonus", "Role Change"
+  effectiveDate   DateTime // when the change should take effect
+  notes           String?
+  status          String @default("PENDING") // DRAFT, PENDING, APPROVED, REJECTED, IMPLEMENTED
+  requestedById   String?
+  requestedBy     User?    @relation("RequestedBy", fields: [requestedById], references: [id], onDelete: SetNull)
+  approvedById    String?
+  approvedBy      User?    @relation("ApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, effectiveDate])
+  @@index([status])
+  @@index([effectiveDate])
 }
