@@ -5,6 +5,7 @@ import {
   isSalaryExempt,
   getReportingChainSubordinates,
   isSubordinate,
+  wouldCreateCircularHierarchy,
 } from '@/lib/hierarchy';
 
 describe('getUserRank', () => {
@@ -85,4 +86,26 @@ describe('getReportingChainSubordinates & isSubordinate', () => {
     expect(isSubordinate('dev-lead', 'ceo', users)).toBe(false);
   });
 });
+
+describe('wouldCreateCircularHierarchy', () => {
+  const users = [
+    { id: 'ceo', managerId: null },
+    { id: 'cto', managerId: 'ceo' },
+    { id: 'dev-lead', managerId: 'cto' },
+  ];
+
+  it('detects self-management attempt', () => {
+    expect(wouldCreateCircularHierarchy('dev-lead', 'dev-lead', users)).toBe(true);
+  });
+
+  it('detects assigning a subordinate as a manager', () => {
+    // dev-lead is subordinate of cto, so assigning dev-lead as cto's manager creates a cycle
+    expect(wouldCreateCircularHierarchy('cto', 'dev-lead', users)).toBe(true);
+  });
+
+  it('allows valid manager assignments', () => {
+    expect(wouldCreateCircularHierarchy('dev-lead', 'ceo', users)).toBe(false);
+  });
+});
+
 

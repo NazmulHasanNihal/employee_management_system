@@ -29,7 +29,17 @@ export default async function OrgChartPage() {
     );
   }
 
-  const tree = await getOrgTree();
+  const canAssign = canViewOrg(caller);
+  const [tree, employees] = await Promise.all([
+    getOrgTree(),
+    prisma.user.findMany({
+      where: { status: { not: 'Terminated' } },
+      select: { id: true, name: true, role: true, designation: true, department: true, managerId: true },
+      orderBy: { name: 'asc' },
+    }),
+  ]);
+
+  const canAssignManager = caller ? (caller.isAdmin || caller.isCEO || caller.isHR) : false;
 
   return (
     <div className="flex h-full flex-col space-y-6">
@@ -40,7 +50,7 @@ export default async function OrgChartPage() {
       />
 
       {tree && tree.id ? (
-        <OrgChartLazy tree={tree} />
+        <OrgChartLazy tree={tree} employees={employees} canAssignManager={canAssignManager} />
       ) : (
         <EmptyState title="No org data found" description="Add managers and reporting lines to build the chart." />
       )}

@@ -78,3 +78,17 @@ export function isSubordinate(
   return subs.has(targetUserId);
 }
 
+/**
+ * Check if assigning newManagerId as manager of userId would create a circular reporting loop.
+ */
+export function wouldCreateCircularHierarchy(
+  userId: string,
+  newManagerId: string | null | undefined,
+  allUsers: Array<{ id: string; managerId: string | null }>
+): boolean {
+  if (!newManagerId || !userId) return false;
+  if (userId === newManagerId) return true;
+  return isSubordinate(userId, newManagerId, allUsers);
+}
+
+

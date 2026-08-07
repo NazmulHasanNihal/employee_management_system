@@ -1,18 +1,10 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
-/**
- * profile.ts — Server actions for the rich (Phase 3) profile page.
- *
- * These back the client islands on /profile. They intentionally do NOT touch
- * db.ts; they use prisma directly and enforce permission rules that mirror the
- * legacy trpc handlers (e.g. self-service can never escalate role/status).
- */
-
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getCaller } from '@/lib/auth';
 import { validateNid, maskNid, encryptNid } from '@/lib/nid';
+import { wouldCreateCircularHierarchy } from '@/lib/hierarchy';
 
 // Fields a user may edit on their own profile. Role / status / manager /
 // designation / department are NOT self-service (privilege escalation guard).
@@ -42,9 +34,7 @@ const SELF_EDITABLE = [
 
 type SelfEditableField = (typeof SELF_EDITABLE)[number];
 
-// Fields an admin/HR may additionally edit (employment details). `status` and
-// `managerId` are restricted to full admins; `designation`, `department`,
-// `employmentType`, `baseSalary`, and `joinDate` may also be edited by HR.
+// Fields an admin/HR/CEO may edit (employment details).
 const ADMIN_EDITABLE = [
   'employmentType',
   'department',
@@ -55,21 +45,21 @@ const ADMIN_EDITABLE = [
   'joinDate',
 ] as const;
 
-// Fields HR managers (but not necessarily full admins) may edit. Subset of
-// ADMIN_EDITABLE excluding the escalation-sensitive status/managerId.
-const HR_EDITABLE = ['employmentType', 'department', 'designation', 'baseSalary', 'joinDate'] as const;
+// Fields HR managers may edit.
+const HR_EDITABLE = ['employmentType', 'department', 'designation', 'baseSalary', 'joinDate', 'managerId'] as const;
 
-// True when the caller may edit employment details. Full admins may edit every
-// ADMIN_EDITABLE field; HR managers may edit the HR_EDITABLE subset.
-function canEditEmploymentField(caller: { isAdmin: boolean; isHR: boolean }, field: string): boolean {
-  if ((ADMIN_EDITABLE as readonly string[]).includes(field) && caller.isAdmin) return true;
+function canEditEmploymentField(caller: { isAdmin: boolean; isHR: boolean; isCEO?: boolean }, field: string): boolean {
+  if (caller.isCEO || caller.isAdmin) return true;
   if ((HR_EDITABLE as readonly string[]).includes(field) && caller.isHR) return true;
   return false;
 }
 
-export async function updateProfileField(field: string, value: unknown) {
+export async function updateProfileField(field: string, value: unknown, targetUserId?: string) {
   const caller = await getCaller();
   if (!caller) throw new Error('Unauthorized');
+
+  const isPrivileged = caller.isAdmin || caller.isCEO || caller.isHR;
+  const targetId = targetUserId && isPrivileged ? targetUserId : caller.id;
 
   const isSelfField = (SELF_EDITABLE as readonly string[]).includes(field);
   const isEmploymentField = canEditEmploymentField(caller, field);
@@ -78,54 +68,58 @@ export async function updateProfileField(field: string, value: unknown) {
     throw new Error('Not allowed to edit this field');
   }
 
-  // Normalize empty strings to null for optional fields.
-  const normalized = value === '' ? null : value;
-  if (field === 'dateOfBirth' && typeof normalized === 'string') {
-    const d = new Date(normalized);
-    await prisma.user.update({ where: { id: caller.id }, data: { dateOfBirth: d } });
-    return { ok: true };
-  }
-  if (field === 'joinDate' && typeof normalized === 'string') {
-    const d = new Date(normalized);
-    await prisma.user.update({ where: { id: caller.id }, data: { joinDate: d } });
-    return { ok: true };
-  }
-  if (field === 'baseSalary') {
-    const num = normalized == null ? null : Number(normalized);
-    await prisma.user.update({ where: { id: caller.id }, data: { baseSalary: num } });
-    return { ok: true };
-  }
-  if (field === 'branchId' && normalized == null) {
-    // Allow clearing the branch assignment.
-    await prisma.user.update({ where: { id: caller.id }, data: { branchId: null } });
-    return { ok: true };
+  // Circular hierarchy guard for manager assignment
+  if (field === 'managerId' && value) {
+    const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+    if (wouldCreateCircularHierarchy(targetId, String(value), allUsers)) {
+      throw new Error('Cannot assign manager: this would create a circular management loop.');
+    }
   }
 
-  await prisma.user.update({
-    where: { id: caller.id },
-    data: { [field]: normalized },
-  });
+  // Normalize empty strings to null for optional fields.
+  const normalized = value === '' ? null : value;
+
+  if (field === 'dateOfBirth' && typeof normalized === 'string') {
+    const d = new Date(normalized);
+    await prisma.user.update({ where: { id: targetId }, data: { dateOfBirth: d } });
+  } else if (field === 'joinDate' && typeof normalized === 'string') {
+    const d = new Date(normalized);
+    await prisma.user.update({ where: { id: targetId }, data: { joinDate: d } });
+  } else if (field === 'baseSalary') {
+    const num = normalized == null ? null : Number(normalized);
+    await prisma.user.update({ where: { id: targetId }, data: { baseSalary: num } });
+  } else if (field === 'branchId' && normalized == null) {
+    await prisma.user.update({ where: { id: targetId }, data: { branchId: null } });
+  } else {
+    await prisma.user.update({
+      where: { id: targetId },
+      data: { [field]: normalized },
+    });
+  }
+
   revalidatePath('/', 'layout');
+  revalidateTag('org-tree');
+  revalidateTag('employees');
   return { ok: true };
 }
 
 export async function updateProfileBatch(
-  updates: Record<string, unknown>
+  updates: Record<string, unknown>,
+  targetUserId?: string
 ) {
   const caller = await getCaller();
   if (!caller) throw new Error('Unauthorized');
+
+  const isPrivileged = caller.isAdmin || caller.isCEO || caller.isHR;
+  const targetId = targetUserId && isPrivileged ? targetUserId : caller.id;
 
   const data: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(updates)) {
     const isSelfField = (SELF_EDITABLE as readonly string[]).includes(key);
     const isEmploymentField = canEditEmploymentField(caller, key);
     if (!isSelfField && !isEmploymentField) {
-      // skip disallowed fields silently
       continue;
     }
-    // NID is encrypted at rest. A null value means "unchanged" — preserve the
-    // existing ciphertext rather than blanking it. A non-empty value is
-    // validated, masked for display, and encrypted before storage.
     if (key === 'nid') {
       if (val == null || val === '') continue;
       const digits = String(val).replace(/\D/g, '');
@@ -137,10 +131,12 @@ export async function updateProfileBatch(
     }
     data[key] = val === '' ? null : val;
   }
-   if (Object.keys(data).length === 0) return { ok: true };
+  if (Object.keys(data).length === 0) return { ok: true };
 
-  await prisma.user.update({ where: { id: caller.id }, data });
+  await prisma.user.update({ where: { id: targetId }, data });
   revalidatePath('/', 'layout');
+  revalidateTag('org-tree');
+  revalidateTag('employees');
   return { ok: true };
 }
 

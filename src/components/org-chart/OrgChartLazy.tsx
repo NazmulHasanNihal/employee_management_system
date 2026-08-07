@@ -20,6 +20,14 @@ const OrgChartFlow = dynamic(
   },
 );
 
-export default function OrgChartLazy({ tree }: { tree: any }) {
-  return <OrgChartFlow tree={tree} />;
+export default function OrgChartLazy({
+  tree,
+  employees,
+  canAssignManager,
+}: {
+  tree: any;
+  employees?: any[];
+  canAssignManager?: boolean;
+}) {
+  return <OrgChartFlow tree={tree} employees={employees} canAssignManager={canAssignManager} />;
 }

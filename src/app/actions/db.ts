@@ -7,7 +7,7 @@ import { MutationError, classifyError } from '@/lib/mutation-error';
 import { runAutomationRules } from '@/server/automation';
 import { prisma } from '@/lib/prisma';
 import webpush from 'web-push';
-import { canModifyUser, isSalaryExempt, isSubordinate, getReportingChainSubordinates } from '@/lib/hierarchy';
+import { canModifyUser, isSalaryExempt, isSubordinate, getReportingChainSubordinates, wouldCreateCircularHierarchy } from '@/lib/hierarchy';
 import { getCaller, type Caller } from '@/lib/auth';
 import { calculatePayroll } from '@/lib/payroll';
 import { estimateProvidentFund, estimateFestivalBonus, estimateGratuity } from '@/lib/bdStatutory';
@@ -1337,13 +1337,20 @@ async function runMutation(path: string, input: any) {
       return newUser;
     }
     if (path === 'registry.updateEmployee') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      // Non-admins may only edit a narrow allow-list of safe fields.
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin, CEO or HR access required');
       const allowed = ['name', 'designation', 'department', 'avatarUrl', 'employmentType', 'phone', 'location', 'managerId', 'role', 'status'];
       const data: Record<string, unknown> = {};
       for (const key of allowed) {
         if (input?.data?.[key] !== undefined) data[key] = input.data[key];
       }
+
+      if (data.managerId && input?.id) {
+        const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+        if (wouldCreateCircularHierarchy(input.id, String(data.managerId), allUsers)) {
+          throw new Error('Cannot assign manager: this would create a circular management loop.');
+        }
+      }
+
       const updatedUser = await prisma.user.update({ where: { id: input.id }, data });
       
       const targetUserIds = new Set<string>();

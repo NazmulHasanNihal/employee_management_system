@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useUser } from '@/components/UserProvider';
 import { updateProfileField, updateProfileBatch } from '@/app/actions/profile';
 import { useRouter } from 'next/navigation';
+import { toast } from '@/lib/toast';
 import { T } from "@/components/Translate";
 
 export type ProfileUser = {
@@ -58,12 +59,14 @@ function FieldRow({
   value,
   type = 'text',
   placeholder,
+  targetUserId,
 }: {
   label: string;
   field: string;
   value: string | null | undefined;
   type?: string;
   placeholder?: string;
+  targetUserId?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -77,9 +80,11 @@ function FieldRow({
   const save = async () => {
     setSaving(true);
     try {
-      await updateProfileField(field, draft);
+      await updateProfileField(field, draft, targetUserId);
       setEditing(false);
       router.refresh();
+    } catch (err: any) {
+      toast.error('Save Failed', err?.message || 'Failed to update profile field.');
     } finally {
       setSaving(false);
     }
@@ -132,12 +137,14 @@ function SelectRow({
   value,
   options,
   placeholder = 'Select',
+  targetUserId,
 }: {
   label: string;
   field: string;
   value: string | null | undefined;
   options: string[];
   placeholder?: string;
+  targetUserId?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -151,9 +158,11 @@ function SelectRow({
   const save = async () => {
     setSaving(true);
     try {
-      await updateProfileField(field, draft);
+      await updateProfileField(field, draft, targetUserId);
       setEditing(false);
       router.refresh();
+    } catch (err: any) {
+      toast.error('Save Failed', err?.message || 'Failed to update profile field.');
     } finally {
       setSaving(false);
     }
@@ -425,7 +434,7 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
   );
 }
 
-// ── Employment details (editable by the user; admins get extra fields) ──
+// ── Employment details (editable by privileged users: CEO, Admin, HR) ──
 export function EmploymentSection({
   user,
   managerName,
@@ -439,23 +448,18 @@ export function EmploymentSection({
   branches?: { id: string; name: string }[];
   managers?: { id: string; name: string }[];
 }) {
-  const { isAdmin, isHR } = useUser();
-  // HR managers may edit employment details (incl. Designation/Position) but
-  // not the escalation-sensitive Status / Manager fields, which stay admin-only.
-  const canEditEmployment = isAdmin || isHR;
+  const { isAdmin, isHR, isCEO } = useUser();
+  const canEditEmployment = isAdmin || isHR || isCEO;
 
-  // Everyone (incl. HR) can edit these safe employment fields.
   const base = (
     <>
-      <SelectRow label="Employment Type" field="employmentType" value={user.employmentType ?? 'Full-Time'} options={EMPLOYMENT_TYPES} />
-      <FieldRow label="Department" field="department" value={user.department} />
-      <FieldRow label="Designation" field="designation" value={user.designation} />
-      <FieldRow label="Base Salary" field="baseSalary" type="number" value={user.baseSalary != null ? String(user.baseSalary) : ''} placeholder="0" />
-      <FieldRow label="Join Date" field="joinDate" type="date" value={user.joinDate ? String(user.joinDate).slice(0, 10) : ''} />
+      <SelectRow label="Employment Type" field="employmentType" value={user.employmentType ?? 'Full-Time'} options={EMPLOYMENT_TYPES} targetUserId={user.id} />
+      <FieldRow label="Department" field="department" value={user.department} targetUserId={user.id} />
+      <FieldRow label="Designation" field="designation" value={user.designation} targetUserId={user.id} />
+      <FieldRow label="Base Salary" field="baseSalary" type="number" value={user.baseSalary != null ? String(user.baseSalary) : ''} placeholder="0" targetUserId={user.id} />
+      <FieldRow label="Join Date" field="joinDate" type="date" value={user.joinDate ? String(user.joinDate).slice(0, 10) : ''} targetUserId={user.id} />
     </>
   );
-
-  // Branch dropdown stores the branch id; Manager dropdown (admin) stores the id too.
 
   if (!canEditEmployment) {
     return (
@@ -466,6 +470,7 @@ export function EmploymentSection({
           value={user.branchId ?? ''}
           options={branches}
           currentName={branchName}
+          targetUserId={user.id}
         />
         <Row label="Manager" value={managerName ?? '—'} />
       </div>
@@ -480,10 +485,10 @@ export function EmploymentSection({
         value={user.branchId ?? ''}
         options={branches}
         currentName={branchName}
+        targetUserId={user.id}
       />
-      {isAdmin && <SelectRow label="Status" field="status" value={user.status ?? 'active'} options={STATUSES} />}
-      {isAdmin && <ManagerSelectRow field="managerId" value={user.managerId ?? ''} options={managers} currentName={managerName} />}
-      {!isAdmin && <Row label="Manager" value={managerName ?? '—'} />}
+      {canEditEmployment && <SelectRow label="Status" field="status" value={user.status ?? 'active'} options={STATUSES} targetUserId={user.id} />}
+      {canEditEmployment && <ManagerSelectRow field="managerId" value={user.managerId ?? ''} options={managers} currentName={managerName} targetUserId={user.id} />}
     </div>
   );
 }
@@ -505,11 +510,13 @@ function BranchSelectRow({
   value,
   options,
   currentName,
+  targetUserId,
 }: {
   field: string;
   value: string;
   options: { id: string; name: string }[];
   currentName?: string | null;
+  targetUserId?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -520,9 +527,11 @@ function BranchSelectRow({
   const save = async () => {
     setSaving(true);
     try {
-      await updateProfileField(field, draft || null);
+      await updateProfileField(field, draft || null, targetUserId);
       setEditing(false);
       router.refresh();
+    } catch (err: any) {
+      toast.error('Save Failed', err?.message || 'Could not update branch.');
     } finally {
       setSaving(false);
     }
@@ -566,11 +575,13 @@ function ManagerSelectRow({
   value,
   options,
   currentName,
+  targetUserId,
 }: {
   field: string;
   value: string;
   options: { id: string; name: string }[];
   currentName?: string | null;
+  targetUserId?: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -581,10 +592,12 @@ function ManagerSelectRow({
   const save = async () => {
     setSaving(true);
     try {
-      // Empty selection clears the manager.
-      await updateProfileField(field, draft || null);
+      await updateProfileField(field, draft || null, targetUserId);
       setEditing(false);
+      toast.success('Manager Updated', 'Reporting manager assigned successfully.');
       router.refresh();
+    } catch (err: any) {
+      toast.error('Assignment Failed', err?.message || 'Could not update manager assignment.');
     } finally {
       setSaving(false);
     }

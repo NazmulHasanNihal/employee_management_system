@@ -144,27 +144,146 @@ const layoutTree = (treeNode: TreeNode, x = 0, y = 0): { nodes: Node[]; edges: E
   return { nodes, edges };
 };
 
-export default function OrgChartFlow({ tree }: { tree: TreeNode }) {
+import { useState } from 'react';
+import { updateProfileField } from '@/app/actions/profile';
+import { toast } from '@/lib/toast';
+import { Button } from '@/components/ui/button';
+import { Users, UserCheck, ShieldCheck, RefreshCw } from 'lucide-react';
+import { T } from '@/components/Translate';
+
+export default function OrgChartFlow({
+  tree,
+  employees = [],
+  canAssignManager = false,
+}: {
+  tree: TreeNode;
+  employees?: Array<{ id: string; name: string; role?: string | null; designation?: string | null; managerId?: string | null }>;
+  canAssignManager?: boolean;
+}) {
   const router = useRouter();
   const { nodes, edges } = useMemo(() => layoutTree(tree, 0, 40), [tree]);
 
+  const [selectedEmpId, setSelectedEmpId] = useState('');
+  const [selectedManagerId, setSelectedManagerId] = useState('');
+  const [updating, setUpdating] = useState(false);
+
+  const selectedEmp = employees.find((e) => e.id === selectedEmpId);
+  const currentManagerId = selectedEmp?.managerId ?? '';
+
+  const handleEmpChange = (empId: string) => {
+    setSelectedEmpId(empId);
+    const emp = employees.find((e) => e.id === empId);
+    setSelectedManagerId(emp?.managerId || '');
+  };
+
+  const handleUpdateManager = async () => {
+    if (!selectedEmpId) {
+      toast.error('Selection Required', 'Please select an employee to update.');
+      return;
+    }
+    setUpdating(true);
+    try {
+      const newMgr = selectedManagerId === 'NONE' || selectedManagerId === '' ? null : selectedManagerId;
+      await updateProfileField('managerId', newMgr, selectedEmpId);
+      const empName = selectedEmp?.name || 'Employee';
+      const mgrName = employees.find((e) => e.id === newMgr)?.name || 'Top Level / Unassigned';
+      toast.success('Manager Updated', `${empName} now reports to ${mgrName}.`);
+      router.refresh();
+    } catch (err: any) {
+      toast.error('Update Failed', err?.message || 'Could not update manager assignment.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
-    <div className="h-full min-h-[min(75vh,52rem)] flex-1 overflow-hidden rounded-3xl border border-[var(--border-hairline)] shadow-xl relative" style={{ background: 'var(--bg-app)' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.25 }}
-        minZoom={0.1}
-        maxZoom={1.8}
-        onNodeClick={(_, node) => router.push(`/profile?id=${node.id}`)}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background color="var(--border-hairline)" gap={24} size={1.5} />
-        <Controls className="!bg-[var(--bg-panel)] !border-[var(--border-hairline)] !shadow-lg !rounded-2xl" />
-        <MiniMap className="!bg-[var(--bg-panel)] !border-[var(--border-hairline)] !rounded-2xl" pannable zoomable />
-      </ReactFlow>
+    <div className="flex flex-col space-y-4">
+      {canAssignManager && (
+        <div className="rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] p-5 shadow-lg animate-in fade-in">
+          <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-[var(--brand)]" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-main)]">
+                {/* @ts-ignore */}<T>Management Selection & Hierarchy Assignment</T>
+              </h3>
+            </div>
+            <span className="text-xs text-[var(--text-muted)]">
+              {/* @ts-ignore */}<T>CEO / Admin / HR Clearance</T>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                {/* @ts-ignore */}<T>Select Target Employee</T>
+              </label>
+              <select
+                value={selectedEmpId}
+                onChange={(e) => handleEmpChange(e.target.value)}
+                className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
+              >
+                <option value="">{/* @ts-ignore */}<T>Choose Employee...</T></option>
+                {employees.map((emp) => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} ({emp.designation || emp.role || 'Staff'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                {/* @ts-ignore */}<T>Assign Reporting Manager</T>
+              </label>
+              <select
+                value={selectedManagerId}
+                onChange={(e) => setSelectedManagerId(e.target.value)}
+                disabled={!selectedEmpId}
+                className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-sm text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)] disabled:opacity-50"
+              >
+                <option value="NONE">{/* @ts-ignore */}<T>None (Top Executive / Unassigned)</T></option>
+                {employees
+                  .filter((e) => e.id !== selectedEmpId)
+                  .map((mgr) => (
+                    <option key={mgr.id} value={mgr.id}>
+                      {mgr.name} ({mgr.designation || mgr.role || 'Leader'})
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div>
+              <Button
+                variant="primary"
+                onClick={handleUpdateManager}
+                disabled={updating || !selectedEmpId}
+                className="w-full rounded-xl flex items-center justify-center gap-2"
+              >
+                {updating ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserCheck className="h-4 w-4" />}
+                {/* @ts-ignore */}<T>Save Management Assignment</T>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="h-full min-h-[min(70vh,48rem)] flex-1 overflow-hidden rounded-3xl border border-[var(--border-hairline)] shadow-xl relative" style={{ background: 'var(--bg-app)' }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.25 }}
+          minZoom={0.1}
+          maxZoom={1.8}
+          onNodeClick={(_, node) => router.push(`/profile?id=${node.id}`)}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background color="var(--border-hairline)" gap={24} size={1.5} />
+          <Controls className="!bg-[var(--bg-panel)] !border-[var(--border-hairline)] !shadow-lg !rounded-2xl" />
+          <MiniMap className="!bg-[var(--bg-panel)] !border-[var(--border-hairline)] !rounded-2xl" pannable zoomable />
+        </ReactFlow>
+      </div>
     </div>
   );
 }
