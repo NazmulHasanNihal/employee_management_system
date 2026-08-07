@@ -235,7 +235,7 @@ export function Executive360Hub({ employees = [] }: { employees: EmployeeOption[
 
                   <div className="space-y-2 text-xs">
                     <p className="font-semibold text-[var(--text-muted)] uppercase tracking-wider">Recent Reviews</p>
-                    {data360.performance.recentReviews.length === 0 ? (
+                    {(!data360.performance?.recentReviews || data360.performance.recentReviews.length === 0) ? (
                       <p className="text-[var(--text-muted)] italic">No review records found.</p>
                     ) : (
                       data360.performance.recentReviews.slice(0, 3).map((r: any) => (
@@ -244,7 +244,7 @@ export function Executive360Hub({ employees = [] }: { employees: EmployeeOption[
                             <span className="font-semibold text-[var(--text-main)] block">{r.reviewPeriod || 'Performance Review'}</span>
                             <span className="text-[var(--text-muted)] text-[10px]">{formatDate(r.createdAt)}</span>
                           </div>
-                          <Badge variant="amber">{r.rating ? `${r.rating} ★` : 'Pending'}</Badge>
+                          <Badge variant="amber">{r.rating ? `${r.rating}` : 'Pending'}</Badge>
                         </div>
                       ))
                     )}
@@ -264,7 +264,7 @@ export function Executive360Hub({ employees = [] }: { employees: EmployeeOption[
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {data360.compensationHistory.length === 0 ? (
+                {(!data360.compensationHistory || data360.compensationHistory.length === 0) ? (
                   <p className="text-xs text-[var(--text-muted)] italic">No salary adjustments logged.</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -297,7 +297,7 @@ export function Executive360Hub({ employees = [] }: { employees: EmployeeOption[
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {data360.recentAuditLogs.length === 0 ? (
+                {(!data360.recentAuditLogs || data360.recentAuditLogs.length === 0) ? (
                   <p className="text-xs text-[var(--text-muted)] italic">No recent audit logs recorded.</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto pr-1">

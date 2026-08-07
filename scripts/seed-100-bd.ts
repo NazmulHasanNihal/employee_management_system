@@ -843,7 +843,114 @@ async function main() {
   }
   console.log(`✅ Benefit Enrollments: ${enrollmentCount} created`);
 
-  console.log('\n🎉 Comprehensive seed complete!');
+  // 20. Seed Company News
+  console.log('📰 Seeding Company News…');
+  const newsItems = [
+    { title: 'Dhaka HQ Expansion & New Innovation Hub', category: 'Announcement', content: 'We are excited to announce the launch of our state-of-the-art software R&D facility in Gulshan 2, Dhaka.' },
+    { title: 'Eid-ul-Fitr Festival Bonus Disbursed', category: 'Finance', content: 'All eligible employees have received 100% basic salary festival bonus via direct bank transfer and bKash.' },
+    { title: 'Enhanced Green Delta Health Insurance Coverage', category: 'Benefits', content: 'Outpatient coverage limits have been raised by 25% for all full-time employees and registered dependents.' },
+    { title: 'Gazipur Plant Achieves ISO 45001 Certification', category: 'Operations', content: 'Congratulations to our Gazipur plant operations team for passing the international occupational health audit.' },
+    { title: 'Q3 Town Hall & Performance Awards Scheduled', category: 'Company Event', content: 'Join us live this Thursday at 3:00 PM for the quarterly strategy update and Employee of the Quarter awards.' },
+  ];
+  for (const item of newsItems) {
+    try {
+      await prisma.companyNews.create({
+        data: {
+          title: item.title,
+          category: item.category,
+          content: item.content,
+          authorId: owner.id,
+          isPinned: true,
+        }
+      });
+    } catch { /* skip */ }
+  }
+
+  // 21. Seed Training Courses & Enrollments
+  console.log('🎓 Seeding Training Courses & Enrollments…');
+  const courses = [
+    { title: 'Workplace Ethics & Code of Conduct 2026', category: 'Compliance', durationHours: 2, mandatory: true },
+    { title: 'Bangladesh Labour Act 2006 Statutory Rules', category: 'Compliance', durationHours: 4, mandatory: true },
+    { title: 'Cybersecurity Awareness & Phishing Defense', category: 'Technical', durationHours: 3, mandatory: true },
+    { title: 'Gazipur Factory Fire Safety & Evacuation Protocols', category: 'Operations', durationHours: 2, mandatory: true },
+    { title: 'Agile Project Management with Jira & Next.js', category: 'Technical', durationHours: 8, mandatory: false },
+  ];
+  for (const c of courses) {
+    try {
+      const course = await prisma.trainingCourse.create({
+        data: {
+          title: c.title,
+          category: c.category,
+          durationHours: c.durationHours,
+          isMandatory: c.mandatory,
+          isActive: true,
+        }
+      });
+      // Enroll first 30 users
+      for (const uid of allUserIds.slice(0, 30)) {
+        try {
+          await prisma.trainingEnrollment.create({
+            data: {
+              userId: uid,
+              courseId: course.id,
+              status: pick(['Enrolled', 'InProgress', 'Completed']),
+              progress: pick([25, 50, 75, 100]),
+            }
+          });
+        } catch { /* skip */ }
+      }
+    } catch { /* skip */ }
+  }
+
+  // 22. Seed Kudos (Peer Recognition)
+  console.log('👏 Seeding Kudos & Peer Recognitions…');
+  const kudoMessages = [
+    'Huge thanks for driving the Q2 production deployment without any downtime!',
+    'Great leadership during the Gazipur plant safety compliance audit.',
+    'Consistently delivers clean code and helpful pull request reviews.',
+    'Thank you for assisting the onboarding team with training material prep.',
+  ];
+  let kudoCount = 0;
+  for (let i = 0; i < 30; i++) {
+    const senderId = pick(allUserIds);
+    const receiverId = pick(allUserIds.filter(id => id !== senderId));
+    try {
+      await prisma.kudo.create({
+        data: {
+          senderId,
+          receiverId,
+          category: pick(['Appreciation', 'Teamwork', 'Leadership', 'Innovation']),
+          message: pick(kudoMessages),
+        }
+      });
+      kudoCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Kudos: ${kudoCount} created`);
+
+  // 23. Seed Feedback & Suggestions
+  console.log('💬 Seeding Feedback Entries…');
+  let fbCount = 0;
+  for (const uid of allUserIds.slice(0, 20)) {
+    try {
+      await prisma.feedback.create({
+        data: {
+          authorId: uid,
+          type: pick(['Suggestion', 'Praise', 'Concern']),
+          content: pick([
+            'Request for hybrid work option on Thursdays.',
+            'Appreciation for the new Gulshan office ergonomics and monitors.',
+            'Suggestion to introduce a weekly tech talk session for engineering.',
+          ]),
+          status: pick(['Open', 'Reviewed', 'Addressed']),
+        }
+      });
+      fbCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Feedback: ${fbCount} created`);
+
+  console.log('\n🎉 Complete multi-module data seed complete!');
   console.log(`   Total employees: ${created + 1} (including CEO)`);
   console.log(`   Demo login password: ${DEMO_PASSWORD}`);
   console.log('   Hierarchy: CEO → C-Suite → Directors → Managers → Team Leads → Staff');

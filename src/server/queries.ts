@@ -2031,7 +2031,7 @@ export async function getEmployee360Intelligence(caller: Caller | null, targetUs
 
   if (!user) throw new Error('Employee not found');
 
-  const [attendance, approvedLeaves, reviews, compAdjustments, auditEvents] = await Promise.all([
+  const [attendance, approvedLeaves, reviews, compAdjustments, notificationsRaw] = await Promise.all([
     prisma.attendance.findMany({
       where: { userId: targetUserId },
       orderBy: { date: 'desc' },
@@ -2050,12 +2050,19 @@ export async function getEmployee360Intelligence(caller: Caller | null, targetUs
       where: { userId: targetUserId },
       orderBy: { createdAt: 'desc' },
     }),
-    prisma.event.findMany({
-      where: { actorId: targetUserId },
-      orderBy: { timestamp: 'desc' },
+    prisma.notification.findMany({
+      where: { OR: [{ userId: targetUserId }, { userId: 'ALL' }] },
+      orderBy: { createdAt: 'desc' },
       take: 20,
     }),
   ]);
+
+  const auditEvents = (notificationsRaw || []).map((n) => ({
+    id: n.id,
+    action: n.type || 'Notification',
+    details: n.message,
+    timestamp: n.createdAt,
+  }));
 
   const usedByCategory: Record<string, number> = {};
   for (const r of approvedLeaves) {
@@ -2071,8 +2078,19 @@ export async function getEmployee360Intelligence(caller: Caller | null, targetUs
   const totalDays = attendance.length || 1;
   const attendanceRate = Math.round((presentCount / totalDays) * 100);
 
+  const scoreMap: Record<string, number> = {
+    'Exceeds Expectations': 5,
+    'Meets Expectations': 4,
+    'Needs Improvement': 2,
+    'Unsatisfactory': 1,
+  };
   const avgPerformanceRating = reviews.length > 0
-    ? Math.round((reviews.reduce((acc: number, r: { rating?: string | null }) => acc + (Number(r.rating) || 0), 0) / reviews.length) * 10) / 10
+    ? Math.round(
+        (reviews.reduce((acc: number, r: { rating?: string | null }) => {
+          const val = r.rating && scoreMap[r.rating] ? scoreMap[r.rating] : (Number(r.rating) || 4);
+          return acc + val;
+        }, 0) / reviews.length) * 10
+      ) / 10
     : null;
 
   return {
