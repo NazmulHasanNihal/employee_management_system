@@ -46,6 +46,7 @@ export function OrgCompensationTree({
   onSelectEmployeeForAdjustment,
   canManageCompensation = true,
 }: Props) {
+  const safeEmployees = Array.isArray(employees) ? employees : [];
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({});
 
@@ -55,12 +56,12 @@ export function OrgCompensationTree({
     const roots: TreeNode[] = [];
 
     // Initialize nodes
-    employees.forEach((emp) => {
+    safeEmployees.forEach((emp) => {
       nodeMap.set(emp.id, { ...emp, subordinates: [] });
     });
 
     // Connect subordinates to parent
-    employees.forEach((emp) => {
+    safeEmployees.forEach((emp) => {
       const node = nodeMap.get(emp.id)!;
       if (emp.managerId && nodeMap.has(emp.managerId)) {
         nodeMap.get(emp.managerId)!.subordinates.push(node);
@@ -84,10 +85,10 @@ export function OrgCompensationTree({
   const matchesSearch = (node: TreeNode): boolean => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
-    const nameMatch = node.name.toLowerCase().includes(q);
+    const nameMatch = (node.name || '').toLowerCase().includes(q);
     const roleMatch = (node.role || '').toLowerCase().includes(q);
     const deptMatch = (node.department || '').toLowerCase().includes(q);
-    const subMatch = node.subordinates.some((sub) => matchesSearch(sub));
+    const subMatch = (node.subordinates || []).some((sub) => matchesSearch(sub));
     return nameMatch || roleMatch || deptMatch || subMatch;
   };
 
@@ -96,7 +97,7 @@ export function OrgCompensationTree({
 
     const isExempt = isSalaryExempt(node.role || '');
     const isExpanded = expandedNodes[node.id] !== false; // Default expanded
-    const hasSubordinates = node.subordinates.length > 0;
+    const hasSubordinates = (node.subordinates || []).length > 0;
     const isCeo = (node.role || '').toUpperCase() === 'CEO';
 
     return (

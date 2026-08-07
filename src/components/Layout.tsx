@@ -142,22 +142,23 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  const [activeNotifs, setActiveNotifs] = React.useState<any[]>(() => notifications.filter((n: any) => !n.read));
+  const [notifList, setNotifList] = React.useState<any[]>(() => notifications);
   React.useEffect(() => {
-    setActiveNotifs(notifications.filter((n: any) => !n.read));
+    setNotifList(notifications);
   }, [notifications]);
 
   const markReadMutation = trpc.notifications.markRead.useMutation();
-  const unreadCount = activeNotifs.length;
-  
+  const markAllReadMutation = trpc.notifications.markAllRead.useMutation();
+  const unreadCount = notifList.filter((n: any) => !n.read).length;
+
   const markRead = (id: string) => {
     markReadMutation.mutate({ id });
-    setActiveNotifs((prev) => prev.filter((n) => n.id !== id));
+    setNotifList((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
   const markAllRead = () => {
-    activeNotifs.forEach((n: any) => markReadMutation.mutate({ id: n.id }));
-    setActiveNotifs([]);
+    markAllReadMutation.mutate({});
+    setNotifList((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const handleLogout = async () => {
@@ -364,18 +365,17 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
                     </div>
                     {unreadCount > 0 && (
                       <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] transition-colors">
-                        {/* @ts-ignore */}<T>Clear All & Mark Read</T>
+                        {/* @ts-ignore */}<T>Mark All as Read</T>
                       </button>
                     )}
                   </div>
                   <div className="custom-scrollbar max-h-80 overflow-y-auto divide-y divide-[var(--border-hairline)]">
-                    {activeNotifs.length === 0 ? (
+                    {notifList.length === 0 ? (
                       <div className="p-8 text-center text-xs text-[var(--text-muted)] italic">
-                        {/* @ts-ignore */}<T>No unread notifications.</T>
+                        {/* @ts-ignore */}<T>No notifications at this time.</T>
                       </div>
                     ) : (
-                      activeNotifs.map((n: any) => {
-                        // Extract target route link from n.link or command keywords
+                      notifList.map((n: any) => {
                         const targetRoute = n.link || (
                           n.message.includes('/attendance') ? '/attendance' :
                           n.message.includes('/leave') ? '/leave' :
@@ -387,28 +387,41 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
                           n.message.includes('/assets') ? '/assets' : null
                         );
 
+                        const isUnread = !n.read;
+
                         return (
                           <div
                             key={n.id}
                             onClick={() => {
                               if (targetRoute) router.push(targetRoute);
-                              if (!n.read) markRead(n.id);
+                              if (isUnread) markRead(n.id);
                               setShowNotifications(false);
                             }}
-                            className={`group relative p-4 text-xs transition-all hover:bg-[var(--bg-hover)] cursor-pointer ${
-                              !n.read ? 'bg-[var(--brand-soft)]/40 border-l-4 border-l-[var(--brand)]' : ''
+                            className={`group relative p-4 text-xs transition-all duration-200 hover:bg-[var(--bg-hover)] cursor-pointer ${
+                              isUnread
+                                ? 'bg-[var(--brand-soft)]/30 border-l-4 border-l-[var(--brand)] font-semibold shadow-sm'
+                                : 'bg-[var(--bg-panel)] opacity-80 hover:opacity-100 font-normal border-l-4 border-l-transparent text-[var(--text-muted)]'
                             }`}
                           >
                             <div className="flex items-start justify-between gap-2 mb-1">
-                              <span className="inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--brand)]/10 text-[var(--brand)]">
-                                {n.type || 'System'}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                                  isUnread
+                                    ? 'bg-[var(--brand)] text-white'
+                                    : 'bg-[var(--bg-hover)] text-[var(--text-muted)]'
+                                }`}>
+                                  {n.type || 'System'}
+                                </span>
+                                {isUnread && (
+                                  <span className="h-2 w-2 rounded-full bg-[var(--brand)] animate-pulse" />
+                                )}
+                              </div>
                               <span className="text-[10px] text-[var(--text-muted)] font-mono">
                                 {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </span>
                             </div>
 
-                            <p className="text-[var(--text-main)] font-medium leading-relaxed">
+                            <p className={`leading-relaxed ${isUnread ? 'text-[var(--text-main)] font-semibold' : 'text-[var(--text-muted)]'}`}>
                               {n.message}
                             </p>
 

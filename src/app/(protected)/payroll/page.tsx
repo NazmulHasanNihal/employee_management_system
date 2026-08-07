@@ -9,7 +9,7 @@ import { PayslipCard } from '@/components/payroll/PayslipCard';
 import { PaymentHub } from '@/components/payroll/PaymentHub';
 import PaymentSystemHub from '@/components/payroll/PaymentSystemHub';
 import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTotal, type PayrollWithUser } from '@/server/queries';
-import { getPaymentRecordsLedger } from '@/app/actions/payments';
+import { getPaymentRecordsLedger, purgeDummyPaymentRecords } from '@/app/actions/payments';
 import { prisma } from '@/lib/prisma';
 import { getCaller } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
@@ -19,6 +19,9 @@ import { T } from "@/components/Translate";
 export const dynamic = 'force-dynamic';
 
 export default async function PayrollPage() {
+  // Permanently purge any dummy 100,000,000 BDT test payment records from DB
+  await purgeDummyPaymentRecords();
+
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
   const isPrivileged = isAdmin || caller?.isCEO || caller?.isHR;

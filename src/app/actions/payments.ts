@@ -318,3 +318,35 @@ export async function getPaymentRecordsLedger() {
     return { success: false, records: [], error: error?.message };
   }
 }
+
+/**
+ * Purge Dummy 100,000,000 BDT Test Payment Records from DB permanently
+ */
+export async function purgeDummyPaymentRecords() {
+  try {
+    const deletedLegacy = await prisma.payment.deleteMany({
+      where: {
+        OR: [
+          { amount: { gte: 10000000 } },
+          { reference: { contains: '01617052410' } }
+        ]
+      }
+    });
+
+    const deletedLedger = await prisma.paymentRecord.deleteMany({
+      where: {
+        OR: [
+          { netPaidAmount: { gte: 10000000 } },
+          { baseAmount: { gte: 10000000 } },
+          { remarks: { contains: '01617052410' } }
+        ]
+      }
+    });
+
+    revalidatePath('/payroll');
+    revalidatePath('/compensation');
+    return { success: true, count: deletedLegacy.count + deletedLedger.count };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Failed to purge dummy payment records.' };
+  }
+}

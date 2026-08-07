@@ -988,8 +988,26 @@ export async function getPaymentsForUser(caller: Caller | null) {
   const isCEO = caller?.isCEO ?? false;
   const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  if (isAdmin || isCEO || isHR) return prisma.payment.findMany({ include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
-  return prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+
+  // Filter out dummy 100,000,000 BDT test entries
+  const filter = {
+    amount: { lt: 10000000 },
+    NOT: {
+      reference: { contains: '01617052410' }
+    }
+  };
+
+  if (isAdmin || isCEO || isHR) {
+    return prisma.payment.findMany({
+      where: filter,
+      include: { user: { select: { name: true } } },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+  return prisma.payment.findMany({
+    where: { userId, ...filter },
+    orderBy: { createdAt: 'desc' },
+  });
 }
 
 export async function getSalesForUser(caller: Caller | null, month?: number, year?: number) {

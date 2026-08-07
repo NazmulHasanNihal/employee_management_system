@@ -33,8 +33,9 @@ export function HierarchicalEmployeeSelect({
   className = '',
   allowExemptSelection = false,
 }: Props) {
+  const safeEmployees = Array.isArray(employees) ? employees : [];
   const managerMap = new Map<string, string>();
-  employees.forEach((e) => {
+  safeEmployees.forEach((e) => {
     managerMap.set(e.id, e.name);
   });
 
@@ -53,17 +54,17 @@ export function HierarchicalEmployeeSelect({
     return r.includes('DIRECTOR') || r.includes('MANAGER') || r.includes('LEAD') || r.includes('HEAD');
   };
 
-  const executiveTier = employees.filter((e) => isExecutive(e.role));
-  const managementTier = employees.filter((e) => !isExecutive(e.role) && isManagement(e.role));
-  const staffTier = employees.filter((e) => !isExecutive(e.role) && !isManagement(e.role));
+  const executiveTier = safeEmployees.filter((e) => isExecutive(e.role));
+  const managementTier = safeEmployees.filter((e) => !isExecutive(e.role) && isManagement(e.role));
+  const staffTier = safeEmployees.filter((e) => !isExecutive(e.role) && !isManagement(e.role));
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
-    const selectedEmp = employees.find((emp) => emp.id === selectedId);
+    const selectedEmp = safeEmployees.find((emp) => emp.id === selectedId);
     onChange(selectedId, selectedEmp);
   };
 
-  const selectedEmployee = employees.find((e) => e.id === value);
+  const selectedEmployee = safeEmployees.find((e) => e.id === value);
   const selectedIsExempt = selectedEmployee ? isSalaryExempt(selectedEmployee.role || '') : false;
 
   return (

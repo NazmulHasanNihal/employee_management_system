@@ -49,7 +49,20 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [inspectingAsset, setInspectingAsset] = useState<any | null>(null);
-  const [newAsset, setNewAsset] = useState({ name: '', status: 'Active', userId: '', purchasePrice: 0, purchaseDate: '' });
+  const [newAsset, setNewAsset] = useState({
+    name: '',
+    category: 'Laptop',
+    brand: '',
+    serialNumber: '',
+    assetTag: '',
+    condition: 'Good',
+    location: 'Dhaka HQ',
+    status: 'Active',
+    userId: '',
+    purchasePrice: 0,
+    purchaseDate: '',
+    notes: '',
+  });
 
   const utils = trpc.useUtils();
   const { data: assetsData } = trpc.assets.getAssets.useQuery(undefined, { initialData: assets as any });
@@ -60,7 +73,20 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
     onSuccess: () => {
       utils.assets.getAssets.invalidate();
       setShowCreate(false);
-      setNewAsset({ name: '', status: 'Active', userId: '', purchasePrice: 0, purchaseDate: '' });
+      setNewAsset({
+        name: '',
+        category: 'Laptop',
+        brand: '',
+        serialNumber: '',
+        assetTag: '',
+        condition: 'Good',
+        location: 'Dhaka HQ',
+        status: 'Active',
+        userId: '',
+        purchasePrice: 0,
+        purchaseDate: '',
+        notes: '',
+      });
       toast.success('Asset Provisioned', 'Hardware asset registered in office inventory.');
     },
     onError: (err: any) => toast.error('Provisioning Error', err?.message),
@@ -84,7 +110,9 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
   const filteredAssets = assetsList.filter(
     (a: any) =>
       (a.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (a.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+      (a.user?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.category || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (a.serialNumber || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -131,7 +159,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1">
           <Input
-            placeholder="Search assets by device name or assigned employee..."
+            placeholder="Search assets by device name, employee, serial no, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full"
@@ -139,50 +167,131 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
         </div>
         {isAdmin && (
           <Button variant="primary" size="sm" onClick={() => setShowCreate((s) => !s)}>
-            {showCreate ? 'Cancel' : <><Plus className="h-4 w-4 mr-1" /> {/* @ts-ignore */}<T>Provision Hardware</T></>}
+            {showCreate ? 'Cancel' : <><Plus className="h-4 w-4 mr-1" /> {/* @ts-ignore */}<T>Add New Asset</T></>}
           </Button>
         )}
       </div>
 
       {showCreate && isAdmin && (
-        <Card className="animate-scale-in border-[var(--brand)]/30 shadow-xl">
-          <CardHeader>
-            <CardTitle>{/* @ts-ignore */}<T>Provision New Asset</T></CardTitle>
+        <Card className="animate-scale-in border-[var(--brand)]/40 shadow-2xl rounded-3xl bg-[var(--bg-panel)]">
+          <CardHeader className="border-b border-[var(--border-hairline)] pb-3 mb-2">
+            <CardTitle className="flex items-center gap-2 text-base font-extrabold">
+              <Plus className="h-5 w-5 text-[var(--brand)]" />
+              {/* @ts-ignore */}<T>Register & Provision New Office Asset</T>
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-              <div className="md:col-span-2">
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Device Name / Model</T></label>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Asset / Device Name *</T></label>
                 <Input
                   placeholder="e.g. MacBook Pro M3 Max 16-inch"
                   value={newAsset.name}
                   onChange={(e) => setNewAsset({ ...newAsset, name: e.target.value })}
+                  required
                 />
               </div>
+
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Price ($)</T></label>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Category</T></label>
+                <select
+                  className="flex h-10 w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
+                  value={newAsset.category}
+                  onChange={(e) => setNewAsset({ ...newAsset, category: e.target.value })}
+                >
+                  <option value="Laptop">Laptop / Notebook</option>
+                  <option value="Desktop">Desktop Workstation</option>
+                  <option value="Monitor">Monitor & Display</option>
+                  <option value="Peripheral">Peripheral (Keyboard, Mouse, Audio)</option>
+                  <option value="Mobile Device">Mobile Device / Tablet</option>
+                  <option value="Network & Server">Network & Server Gear</option>
+                  <option value="Other">Other Office Asset</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Brand / Manufacturer</T></label>
+                <Input
+                  placeholder="e.g. Apple, Dell, Lenovo, Keychron"
+                  value={newAsset.brand}
+                  onChange={(e) => setNewAsset({ ...newAsset, brand: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Serial Number</T></label>
+                <Input
+                  placeholder="e.g. C02FX901MD6R"
+                  value={newAsset.serialNumber}
+                  onChange={(e) => setNewAsset({ ...newAsset, serialNumber: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Custom Asset Tag / Ref</T></label>
+                <Input
+                  placeholder="Auto-generated if empty (AST-2026-XXXX)"
+                  value={newAsset.assetTag}
+                  onChange={(e) => setNewAsset({ ...newAsset, assetTag: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Condition</T></label>
+                <select
+                  className="flex h-10 w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
+                  value={newAsset.condition}
+                  onChange={(e) => setNewAsset({ ...newAsset, condition: e.target.value })}
+                >
+                  <option value="Brand New">Brand New</option>
+                  <option value="Good">Good Condition</option>
+                  <option value="Fair">Fair Condition</option>
+                  <option value="Needs Repair">Needs Repair / Maintenance</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Office Location</T></label>
+                <select
+                  className="flex h-10 w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
+                  value={newAsset.location}
+                  onChange={(e) => setNewAsset({ ...newAsset, location: e.target.value })}
+                >
+                  <option value="Dhaka HQ">Dhaka HQ Office</option>
+                  <option value="Chittagong Office">Chittagong Branch</option>
+                  <option value="Remote">Remote Personnel</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Price ($ USD)</T></label>
                 <Input
                   type="number"
                   step="0.01"
                   min={0}
                   placeholder="2500.00"
-                  onChange={(e) => setNewAsset({ ...newAsset, purchasePrice: parseFloat(e.target.value) })}
+                  value={newAsset.purchasePrice || ''}
+                  onChange={(e) => setNewAsset({ ...newAsset, purchasePrice: parseFloat(e.target.value) || 0 })}
                 />
               </div>
+
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Date</T></label>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Date</T></label>
                 <Input
                   type="date"
+                  value={newAsset.purchaseDate}
                   onChange={(e) => setNewAsset({ ...newAsset, purchaseDate: e.target.value })}
                 />
               </div>
-            </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign To Employee</T></label>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Assign To Employee</T></label>
                 <select
-                  className="flex h-10 w-full cursor-pointer rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                  className="flex h-10 w-full cursor-pointer rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
                   value={newAsset.userId}
                   onChange={(e) => setNewAsset({ ...newAsset, userId: e.target.value })}
                 >
@@ -192,24 +301,44 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                   ))}
                 </select>
               </div>
-              <div className="flex items-end">
-                <Button
-                  variant="primary"
-                  className="w-full"
-                  disabled={createMutation.isPending || !newAsset.name}
-                  onClick={() =>
-                    createMutation.mutate({
-                      name: newAsset.name,
-                      status: newAsset.status,
-                      userId: newAsset.userId || undefined,
-                      purchasePrice: newAsset.purchasePrice,
-                      purchaseDate: newAsset.purchaseDate ? new Date(newAsset.purchaseDate) : undefined,
-                    })
-                  }
-                >
-                  {createMutation.isPending ? 'Provisioning…' : 'Execute Provisioning'}
-                </Button>
-              </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Asset Notes &amp; Specifications</T></label>
+              <Input
+                placeholder="Optional specs, warranty details, or hardware notes..."
+                value={newAsset.notes}
+                onChange={(e) => setNewAsset({ ...newAsset, notes: e.target.value })}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={createMutation.isPending || !newAsset.name}
+                onClick={() =>
+                  createMutation.mutate({
+                    name: newAsset.name,
+                    category: newAsset.category,
+                    brand: newAsset.brand || undefined,
+                    serialNumber: newAsset.serialNumber || undefined,
+                    assetTag: newAsset.assetTag || undefined,
+                    condition: newAsset.condition,
+                    location: newAsset.location,
+                    status: newAsset.status,
+                    notes: newAsset.notes || undefined,
+                    userId: newAsset.userId || undefined,
+                    purchasePrice: newAsset.purchasePrice,
+                    purchaseDate: newAsset.purchaseDate ? new Date(newAsset.purchaseDate) : undefined,
+                  })
+                }
+              >
+                {createMutation.isPending ? 'Saving Asset…' : 'Save & Provision Asset'}
+              </Button>
             </div>
           </CardContent>
         </Card>

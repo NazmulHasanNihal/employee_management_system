@@ -35,6 +35,7 @@ interface Adjustment {
 }
 
 export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { adjustments: Adjustment[]; isAdmin: boolean; canApprove: boolean }) {
+  const safeAdjustments = Array.isArray(adjustments) ? adjustments : [];
   const utils = trpc.useUtils();
   const [activeTab, setActiveTab] = useState<'LIST' | 'HIERARCHY'>('LIST');
   const [selectedEmpForAdjustmentId, setSelectedEmpForAdjustmentId] = useState<string | null>(null);
@@ -44,12 +45,13 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  const { data: employees = [] } = trpc.registry.searchEmployees.useQuery({ query: '' });
+  const { data: rawEmployees = [] } = trpc.registry.searchEmployees.useQuery({ query: '' });
+  const employees = Array.isArray(rawEmployees) ? rawEmployees : [];
 
-  const { data: liveData = adjustments } = trpc.compensation.getAdjustments.useQuery(undefined, {
-    initialData: adjustments,
+  const { data: liveData = safeAdjustments } = trpc.compensation.getAdjustments.useQuery(undefined, {
+    initialData: safeAdjustments,
   });
-  const list: Adjustment[] = liveData ?? adjustments;
+  const list: Adjustment[] = Array.isArray(liveData) ? liveData : safeAdjustments;
 
   const updateStatus = trpc.compensation.updateAdjustmentStatus.useMutation({
     onSuccess: () => {

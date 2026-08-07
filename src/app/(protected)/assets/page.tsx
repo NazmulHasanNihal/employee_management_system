@@ -21,6 +21,9 @@ function calculateDepreciation(asset: { purchasePrice?: number | null; purchaseD
 export default async function AssetsPage() {
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
+  const privileged = isAdmin || isCEO || isHR;
   const assets = await getAssets();
 
   const totalAssets = assets.length;
@@ -33,40 +36,38 @@ export default async function AssetsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
-        title="IT Fleet"
-        subtitle="Global hardware inventory & assignments."
+        title="IT Fleet & Office Assets"
+        subtitle="Hardware inventory, device assignments & asset provisioning."
         icon={<Cpu className="h-5 w-5" />}
       />
 
-      {isAdmin && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <Card>
-            <CardContent>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Fleet Size</T></p>
-               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{totalAssets}</p>
-              <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Units</T></p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Original Value</T></p>
-               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
-                ${Number(totalValue).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Current Book Value</T></p>
-               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--rose)]">
-                ${Number(currentFleetValue).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <Card>
+          <CardContent>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total Fleet Size</T></p>
+             <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">{totalAssets}</p>
+            <p className="text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>Units</T></p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Original Value</T></p>
+             <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
+              ${Number(totalValue).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Current Book Value</T></p>
+             <p className="mt-2 text-fluid-3xl font-semibold text-[var(--rose)]">
+              ${Number(currentFleetValue).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-      <AssetsClient assets={assets} isAdmin={isAdmin} />
+      <AssetsClient assets={assets} isAdmin={privileged} />
     </div>
   );
 }
