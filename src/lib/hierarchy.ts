@@ -31,3 +31,50 @@ export function canModifyUser(
   // A user can only modify someone with a higher numerical rank (lower power).
   return currentRank < targetRank;
 }
+
+/**
+ * CEO and top executive role are salary-exempt in the standard compensation matrix.
+ * CEO sets compensation for COO/CTO and direct executive reports; lower ranks cannot set CEO salary.
+ */
+export function isSalaryExempt(role?: string): boolean {
+  return role === 'CEO';
+}
+
+/**
+ * Recursively find all employee IDs reporting directly or indirectly under a given managerId.
+ */
+export function getReportingChainSubordinates(
+  managerId: string,
+  allUsers: Array<{ id: string; managerId: string | null }>
+): Set<string> {
+  const subordinates = new Set<string>();
+  const queue: string[] = [managerId];
+  const visited = new Set<string>([managerId]);
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    for (const u of allUsers) {
+      if (u.managerId === current && !visited.has(u.id)) {
+        visited.add(u.id);
+        subordinates.add(u.id);
+        queue.push(u.id);
+      }
+    }
+  }
+
+  return subordinates;
+}
+
+/**
+ * Check if targetUserId is a subordinate (direct or indirect report) of managerId.
+ */
+export function isSubordinate(
+  managerId: string,
+  targetUserId: string,
+  allUsers: Array<{ id: string; managerId: string | null }>
+): boolean {
+  if (!managerId || !targetUserId || managerId === targetUserId) return false;
+  const subs = getReportingChainSubordinates(managerId, allUsers);
+  return subs.has(targetUserId);
+}
+

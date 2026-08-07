@@ -118,8 +118,9 @@ const createDummyHook = (path: string[]) => {
           return;
         }
 
-        // If we have initialData, it's already fresh from RSC, no need to background fetch on mount
-        if (options.initialData !== undefined) {
+        // If we have initialData or fresh cached data (<15s), skip background fetch on mount
+        const isFreshCache = cached && Date.now() - cached.timestamp < 15000;
+        if (options.initialData !== undefined || isFreshCache) {
           setIsLoading(false);
           return;
         }

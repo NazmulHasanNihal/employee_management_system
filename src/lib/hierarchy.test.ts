@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { getUserRank, canModifyUser } from '@/lib/hierarchy';
+import {
+  getUserRank,
+  canModifyUser,
+  isSalaryExempt,
+  getReportingChainSubordinates,
+  isSubordinate,
+} from '@/lib/hierarchy';
 
 describe('getUserRank', () => {
   it('ranks CEO highest (rank 1)', () => {
@@ -33,3 +39,50 @@ describe('canModifyUser', () => {
     expect(canModifyUser({ role: 'Employee' }, { role: 'Manager' })).toBe(false);
   });
 });
+
+describe('isSalaryExempt', () => {
+  it('identifies CEO role as salary-exempt', () => {
+    expect(isSalaryExempt('CEO')).toBe(true);
+  });
+
+  it('identifies non-CEO roles as not salary-exempt', () => {
+    expect(isSalaryExempt('Manager')).toBe(false);
+    expect(isSalaryExempt('Director')).toBe(false);
+    expect(isSalaryExempt('Employee')).toBe(false);
+  });
+});
+
+describe('getReportingChainSubordinates & isSubordinate', () => {
+  const users = [
+    { id: 'ceo', managerId: null },
+    { id: 'cto', managerId: 'ceo' },
+    { id: 'coo', managerId: 'ceo' },
+    { id: 'dev-lead', managerId: 'cto' },
+    { id: 'senior-dev', managerId: 'dev-lead' },
+  ];
+
+  it('returns all direct and indirect reports for CEO', () => {
+    const subs = getReportingChainSubordinates('ceo', users);
+    expect(subs.has('cto')).toBe(true);
+    expect(subs.has('coo')).toBe(true);
+    expect(subs.has('dev-lead')).toBe(true);
+    expect(subs.has('senior-dev')).toBe(true);
+    expect(subs.size).toBe(4);
+  });
+
+  it('returns direct and indirect reports for CTO', () => {
+    const subs = getReportingChainSubordinates('cto', users);
+    expect(subs.has('dev-lead')).toBe(true);
+    expect(subs.has('senior-dev')).toBe(true);
+    expect(subs.has('coo')).toBe(false);
+    expect(subs.size).toBe(2);
+  });
+
+  it('correctly tests isSubordinate', () => {
+    expect(isSubordinate('ceo', 'cto', users)).toBe(true);
+    expect(isSubordinate('cto', 'senior-dev', users)).toBe(true);
+    expect(isSubordinate('coo', 'cto', users)).toBe(false);
+    expect(isSubordinate('dev-lead', 'ceo', users)).toBe(false);
+  });
+});
+

@@ -14,6 +14,8 @@ import { EditAdjustmentModal } from '@/components/compensation/EditAdjustmentMod
 import { toast } from '@/lib/toast';
 import { T } from '@/components/Translate';
 
+import { OrgCompensationTree, type OrgNode } from '@/components/compensation/OrgCompensationTree';
+
 interface Adjustment {
   id: string;
   type: string;
@@ -34,11 +36,15 @@ interface Adjustment {
 
 export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { adjustments: Adjustment[]; isAdmin: boolean; canApprove: boolean }) {
   const utils = trpc.useUtils();
+  const [activeTab, setActiveTab] = useState<'LIST' | 'HIERARCHY'>('LIST');
+  const [selectedEmpForAdjustmentId, setSelectedEmpForAdjustmentId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [editingAdj, setEditingAdj] = useState<Adjustment | null>(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
+  const { data: employees = [] } = trpc.registry.searchEmployees.useQuery({ query: '' });
 
   const { data: liveData = adjustments } = trpc.compensation.getAdjustments.useQuery(undefined, {
     initialData: adjustments,
@@ -110,44 +116,76 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
 
   return (
     <>
+      <div className="flex border-b border-slate-800 mb-6 gap-6">
+        <button
+          onClick={() => setActiveTab('LIST')}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'LIST'
+              ? 'border-amber-500 text-amber-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <span>📋 Adjustments Log</span>
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-slate-800">
+            {list.length}
+          </Badge>
+        </button>
+        <button
+          onClick={() => setActiveTab('HIERARCHY')}
+          className={`pb-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'HIERARCHY'
+              ? 'border-amber-500 text-amber-400'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <span>🌳 Organization Hierarchy</span>
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 bg-slate-800">
+            {employees.length}
+          </Badge>
+        </button>
+      </div>
+
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant={statusFilter === 'ALL' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setStatusFilter('ALL')}
-          >
-            {/* @ts-ignore */}<T>All</T>
-          </Button>
-          <Button
-            variant={statusFilter === 'PENDING' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setStatusFilter('PENDING')}
-          >
-            {/* @ts-ignore */}<T>Pending</T>
-          </Button>
-          <Button
-            variant={statusFilter === 'IMPLEMENTED' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setStatusFilter('IMPLEMENTED')}
-          >
-            {/* @ts-ignore */}<T>Implemented</T>
-          </Button>
-          <Button
-            variant={statusFilter === 'REJECTED' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setStatusFilter('REJECTED')}
-          >
-            {/* @ts-ignore */}<T>Rejected</T>
-          </Button>
-        </div>
+        {activeTab === 'LIST' ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant={statusFilter === 'ALL' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('ALL')}
+            >
+              {/* @ts-ignore */}<T>All</T>
+            </Button>
+            <Button
+              variant={statusFilter === 'PENDING' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('PENDING')}
+            >
+              {/* @ts-ignore */}<T>Pending</T>
+            </Button>
+            <Button
+              variant={statusFilter === 'IMPLEMENTED' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('IMPLEMENTED')}
+            >
+              {/* @ts-ignore */}<T>Implemented</T>
+            </Button>
+            <Button
+              variant={statusFilter === 'REJECTED' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setStatusFilter('REJECTED')}
+            >
+              {/* @ts-ignore */}<T>Rejected</T>
+            </Button>
+          </div>
+        ) : <div />}
+
         {canApprove && (
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowBulkModal(true)} className="rounded-xl">
               <Users className="h-4 w-4" />
               {/* @ts-ignore */}<T>Bulk Adjustment</T>
             </Button>
-            <Button variant="primary" size="sm" onClick={() => setShowForm(true)} className="rounded-xl">
+            <Button variant="primary" size="sm" onClick={() => { setSelectedEmpForAdjustmentId(null); setShowForm(true); }} className="rounded-xl">
               <Plus className="h-4 w-4" />
               {/* @ts-ignore */}<T>New Adjustment</T>
             </Button>
@@ -158,7 +196,13 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in">
           <div className="w-full max-w-3xl overflow-y-auto max-h-[90vh]">
-            <CreateAdjustmentForm onSuccess={() => setShowForm(false)} />
+            <CreateAdjustmentForm
+              initialUserId={selectedEmpForAdjustmentId || undefined}
+              onSuccess={() => {
+                setShowForm(false);
+                setSelectedEmpForAdjustmentId(null);
+              }}
+            />
           </div>
         </div>
       )}
@@ -186,7 +230,16 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {activeTab === 'HIERARCHY' ? (
+        <OrgCompensationTree
+          employees={employees}
+          canManageCompensation={canApprove}
+          onSelectEmployeeForAdjustment={(emp) => {
+            setSelectedEmpForAdjustmentId(emp.id);
+            setShowForm(true);
+          }}
+        />
+      ) : filtered.length === 0 ? (
         <EmptyState
           title="No compensation adjustments"
           description="Salary changes will appear here once created."

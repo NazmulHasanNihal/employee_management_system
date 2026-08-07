@@ -16,6 +16,7 @@
 import { prisma } from '@/lib/prisma';
 import { getCaller, type Caller } from '@/lib/auth';
 import { computeBdLeaveBalance } from '@/server/leaveBalance';
+import { getReportingChainSubordinates } from '@/lib/hierarchy';
 import { unstable_cache } from 'next/cache';
 import type { Prisma } from '@prisma/client';
 
@@ -606,8 +607,9 @@ export async function getEmployeesScoped(caller: Caller | null) {
 export async function getMyTeam(caller: Caller | null): Promise<{ teamId: string; directReports: { id: string; name: string; designation: string | null; avatarUrl: string | null }[] }> {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  if (isAdmin || isCEO) return { teamId: 'all', directReports: await prisma.user.findMany() };
+  if (isAdmin || isCEO || isHR) return { teamId: 'all', directReports: await prisma.user.findMany() };
   const directReports = await prisma.user.findMany({ where: { managerId: userId } });
   return { teamId: 'my_team', directReports };
 }
@@ -658,9 +660,10 @@ export async function getChainOfCommand(caller: Caller | null): Promise<ChainOfC
 export async function getTeamTasks(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
   if (!userId) return [];
-  if (isAdmin || isCEO) {
+  if (isAdmin || isCEO || isHR) {
     return prisma.teamTask.findMany({
       include: { assignee: { select: { id: true, name: true, avatarUrl: true, designation: true } }, assigner: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
@@ -687,7 +690,7 @@ const cachedTeamPerformance = unstable_cache(
 export async function getTeamPerformance(caller: Caller | null): Promise<{ id: string; name: string; designation: string | null; department: string | null; avatarUrl: string | null; totalTasks: number; doneTasks: number; inProgressTasks: number; blockedTasks: number; doneThisWeek: number; completionRate: number; attendanceRate: number }[]> {
   const userId = caller?.id;
   if (!userId) return [];
-  const isPrivileged = caller?.isAdmin || caller?.isCEO;
+  const isPrivileged = Boolean(caller?.isAdmin || caller?.isCEO || caller?.isHR);
   return cachedTeamPerformance(userId, isPrivileged);
 }
 
@@ -768,9 +771,10 @@ export async function getProxyStatus(caller: Caller | null) {
 export async function getAttendanceLogs(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  if (isAdmin || isCEO) {
-    const branchScope = (isAdmin || isCEO) ? await getSelectedBranchId() : null;
+  if (isAdmin || isCEO || isHR) {
+    const branchScope = (isAdmin || isCEO || isHR) ? await getSelectedBranchId() : null;
     const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
     const logs = await prisma.attendance.findMany({ where: userBranch, include: { user: true }, orderBy: { date: 'desc' }, take: 100 });
     return logs.map((l) => ({ ...l, userName: l.user?.name || 'Employee' }));
@@ -780,7 +784,7 @@ export async function getAttendanceLogs(caller: Caller | null) {
 }
 
 export async function getAttendanceAdminStats(caller?: Caller | null) {
-  const isPrivileged = caller?.isAdmin || caller?.isCEO;
+  const isPrivileged = Boolean(caller?.isAdmin || caller?.isCEO || caller?.isHR);
   const branchScope = isPrivileged ? await getSelectedBranchId() : null;
   const tenantId = getSelectedTenantId(caller);
   const userBranch: Prisma.AttendanceWhereInput = branchScope || tenantId
@@ -835,7 +839,8 @@ export async function getActiveAttendanceSession(caller: Caller | null) {
 export async function getEmployeeOptions(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
-  if (!isAdmin && !isCEO) return [];
+  const isHR = caller?.isHR ?? false;
+  if (!isAdmin && !isCEO && !isHR) return [];
   const branchScope = await getSelectedBranchId();
   const userBranch = branchScope ? { branchId: branchScope } : {};
   return prisma.user.findMany({
@@ -861,10 +866,11 @@ export async function getEmployeeOptions(caller: Caller | null) {
 export async function getLeaveRequests(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
   if (!userId) return [];
   
-  if (isAdmin || isCEO) {
+  if (isAdmin || isCEO || isHR) {
     const branchScope = await getSelectedBranchId();
     const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
     return prisma.leaveRequest.findMany({ where: userBranch, include: { user: true }, orderBy: { createdAt: 'desc' } });
@@ -918,8 +924,9 @@ export async function getLeaveTypes(): Promise<{ id: string; name: string; nameB
 export async function getPayrolls(caller: Caller | null): Promise<(Prisma.PayrollGetPayload<{ include: { user: true } }>)[]> {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  if (isAdmin || isCEO) {
+  if (isAdmin || isCEO || isHR) {
     const branchScope = await getSelectedBranchId();
     const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
     return prisma.payroll.findMany({ where: userBranch, include: { user: true }, orderBy: { createdAt: 'desc' } });
@@ -932,7 +939,7 @@ export async function getSalaryHeads() {
 }
 
 export async function getPayrollAdminStats(caller?: Caller | null) {
-  const isPrivileged = caller?.isAdmin || caller?.isCEO;
+  const isPrivileged = Boolean(caller?.isAdmin || caller?.isCEO || caller?.isHR);
   const branchScope = isPrivileged ? await getSelectedBranchId() : null;
   const userBranch = branchScope ? { user: { branchId: branchScope } } : {};
   const branchWhere = branchScope ? { branchId: branchScope } : {};
@@ -979,8 +986,9 @@ export async function getSalaryStructures() {
 export async function getPaymentsForUser(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  if (isAdmin || isCEO) return prisma.payment.findMany({ include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
+  if (isAdmin || isCEO || isHR) return prisma.payment.findMany({ include: { user: { select: { name: true } } }, orderBy: { createdAt: 'desc' } });
   return prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
 }
 
@@ -1000,7 +1008,8 @@ export async function getSalesMonthTotal(userId: string, month: number, year: nu
 export async function getFestivalBonuses(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
-  if (isAdmin || isCEO) {
+  const isHR = caller?.isHR ?? false;
+  if (isAdmin || isCEO || isHR) {
     return prisma.festivalBonus.findMany({ include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
   }
   return prisma.festivalBonus.findMany({ where: { userId: caller?.id }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
@@ -1024,8 +1033,14 @@ export async function getCompensationAdjustments(caller: Caller | null) {
     });
   }
   if (!userId) return [];
+
+  // For managers/directors, retrieve adjustments for self + all reporting subordinates
+  const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+  const subIds = Array.from(getReportingChainSubordinates(userId, allUsers));
+  const targetIds = [userId, ...subIds];
+
   return prisma.compensationAdjustment.findMany({
-    where: { userId },
+    where: { userId: { in: targetIds } },
     include: {
       user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
       requestedBy: { select: { id: true, name: true, role: true } },
@@ -1038,10 +1053,11 @@ export async function getCompensationAdjustments(caller: Caller | null) {
 export async function getEmployeeCompensationHistory(caller: Caller | null, targetUserId: string) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
 
   // Regular employees can only view their own history.
-  if (!isAdmin && !isCEO && targetUserId !== userId) {
+  if (!isAdmin && !isCEO && !isHR && targetUserId !== userId) {
     return [];
   }
 
@@ -1069,7 +1085,8 @@ export async function getTrainingCatalog(caller: Caller | null) {
 export async function getComplianceTraining(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
-  if (isAdmin || isCEO) {
+  const isHR = caller?.isHR ?? false;
+  if (isAdmin || isCEO || isHR) {
     const enrollments = await prisma.trainingEnrollment.findMany({
       where: { course: { category: 'Compliance' } },
       include: { user: { select: { name: true, id: true } }, course: true },
@@ -1096,7 +1113,7 @@ export async function getMyTraining(caller: Caller | null) {
 
 /** Training compliance summary for admins: % of mandatory courses completed org-wide. */
 export async function getTrainingCompliance(caller: Caller | null) {
-  if (!caller?.isAdmin && !caller?.isCEO) return null;
+  if (!caller?.isAdmin && !caller?.isCEO && !caller?.isHR) return null;
   const mandatory = await prisma.trainingCourse.findMany({ where: { isMandatory: true, isActive: true } });
   if (mandatory.length === 0) return { mandatoryCount: 0, completedCount: 0, pct: 100 };
   const courseIds = mandatory.map((c) => c.id);
@@ -1112,8 +1129,10 @@ export async function getTrainingCompliance(caller: Caller | null) {
 
 export async function getExpenses(caller: Caller | null) {
   const isAdmin = caller?.isAdmin ?? false;
+  const isCEO = caller?.isCEO ?? false;
+  const isHR = caller?.isHR ?? false;
   const userId = caller?.id;
-  if (isAdmin) return prisma.expense.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
+  if (isAdmin || isCEO || isHR) return prisma.expense.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } });
   return prisma.expense.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
 }
 

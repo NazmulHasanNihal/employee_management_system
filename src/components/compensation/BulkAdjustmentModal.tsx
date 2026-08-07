@@ -11,6 +11,8 @@ import { toast } from '@/lib/toast';
 import { formatCurrency } from '@/lib/format';
 import { T } from '@/components/Translate';
 
+import { isSalaryExempt } from '@/lib/hierarchy';
+
 interface Props {
   onSuccess: () => void;
   onClose: () => void;
@@ -48,6 +50,7 @@ export function BulkAdjustmentModal({ onSuccess, onClose }: Props) {
   const empList = Array.isArray(employees) ? employees : [];
 
   const matchedEmployees = empList.filter((e: any) => {
+    if (isSalaryExempt(e.role)) return false;
     if (department && e.department !== department) return false;
     if (role && e.role !== role) return false;
     return true;

@@ -39,12 +39,25 @@ export const OWNER_EMAIL = process.env.OWNER_EMAIL || 'nazmulhas36@gmail.com';
  * Resolves the authenticated user and pre-computes privilege flags.
  * Memoized per request using React cache() to prevent redundant DB & Auth roundtrips.
  */
+interface CachedCallerEntry {
+  caller: Caller | null;
+  timestamp: number;
+}
+const callerMemoryCache = new Map<string, CachedCallerEntry>();
+const CALLER_CACHE_TTL_MS = 15000;
+
 export const getCaller = cache(async (): Promise<Caller | null> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
+
+  const now = Date.now();
+  const cached = callerMemoryCache.get(user.id);
+  if (cached && now - cached.timestamp < CALLER_CACHE_TTL_MS) {
+    return cached.caller;
+  }
 
   const dbUser =
     (user.email
@@ -57,7 +70,7 @@ export const getCaller = cache(async (): Promise<Caller | null> => {
   const role = dbUser.role;
   const { isAdmin, isHR, isCEO } = derivePrivileges({ role, isOwner });
 
-  return {
+  const resolvedCaller: Caller = {
     id: dbUser.id,
     email: dbUser.email,
     name: dbUser.name,
@@ -79,6 +92,9 @@ export const getCaller = cache(async (): Promise<Caller | null> => {
     createdAt: dbUser.createdAt,
     updatedAt: dbUser.updatedAt,
   };
+
+  callerMemoryCache.set(user.id, { caller: resolvedCaller, timestamp: now });
+  return resolvedCaller;
 });
 
 export function isManagerOrAbove(caller: Caller): boolean {

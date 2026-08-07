@@ -17,7 +17,9 @@ export default async function CompensationPage() {
   const isAdmin = caller?.isAdmin ?? false;
   const isCEO = caller?.isCEO ?? false;
   const isHR = caller?.isHR ?? false;
-  const privileged = isAdmin || isCEO || isHR;
+  const roleStr = (caller?.role || '').toUpperCase();
+  const isManager = roleStr.includes('MANAGER') || roleStr.includes('DIRECTOR') || roleStr.includes('LEAD') || roleStr.includes('HEAD');
+  const privileged = isAdmin || isCEO || isHR || isManager;
 
   let adjustments: any[] = [];
   try {

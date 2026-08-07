@@ -9,10 +9,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { X } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { calculateNewSalaryFromPercentage, calculateNewSalaryFromAmount, calculateNewSalaryFromTarget, type SalaryChangeResult } from '@/lib/compensation';
+import { HierarchicalEmployeeSelect } from './HierarchicalEmployeeSelect';
 import { T } from '@/components/Translate';
 
 interface Props {
   onSuccess: () => void;
+  initialUserId?: string;
 }
 
 const ADJUSTMENT_TYPES = [
@@ -34,9 +36,9 @@ const REASONS = [
   'Other',
 ];
 
-export function CreateAdjustmentForm({ onSuccess }: Props) {
+export function CreateAdjustmentForm({ onSuccess, initialUserId }: Props) {
   const utils = trpc.useUtils();
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState(initialUserId || '');
   const [selectedType, setSelectedType] = useState('INCREMENT');
   const [method, setMethod] = useState<'percentage' | 'amount' | 'target'>('percentage');
   const [percentage, setPercentage] = useState('');
@@ -147,19 +149,12 @@ export function CreateAdjustmentForm({ onSuccess }: Props) {
               <Label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
                 {/* @ts-ignore */}<T>Employee</T>
               </Label>
-              <select
+              <HierarchicalEmployeeSelect
+                employees={empList}
                 value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                required
-                className="w-full rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 py-2.5 text-sm font-medium text-[var(--text-main)]"
-              >
-                <option value="">{/* @ts-ignore */}<T>Select Employee</T></option>
-                {empList.map((emp: any) => (
-                  <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role || emp.designation}) · {emp.department || ''}
-                  </option>
-                ))}
-              </select>
+                onChange={(id) => setUserId(id)}
+                placeholder="Select Subordinate Employee"
+              />
             </div>
 
             <div className="space-y-2">

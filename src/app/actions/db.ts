@@ -7,7 +7,7 @@ import { MutationError, classifyError } from '@/lib/mutation-error';
 import { runAutomationRules } from '@/server/automation';
 import { prisma } from '@/lib/prisma';
 import webpush from 'web-push';
-import { canModifyUser } from '@/lib/hierarchy';
+import { canModifyUser, isSalaryExempt, isSubordinate, getReportingChainSubordinates } from '@/lib/hierarchy';
 import { getCaller, type Caller } from '@/lib/auth';
 import { calculatePayroll } from '@/lib/payroll';
 import { estimateProvidentFund, estimateFestivalBonus, estimateGratuity } from '@/lib/bdStatutory';
@@ -616,7 +616,7 @@ export async function runQuery(
 
     // ── COMPENSATION (queries) ──
     if (path === 'compensation.getAdjustments') {
-      // Admins / HR / CEO see all; regular employees see only their own.
+      // Admins / HR / CEO see all; managers see their subordinate tree; employees see their own.
       if (isAdmin || isCEO || isHR) {
         return await prisma.compensationAdjustment.findMany({
           where: mergeWhere({}, withTenantUserScope(caller)),
@@ -629,8 +629,13 @@ export async function runQuery(
         });
       }
       if (!userId) return [];
+
+      const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+      const subIds = Array.from(getReportingChainSubordinates(userId, allUsers));
+      const targetIds = [userId, ...subIds];
+
       return await prisma.compensationAdjustment.findMany({
-        where: { userId },
+        where: mergeWhere({ userId: { in: targetIds } }, withTenantUserScope(caller)),
         include: {
           user: { select: { id: true, name: true, email: true, role: true, department: true, designation: true } },
           requestedBy: { select: { id: true, name: true, role: true } },
@@ -643,7 +648,7 @@ export async function runQuery(
       const targetUserId = args?.userId;
       if (!targetUserId) throw new Error('Missing userId');
       // Regular employees can only view their own history.
-      if (!isAdmin && !isCEO && targetUserId !== userId) {
+      if (!isAdmin && !isCEO && !isHR && targetUserId !== userId) {
         throw new MutationError('UNAUTHORIZED', 'You can only view your own compensation history');
       }
       return await prisma.compensationAdjustment.findMany({
@@ -658,11 +663,11 @@ export async function runQuery(
 
     // ── EXPENSES ──
     if (path === 'expenses.getAll' || path === 'expenses.getMyExpenses') {
-      if (isAdmin) return await prisma.expense.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin || isCEO || isHR) return await prisma.expense.findMany({ where: withTenantUserScope(caller), include: { user: true }, orderBy: { createdAt: 'desc' } });
       return await prisma.expense.findMany({ where: { userId }, include: { user: true }, orderBy: { createdAt: 'desc' } });
     }
     if (path === 'expenses.getPenalties') {
-      if (isAdmin) return await prisma.penalty.findMany({ where: withTenantUserScope(caller), include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin || isCEO || isHR) return await prisma.penalty.findMany({ where: withTenantUserScope(caller), include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
       return await prisma.penalty.findMany({ where: { userId }, include: { user: { select: { name: true, id: true } } }, orderBy: { createdAt: 'desc' } });
     }
 
@@ -689,7 +694,7 @@ export async function runQuery(
 
     // ── HELPDESK ──
     if (path === 'helpdesk.getTickets') {
-      if (isAdmin) return await prisma.ticket.findMany({ where: withTenantUserScope(caller), include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
+      if (isAdmin || isCEO || isHR) return await prisma.ticket.findMany({ where: withTenantUserScope(caller), include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
       if (!userId) return [];
       return await prisma.ticket.findMany({ where: { userId }, include: { user: true, replies: { orderBy: { createdAt: 'asc' } } }, orderBy: { createdAt: 'desc' } });
     }
@@ -809,7 +814,7 @@ export async function runQuery(
       return shifts;
     }
     if (path === 'shifts.getAssignments') {
-      if (!isAdmin && !isCEO) return [];
+      if (!isAdmin && !isCEO && !isHR) return [];
       const dateStr = (args as any)?.date;
       const date = dateStr ? new Date(dateStr) : new Date();
       const dayStart = new Date(date); dayStart.setHours(0, 0, 0, 0);
@@ -834,7 +839,7 @@ export async function runQuery(
       }));
     }
     if (path === 'shifts.getTeams') {
-      if (!isAdmin && !isCEO) return [];
+      if (!isAdmin && !isCEO && !isHR) return [];
       return await prisma.team.findMany({
         where: withTenantUserScope(caller),
         orderBy: { name: 'asc' },
@@ -846,8 +851,8 @@ export async function runQuery(
     if (path === 'performance.getObjectives') {
       if (!userId) return [];
       const targetId = (args as any)?.userId || userId;
-      // Employees see only their own; managers/admins see the target's.
-      if (targetId !== userId && !isAdmin && !isCEO) return [];
+      // Employees see only their own; managers/admins/HR see the target's.
+      if (targetId !== userId && !isAdmin && !isCEO && !isHR) return [];
       return await prisma.objective.findMany({
         where: { userId: targetId },
         orderBy: { createdAt: 'desc' }
@@ -856,7 +861,7 @@ export async function runQuery(
     if (path === 'performance.getReviews') {
       if (!userId) return [];
       const targetId = (args as any)?.userId || userId;
-      if (targetId !== userId && !isAdmin && !isCEO) return [];
+      if (targetId !== userId && !isAdmin && !isCEO && !isHR) return [];
       return await prisma.review.findMany({
         where: { userId: targetId },
         include: { reviewer: { select: { name: true } } },
@@ -872,7 +877,7 @@ export async function runQuery(
     }
 
     if (path === 'attendance.getEmployees') {
-      if (!isAdmin && !isCEO) return [];
+      if (!isAdmin && !isCEO && !isHR) return [];
       return prisma.user.findMany({
         where: mergeWhere({ status: 'active' }, tenantWhere),
         select: {
@@ -891,7 +896,7 @@ export async function runQuery(
     // ── CALIBRATION / TRAINING / WHISTLEBLOWER / ENGAGEMENT (queries) ──
 
     if (path === 'calibration.getSessions') {
-      if (!isAdmin && !isCEO) return [];
+      if (!isAdmin && !isCEO && !isHR) return [];
       return prisma.calibrationSession.findMany({
         where: { createdBy: { tenantId: caller?.tenantId ?? '' } },
         include: { createdBy: { select: { name: true } }, entries: { include: { user: { select: { name: true } } } } },
@@ -899,7 +904,7 @@ export async function runQuery(
       });
     }
     if (path === 'calibration.getEntries') {
-      if (!isAdmin && !isCEO) return [];
+      if (!isAdmin && !isCEO && !isHR) return [];
       const sessionId = (args as any)?.sessionId;
       if (!sessionId) return [];
       return prisma.calibrationEntry.findMany({
@@ -920,14 +925,14 @@ export async function runQuery(
       return prisma.trainingEnrollment.findMany({ where: { userId }, include: { course: true }, orderBy: { enrolledAt: 'desc' } });
     }
     if (path === 'whistleblower.reports') {
-      if (!isAdmin && !isCEO) return [];
+      if (!isAdmin && !isCEO && !isHR) return [];
       return prisma.whistleblowerReport.findMany({ orderBy: { createdAt: 'desc' } });
     }
     if (path === 'committee.members') {
       return prisma.committeeMember.findMany({ orderBy: [{ isChair: 'desc' }, { role: 'asc' }] });
     }
     if (path === 'engagement.greetings') {
-      const isPriv = isAdmin || isCEO;
+      const isPriv = isAdmin || isCEO || isHR;
       const rules = isPriv ? await prisma.greetingRule.findMany({ orderBy: { kind: 'asc' } }) : [];
       const since = new Date(); since.setDate(since.getDate() - 30);
       const history = isPriv ? await prisma.greetingLog.findMany({ where: { sentAt: { gte: since } }, orderBy: { sentAt: 'desc' }, take: 50 }) : [];
@@ -1708,7 +1713,7 @@ async function runMutation(path: string, input: any) {
 
     // ── PAYROLL ──
     if (path === 'payroll.createHead') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       return await prisma.salaryHead.create({ data: input });
     }
 
@@ -1719,7 +1724,7 @@ async function runMutation(path: string, input: any) {
     }
 
     if (path === 'expenses.updateStatus') {
-      if (!isAdmin && !isCEO) throw new Error('Forbidden');
+      if (!isAdmin && !isCEO && !isHR) throw new Error('Forbidden: Admin or HR access required');
       if (!input?.id) throw new Error('Expense id is required');
       const updated = await prisma.expense.update({
         where: { id: input.id },
@@ -1739,7 +1744,7 @@ async function runMutation(path: string, input: any) {
 
     // ── PENALTIES (admin/HR only; employees view their own) ──
     if (path === 'expenses.createPenalty') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       if (!input?.userId || !input?.amount || !input?.reason) throw new Error('Missing penalty details');
       return await prisma.penalty.create({
         data: {
@@ -1752,17 +1757,212 @@ async function runMutation(path: string, input: any) {
       });
     }
     if (path === 'expenses.updatePenaltyStatus') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       if (!input?.id) throw new Error('Penalty id required');
       return await prisma.penalty.update({ where: { id: input.id }, data: { status: input.status } });
     }
     if (path === 'committee.removeMember') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       if (!input?.id) throw new Error('Member id required');
       return await prisma.committeeMember.delete({ where: { id: input.id } });
     }
     if (path === 'committee.setChair') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.id) throw new Error('Missing fields');
+      await prisma.committeeMember.updateMany({ where: { isChair: true }, data: { isChair: false } });
+      return await prisma.committeeMember.update({ where: { id: input.id }, data: { isChair: true } });
+    }
+
+    // ── ENGAGEMENT GREETING RULES (P10) ──
+    if (path === 'engagement.setRuleActive') {
       if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.id || typeof input.isActive !== 'boolean') throw new Error('Missing fields');
+      return await prisma.greetingRule.update({ where: { id: input.id }, data: { isActive: input.isActive } });
+    }
+
+    // ── FEEDBACK (mutations) ──
+    if (path === 'feedback.submitFeedback') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.content || !input.content.trim()) throw new Error('Feedback required');
+      return await prisma.feedback.create({
+        data: {
+          content: input.content.trim(),
+          type: input.type || 'Suggestion',
+          anonymous: input.anonymous !== false,
+          authorId: userId!,
+          recipientId: input.recipientId || null
+        }
+      });
+    }
+    if (path === 'feedback.updateFeedbackStatus') {
+      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.id || !input?.status) throw new Error('Missing fields');
+      return await prisma.feedback.update({ where: { id: input.id }, data: { status: input.status } });
+    }
+
+    // ── DOCUMENTS (mutations) ──
+    if (path === 'documents.createDocument') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      if (!input?.title || !input?.url) throw new Error('Title and URL required');
+      return await prisma.document.create({
+        data: {
+          title: input.title,
+          url: input.url,
+          fileName: input.fileName || input.title,
+          size: input.size || null,
+          mimeType: input.mimeType || null,
+          type: input.type || 'General',
+          category: input.category || 'General',
+          status: input.status || 'ACTIVE',
+          ownerId: input.ownerId || userId!
+        }
+      });
+    }
+    if (path === 'documents.signDocument') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      const doc = await prisma.document.findUnique({ where: { id: input.id } });
+      if (!doc) throw new Error('Document not found');
+      return await prisma.document.update({ where: { id: input.id }, data: { signed: true, signedAt: new Date() } });
+    }
+    // ── LEAVE ──
+
+    if (path === 'leave.submitRequest') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      const start = new Date(input.startDate);
+      const end = new Date(input.endDate);
+      const days = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+      const request = await prisma.leaveRequest.create({
+        data: {
+          type: input.type || input.reason,
+          details: input.reason,
+          status: 'Pending',
+          startDate: start,
+          endDate: end,
+          days,
+          userId,
+        }
+      });
+      // Fire automations (e.g. notify_manager) best-effort.
+      try {
+        const employee = await prisma.user.findUnique({ where: { id: userId! }, select: { managerId: true } });
+        await runAutomationRules('leave.requested', {
+          userId,
+          name: caller?.name,
+          detail: `requested ${input.type} leave (${days} days)`,
+          managerId: employee?.managerId,
+          leaveRequestId: request.id,
+        }, caller);
+      } catch (autoErr) {
+        logError('Leave automation failed (non-fatal):', autoErr);
+      }
+      // Notify all admins
+      const admins = await prisma.user.findMany({ where: mergeWhere({ role: { in: ['Admin', 'HR Manager'] } }, tenantWhere) });
+      for (const admin of admins) {
+        await prisma.notification.create({
+          data: {
+            userId: admin.id,
+            message: `${caller!.name} requested ${input.type} leave (${days} days)`,
+            type: 'leave',
+            link: '/leave',
+          }
+        });
+        
+        if (admin.pushSub) {
+          try {
+            await webpush.sendNotification(
+              admin.pushSub as unknown as webpush.PushSubscription,
+              JSON.stringify({
+                title: 'Leave Request',
+                body: `${caller!.name} requested ${input.type} leave (${days} days)`,
+                url: '/applications'
+              })
+            );
+          } catch (pushErr) {
+            logError('Push notification failed for admin', pushErr, { adminId: admin.id });
+          }
+        }
+      }
+      return request;
+    }
+    if (path === 'leave.updateStatus') {
+      const leaveReq = await prisma.leaveRequest.findUnique({ where: { id: input.id }, include: { user: true } });
+      if (!leaveReq) throw new Error('Leave request not found');
+      const isManager = leaveReq.user?.managerId === userId;
+      if (!isAdmin && !isCEO && !isManager) throw new Error('Forbidden');
+      const updated = await prisma.leaveRequest.update({
+        where: { id: input.id },
+        data: { status: input.status },
+        include: { user: true }
+      });
+      // Notify the employee
+      await prisma.notification.create({
+        data: {
+          userId: updated.userId,
+          message: `Your ${updated.type} leave request has been ${input.status}`,
+          type: 'leave',
+          link: '/leave',
+        }
+      });
+      return updated;
+    }
+
+    // ── PAYROLL ──
+    if (path === 'payroll.createHead') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      return await prisma.salaryHead.create({ data: input });
+    }
+
+    // ── EXPENSES ──
+    if (path === 'expenses.createExpense') {
+      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
+      return await prisma.expense.create({ data: { ...input, userId } });
+    }
+
+    if (path === 'expenses.updateStatus') {
+      if (!isAdmin && !isCEO && !isHR) throw new Error('Forbidden: Admin or HR access required');
+      if (!input?.id) throw new Error('Expense id is required');
+      const updated = await prisma.expense.update({
+        where: { id: input.id },
+        data: { status: input.status },
+        include: { user: true },
+      });
+      await prisma.notification.create({
+        data: {
+          userId: updated.userId,
+          message: `Your expense of ৳${updated.amount} has been ${input.status}`,
+          type: 'expense',
+          link: '/expenses',
+        },
+      });
+      return updated;
+    }
+
+    // ── PENALTIES (admin/HR only; employees view their own) ──
+    if (path === 'expenses.createPenalty') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      if (!input?.userId || !input?.amount || !input?.reason) throw new Error('Missing penalty details');
+      return await prisma.penalty.create({
+        data: {
+          userId: input.userId,
+          amount: Number(input.amount),
+          reason: input.reason,
+          status: input.status || 'UNPAID',
+          dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        },
+      });
+    }
+    if (path === 'expenses.updatePenaltyStatus') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      if (!input?.id) throw new Error('Penalty id required');
+      return await prisma.penalty.update({ where: { id: input.id }, data: { status: input.status } });
+    }
+    if (path === 'committee.removeMember') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
+      if (!input?.id) throw new Error('Member id required');
+      return await prisma.committeeMember.delete({ where: { id: input.id } });
+    }
+    if (path === 'committee.setChair') {
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
       if (!input?.id) throw new Error('Missing fields');
       await prisma.committeeMember.updateMany({ where: { isChair: true }, data: { isChair: false } });
       return await prisma.committeeMember.update({ where: { id: input.id }, data: { isChair: true } });
@@ -1836,46 +2036,9 @@ async function runMutation(path: string, input: any) {
       if (!skillName) throw new Error('Skill required');
       return await prisma.skill.deleteMany({ where: { userId, skill: skillName } });
     }
-    if (path === 'profile.uploadDocument') {
-      if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      if (!input?.title || !input?.url) throw new Error('Title and URL required');
-      return await prisma.document.create({
-        data: { title: input.title, url: input.url, type: input.type || 'General', ownerId: userId! }
-      });
-    }
 
-    // ── PAYROLL STRUCTURES ──
-    if (path === 'payroll.createStructure') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.name || !input?.baseSalary || !input?.heads) throw new Error('Missing fields');
-      return await prisma.salaryStructure.create({
-        data: {
-          name: input.name,
-          baseSalary: Number(input.baseSalary),
-          heads: input.heads
-        }
-      });
-    }
-    if (path === 'payroll.grantFestivalBonus') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
-      if (!input?.userId || !input?.occasion || !input?.year) throw new Error('Missing fields');
-      const user = await prisma.user.findUnique({ where: { id: input.userId }, select: { baseSalary: true, name: true } });
-      const base = user?.baseSalary ?? 0;
-      const bonus = input.amount != null ? Number(input.amount) : estimateFestivalBonus(base);
-      return await prisma.festivalBonus.create({
-        data: {
-          userId: input.userId,
-          year: Number(input.year),
-          occasion: input.occasion,
-          occasionBn: input.occasionBn || null,
-          amount: bonus,
-          baseSalarySnapshot: base,
-          status: input.status || 'PAID',
-        },
-      });
-    }
     if (path === 'payroll.runAutomatedPayroll') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       const year = input?.year || new Date().getFullYear();
       const rawMonth = input?.month || new Date().toLocaleString('en', { month: 'short' });
       const monthIndex = new Date(`${rawMonth} 1, ${year}`).getMonth();
@@ -2023,7 +2186,7 @@ async function runMutation(path: string, input: any) {
     // ── PAYMENT HUB (payments + sales) ──
     if (path === 'payroll.recordPayment') {
       if (!userId) throw new MutationError('UNAUTHORIZED', 'Unauthorized');
-      const targetUserId = isAdmin || isCEO ? (input.userId || userId) : userId;
+      const targetUserId = isAdmin || isCEO || isHR ? (input.userId || userId) : userId;
       if (!input?.amount || !input?.month || !input?.year) throw new Error('Missing payment details');
       return await prisma.payment.create({
         data: {
@@ -2040,17 +2203,17 @@ async function runMutation(path: string, input: any) {
       });
     }
     if (path === 'payroll.markPaymentPaid') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
       if (!input?.id) throw new Error('Missing payment id');
       return await prisma.payment.update({ where: { id: input.id }, data: { status: 'PAID' } });
     }
     if (path === 'payroll.deletePayment') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       if (!input?.id) throw new Error('Missing payment id');
       return await prisma.payment.delete({ where: { id: input.id } });
     }
     if (path === 'payroll.recordSale') {
-      if (!isAdmin && !isCEO) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins only');
+      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: Admin or HR access required');
       if (!input?.userId || !input?.amount || !input?.month || !input?.year) throw new Error('Missing sale details');
       return await prisma.sale.create({
         data: {
@@ -2065,19 +2228,26 @@ async function runMutation(path: string, input: any) {
 
     // ── COMPENSATION (mutations) ──
     if (path === 'compensation.createAdjustment') {
-      if (!isAdmin && !isCEO && !isHR) throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
       if (!input?.userId || !input?.type || !input?.reason) {
         throw new Error('Missing required fields: userId, type, reason');
       }
-
-      const validTypes = ['INCREMENT', 'DECREMENT', 'ADJUSTMENT'];
-      if (!validTypes.includes(input.type)) throw new Error('Invalid adjustment type');
 
       const targetUser = await prisma.user.findUnique({
         where: { id: input.userId },
         select: { id: true, name: true, baseSalary: true, department: true, role: true, email: true },
       });
       if (!targetUser) throw new Error('Employee not found');
+
+      if (isSalaryExempt(targetUser.role)) {
+        throw new Error('CEO / Top Executive role is salary-exempt. CEO manages compensation for direct reports and does not receive subordinate salary edits.');
+      }
+
+      const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+      const isManagerAuthorized = userId ? isSubordinate(userId, targetUser.id, allUsers) : false;
+
+      if (!isAdmin && !isCEO && !isHR && !isManagerAuthorized) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: You can only manage compensation for your reporting subordinates or as HR/Admin/CEO.');
+      }
 
       const oldSalary = Number(input.oldSalary) || targetUser.baseSalary || 0;
       const newSalary = Number(input.newSalary);
@@ -2185,9 +2355,6 @@ async function runMutation(path: string, input: any) {
     }
 
     if (path === 'compensation.updateAdjustmentStatus') {
-      if (!isAdmin && !isCEO && !isHR) {
-        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      }
       if (!input?.id || !input?.status) throw new Error('Missing adjustment id or status');
 
       const validStatuses = ['DRAFT', 'PENDING', 'APPROVED', 'REJECTED', 'IMPLEMENTED'];
@@ -2195,10 +2362,16 @@ async function runMutation(path: string, input: any) {
 
       const existing = await prisma.compensationAdjustment.findUnique({
         where: { id: input.id },
-        include: { user: { select: { name: true } } },
+        include: { user: { select: { id: true, name: true, role: true } } },
       });
       if (!existing) throw new Error('Adjustment not found');
 
+      const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+      const isManagerAuthorized = userId ? isSubordinate(userId, existing.userId, allUsers) : false;
+
+      if (!isAdmin && !isCEO && !isHR && !isManagerAuthorized) {
+        throw new MutationError('UNAUTHORIZED', 'Unauthorized: You can only update adjustments for your reporting subordinates or as HR/Admin/CEO.');
+      }
       if (existing.status !== 'PENDING' && existing.status !== 'DRAFT') {
         throw new Error(`Cannot change status from ${existing.status} directly.`);
       }
@@ -2331,28 +2504,38 @@ async function runMutation(path: string, input: any) {
     }
 
     if (path === 'compensation.bulkAdjust') {
-      if (!isAdmin && !isCEO && !isHR) {
-        throw new MutationError('UNAUTHORIZED', 'Unauthorized: admins/HR only');
-      }
       if (!input?.method || !input?.value || !input?.reason || !input?.effectiveDate) {
         throw new Error('Missing bulk adjustment details');
       }
 
-      const filter: Record<string, any> = {};
+      const filter: Record<string, any> = {
+        role: { not: 'CEO' },
+      };
       if (input.userFilter?.department) filter.department = input.userFilter.department;
       if (input.userFilter?.branchId) filter.branchId = input.userFilter.branchId;
-      if (input.userFilter?.role) filter.role = input.userFilter.role;
+      if (input.userFilter?.role && input.userFilter.role !== 'CEO') filter.role = input.userFilter.role;
       if (input.userFilter?.userIds && Array.isArray(input.userFilter.userIds) && input.userFilter.userIds.length > 0) {
         filter.id = { in: input.userFilter.userIds };
       }
 
-      const targetUsers = await prisma.user.findMany({
+      const allUsers = await prisma.user.findMany({ select: { id: true, managerId: true } });
+      const subIds = userId ? getReportingChainSubordinates(userId, allUsers) : new Set<string>();
+
+      let targetUsers = await prisma.user.findMany({
         where: mergeWhere(filter, callerTenantWhere(caller)),
-        select: { id: true, name: true, email: true, baseSalary: true },
+        select: { id: true, name: true, email: true, baseSalary: true, role: true },
       });
 
+      // Exclude CEO / salary exempt
+      targetUsers = targetUsers.filter((u) => !isSalaryExempt(u.role));
+
+      // Non-admin/HR/CEO callers can only bulk adjust their subordinates
+      if (!isAdmin && !isCEO && !isHR) {
+        targetUsers = targetUsers.filter((u) => subIds.has(u.id));
+      }
+
       if (targetUsers.length === 0) {
-        throw new Error('No employees matched the selected filter criteria');
+        throw new Error('No eligible employees matched the selected filter criteria');
       }
 
       const autoImplement = Boolean(input.autoImplement);
