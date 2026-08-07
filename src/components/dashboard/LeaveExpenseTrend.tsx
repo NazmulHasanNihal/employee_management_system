@@ -20,7 +20,14 @@ type Props = {
   expense: { period: string; value: number }[];
 };
 
+import React, { useState, useEffect } from "react";
+
 export default function LeaveExpenseTrend({ leave, expense }: Props) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const leaveData = leave && leave.length > 0 ? leave : [
     { period: "Last Mo", value: 5 },
     { period: "This Mo", value: 8 },
@@ -40,38 +47,46 @@ export default function LeaveExpenseTrend({ leave, expense }: Props) {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Leave Requests</T></p>
-            <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={leaveData} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
-                  <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
-                  <YAxis tickLine={false} axisLine={false} tick={axisTick} width={32} allowDecimals={false} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [v ?? 0, "Requests"] as [number, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                    {leaveData.map((_, i) => (
-                      <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-48 w-full min-h-[180px]">
+              {mounted ? (
+                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={160}>
+                  <BarChart data={leaveData} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
+                    <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
+                    <YAxis tickLine={false} axisLine={false} tick={axisTick} width={32} allowDecimals={false} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [v ?? 0, "Requests"] as [number, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                      {leaveData.map((_, i) => (
+                        <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+              )}
             </div>
           </div>
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Expenses</T></p>
-            <div className="h-48 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={expenseData} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
-                  <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
-                  <YAxis tickLine={false} axisLine={false} tick={axisTick} width={48} tickFormatter={(v: number | undefined) => `৳${Math.round((v ?? 0) / 1000)}k`} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [formatCurrency(v ?? 0, "BDT", "en"), "Expenses"] as [string, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                    {expenseData.map((_, i) => (
-                      <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-48 w-full min-h-[180px]">
+              {mounted ? (
+                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={160}>
+                  <BarChart data={expenseData} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
+                    <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
+                    <YAxis tickLine={false} axisLine={false} tick={axisTick} width={48} tickFormatter={(v: number | undefined) => `৳${Math.round((v ?? 0) / 1000)}k`} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [formatCurrency(v ?? 0, "BDT", "en"), "Expenses"] as [string, string]} cursor={{ fill: "var(--bg-hover)", opacity: 0.4 }} />
+                    <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                      {expenseData.map((_, i) => (
+                        <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+              )}
             </div>
           </div>
         </div>

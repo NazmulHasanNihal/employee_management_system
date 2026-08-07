@@ -21,7 +21,14 @@ const tooltipStyle = {
   fontSize: 12,
 } as const;
 
+import React, { useState, useEffect } from "react";
+
 export default function AttendanceMixDonut({ data }: { data: { status: string; count: number }[] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const chartData = data && data.length > 0 ? data : [
     { status: "Present", count: 18 },
     { status: "Late", count: 2 },
@@ -34,17 +41,21 @@ export default function AttendanceMixDonut({ data }: { data: { status: string; c
         <CardTitle>{/* @ts-ignore */}<T>Attendance Mix (7d)</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Tooltip contentStyle={tooltipStyle} />
-              <Pie data={chartData} dataKey="count" nameKey="status" innerRadius="55%" outerRadius="80%" paddingAngle={2}>
-                {chartData.map((_, i) => (
-                  <Cell key={i} fill={PALETTE[i % PALETTE.length]} stroke="var(--bg-panel)" />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+        <div className="h-64 w-full min-h-[220px]">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+              <PieChart>
+                <Tooltip contentStyle={tooltipStyle} />
+                <Pie data={chartData} dataKey="count" nameKey="status" innerRadius="55%" outerRadius="80%" paddingAngle={2}>
+                  {chartData.map((_, i) => (
+                    <Cell key={i} fill={PALETTE[i % PALETTE.length]} stroke="var(--bg-panel)" />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+          )}
         </div>
       </CardContent>
     </Card>

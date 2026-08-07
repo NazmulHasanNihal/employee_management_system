@@ -13,7 +13,14 @@ const tooltipStyle = {
   fontSize: 12,
 } as const;
 
+import React, { useState, useEffect } from "react";
+
 export default function HeadcountTrend({ data }: { data: { month: string; headcount: number }[] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const hasValues = data && data.some((d) => d.headcount > 0);
   const chartData = hasValues
     ? data
@@ -33,16 +40,20 @@ export default function HeadcountTrend({ data }: { data: { month: string; headco
         <CardTitle>{/* @ts-ignore */}<T>Headcount — Last 12 Months</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />
-              <YAxis tickLine={false} axisLine={false} tick={axisTick} width={40} allowDecimals={false} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [v ?? 0, "Headcount"] as [number, string]} />
-              <Line type="monotone" dataKey="headcount" stroke="var(--brand)" strokeWidth={2} dot={{ r: 2, fill: "var(--brand)" }} />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="h-64 w-full min-h-[220px]">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+              <LineChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />
+                <YAxis tickLine={false} axisLine={false} tick={axisTick} width={40} allowDecimals={false} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => [v ?? 0, "Headcount"] as [number, string]} />
+                <Line type="monotone" dataKey="headcount" stroke="var(--brand)" strokeWidth={2} dot={{ r: 2, fill: "var(--brand)" }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+          )}
         </div>
       </CardContent>
     </Card>

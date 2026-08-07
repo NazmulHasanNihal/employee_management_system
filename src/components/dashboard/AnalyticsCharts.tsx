@@ -35,16 +35,25 @@ const tooltipStyle = {
 } as const;
 
 function CardShell({ title, children }: { title: string; children: React.ReactNode }) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <Card className="animate-fade-up">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-56 sm:h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            {children as React.ReactElement}
-          </ResponsiveContainer>
+        <div className="h-56 sm:h-64 w-full min-h-[220px]">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+              {children as React.ReactElement}
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+          )}
         </div>
       </CardContent>
     </Card>

@@ -14,7 +14,14 @@ const tooltipStyle = {
   fontSize: 12,
 } as const;
 
+import React, { useState, useEffect } from "react";
+
 export default function PayrollTrend({ data }: { data: { month: string; payroll: number }[] }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const hasValues = data && data.some((d) => d.payroll > 0);
   const chartData = hasValues
     ? data
@@ -34,22 +41,26 @@ export default function PayrollTrend({ data }: { data: { month: string; payroll:
         <CardTitle>{/* @ts-ignore */}<T>Payroll — Last 12 Months</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
-              <defs>
-                <linearGradient id="payrollFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--sky)" stopOpacity={0.45} />
-                  <stop offset="100%" stopColor="var(--sky)" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
-              <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />
-              <YAxis tickLine={false} axisLine={false} tick={axisTick} width={56} tickFormatter={(v: number | undefined) => `৳${Math.round((v ?? 0) / 1000)}k`} />
-              <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => [formatCurrency(value ?? 0, "BDT", "en"), "Payroll"] as [string, string]} />
-              <Area type="monotone" dataKey="payroll" stroke="var(--sky)" strokeWidth={2} fill="url(#payrollFill)" />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="h-64 w-full min-h-[220px]">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="payrollFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--sky)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--sky)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />
+                <YAxis tickLine={false} axisLine={false} tick={axisTick} width={56} tickFormatter={(v: number | undefined) => `৳${Math.round((v ?? 0) / 1000)}k`} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => [formatCurrency(value ?? 0, "BDT", "en"), "Payroll"] as [string, string]} />
+                <Area type="monotone" dataKey="payroll" stroke="var(--sky)" strokeWidth={2} fill="url(#payrollFill)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+          )}
         </div>
       </CardContent>
     </Card>

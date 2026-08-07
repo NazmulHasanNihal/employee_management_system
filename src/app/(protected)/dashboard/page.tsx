@@ -8,13 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusPill } from '@/components/ui/status-pill';
 import { DeltaBadge } from '@/components/ui/delta-badge';
-import AttendanceTrend from '@/components/dashboard/AttendanceTrendDynamic';
+import AttendanceTrend from '@/components/dashboard/AttendanceTrend';
 import LiveClock from '@/components/dashboard/LiveClock';
 import { LeaveBreakdownDonut, ExpenseBreakdownDonut, DepartmentBar } from '@/components/dashboard/AnalyticsCharts';
-import AttendanceMixDonutDynamic from '@/components/dashboard/AttendanceMixDonutDynamic';
-import PayrollTrendDynamic from '@/components/dashboard/PayrollTrendDynamic';
-import HeadcountTrendDynamic from '@/components/dashboard/HeadcountTrendDynamic';
-import LeaveExpenseTrendDynamic from '@/components/dashboard/LeaveExpenseTrendDynamic';
+import AttendanceMixDonut from '@/components/dashboard/AttendanceMixDonut';
+import PayrollTrend from '@/components/dashboard/PayrollTrend';
+import HeadcountTrend from '@/components/dashboard/HeadcountTrend';
+import LeaveExpenseTrend from '@/components/dashboard/LeaveExpenseTrend';
 import { PulseSurveyWidget } from '@/components/dashboard/PulseSurveyWidget';
 import { PulseAnalyticsChart } from '@/components/dashboard/PulseAnalyticsChart';
 import { formatCurrency, formatDate } from '@/lib/format';
@@ -225,11 +225,11 @@ export default async function DashboardPage() {
             <ExpenseBreakdownDonut data={stats.expenseBreakdown} />
           </div>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <AttendanceMixDonutDynamic data={stats.attendanceMix} />
-            <PayrollTrendDynamic data={stats.trendSeries.map((d) => ({ month: d.month, payroll: d.payroll }))} />
-            <HeadcountTrendDynamic data={stats.trendSeries.map((d) => ({ month: d.month, headcount: d.headcount }))} />
+            <AttendanceMixDonut data={stats.attendanceMix} />
+            <PayrollTrend data={stats.trendSeries.map((d) => ({ month: d.month, payroll: d.payroll }))} />
+            <HeadcountTrend data={stats.trendSeries.map((d) => ({ month: d.month, headcount: d.headcount }))} />
           </div>
-          <LeaveExpenseTrendDynamic
+          <LeaveExpenseTrend
             leave={[
               { period: 'Last Mo', value: stats.leaveLastMonth },
               { period: 'This Mo', value: stats.leaveThisMonth },

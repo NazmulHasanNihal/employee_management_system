@@ -20,6 +20,11 @@ interface TrendPoint {
 }
 
 export default function AttendanceTrend({ data }: { data: TrendPoint[] }) {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const hasValues = data && data.length > 0 && data.some((d) => d.rate > 0 || d.present > 0);
   const chartData = hasValues
     ? data
@@ -39,50 +44,54 @@ export default function AttendanceTrend({ data }: { data: TrendPoint[] }) {
         <CardTitle>{/* @ts-ignore */}<T>Attendance Trend (7 days)</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-56 sm:h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-              <defs>
-                <linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.45} />
-                  <stop offset="100%" stopColor="var(--brand)" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
-              <XAxis
-                dataKey="day"
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
-                width={40}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--bg-panel)',
-                  border: '1px solid var(--border-hairline)',
-                  borderRadius: 12,
-                  color: 'var(--text-main)',
-                  fontSize: 12,
-                }}
-                formatter={(value: any, name: any) => [
-                  name === 'rate' ? `${value ?? 0}%` : value ?? 0,
-                  name === 'rate' ? 'Rate' : 'Present',
-                ] as [string | number, string]}
-              />
-              <Area
-                type="monotone"
-                dataKey="rate"
-                stroke="var(--brand)"
-                strokeWidth={2}
-                fill="url(#attendanceFill)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="h-56 sm:h-64 w-full min-h-[220px]">
+          {mounted ? (
+            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--brand)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--brand)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                  width={40}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: 'var(--bg-panel)',
+                    border: '1px solid var(--border-hairline)',
+                    borderRadius: 12,
+                    color: 'var(--text-main)',
+                    fontSize: 12,
+                  }}
+                  formatter={(value: any, name: any) => [
+                    name === 'rate' ? `${value ?? 0}%` : value ?? 0,
+                    name === 'rate' ? 'Rate' : 'Present',
+                  ] as [string | number, string]}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="rate"
+                  stroke="var(--brand)"
+                  strokeWidth={2}
+                  fill="url(#attendanceFill)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full w-full animate-pulse rounded-xl bg-[var(--bg-hover)]" />
+          )}
         </div>
       </CardContent>
     </Card>
