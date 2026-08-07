@@ -142,13 +142,22 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Mark-read uses the existing trpc mutation for notifications (lightweight, infrequent).
+  const [activeNotifs, setActiveNotifs] = React.useState<any[]>(() => notifications.filter((n: any) => !n.read));
+  React.useEffect(() => {
+    setActiveNotifs(notifications.filter((n: any) => !n.read));
+  }, [notifications]);
+
   const markReadMutation = trpc.notifications.markRead.useMutation();
-  const markAllReadMutation = trpc.notifications.markAllRead.useMutation();
-  const unreadCount = notifications.filter((n: any) => !n.read).length;
-  const markRead = (id: string) => markReadMutation.mutate({ id });
+  const unreadCount = activeNotifs.length;
+  
+  const markRead = (id: string) => {
+    markReadMutation.mutate({ id });
+    setActiveNotifs((prev) => prev.filter((n) => n.id !== id));
+  };
+
   const markAllRead = () => {
-    notifications.forEach((n: any) => { if (!n.read) markRead(n.id); });
+    activeNotifs.forEach((n: any) => markReadMutation.mutate({ id: n.id }));
+    setActiveNotifs([]);
   };
 
   const handleLogout = async () => {
@@ -355,17 +364,17 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
                     </div>
                     {unreadCount > 0 && (
                       <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] transition-colors">
-                        {/* @ts-ignore */}<T>Mark all read</T>
+                        {/* @ts-ignore */}<T>Clear All & Mark Read</T>
                       </button>
                     )}
                   </div>
                   <div className="custom-scrollbar max-h-80 overflow-y-auto divide-y divide-[var(--border-hairline)]">
-                    {notifications.length === 0 ? (
+                    {activeNotifs.length === 0 ? (
                       <div className="p-8 text-center text-xs text-[var(--text-muted)] italic">
-                        {/* @ts-ignore */}<T>No notifications at this time.</T>
+                        {/* @ts-ignore */}<T>No unread notifications.</T>
                       </div>
                     ) : (
-                      notifications.map((n: any) => {
+                      activeNotifs.map((n: any) => {
                         // Extract target route link from n.link or command keywords
                         const targetRoute = n.link || (
                           n.message.includes('/attendance') ? '/attendance' :

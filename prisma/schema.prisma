@@ -129,6 +129,10 @@ model User {
    requestedAdjustments     CompensationAdjustment[] @relation("RequestedBy")
    approvedAdjustments      CompensationAdjustment[] @relation("ApprovedBy")
 
+   // ── Real-life Payment Simulation Ledger ──
+   paymentRecords           PaymentRecord[]
+   disbursedPayments        PaymentRecord[]          @relation("DisbursedPayments")
+
   // Performance indexes: managerId (org-chart / chain-of-command / team
   // lookups), branchId + tenantId (tenant/branch-scoped queries), nid lookups.
   @@index([managerId])
@@ -1068,4 +1072,41 @@ model CompensationAdjustment {
   @@index([status])
   @@index([effectiveDate])
   @@index([createdAt])
+}
+
+// ── Payment System Simulation & Real-Life Bank Ledger ──
+model PaymentRecord {
+  id              String   @id @default(cuid())
+  trxId           String   @unique
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  disbursedById   String?
+  disbursedBy     User?    @relation("DisbursedPayments", fields: [disbursedById], references: [id], onDelete: SetNull)
+
+  paymentType     String   @default("SALARY") // SALARY, BONUS, ALLOWANCE, REIMBURSEMENT, OVERTIME, ADJUSTMENT
+  paymentMethod   String   @default("BANK_TRANSFER") // BANK_TRANSFER, BKASH, NAGAD, EFT, CASH, CHECK
+  batchType       String   @default("SINGLE") // SINGLE, BULK_BATCH
+  batchRef        String?
+
+  bankName        String?
+  accountNumber   String?
+  branchName      String?
+  routingNumber   String?
+
+  baseAmount      Float
+  bonuses         Float    @default(0)
+  adjustments     Float    @default(0)
+  deductions      Float    @default(0)
+  netPaidAmount   Float
+
+  remarks         String?
+  status          String   @default("DISBURSED") // DISBURSED, SETTLED, IN_TRANSIT, FAILED
+  disbursedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([userId, disbursedAt])
+  @@index([trxId])
+  @@index([batchRef])
+  @@index([paymentType])
+  @@index([status])
 }

@@ -7,7 +7,10 @@ import { DeltaBadge } from '@/components/ui/delta-badge';
 import { PayrollActions } from '@/components/payroll/PayrollActions';
 import { PayslipCard } from '@/components/payroll/PayslipCard';
 import { PaymentHub } from '@/components/payroll/PaymentHub';
+import PaymentSystemHub from '@/components/payroll/PaymentSystemHub';
 import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTotal, type PayrollWithUser } from '@/server/queries';
+import { getPaymentRecordsLedger } from '@/app/actions/payments';
+import { prisma } from '@/lib/prisma';
 import { getCaller } from '@/lib/auth';
 import { formatCurrency } from '@/lib/format';
 import { getServerT } from '@/lib/i18n-server';
@@ -18,6 +21,7 @@ export const dynamic = 'force-dynamic';
 export default async function PayrollPage() {
   const caller = await getCaller();
   const isAdmin = caller?.isAdmin ?? false;
+  const isPrivileged = isAdmin || caller?.isCEO || caller?.isHR;
   const t = await getServerT();
   const now = new Date();
   const month = now.getMonth() + 1;
@@ -25,23 +29,37 @@ export default async function PayrollPage() {
   const lastMonth = month === 1 ? 12 : month - 1;
   const lastMonthYear = month === 1 ? year - 1 : year;
 
-  const [payrolls, adminStats, payments, salesThis, salesLast] = await Promise.all([
+  const [payrolls, adminStats, payments, salesThis, salesLast, ledgerRes, employees] = await Promise.all([
     getPayrolls(caller),
     getPayrollAdminStats(caller),
     getPaymentsForUser(caller),
     getSalesMonthTotal(caller?.id || '', month, year),
     getSalesMonthTotal(caller?.id || '', lastMonth, lastMonthYear),
+    getPaymentRecordsLedger(),
+    prisma.user.findMany({
+      where: { status: 'ACTIVE' },
+      select: { id: true, name: true, email: true, designation: true, department: true, baseSalary: true },
+      orderBy: { name: 'asc' },
+    }),
   ]);
 
   const latestPayslip = payrolls[0] || null;
+  const paymentRecords = (ledgerRes.records || []) as any;
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
-        title={t('Payroll')}
-        subtitle={t('Compensation, distributions & payslips.')}
+        title={t('Payroll & Payment Simulation System')}
+        subtitle={t('Real-life bank disbursement ledger, single & bulk payments, and compensation adjustments.')}
         icon={<DollarSign className="h-5 w-5" />}
         actions={isAdmin ? <PayrollActions payrolls={payrolls} /> : undefined}
+      />
+
+      {/* ── REAL-LIFE PAYMENT SYSTEM SIMULATION HUB ── */}
+      <PaymentSystemHub
+        records={paymentRecords}
+        employees={employees}
+        canDisburse={isPrivileged}
       />
 
       {isAdmin && (
@@ -51,7 +69,7 @@ export default async function PayrollPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 {t('Total Payroll YTD')}
               </p>
-               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
+              <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {formatCurrency(adminStats.totalYTD, 'BDT', 'en')}
               </p>
               <div className="mt-1 flex items-center gap-2 text-xs text-[var(--text-muted)]">
@@ -65,7 +83,7 @@ export default async function PayrollPage() {
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 {/* @ts-ignore */}<T>Monthly Run-Rate</T></p>
-               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
+              <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {formatCurrency(adminStats.monthlyRunRate, 'BDT', 'en')}
               </p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">
@@ -78,7 +96,7 @@ export default async function PayrollPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">
                 {t('Last Run')}
               </p>
-               <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
+              <p className="mt-2 text-fluid-3xl font-semibold text-[var(--text-main)]">
                 {adminStats.lastRunMonth}
               </p>
               <p className="mt-1 inline-flex items-center gap-1 text-xs text-[var(--emerald)]">
