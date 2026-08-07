@@ -5,7 +5,7 @@ import { Pencil, Check, X } from 'lucide-react';
 import { updateProfileField } from '@/app/actions/profile';
 import { useRouter } from 'next/navigation';
 
-export function EditableName({ name }: { name: string }) {
+export function EditableName({ name, targetUserId, canEdit = true }: { name: string; targetUserId?: string; canEdit?: boolean }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
@@ -17,7 +17,7 @@ export function EditableName({ name }: { name: string }) {
     if (!draft.trim()) return;
     setSaving(true);
     try {
-      await updateProfileField('name', draft.trim());
+      await updateProfileField('name', draft.trim(), targetUserId);
       setEditing(false);
       router.refresh();
     } finally {
@@ -42,6 +42,10 @@ export function EditableName({ name }: { name: string }) {
         </button>
       </div>
     );
+  }
+
+  if (!canEdit) {
+    return <span className="truncate text-xl font-semibold text-[var(--text-main)]">{name}</span>;
   }
 
   return (

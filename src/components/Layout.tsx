@@ -283,10 +283,20 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
 
         <header className="z-10 flex h-16 shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-app)]/60 backdrop-blur-2xl px-4 md:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 md:hidden">
-              <button aria-label="Open menu" onClick={() => setIsMobileMenuOpen(true)} className="touch-target -ml-1 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]">
-                <Menu size={22} />
+            <div className="flex items-center gap-2.5 md:hidden">
+              <button
+                aria-label="Open menu"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--brand)]/40"
+              >
+                <Menu size={20} />
               </button>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-md">
+                  <LinkIcon size={16} />
+                </div>
+                <span className="text-sm font-extrabold text-[var(--text-main)] tracking-tight">OpsHub</span>
+              </div>
             </div>
           </div>
 
@@ -335,31 +345,73 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl">
-                  <div className="flex items-center justify-between border-b border-[var(--border-hairline)] px-4 py-3">
-                    <span className="text-xs font-semibold text-[var(--text-main)]">{/* @ts-ignore */}<T>Alerts (</T>{unreadCount})</span>
-                    <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] hover:underline">{/* @ts-ignore */}<T>Mark all read</T></button>
+                <div className="absolute right-0 z-50 mt-2 w-80 sm:w-96 overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)]/95 backdrop-blur-2xl shadow-2xl animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between border-b border-[var(--border-hairline)] px-4 py-3 bg.var(--bg-hover)]/40">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-[var(--brand)]" />
+                      <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-main)]">
+                        {/* @ts-ignore */}<T>Notifications</T> ({unreadCount})
+                      </span>
+                    </div>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllRead} className="text-xs font-semibold text-[var(--brand)] hover:text-[var(--brand-strong)] transition-colors">
+                        {/* @ts-ignore */}<T>Mark all read</T>
+                      </button>
+                    )}
                   </div>
-                  <div className="custom-scrollbar max-h-72 overflow-y-auto">
+                  <div className="custom-scrollbar max-h-80 overflow-y-auto divide-y divide-[var(--border-hairline)]">
                     {notifications.length === 0 ? (
-                      <div className="p-6 text-center text-sm text-[var(--text-muted)]">{/* @ts-ignore */}<T>No notifications</T></div>
+                      <div className="p-8 text-center text-xs text-[var(--text-muted)] italic">
+                        {/* @ts-ignore */}<T>No notifications at this time.</T>
+                      </div>
                     ) : (
-                      notifications.map((n: any) => (
-                        <div
-                          key={n.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => { if (n.link) router.push(n.link); if (!n.read) markRead(n.id); setShowNotifications(false); }}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { if (n.link) router.push(n.link); setShowNotifications(false); } }}
-                          className={`cursor-pointer border-b border-[var(--border-hairline)] px-4 py-3 text-sm transition-colors hover:bg-[var(--bg-hover)] ${!n.read ? 'border-l-2 border-l-[var(--brand)] bg-[var(--brand-soft)]/60' : ''}`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-[var(--text-main)] font-medium">{n.message}</p>
-                            {!n.read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--brand)]" />}
+                      notifications.map((n: any) => {
+                        // Extract target route link from n.link or command keywords
+                        const targetRoute = n.link || (
+                          n.message.includes('/attendance') ? '/attendance' :
+                          n.message.includes('/leave') ? '/leave' :
+                          n.message.includes('/profile') ? '/profile' :
+                          n.message.includes('/org-chart') ? '/org-chart' :
+                          n.message.includes('/compensation') ? '/compensation' :
+                          n.message.includes('/payroll') ? '/payroll' :
+                          n.message.includes('/tasks') ? '/team' :
+                          n.message.includes('/assets') ? '/assets' : null
+                        );
+
+                        return (
+                          <div
+                            key={n.id}
+                            onClick={() => {
+                              if (targetRoute) router.push(targetRoute);
+                              if (!n.read) markRead(n.id);
+                              setShowNotifications(false);
+                            }}
+                            className={`group relative p-4 text-xs transition-all hover:bg-[var(--bg-hover)] cursor-pointer ${
+                              !n.read ? 'bg-[var(--brand-soft)]/40 border-l-4 border-l-[var(--brand)]' : ''
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <span className="inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--brand)]/10 text-[var(--brand)]">
+                                {n.type || 'System'}
+                              </span>
+                              <span className="text-[10px] text-[var(--text-muted)] font-mono">
+                                {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+
+                            <p className="text-[var(--text-main)] font-medium leading-relaxed">
+                              {n.message}
+                            </p>
+
+                            {targetRoute && (
+                              <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-[var(--brand)] group-hover:underline">
+                                <span>{/* @ts-ignore */}<T>Open Command / Action</T></span>
+                                <ArrowRight size={10} />
+                              </div>
+                            )}
                           </div>
-                          <p className="mt-1 text-[11px] text-[var(--text-muted)]">{new Date(n.createdAt).toLocaleString()}</p>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </div>

@@ -60,6 +60,7 @@ function FieldRow({
   type = 'text',
   placeholder,
   targetUserId,
+  canEdit = true,
 }: {
   label: string;
   field: string;
@@ -67,6 +68,7 @@ function FieldRow({
   type?: string;
   placeholder?: string;
   targetUserId?: string;
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -116,14 +118,16 @@ function FieldRow({
             <span className="truncate text-sm font-medium text-[var(--text-main)]">
               {value ? value : <span className="text-[var(--text-muted)]">—</span>}
             </span>
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]"
-              aria-label={`Edit ${label}`}
-            >
-              <Pencil size={13} />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]"
+                aria-label={`Edit ${label}`}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
           </>
         )}
       </div>
@@ -138,6 +142,7 @@ function SelectRow({
   options,
   placeholder = 'Select',
   targetUserId,
+  canEdit = true,
 }: {
   label: string;
   field: string;
@@ -145,6 +150,7 @@ function SelectRow({
   options: string[];
   placeholder?: string;
   targetUserId?: string;
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -197,14 +203,16 @@ function SelectRow({
             <span className="truncate text-sm font-medium text-[var(--text-main)]">
               {value ? value : <span className="text-[var(--text-muted)]">—</span>}
             </span>
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]"
-              aria-label={`Edit ${label}`}
-            >
-              <Pencil size={13} />
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]"
+                aria-label={`Edit ${label}`}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
           </>
         )}
       </div>
@@ -217,11 +225,15 @@ function TextAreaRow({
   field,
   value,
   placeholder,
+  targetUserId,
+  canEdit = true,
 }: {
   label: string;
   field: string;
   value: string | null | undefined;
   placeholder?: string;
+  targetUserId?: string;
+  canEdit?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -235,7 +247,7 @@ function TextAreaRow({
   const save = async () => {
     setSaving(true);
     try {
-      await updateProfileField(field, draft);
+      await updateProfileField(field, draft, targetUserId);
       setEditing(false);
       router.refresh();
     } finally {
@@ -247,7 +259,7 @@ function TextAreaRow({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-[var(--text-muted)]">{label}</Label>
-        {!editing && (
+        {!editing && canEdit && (
           <button
             type="button"
             onClick={() => setEditing(true)}
@@ -287,55 +299,63 @@ function TextAreaRow({
 export function ContactSection({
   user,
   countries,
+  targetUserId,
+  canEdit = true,
 }: {
   user: ProfileUser;
   countries?: string[];
+  targetUserId?: string;
+  canEdit?: boolean;
 }) {
   const countryOptions = Array.from(new Set([...(countries ?? []), ...DEFAULT_COUNTRIES]));
+  const activeUserId = targetUserId || user.id;
   return (
     <div className="divide-y divide-[var(--border-hairline)]">
-      <FieldRow label="Full Name" field="name" value={user.name} placeholder="Your full name" />
-      <FieldRow label="Phone" field="phone" value={user.phone} placeholder="+1…" />
+      <FieldRow label="Full Name" field="name" value={user.name} placeholder="Your full name" targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="Phone" field="phone" value={user.phone} placeholder="+1…" targetUserId={activeUserId} canEdit={canEdit} />
       <div className="flex items-center justify-between gap-3 py-2">
         <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Email</T></Label>
         <span className="truncate text-sm font-medium text-[var(--text-main)] opacity-70" title="Email is managed by your account">
           {user.email}
         </span>
       </div>
-      <FieldRow label="Address" field="address" value={user.address} placeholder="Street, number" />
-      <FieldRow label="City" field="city" value={user.city} />
-      <SelectRow label="Country" field="country" value={user.country} options={countryOptions} />
-      <SelectRow label="Gender" field="gender" value={user.gender} options={GENDERS} />
-      <FieldRow label="Date of Birth" field="dateOfBirth" type="date" value={user.dateOfBirth ? String(user.dateOfBirth).slice(0, 10) : ''} />
+      <FieldRow label="Address" field="address" value={user.address} placeholder="Street, number" targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="City" field="city" value={user.city} targetUserId={activeUserId} canEdit={canEdit} />
+      <SelectRow label="Country" field="country" value={user.country} options={countryOptions} targetUserId={activeUserId} canEdit={canEdit} />
+      <SelectRow label="Gender" field="gender" value={user.gender} options={GENDERS} targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="Date of Birth" field="dateOfBirth" type="date" value={user.dateOfBirth ? String(user.dateOfBirth).slice(0, 10) : ''} targetUserId={activeUserId} canEdit={canEdit} />
     </div>
   );
 }
 
 // ── Emergency contact ──
-export function EmergencySection({ user }: { user: ProfileUser }) {
+export function EmergencySection({ user, targetUserId, canEdit = true }: { user: ProfileUser; targetUserId?: string; canEdit?: boolean }) {
+  const activeUserId = targetUserId || user.id;
   return (
     <div className="divide-y divide-[var(--border-hairline)]">
-      <FieldRow label="Name" field="emergencyContactName" value={user.emergencyContactName} />
-      <FieldRow label="Phone" field="emergencyContactPhone" value={user.emergencyContactPhone} placeholder="+1…" />
+      <FieldRow label="Name" field="emergencyContactName" value={user.emergencyContactName} targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="Phone" field="emergencyContactPhone" value={user.emergencyContactPhone} placeholder="+1…" targetUserId={activeUserId} canEdit={canEdit} />
     </div>
   );
 }
 
 // ── Social links ──
-export function SocialSection({ user }: { user: ProfileUser }) {
+export function SocialSection({ user, targetUserId, canEdit = true }: { user: ProfileUser; targetUserId?: string; canEdit?: boolean }) {
+  const activeUserId = targetUserId || user.id;
   return (
     <div className="divide-y divide-[var(--border-hairline)]">
-      <FieldRow label="LinkedIn" field="linkedin" value={user.linkedin} placeholder="https://linkedin.com/in/…" />
-      <FieldRow label="GitHub" field="github" value={user.github} placeholder="https://github.com/…" />
-      <FieldRow label="Twitter" field="twitter" value={user.twitter} placeholder="https://x.com/…" />
-      <FieldRow label="Website" field="website" value={user.website} placeholder="https://…" />
+      <FieldRow label="LinkedIn" field="linkedin" value={user.linkedin} placeholder="https://linkedin.com/in/…" targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="GitHub" field="github" value={user.github} placeholder="https://github.com/…" targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="Twitter" field="twitter" value={user.twitter} placeholder="https://x.com/…" targetUserId={activeUserId} canEdit={canEdit} />
+      <FieldRow label="Website" field="website" value={user.website} placeholder="https://…" targetUserId={activeUserId} canEdit={canEdit} />
     </div>
   );
 }
 
 // ── Bio ──
-export function BioSection({ user }: { user: ProfileUser }) {
-  return <TextAreaRow label="Bio" field="bio" value={user.bio} placeholder="Tell the team a bit about yourself…" />;
+export function BioSection({ user, targetUserId, canEdit = true }: { user: ProfileUser; targetUserId?: string; canEdit?: boolean }) {
+  const activeUserId = targetUserId || user.id;
+  return <TextAreaRow label="Bio" field="bio" value={user.bio} placeholder="Tell the team a bit about yourself…" targetUserId={activeUserId} canEdit={canEdit} />;
 }
 
 // ── Bangladesh identity (Phase B5) ──
@@ -346,7 +366,7 @@ const LANGUAGES = [
   { value: 'bn', label: 'বাংলা (Bangla)' },
 ];
 
-export function IdentitySection({ user }: { user: ProfileUser }) {
+export function IdentitySection({ user, targetUserId, canEdit = true }: { user: ProfileUser; targetUserId?: string; canEdit?: boolean }) {
   // `user.nid` is encrypted at rest (ciphertext). We never prefill the raw
   // input with it; instead the user re-enters a full NID only when changing it.
   const [nid, setNid] = useState('');
@@ -362,14 +382,11 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
     setSaving(true);
     try {
       await updateProfileBatch({
-        // nid is empty when the user didn't change it; send null to keep the
-        // existing encrypted value. Non-empty input is re-validated + encrypted
-        // server-side.
         nid: nid || null,
         bloodGroup: bloodGroup || null,
         religion: religion || null,
         preferredLanguage: language,
-      });
+      }, targetUserId);
       setEditing(false);
       router.refresh();
     } finally {
@@ -381,16 +398,16 @@ export function IdentitySection({ user }: { user: ProfileUser }) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-[var(--text-muted)]">{/* @ts-ignore */}<T>Bangladesh Identity</T></Label>
-        {!editing ? (
-          <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label="Edit identity">
-            <Pencil size={13} />
-          </button>
-        ) : (
+        {editing ? (
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={saving}><X size={14} /> {/* @ts-ignore */}<T>Cancel</T></Button>
             <Button size="sm" onClick={save} disabled={saving}><Check size={14} /> {/* @ts-ignore */}<T>Save</T></Button>
           </div>
-        )}
+        ) : canEdit ? (
+          <button type="button" onClick={() => setEditing(true)} className="text-[var(--text-muted)] transition-colors hover:text-[var(--brand-strong)]" aria-label="Edit identity">
+            <Pencil size={13} />
+          </button>
+        ) : null}
       </div>
 
       {editing ? (
@@ -441,23 +458,28 @@ export function EmploymentSection({
   branchName,
   branches = [],
   managers = [],
+  targetUserId,
+  canEdit,
 }: {
   user: ProfileUser;
   managerName?: string | null;
   branchName?: string | null;
   branches?: { id: string; name: string }[];
   managers?: { id: string; name: string }[];
+  targetUserId?: string;
+  canEdit?: boolean;
 }) {
   const { isAdmin, isHR, isCEO } = useUser();
-  const canEditEmployment = isAdmin || isHR || isCEO;
+  const canEditEmployment = isAdmin || isHR || isCEO || (canEdit ?? false);
+  const activeUserId = targetUserId || user.id;
 
   const base = (
     <>
-      <SelectRow label="Employment Type" field="employmentType" value={user.employmentType ?? 'Full-Time'} options={EMPLOYMENT_TYPES} targetUserId={user.id} />
-      <FieldRow label="Department" field="department" value={user.department} targetUserId={user.id} />
-      <FieldRow label="Designation" field="designation" value={user.designation} targetUserId={user.id} />
-      <FieldRow label="Base Salary" field="baseSalary" type="number" value={user.baseSalary != null ? String(user.baseSalary) : ''} placeholder="0" targetUserId={user.id} />
-      <FieldRow label="Join Date" field="joinDate" type="date" value={user.joinDate ? String(user.joinDate).slice(0, 10) : ''} targetUserId={user.id} />
+      <SelectRow label="Employment Type" field="employmentType" value={user.employmentType ?? 'Full-Time'} options={EMPLOYMENT_TYPES} targetUserId={activeUserId} canEdit={canEditEmployment} />
+      <FieldRow label="Department" field="department" value={user.department} targetUserId={activeUserId} canEdit={canEditEmployment} />
+      <FieldRow label="Designation" field="designation" value={user.designation} targetUserId={activeUserId} canEdit={canEditEmployment} />
+      <FieldRow label="Base Salary" field="baseSalary" type="number" value={user.baseSalary != null ? String(user.baseSalary) : ''} placeholder="0" targetUserId={activeUserId} canEdit={canEditEmployment} />
+      <FieldRow label="Join Date" field="joinDate" type="date" value={user.joinDate ? String(user.joinDate).slice(0, 10) : ''} targetUserId={activeUserId} canEdit={canEditEmployment} />
     </>
   );
 

@@ -43,7 +43,7 @@ function maskSalary() {
 
 import { QuickActionsSettings } from '@/components/profile/QuickActionsSettings';
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const caller = await getCaller();
   const t = await getServerT();
   if (!caller) {
@@ -56,22 +56,26 @@ export default async function ProfilePage() {
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { id: caller.id } });
+  const resolvedParams = await searchParams;
+  const targetUserId = resolvedParams?.id || caller.id;
+  const isOwnProfile = targetUserId === caller.id;
+  const isPrivileged = caller.isAdmin || caller.isCEO || caller.isHR;
+  const canEditTarget = isOwnProfile || isPrivileged;
+
+  const user = await prisma.user.findUnique({ where: { id: targetUserId } });
   if (!user) {
-    return <EmptyState title={t('Profile not found')} description={t('No user record matched your account.')} icon={<UserIcon size={24} />} />;
+    return <EmptyState title={t('Profile not found')} description={t('No user record matched the requested ID.')} icon={<UserIcon size={24} />} />;
   }
 
   const manager = user.managerId
     ? await prisma.user.findUnique({ where: { id: user.managerId }, select: { name: true } })
     : null;
 
-  // Lookups that power the new dropdowns (branch, manager). Countries come from
-  // a curated static list (see EditableSections DEFAULT_COUNTRIES) so the page
-  // never depends on the optional Country table being generated.
+  // Lookups that power dropdowns (branch, manager)
   const [branches, managers] = await Promise.all([
     prisma.branch.findMany({ select: { id: true, name: true }, orderBy: { name: 'asc' } }),
     prisma.user.findMany({
-      where: { id: { not: caller.id }, status: { not: 'Terminated' } },
+      where: { id: { not: targetUserId }, status: { not: 'Terminated' } },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),
@@ -82,18 +86,19 @@ export default async function ProfilePage() {
     ? branches.find((b) => b.id === user.branchId) ?? null
     : null;
 
+  const targetCaller = isOwnProfile ? caller : { ...caller, id: targetUserId };
+
   const [skills, documents, reviews, leaveBalance, activity] = await Promise.all([
-    getSkills(caller),
-    getDocuments(caller),
-    getMyReviews(caller),
-    getLeaveBalance(caller),
-    getActivityHeatmap(caller),
+    getSkills(targetCaller),
+    getDocuments(targetCaller),
+    getMyReviews(targetCaller),
+    getLeaveBalance(targetCaller),
+    getActivityHeatmap(targetCaller),
   ]);
 
   const isAdmin = caller.isAdmin;
   const isCEO = caller.isCEO;
-  // Salary is role-aware: visible only to admins, CEO, or if the owner is an admin.
-  const canViewSalary = isAdmin || isCEO || user.role === 'Admin';
+  const canViewSalary = isAdmin || isCEO || caller.isHR || isOwnProfile;
 
   const employmentBadge =
     user.employmentType === 'Full-Time'
@@ -107,8 +112,8 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto max-w-7xl space-y-8 px-4 py-6 sm:px-6 lg:px-8">
       <PageHeader
-        title={t('My Profile')}
-        subtitle={t('Your identity, contact details, employment info, and performance at a glance.')}
+        title={isOwnProfile ? t('My Profile') : `${user.name}'s Profile`}
+        subtitle={isOwnProfile ? t('Your identity, contact details, employment info, and performance at a glance.') : t('Comprehensive employee dossier & professional profile.')}
         icon={<UserIcon className="h-5 w-5" />}
       />
 
@@ -117,9 +122,9 @@ export default async function ProfilePage() {
         <div className="h-fit space-y-6 lg:col-span-1">
           <Card className="flex flex-col items-center overflow-hidden text-center">
             <div className="flex w-full flex-col items-center gap-4 p-6 pb-2">
-              <AvatarUpload currentUrl={user.avatarUrl} size="xxl" />
+              <AvatarUpload currentUrl={user.avatarUrl} size="xxl" targetUserId={targetUserId} />
               <div>
-                <EditableName name={user.name} />
+                <EditableName name={user.name} targetUserId={targetUserId} canEdit={canEditTarget} />
                 <p className="mt-1 text-sm font-medium text-[var(--text-muted)]">{user.designation || 'Employee'}</p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -148,34 +153,34 @@ export default async function ProfilePage() {
               <CardTitle>{/* @ts-ignore */}<T>Contact Information</T></CardTitle>
             </CardHeader>
             <CardContent>
-              <ContactSection user={user as ProfileUser} countries={countries} />
+              <ContactSection user={user as ProfileUser} countries={countries} targetUserId={targetUserId} canEdit={canEditTarget} />
             </CardContent>
           </Card>
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Card>
               <CardHeader><CardTitle>{/* @ts-ignore */}<T>Emergency Contact</T></CardTitle></CardHeader>
-              <CardContent>              <EmergencySection user={user as ProfileUser} /></CardContent>
+              <CardContent><EmergencySection user={user as ProfileUser} targetUserId={targetUserId} canEdit={canEditTarget} /></CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle>{/* @ts-ignore */}<T>Employment</T></CardTitle></CardHeader>
-              <CardContent><EmploymentSection user={user as ProfileUser} managerName={manager?.name} branchName={branch?.name ?? null} branches={branches} managers={managers} /></CardContent>
+              <CardContent><EmploymentSection user={user as ProfileUser} managerName={manager?.name} branchName={branch?.name ?? null} branches={branches} managers={managers} targetUserId={targetUserId} canEdit={canEditTarget} /></CardContent>
             </Card>
           </div>
 
           <Card>
             <CardHeader><CardTitle>{/* @ts-ignore */}<T>Social Links</T></CardTitle></CardHeader>
-              <CardContent><SocialSection user={user as ProfileUser} /></CardContent>
+              <CardContent><SocialSection user={user as ProfileUser} targetUserId={targetUserId} canEdit={canEditTarget} /></CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>{/* @ts-ignore */}<T>About</T></CardTitle></CardHeader>
-              <CardContent><BioSection user={user as ProfileUser} /></CardContent>
+              <CardContent><BioSection user={user as ProfileUser} targetUserId={targetUserId} canEdit={canEditTarget} /></CardContent>
           </Card>
 
           <Card>
             <CardHeader><CardTitle>{/* @ts-ignore */}<T>Bangladesh Identity</T></CardTitle></CardHeader>
-            <CardContent><IdentitySection user={user as ProfileUser} /></CardContent>
+            <CardContent><IdentitySection user={user as ProfileUser} targetUserId={targetUserId} canEdit={canEditTarget} /></CardContent>
           </Card>
 
           <Card>

@@ -91,11 +91,16 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     isHR,
   };
 
-  // Prefetch notifications on the server so the header badge has no client round-trip.
+  // Prefetch notifications with Role-Based Access Control (RBAC):
+  // HR Admins and CEOs view all system changes and employee updates;
+  // standard employees view only their own targeted notifications and universal broadcasts.
+  const isHRAdminOrCEO = isOwner || isCEO || isAdmin || isHR;
   let notifications: { id: string; userId: string; message: string; type: string; read: boolean; link?: string | null; createdAt: Date }[] = [];
   try {
     notifications = await prisma.notification.findMany({
-      where: { userId: dbUser.id },
+      where: isHRAdminOrCEO
+        ? {}
+        : { OR: [{ userId: dbUser.id }, { userId: 'ALL' }] },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
