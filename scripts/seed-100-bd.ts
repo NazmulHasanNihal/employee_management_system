@@ -389,7 +389,7 @@ async function main() {
   // 6. Seed attendance for last 30 days (randomized for realism)
   console.log('📊 Seeding attendance records…');
   const allUserIds = Object.values(idByEmail);
-  let attendanceCount = 0;
+  const attendanceData: any[] = [];
   for (let dayOffset = 1; dayOffset <= 30; dayOffset++) {
     const date = new Date();
     date.setDate(date.getDate() - dayOffset);
@@ -407,26 +407,22 @@ async function main() {
       clockOut.setHours(clockIn.getHours() + 8 + Math.floor(Math.random() * 2));
 
       const isLate = clockInHour >= 9 && clockInMin > 10;
+      const workedMs = clockOut.getTime() - clockIn.getTime();
+      const workedMinutes = Math.round(workedMs / 60000);
 
-      try {
-        const workedMs = clockOut.getTime() - clockIn.getTime();
-        const workedMinutes = Math.round(workedMs / 60000);
-        await prisma.attendance.create({
-          data: {
-            userId: uid,
-            date,
-            clockIn,
-            clockOut,
-            status: isLate ? 'Late' : 'Present',
-            workedMinutes,
-            lateMinutes: isLate ? (clockInHour - 9) * 60 + clockInMin : 0,
-          },
-        });
-        attendanceCount++;
-      } catch { /* skip duplicates */ }
+      attendanceData.push({
+        userId: uid,
+        date,
+        clockIn,
+        clockOut,
+        status: isLate ? 'Late' : 'Present',
+        workedMinutes,
+        lateMinutes: isLate ? (clockInHour - 9) * 60 + clockInMin : 0,
+      });
     }
   }
-  console.log(`✅ Attendance: ${attendanceCount} records created`);
+  const attendanceResult = await prisma.attendance.createMany({ data: attendanceData, skipDuplicates: true });
+  console.log(`✅ Attendance: ${attendanceResult.count} records created`);
 
   // 7. Seed some leave requests
   console.log('🏖️  Seeding leave requests…');
@@ -520,7 +516,334 @@ async function main() {
   }
   console.log(`✅ Calendar events: ${eventCount} created`);
 
-  console.log('\n🎉 Seed complete!');
+  // 10. Seed Assets
+  console.log('💻 Seeding Assets…');
+  const assetCategories = ['Laptop', 'Desktop', 'Smartphone', 'Monitor', 'Peripheral'];
+  const brands = ['Apple', 'Dell', 'Lenovo', 'HP', 'Samsung', 'LG', 'Logitech'];
+  let assetCount = 0;
+  for (let i = 0; i < allUserIds.length; i++) {
+    const uid = allUserIds[i];
+    const cat = pick(assetCategories);
+    const brand = pick(brands);
+    const tag = `OPS-AST-2026-${(i + 1).toString().padStart(3, '0')}`;
+    const name = cat === 'Laptop' ? `${brand} ThinkPad / MacBook` : `${brand} ${cat}`;
+    try {
+      await prisma.asset.create({
+        data: {
+          name,
+          assetTag: tag,
+          serialNumber: `SN-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+          category: cat,
+          brand,
+          condition: pick(['New', 'Excellent', 'Good']),
+          location: pick(['Dhaka HQ', 'Chittagong Office', 'Gazipur Plant']),
+          status: 'Active',
+          purchasePrice: Math.floor(Math.random() * 120000) + 30000,
+          purchaseDate: new Date(2025, 0, 15),
+          assignedDate: new Date(2025, 1, 1),
+          userId: uid,
+        },
+      });
+      assetCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Assets: ${assetCount} created`);
+
+  // 11. Seed Expenses
+  console.log('💸 Seeding Expenses…');
+  const expenseCategories = ['Travel', 'Conveyance', 'Client Entertainment', 'Office Supplies', 'Internet Stipend', 'Training & Courses'];
+  const expenseStatuses = ['APPROVED', 'APPROVED', 'PENDING', 'REJECTED'];
+  let expenseCount = 0;
+  for (const uid of allUserIds.slice(0, 40)) {
+    for (let k = 0; k < 2; k++) {
+      try {
+        await prisma.expense.create({
+          data: {
+            userId: uid,
+            category: pick(expenseCategories),
+            amount: Math.floor(Math.random() * 8000) + 500,
+            description: pick(['Uber/CNG ride to client meeting', 'Monthly internet bill reimbursement', 'Client lunch meeting at Gulshan', 'Office desk organizer & notebooks', 'Technical course certification fee']),
+            status: pick(expenseStatuses),
+            isMileage: Math.random() > 0.7,
+            createdAt: new Date(2026, 6, Math.floor(Math.random() * 28) + 1),
+          },
+        });
+        expenseCount++;
+      } catch { /* skip */ }
+    }
+  }
+  console.log(`✅ Expenses: ${expenseCount} created`);
+
+  // 12. Seed Penalties
+  console.log('⚠️  Seeding Penalties…');
+  let penaltyCount = 0;
+  for (const uid of allUserIds.slice(10, 25)) {
+    try {
+      await prisma.penalty.create({
+        data: {
+          userId: uid,
+          amount: pick([500, 1000, 1500]),
+          reason: pick(['Late attendance (>30 mins without notice)', 'Unannounced absence', 'Missing daily standup thrice']),
+          status: pick(['UNPAID', 'PAID']),
+          dueDate: new Date(2026, 7, 30),
+        },
+      });
+      penaltyCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Penalties: ${penaltyCount} created`);
+
+  // 13. Seed Payroll, Payments & PaymentRecords
+  console.log('💰 Seeding Payrolls & Payment Records…');
+  let payrollCount = 0;
+  let paymentCount = 0;
+  let paymentRecordCount = 0;
+
+  const allUsersWithSalary = await prisma.user.findMany({
+    where: { status: 'active' },
+    select: { id: true, name: true, baseSalary: true, email: true }
+  });
+
+  for (let i = 0; i < allUsersWithSalary.length; i++) {
+    const u = allUsersWithSalary[i];
+    const base = u.baseSalary || 50000;
+    const net = Math.round(base * 1.25); // approximate net pay
+
+    try {
+      const payroll = await prisma.payroll.create({
+        data: {
+          userId: u.id,
+          month: 'July',
+          year: 2026,
+          status: 'PROCESSED',
+          totalAmount: net,
+          currency: 'BDT',
+          earnings: Math.round(base * 1.4),
+          deductions: Math.round(base * 0.15),
+          earningsBreakdown: [
+            { head: 'Basic Salary', amount: base },
+            { head: 'House Rent Allowance', amount: Math.round(base * 0.4) },
+            { head: 'Medical Allowance', amount: 1500 },
+            { head: 'Conveyance Allowance', amount: 1000 },
+          ],
+          deductionsBreakdown: [
+            { head: 'Provident Fund', amount: Math.round(base * 0.1) },
+            { head: 'Tax Deducted at Source', amount: Math.round(base * 0.05) },
+          ]
+        }
+      });
+      payrollCount++;
+
+      await prisma.payment.create({
+        data: {
+          payrollId: payroll.id,
+          userId: u.id,
+          month: 7,
+          year: 2026,
+          amount: net,
+          method: pick(['BANK', 'BANK', 'BKASH', 'ROCKET']),
+          reference: `TRX-BD-2026-${(i + 1001).toString()}`,
+          status: 'PAID',
+          details: `July 2026 Monthly Salary Disbursement for ${u.name}`,
+        }
+      });
+      paymentCount++;
+
+      await prisma.paymentRecord.create({
+        data: {
+          trxId: `TXN-BD-${(i + 5001).toString()}`,
+          userId: u.id,
+          disbursedById: owner.id,
+          paymentType: 'SALARY',
+          paymentMethod: i % 3 === 0 ? 'BKASH' : 'BANK_TRANSFER',
+          batchType: 'BULK_BATCH',
+          batchRef: 'BATCH-JULY-2026-01',
+          bankName: i % 3 === 0 ? 'bKash Merchant' : pick(['Sonali Bank', 'Dutch-Bangla Bank', 'BRAC Bank', 'City Bank']),
+          accountNumber: `2019${(i + 10000).toString()}`,
+          branchName: 'Gulshan Branch, Dhaka',
+          baseAmount: base,
+          bonuses: 0,
+          adjustments: 0,
+          deductions: Math.round(base * 0.15),
+          netPaidAmount: net,
+          remarks: 'July 2026 Salary Processed via BEFTN/bKash Direct',
+          status: 'DISBURSED',
+        }
+      });
+      paymentRecordCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Payrolls (${payrollCount}), Payments (${paymentCount}), PaymentRecords (${paymentRecordCount}) created`);
+
+  // 14. Seed Helpdesk Tickets & Replies
+  console.log('🎫 Seeding Helpdesk Tickets & Replies…');
+  const ticketSubjects = [
+    'Laptop screen flickering issue',
+    'VPN access request for remote work',
+    'Payroll payslip discrepancy for July',
+    'Monitor dual-display setup request',
+    'ID card replacement request',
+    'Software license key for JetBrains/Figma',
+  ];
+  let ticketCount = 0;
+  for (let i = 0; i < 20; i++) {
+    const uid = pick(allUserIds);
+    try {
+      const ticket = await prisma.ticket.create({
+        data: {
+          userId: uid,
+          subject: pick(ticketSubjects),
+          priority: pick(['Low', 'Medium', 'High', 'Critical']),
+          status: pick(['Open', 'In Progress', 'Resolved']),
+          createdAt: new Date(2026, 6, Math.floor(Math.random() * 20) + 1),
+        }
+      });
+      ticketCount++;
+
+      // Add a reply from IT / HR
+      await prisma.ticketReply.create({
+        data: {
+          ticketId: ticket.id,
+          authorId: owner.id,
+          content: 'Thank you for reaching out. Our IT support team is looking into this and will update you shortly.',
+        }
+      });
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Helpdesk Tickets: ${ticketCount} created with replies`);
+
+  // 15. Seed Performance Reviews & Scores
+  console.log('⭐ Seeding Performance Reviews…');
+  const reviewRatings = ['Exceeds Expectations', 'Meets Expectations', 'Meets Expectations', 'Needs Improvement'];
+  const dimensions = ['Communication', 'Leadership', 'Execution', 'Teamwork', 'Technical Competence'];
+  let reviewCount = 0;
+  for (const uid of allUserIds.slice(0, 30)) {
+    const rating = pick(reviewRatings);
+    try {
+      const review = await prisma.review.create({
+        data: {
+          userId: uid,
+          reviewerId: owner.id,
+          reviewPeriod: 'Annual Review 2025-2026',
+          rating,
+          comments: rating === 'Exceeds Expectations'
+            ? 'Outstanding performance across all assigned deliverables. Showed great leadership and ownership.'
+            : 'Consistently meets project timelines and demonstrates strong collaboration with cross-functional teams.',
+        }
+      });
+      reviewCount++;
+
+      for (const dim of dimensions) {
+        await prisma.reviewScore.create({
+          data: {
+            reviewId: review.id,
+            dimension: dim,
+            rating: rating === 'Exceeds Expectations' ? (4 + Math.random() * 1) : (3 + Math.random() * 1.5),
+            reviewerId: owner.id,
+            userId: uid,
+          }
+        });
+      }
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Reviews: ${reviewCount} created with dimension scores`);
+
+  // 16. Seed Festival Bonuses
+  console.log('🌙 Seeding Festival Bonuses…');
+  let bonusCount = 0;
+  for (const uid of allUserIds.slice(0, 40)) {
+    const u = USERS.find(x => idByEmail[x.email] === uid);
+    const base = u ? u.baseSalary : 50000;
+    try {
+      await prisma.festivalBonus.create({
+        data: {
+          userId: uid,
+          year: 2026,
+          occasion: 'Eid-ul-Fitr',
+          occasionBn: 'ঈদুল ফিতর',
+          amount: base, // 100% of basic salary
+          baseSalarySnapshot: base,
+          status: 'PAID',
+        }
+      });
+      bonusCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Festival Bonuses: ${bonusCount} created`);
+
+  // 17. Seed Compensation Adjustments
+  console.log('📈 Seeding Compensation Adjustments…');
+  let compAdjCount = 0;
+  for (const uid of allUserIds.slice(0, 15)) {
+    const u = USERS.find(x => idByEmail[x.email] === uid);
+    const oldSal = u ? u.baseSalary : 60000;
+    const newSal = Math.round(oldSal * 1.15); // 15% increment
+    try {
+      await prisma.compensationAdjustment.create({
+        data: {
+          userId: uid,
+          type: 'INCREMENT',
+          oldSalary: oldSal,
+          newSalary: newSal,
+          delta: newSal - oldSal,
+          percentage: 15.0,
+          reason: 'Annual Performance Appraisal 2026',
+          effectiveDate: new Date(2026, 6, 1),
+          status: 'APPROVED',
+          requestedById: owner.id,
+          approvedById: owner.id,
+        }
+      });
+      compAdjCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Compensation Adjustments: ${compAdjCount} created`);
+
+  // 18. Seed Whistleblower Reports
+  console.log('🛡️  Seeding Whistleblower Reports…');
+  let wbCount = 0;
+  for (let i = 0; i < 3; i++) {
+    try {
+      await prisma.whistleblowerReport.create({
+        data: {
+          report: pick([
+            'Noticeable mismatch in factory overtime log verification at Gazipur Plant for shift B.',
+            'Discrepancy observed in vendor procurement pricing for office laptops.',
+            'Request for review regarding fair night-shift differential distribution.',
+          ]),
+          status: pick(['Received', 'Investigating', 'Resolved']),
+          assignedTo: 'Chairperson — Board nominee',
+          resolution: 'Ethics committee reviewed the logs and confirmed operational compliance.',
+        }
+      });
+      wbCount++;
+    } catch { /* skip */ }
+  }
+  console.log(`✅ Whistleblower Reports: ${wbCount} created`);
+
+  // 19. Seed Benefits & Benefit Enrollments
+  console.log('🏥 Seeding Benefit Enrollments…');
+  const benefitsList = await prisma.benefit.findMany();
+  let enrollmentCount = 0;
+  if (benefitsList.length > 0) {
+    for (const uid of allUserIds.slice(0, 50)) {
+      for (const b of benefitsList) {
+        try {
+          await prisma.benefitEnrollment.create({
+            data: {
+              userId: uid,
+              benefitId: b.id,
+              status: 'ENROLLED',
+            }
+          });
+          enrollmentCount++;
+        } catch { /* skip */ }
+      }
+    }
+  }
+  console.log(`✅ Benefit Enrollments: ${enrollmentCount} created`);
+
+  console.log('\n🎉 Comprehensive seed complete!');
   console.log(`   Total employees: ${created + 1} (including CEO)`);
   console.log(`   Demo login password: ${DEMO_PASSWORD}`);
   console.log('   Hierarchy: CEO → C-Suite → Directors → Managers → Team Leads → Staff');
