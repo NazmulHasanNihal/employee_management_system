@@ -197,6 +197,13 @@ export async function provisionEmployeeAccount(data: ProvisionInput) {
   }
 }
 
+export async function fetchEmployee360(targetUserId: string) {
+  const caller = await getCaller();
+  if (!caller) throw new Error('Unauthorized');
+  const { getEmployee360Intelligence } = await import('@/server/queries');
+  return await getEmployee360Intelligence(caller, targetUserId);
+}
+
 // Forward declaration satisfied at the bottom of this module to avoid a circular
 // import at module-eval time. `db.ts` exports the automation runner.
 async function runAutomationRules(

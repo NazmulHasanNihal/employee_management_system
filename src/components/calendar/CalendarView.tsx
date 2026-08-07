@@ -323,7 +323,7 @@ export default function CalendarView({ events, teamMembers, departments }: { eve
                             <div className="mt-2 flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                               {event.status !== 'Done' && <button onClick={() => updateEventMutation.mutate({ id: event.id, status: 'Done' })} className="text-[8px] font-semibold uppercase text-[var(--emerald)] hover:bg-[var(--emerald-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>✓ Done</T></button>}
                               {event.status === 'Pending' && <button onClick={() => updateEventMutation.mutate({ id: event.id, status: 'InProgress' })} className="text-[8px] font-semibold uppercase text-[var(--brand)] hover:bg-[var(--brand-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>▶ Start</T></button>}
-                              <button onClick={() => { if (confirm('Delete this event?')) deleteEventMutation.mutate({ id: event.id }); }} className="text-[8px] font-semibold uppercase text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>✕ Delete</T></button>
+                              <button onClick={() => deleteEventMutation.mutate({ id: event.id })} className="text-[8px] font-semibold uppercase text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded px-2 py-1">{/* @ts-ignore */}<T>✕ Delete</T></button>
                             </div>
                           )}
                           {event.derived !== 'event' && (

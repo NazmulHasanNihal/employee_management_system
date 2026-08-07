@@ -1994,9 +1994,114 @@ export function tenantUserWhere(caller?: Caller | null): Record<string, unknown>
 // CONVENIENCE WRAPPERS — resolve the caller themselves (for route handlers / SCs)
 // ───────────────────────────────────────────────────────────────────────────
 
-export const q = {
+export async function getEmployee360Intelligence(caller: Caller | null, targetUserId: string) {
+  if (!caller) throw new Error('Unauthorized');
+  const isPrivileged = caller.isAdmin || caller.isCEO || caller.isHR;
+  if (!isPrivileged) {
+    throw new Error('Forbidden: Executive 360 Intelligence is restricted to CEO, Admin, and HR roles.');
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    include: {
+      manager: { select: { id: true, name: true, role: true, designation: true } },
+      branch: { select: { id: true, name: true } },
+      assets: true,
+      documents: true,
+    },
+  });
+
+  if (!user) throw new Error('Employee not found');
+
+  const [attendance, approvedLeaves, reviews, compAdjustments, auditEvents] = await Promise.all([
+    prisma.attendance.findMany({
+      where: { userId: targetUserId },
+      orderBy: { date: 'desc' },
+      take: 60,
+    }),
+    prisma.leaveRequest.findMany({
+      where: { userId: targetUserId, status: 'Approved' },
+      select: { type: true, days: true },
+    }),
+    prisma.review.findMany({
+      where: { userId: targetUserId },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    }),
+    prisma.compensationAdjustment.findMany({
+      where: { userId: targetUserId },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.event.findMany({
+      where: { actorId: targetUserId },
+      orderBy: { timestamp: 'desc' },
+      take: 20,
+    }),
+  ]);
+
+  const usedByCategory: Record<string, number> = {};
+  for (const r of approvedLeaves) {
+    usedByCategory[r.type] = (usedByCategory[r.type] || 0) + (r.days || 0);
+  }
+  const leaveBal = computeBdLeaveBalance({
+    createdAt: user.createdAt,
+    gender: user.gender,
+    usedByCategory,
+  });
+
+  const presentCount = attendance.filter((a: { status: string }) => a.status === 'Present' || a.status === 'Late').length;
+  const totalDays = attendance.length || 1;
+  const attendanceRate = Math.round((presentCount / totalDays) * 100);
+
+  const avgPerformanceRating = reviews.length > 0
+    ? Math.round((reviews.reduce((acc: number, r: { rating?: string | null }) => acc + (Number(r.rating) || 0), 0) / reviews.length) * 10) / 10
+    : null;
+
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      designation: user.designation,
+      department: user.department,
+      status: user.status,
+      employmentType: user.employmentType,
+      joinDate: user.joinDate,
+      baseSalary: user.baseSalary,
+      phone: user.phone,
+      address: user.address,
+      avatarUrl: user.avatarUrl,
+      nidMasked: user.nidMasked,
+      bloodGroup: user.bloodGroup,
+      religion: user.religion,
+      preferredLanguage: user.preferredLanguage,
+      manager: user.manager,
+      branch: user.branch,
+    },
+    attendance: {
+      rate: attendanceRate,
+      presentDays: presentCount,
+      totalTrackedDays: attendance.length,
+      recentLogs: attendance.slice(0, 10),
+    },
+    leaveBalance: leaveBal,
+    performance: {
+      avgRating: avgPerformanceRating,
+      totalReviews: reviews.length,
+      recentReviews: reviews,
+    },
+    compensationHistory: compAdjustments,
+    assets: user.assets,
+    documentsCount: user.documents.length,
+    recentAuditLogs: auditEvents,
+  };
+}
+
+export const queries = {
   dashboard: () => getCaller().then((c) => getDashboardStats(c)),
   myOverview: () => getCaller().then((c) => getDashboardMyOverview(c)),
+  me: () => getCaller().then((c) => (c ? prisma.user.findUnique({ where: { id: c.id } }) : null)),
   employees: getEmployees,
   orgTree: getOrgTree,
   myTeam: () => getCaller().then((c) => getMyTeam(c)),
@@ -2053,4 +2158,7 @@ export const q = {
   branches: getBranches,
   'pulse.getStatus': () => getCaller().then((c) => getPulseStatus(c)),
   'pulse.getAnalytics': () => getCaller().then((c) => getPulseAnalytics(c)),
+  employee360: (targetUserId: string) => getCaller().then((c) => getEmployee360Intelligence(c, targetUserId)),
 };
+
+export const q = queries;

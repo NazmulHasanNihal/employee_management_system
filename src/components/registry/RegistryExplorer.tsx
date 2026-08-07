@@ -11,10 +11,12 @@ import { Avatar } from '@/components/ui/avatar';
 import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/EmptyState';
 import { StatusPill } from '@/components/ui/status-pill';
 import { formatDate, formatCurrency } from '@/lib/format';
 import { T } from "@/components/Translate";
+import { Executive360Hub } from '@/components/registry/Executive360Hub';
 
 const PERMISSIONS_LIST = [
   { id: 'MANAGE_ASSETS', label: 'Manage IT Assets', desc: 'Hardware inventory & software licenses' },
@@ -115,31 +117,38 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
     },
   });
 
-  const handleQuickSalaryUpdate = (emp: Employee) => {
-    const inputVal = window.prompt(
-      `Enter new monthly base salary (BDT) for ${emp.name}:\nCurrent Base Salary: ${emp.baseSalary ? emp.baseSalary.toLocaleString() : '0'} BDT`,
-      String(emp.baseSalary || '')
-    );
-    if (!inputVal) return;
-    const newSalary = Number(inputVal);
-    if (isNaN(newSalary) || newSalary < 0) {
-      toast.error('Invalid Amount', 'Please enter a valid non-negative number.');
+  const [inlineSalaryEmpId, setInlineSalaryEmpId] = useState<string | null>(null);
+  const [newSalaryVal, setNewSalaryVal] = useState('');
+  const [salaryReasonVal, setSalaryReasonVal] = useState('Direct Admin/HR Update');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const submitInlineSalaryUpdate = (empId: string) => {
+    const sal = Number(newSalaryVal);
+    if (isNaN(sal) || sal < 0) {
+      toast.error('Invalid Amount', 'Please enter a valid non-negative salary amount.');
       return;
     }
-    const reason = window.prompt('Reason for salary adjustment:', 'Direct Admin/HR Update') || 'Direct Admin/HR Update';
-    updateSalaryMutation.mutate({ userId: emp.id, baseSalary: newSalary, reason });
+    updateSalaryMutation.mutate(
+      { userId: empId, baseSalary: sal, reason: salaryReasonVal || 'Direct Admin/HR Update' },
+      {
+        onSuccess: () => {
+          setInlineSalaryEmpId(null);
+        },
+      }
+    );
   };
 
   const list = liveEmployees;
 
-  const handleDelete = async (targetId: string) => {
-    if (!confirm('Are you sure you want to completely terminate this personnel record?')) return;
+  const confirmTermination = async (targetId: string) => {
     setDeleteStatus({ loading: true, error: null });
     try {
       await deleteMutation.mutateAsync({ id: targetId });
+      setConfirmDeleteId(null);
+      toast.success('Personnel Terminated', 'Employee record updated successfully.');
     } catch (err: any) {
       setDeleteStatus({ loading: false, error: err.message });
-      toast.error('Deletion Failed', err.message);
+      toast.error('Termination Failed', err.message);
     }
   };
 
@@ -239,36 +248,70 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
     return status;
   };
 
+  const [activeTab, setActiveTab] = useState<'DIRECTORY' | 'INTEL_360'>('DIRECTORY');
+  const isExecutive = isAdmin || isOwner || user?.role === 'HR Manager' || user?.role === 'CEO';
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
-          <input
-            type="text" placeholder="Search Personnel..."
-            value={filter} onChange={(e) => setFilter(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-3 pl-10 pr-4 text-sm"
-          />
+      {isExecutive && (
+        <div className="flex border-b border-[var(--border-hairline)] mb-6 gap-6">
+          <button
+            onClick={() => setActiveTab('DIRECTORY')}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+              activeTab === 'DIRECTORY'
+                ? 'border-[var(--brand)] text-[var(--brand)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            <Users className="h-4 w-4" />
+            <span>{/* @ts-ignore */}<T>Personnel Directory</T></span>
+          </button>
+          <button
+            onClick={() => setActiveTab('INTEL_360')}
+            className={`pb-3 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
+              activeTab === 'INTEL_360'
+                ? 'border-[var(--brand)] text-[var(--brand)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            <Shield className="h-4 w-4 text-[var(--brand)]" />
+            <span>{/* @ts-ignore */}<T>Executive 360 Intelligence</T></span>
+            <Badge variant="brand" className="text-[9px] px-1.5 py-0.2">CEO / Admin / HR</Badge>
+          </button>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="md" onClick={handleExportCsv}>
-            <Download className="h-4 w-4" /> {/* @ts-ignore */}<T>Export</T></Button>
-          {isAdmin && (
-            <Button variant="primary" size="md" onClick={() => setIsProvisionModalOpen(true)} className="rounded-xl flex items-center gap-2 font-semibold">
-              <UserPlus className="h-4 w-4" /> {/* @ts-ignore */}<T>+ Add New Member</T></Button>
-          )}
+      )}
 
-        </div>
-      </div>
-
-      {filteredList.length === 0 ? (
-        <EmptyState
-          title="No personnel found"
-          description={filter ? 'Try adjusting your search.' : 'The registry is empty.'}
-          icon={<Users className="h-6 w-6" />}
-        />
+      {activeTab === 'INTEL_360' && isExecutive ? (
+        <Executive360Hub employees={liveEmployees} />
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+              <input
+                type="text" placeholder="Search Personnel..."
+                value={filter} onChange={(e) => setFilter(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" size="md" onClick={handleExportCsv}>
+                <Download className="h-4 w-4" /> {/* @ts-ignore */}<T>Export</T></Button>
+              {isAdmin && (
+                <Button variant="primary" size="md" onClick={() => setIsProvisionModalOpen(true)} className="rounded-xl flex items-center gap-2 font-semibold">
+                  <UserPlus className="h-4 w-4" /> {/* @ts-ignore */}<T>+ Add New Member</T></Button>
+              )}
+            </div>
+          </div>
+
+          {filteredList.length === 0 ? (
+            <EmptyState
+              title="No personnel found"
+              description={filter ? 'Try adjusting your search.' : 'The registry is empty.'}
+              icon={<Users className="h-6 w-6" />}
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredList.map((emp) => {
             const isLiveOnline = Boolean(emp.isOnline) || (Boolean(emp.lastSeen) && (new Date().getTime() - new Date(emp.lastSeen!).getTime() < 5 * 60 * 1000));
             return (
@@ -339,12 +382,25 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                     <Settings className="mr-1 inline h-3 w-3" /> {/* @ts-ignore */}<T>Access</T></button>
                   {canModifyUser({ role: user.role, designation: user.designation ?? undefined, isOwner }, { role: emp.role, designation: emp.designation ?? undefined, isOwner: emp.isOwner }) && (
                     <button
-                      onClick={() => handleDelete(emp.id)}
+                      onClick={() => setConfirmDeleteId(confirmDeleteId === emp.id ? null : emp.id)}
                       disabled={deleteStatus.loading}
                       className="flex-1 rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] py-2.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--rose)] transition-colors hover:bg-[var(--rose)]/20 disabled:opacity-50"
                     >
                       <Trash2 className="mr-1 inline h-3 w-3" /> {/* @ts-ignore */}<T>Terminate</T></button>
                   )}
+                </div>
+              )}
+              {confirmDeleteId === emp.id && (
+                <div className="mt-3 rounded-2xl border border-[var(--rose)]/30 bg-[var(--rose)]/10 p-3 text-xs animate-in fade-in flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+                  <span className="font-semibold text-[var(--rose)]">Terminate record?</span>
+                  <div className="flex gap-2">
+                    <Button size="xs" variant="destructive" onClick={() => confirmTermination(emp.id)} disabled={deleteStatus.loading} className="rounded-lg">
+                      Confirm
+                    </Button>
+                    <Button size="xs" variant="outline" onClick={() => setConfirmDeleteId(null)} className="rounded-lg">
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
@@ -477,17 +533,81 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                             {formatCurrency(selectedEmployee.baseSalary || 0, 'BDT', 'en')}
                           </p>
                         </div>
-                        {(isAdmin || isOwner || user?.role === 'HR Manager') && (
+                        {(isAdmin || isOwner || user?.role === 'HR Manager' || user?.role === 'CEO') && (
                           <Button
                             size="xs"
-                            variant="outline"
-                            onClick={() => handleQuickSalaryUpdate(selectedEmployee)}
+                            variant={inlineSalaryEmpId === selectedEmployee.id ? 'default' : 'outline'}
+                            onClick={() => {
+                              if (inlineSalaryEmpId === selectedEmployee.id) {
+                                setInlineSalaryEmpId(null);
+                              } else {
+                                setInlineSalaryEmpId(selectedEmployee.id);
+                                setNewSalaryVal(String(selectedEmployee.baseSalary || ''));
+                                setSalaryReasonVal('Direct Admin/HR Update');
+                              }
+                            }}
                             className="rounded-lg text-xs"
                           >
-                            Update Base Salary
+                            {inlineSalaryEmpId === selectedEmployee.id ? 'Cancel' : 'Update Base Salary'}
                           </Button>
                         )}
                       </div>
+
+                      {/* ── IN-PAGE INLINE BASE SALARY UPDATE FORM ── */}
+                      {inlineSalaryEmpId === selectedEmployee.id && (
+                        <div className="mt-3 rounded-2xl border border-[var(--brand)]/30 bg-[var(--brand)]/5 p-3 space-y-2 animate-in fade-in" onClick={(e) => e.stopPropagation()}>
+                          <p className="text-[10px] font-bold text-[var(--brand)] uppercase tracking-wider">
+                            Update Monthly Base Salary (In-Page)
+                          </p>
+                          <div className="space-y-2">
+                            <div>
+                              <label className="block text-[10px] uppercase font-semibold text-[var(--text-muted)]">
+                                New Base Salary (BDT)
+                              </label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                value={newSalaryVal}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSalaryVal(e.target.value)}
+                                className="h-8 text-sm rounded-xl"
+                                placeholder="e.g. 30000"
+                                autoFocus
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] uppercase font-semibold text-[var(--text-muted)]">
+                                Adjustment Reason
+                              </label>
+                              <Input
+                                type="text"
+                                value={salaryReasonVal}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSalaryReasonVal(e.target.value)}
+                                className="h-8 text-sm rounded-xl"
+                                placeholder="Reason for salary change..."
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2 pt-1">
+                              <Button
+                                size="xs"
+                                variant="outline"
+                                onClick={() => setInlineSalaryEmpId(null)}
+                                className="rounded-lg"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="xs"
+                                variant="primary"
+                                onClick={() => submitInlineSalaryUpdate(selectedEmployee.id)}
+                                disabled={updateSalaryMutation.isPending}
+                                className="rounded-lg"
+                              >
+                                {updateSalaryMutation.isPending ? 'Saving...' : 'Save Base Salary'}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -828,6 +948,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             </form>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );

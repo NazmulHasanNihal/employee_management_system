@@ -79,9 +79,7 @@ export default function AnnouncementsFeed({ news, departments }: { news: NewsIte
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this news? This action cannot be undone.')) {
-      deleteMutation.mutate({ id });
-    }
+    deleteMutation.mutate({ id });
   };
 
   const filtered = liveNews.filter((ann) => {

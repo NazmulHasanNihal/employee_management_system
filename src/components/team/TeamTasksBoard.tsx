@@ -227,7 +227,7 @@ export default function TeamTasksBoard({
                     <p className="min-w-0 break-words text-sm font-semibold text-[var(--text-main)]">{task.title}</p>
                     <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                       {isManager && (
-                        <button onClick={() => { if (confirm('Delete this task?')) deleteMutation.mutate({ id: task.id }); }} className="p-1 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded">
+                        <button onClick={() => deleteMutation.mutate({ id: task.id })} title="Delete task" className="p-1 text-[var(--rose)] hover:bg-[var(--rose-soft)] rounded">
                           <Trash2 className="h-3 w-3" />
                         </button>
                       )}

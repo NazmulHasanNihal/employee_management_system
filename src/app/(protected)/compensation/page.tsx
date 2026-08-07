@@ -36,6 +36,9 @@ export default async function CompensationPage() {
     .filter((a: { status: string }) => a?.status === 'IMPLEMENTED')
     .reduce((sum: number, a: { delta?: number }) => sum + (Number(a?.delta) || 0), 0);
 
+  // Edit options (new adjustment, bulk adjustment, edit/approve/reject) are restricted ONLY to Admin, HR, and CEO
+  const canEditCompensation = isAdmin || isCEO || isHR;
+
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
       <PageHeader
@@ -85,14 +88,7 @@ export default async function CompensationPage() {
         </Card>
       </div>
 
-      {privileged ? (
-        <CompensationAdjustments adjustments={adjustments} isAdmin={isAdmin || isCEO} canApprove={privileged} />
-      ) : (
-        <EmptyState
-          title={t('Access Restricted')}
-          description={t('Compensation management is available to HR, Admin, and CEO roles only.')}
-        />
-      )}
+      <CompensationAdjustments adjustments={adjustments} isAdmin={isAdmin || isCEO} canApprove={canEditCompensation} />
     </div>
   );
 }
