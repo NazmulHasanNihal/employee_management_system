@@ -98,9 +98,10 @@ export default async function ProtectedLayout({ children }: { children: React.Re
   let notifications: { id: string; userId: string; message: string; type: string; read: boolean; link?: string | null; createdAt: Date }[] = [];
   try {
     notifications = await prisma.notification.findMany({
-      where: isHRAdminOrCEO
-        ? {}
-        : { OR: [{ userId: dbUser.id }, { userId: 'ALL' }] },
+      where: {
+        read: false,
+        OR: [{ userId: dbUser.id }, { userId: 'ALL' }]
+      },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });

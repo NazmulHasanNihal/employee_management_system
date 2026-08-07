@@ -153,12 +153,12 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
 
   const markRead = (id: string) => {
     markReadMutation.mutate({ id });
-    setNotifList((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    setNotifList((prev) => prev.filter((n) => n.id !== id));
   };
 
   const markAllRead = () => {
     markAllReadMutation.mutate({});
-    setNotifList((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifList([]);
   };
 
   const handleLogout = async () => {
