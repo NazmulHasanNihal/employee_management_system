@@ -278,9 +278,9 @@ export default async function DashboardPage() {
               {stats.upcomingEvents.length === 0 ? (
                 <EmptyState title="No upcoming events" description="Calendar events will appear here." />
               ) : (
-                <ul className="space-y-3">
+                <ul className="space-y-2 max-h-[280px] overflow-y-auto custom-scrollbar pr-1">
                   {stats.upcomingEvents.map((ev, i) => (
-                    <li key={i} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3 transition-colors hover:bg-[var(--bg-hover)]">
+                    <li key={i} className="flex items-center gap-3 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-2 transition-colors hover:bg-[var(--bg-hover)]">
                       <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-[var(--brand-soft)] text-[var(--brand-strong)]">
                         <span className="text-[10px] font-semibold uppercase">
                           {new Date(ev.date).toLocaleDateString('en', { month: 'short' })}
@@ -307,9 +307,9 @@ export default async function DashboardPage() {
               {stats.recentNews.length === 0 ? (
                 <EmptyState title="No news yet" description="Company announcements will show up here." />
               ) : (
-                <ul className="space-y-3">
+                <ul className="space-y-2 max-h-[280px] overflow-y-auto custom-scrollbar pr-1">
                   {stats.recentNews.map((n, i) => (
-                    <li key={i} className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3 transition-colors hover:bg-[var(--bg-hover)]">
+                    <li key={i} className="rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-2 transition-colors hover:bg-[var(--bg-hover)]">
                       <div className="flex items-center justify-between gap-2">
                         <p className="truncate text-sm font-medium text-[var(--text-main)]">{n.title}</p>
                         <Badge variant={n.priority === 'High' || n.priority === 'Emergency' ? 'rose' : 'secondary'}>
@@ -362,9 +362,9 @@ export default async function DashboardPage() {
                   {myOverview.myRecentPayrolls.length > 0 && (
                     <div>
                       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Recent Payrolls</T></p>
-                      <ul className="space-y-2">
+                      <ul className="space-y-1.5 max-h-[140px] overflow-y-auto custom-scrollbar pr-1">
                         {myOverview.myRecentPayrolls.map((p, i) => (
-                          <li key={i} className="flex items-center justify-between text-sm">
+                          <li key={i} className="flex items-center justify-between text-sm py-1">
                             <span className="text-[var(--text-main)]">{p.month} {p.year}</span>
                             <span className="flex items-center gap-2">
                               <span className="text-[var(--text-muted)]">{currency(p.totalAmount)}</span>
