@@ -47,9 +47,9 @@ export default function LeaveExpenseTrend({ leave, expense }: Props) {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Leave Requests</T></p>
-            <div className="h-48 w-full min-h-[180px]">
+            <div style={{ width: '100%', height: 200, minHeight: 200 }}>
               {mounted ? (
-                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={160}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={leaveData} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
                     <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />
@@ -69,9 +69,9 @@ export default function LeaveExpenseTrend({ leave, expense }: Props) {
           </div>
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">{/* @ts-ignore */}<T>Expenses</T></p>
-            <div className="h-48 w-full min-h-[180px]">
+            <div style={{ width: '100%', height: 200, minHeight: 200 }}>
               {mounted ? (
-                <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={160}>
+                <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={expenseData} margin={{ top: 4, right: 8, left: 4, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
                     <XAxis dataKey="period" tickLine={false} axisLine={false} tick={axisTick} />

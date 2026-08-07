@@ -40,9 +40,9 @@ export default function HeadcountTrend({ data }: { data: { month: string; headco
         <CardTitle>{/* @ts-ignore */}<T>Headcount — Last 12 Months</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full min-h-[220px]">
+        <div style={{ width: '100%', height: 240, minHeight: 240 }}>
           {mounted ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+            <ResponsiveContainer width="100%" height={240}>
               <LineChart data={chartData} margin={{ top: 8, right: 12, left: 4, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-hairline)" vertical={false} />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tick={axisTick} interval="preserveStartEnd" />

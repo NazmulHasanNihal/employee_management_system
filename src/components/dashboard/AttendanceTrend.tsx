@@ -44,9 +44,9 @@ export default function AttendanceTrend({ data }: { data: TrendPoint[] }) {
         <CardTitle>{/* @ts-ignore */}<T>Attendance Trend (7 days)</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-56 sm:h-64 w-full min-h-[220px]">
+        <div style={{ width: '100%', height: 240, minHeight: 240 }}>
           {mounted ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+            <ResponsiveContainer width="100%" height={240}>
               <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
                 <defs>
                   <linearGradient id="attendanceFill" x1="0" y1="0" x2="0" y2="1">

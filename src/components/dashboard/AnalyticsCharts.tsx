@@ -46,9 +46,9 @@ function CardShell({ title, children }: { title: string; children: React.ReactNo
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-56 sm:h-64 w-full min-h-[220px]">
+        <div style={{ width: '100%', height: 240, minHeight: 240 }}>
           {mounted ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+            <ResponsiveContainer width="100%" height={240}>
               {children as React.ReactElement}
             </ResponsiveContainer>
           ) : (

@@ -41,9 +41,9 @@ export default function AttendanceMixDonut({ data }: { data: { status: string; c
         <CardTitle>{/* @ts-ignore */}<T>Attendance Mix (7d)</T></CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-64 w-full min-h-[220px]">
+        <div style={{ width: '100%', height: 240, minHeight: 240 }}>
           {mounted ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={100} minHeight={200}>
+            <ResponsiveContainer width="100%" height={240}>
               <PieChart>
                 <Tooltip contentStyle={tooltipStyle} />
                 <Pie data={chartData} dataKey="count" nameKey="status" innerRadius="55%" outerRadius="80%" paddingAngle={2}>
