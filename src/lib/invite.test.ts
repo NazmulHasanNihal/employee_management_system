@@ -26,7 +26,7 @@ describe('invite tokens', () => {
       process.env.INVITE_SECRET ||
       process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY ||
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
-      'insecure-dev-invite-secret-change-me';
+      'test-invite-secret';
     const body = Buffer.from(
       JSON.stringify({ email: 'x@y.z', role: 'Employee', exp: Date.now() - 1000 }),
     ).toString('base64url');

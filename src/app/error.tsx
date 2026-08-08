@@ -35,11 +35,13 @@ export default function RootErrorBoundary({
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--rose)]">
             {/* @ts-ignore */}<T>Error details</T></p>
           <p className="truncate text-xs text-[var(--text-muted)]">
-            {error.message || "Unknown runtime error"}
+            {process.env.NODE_ENV === "production"
+              ? "An unexpected system error occurred. Please try again."
+              : error.message || "Unknown runtime error"}
           </p>
           {error.digest && (
             <p className="mt-1 text-xs text-[var(--text-muted)] opacity-70">
-              {/* @ts-ignore */}<T>Digest:</T>{error.digest}
+              {/* @ts-ignore */}<T>Ref Code / Digest:</T> {error.digest}
             </p>
           )}
         </div>

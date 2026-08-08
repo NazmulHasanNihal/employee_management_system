@@ -16,6 +16,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       mod.default.init(key, {
         api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
         person_profiles: 'identified_only',
+        mask_all_text: true,
+        mask_all_element_attributes: true,
       })
     })
     return () => {

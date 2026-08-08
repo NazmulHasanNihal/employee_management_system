@@ -23,8 +23,14 @@ import path from 'path';
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-const OWNER_EMAIL = process.env.OWNER_EMAIL || 'nazmulhas36@gmail.com';
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD || 'Demo@1234';
+const OWNER_EMAIL = (process.env.OWNER_EMAIL || process.env.ADMIN_EMAIL)!;
+if (!OWNER_EMAIL) {
+  throw new Error('OWNER_EMAIL environment variable is required.');
+}
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD!;
+if (!DEMO_PASSWORD) {
+  throw new Error('DEMO_PASSWORD environment variable is required.');
+}
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY!;
 

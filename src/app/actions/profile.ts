@@ -2,6 +2,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { getCaller } from '@/lib/auth';
 import { validateNid, maskNid, encryptNid } from '@/lib/nid';
 import { wouldCreateCircularHierarchy } from '@/lib/hierarchy';
@@ -231,4 +232,48 @@ export async function setProxy(proxyId: string | null, validUntil?: string | nul
   }
   await prisma.user.update({ where: { id: caller.id }, data });
   return { ok: true };
+}
+
+/**
+ * Account Deletion & Data Anonymization Flow (GDPR / Privacy Compliance).
+ * Allows a user to delete their account by anonymizing all personal PII while
+ * preserving statutory financial audit records without personal identifiers.
+ * Prevents system owner (isOwner === true) self-deletion to prevent lockout.
+ */
+export async function deleteOwnAccount() {
+  const caller = await getCaller();
+  if (!caller) throw new Error('Unauthorized');
+
+  // Prevent system owner lockout
+  if (caller.isOwner) {
+    throw new Error('System owner account cannot be deleted. Transfer ownership first.');
+  }
+
+  const userId = caller.id;
+  const anonymizedEmail = `deleted-${userId.substring(0, 8)}@deleted.local`;
+
+  // Anonymize personal details in PostgreSQL DB
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: 'Anonymized User',
+      email: anonymizedEmail,
+      phone: null,
+      bio: null,
+      dateOfBirth: null,
+      address: null,
+      city: null,
+      country: null,
+      nid: null,
+      nidMasked: null,
+      avatarUrl: null,
+      status: 'deleted',
+      twoFactorEnabled: false,
+      twoFactorSecret: null,
+      pushSub: Prisma.JsonNull,
+    },
+  });
+
+  revalidatePath('/', 'layout');
+  return { ok: true, message: 'Account and personal data have been anonymized.' };
 }

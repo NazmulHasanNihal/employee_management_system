@@ -27,6 +27,7 @@ import {
   BioSection,
   EmploymentSection,
   IdentitySection,
+  DeleteAccountSection,
   type ProfileUser,
 } from '@/components/profile/EditableSections';
 import { SkillsManager } from '@/components/profile/SkillsManager';
@@ -308,6 +309,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">
           <QuickActionsSettings />
+          {isOwnProfile && <DeleteAccountSection isOwner={caller.isOwner} />}
         </div>
       </div>
     </div>

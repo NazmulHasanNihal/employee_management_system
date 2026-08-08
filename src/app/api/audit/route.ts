@@ -17,9 +17,8 @@ export async function GET(_req: Request) {
 
     return NextResponse.json({ events });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Audit Fetch Error:', error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load audit data.' }, { status: 500 });
   }
 }
 

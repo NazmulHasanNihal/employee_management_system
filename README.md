@@ -162,12 +162,15 @@ The UI calls a typed `trpc.<domain>.<method>` proxy (`src/lib/trpc/client.ts`). 
 ---
 
 ## Security notes
-- **Secrets:** `.env` is gitignored and must never be committed. Rotate `DATABASE_URL`, `NEXT_SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PRIVATE_KEY`, `UPSTASH_REDIS_REST_TOKEN`, and `POSTHOG_KEY` immediately if a live `.env` was ever shared or backed up — the service_role key bypasses all Row-Level Security.
+> [!WARNING]
+> **Git History & Secret Rotation:** If any secret (such as `DATABASE_URL`, `NEXT_SUPABASE_SERVICE_ROLE_KEY`, `INVITE_SECRET`, `TOTP_ENCRYPTION_KEY`, or `VAPID_PRIVATE_KEY`) was previously committed or hardcoded in git history, **rotate those secret values immediately** in your production environment and cloud providers. Old values present in git history remain exposed to anyone with repository access.
+
+- **Secrets Management:** `.env` and `.env*.local` files are strictly gitignored and must never be committed. All production secrets, passwords, and API keys are loaded via environment variables (see `.env.example`).
 - **Authorization:** every mutating server action in `src/app/actions/db.ts` enforces `isAdmin`/`isCEO` (field allow-lists strip `role`/`isOwner`/`designation` from client updates). `provisionEmployeeAccount` and `registry.*`/`payroll.createHead` are gated.
 - **API hardening:** `/api/notifications/trigger` and the Go `/api/reports/attendance-pdf` endpoint now require authentication (Bearer token / session). Unauthenticated push-to-any-user is closed.
 - **Uploads:** `/api/upload` requires auth, validates **magic bytes** (not just the extension), enforces an allowlist + 10 MB cap, and sanitizes filenames. In production, swap local `public/uploads` for Supabase Storage / S3 (serverless-incompatible as written).
 - **Privilege model:** `isCEO` is derived only from `role === 'CEO'` or the DB `isOwner` flag — never from the self-editable `designation` field — preventing escalation. The owner cannot be offboarded.
-- **Scripts:** `scripts/create-real-admin.ts` reads the password from `ADMIN_PASSWORD` (no hardcoded creds) and never prints secrets.
+- **Scripts:** All CLI scripts in `scripts/` read credentials strictly from environment variables (`ADMIN_EMAIL`, `OWNER_EMAIL`, `ADMIN_PASSWORD`, `DEMO_PASSWORD`) with zero hardcoded credentials or fallback tokens.
 - **Build:** `next.config.ts` fails the build on TypeScript errors; the tRPC proxy's `invalidate()` now actually refetches (no `window.location.reload()` hacks remain).
 
 ## Testing

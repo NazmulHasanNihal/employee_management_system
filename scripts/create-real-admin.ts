@@ -19,12 +19,15 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL || 'nazmulhas36@gmail.com';
+  const email = process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL;
+  if (!email) {
+    throw new Error('ADMIN_EMAIL or OWNER_EMAIL environment variable is required.');
+  }
   const password = process.env.ADMIN_PASSWORD;
   if (!password || password.length < 8) {
     throw new Error('ADMIN_PASSWORD environment variable is required (min 8 chars). Refusing to use a hardcoded password.');
   }
-  const name = process.env.ADMIN_NAME || 'Md. Nazmul';
+  const name = process.env.ADMIN_NAME || 'System Admin';
 
   console.log(`Checking if user ${email} already exists in Auth...`);
 

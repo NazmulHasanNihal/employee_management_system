@@ -26,8 +26,7 @@ function getSecret(): string {
     process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret) {
-    // Should never happen in a configured deployment, but avoid crashing.
-    return 'insecure-dev-invite-secret-change-me';
+    throw new Error('INVITE_SECRET (or NEXT_SUPABASE_SERVICE_ROLE_KEY) must be configured in environment variables');
   }
   return secret;
 }

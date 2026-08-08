@@ -28,9 +28,9 @@ function cleanupPendingSessions() {
 
 export async function loginWithRateLimit(email: string, password: string, twoFactorCode?: string, tempSessionId?: string) {
   const ip = 'unknown';
-  const rl = await rateLimit(provisionKey(undefined, ip), { max: 10, windowMs: 15 * 60 * 1000 });
+  const rl = await rateLimit(provisionKey(undefined, ip), { max: 5, windowMs: 60 * 1000 });
   if (!rl.success) {
-    return { error: 'Too many login attempts. Try again in 15 minutes.' };
+    return { error: 'Too many login attempts. Please wait 1 minute before trying again.' };
   }
 
   const admin = createAdminClient();

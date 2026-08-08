@@ -16,7 +16,11 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 });
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL || 'nazmulhas36@gmail.com';
+  const email = process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL;
+  if (!email) {
+    throw new Error('ADMIN_EMAIL or OWNER_EMAIL environment variable is required.');
+  }
+  const name = process.env.ADMIN_NAME || 'System Admin';
   const password = process.env.ADMIN_PASSWORD || (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + 'A1!');
 
   console.log(`Finding user ${email}...`);
@@ -29,7 +33,7 @@ async function main() {
       email,
       password,
       email_confirm: true,
-      user_metadata: { role: 'Admin', name: 'Md. Nazmul' }
+      user_metadata: { role: 'Admin', name }
     });
     if (error) throw error;
     console.log('Created user:', data.user.id);

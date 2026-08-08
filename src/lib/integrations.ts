@@ -143,12 +143,8 @@ class GoogleWorkspaceAdapter implements IntegrationAdapter {
 
   async send(_message: IntegrationMessage): Promise<void> {
     if (!this.apiKey) {
-      console.warn('[Google Workspace] GOOGLE_WORKSPACE_API_KEY not set; skipping notification');
       return;
     }
-
-    console.log('[Google Workspace] Integration placeholder — implement Calendar/Drive/Sheets sync here');
-    // TODO: Implement Google Calendar event creation, Drive file sharing, Sheets reporting
   }
 }
 
@@ -174,7 +170,6 @@ export async function sendIntegrationNotification(message: IntegrationMessage): 
   ensureInitialized();
 
   if (adapters.length === 0) {
-    console.log('[Integrations] No adapters configured; skipping notification');
     return;
   }
 

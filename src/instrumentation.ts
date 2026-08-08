@@ -1,39 +1,43 @@
 import * as Sentry from '@sentry/nextjs';
+import { validateEnv } from '@/lib/env';
 
 export function register() {
-  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || "https://mock@o0.ingest.sentry.io/0";
-  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) {
-    console.warn(
-      '[Sentry] NEXT_PUBLIC_SENTRY_DSN is not set — errors will be sent to a mock endpoint and dropped. ' +
-      'Set a real DSN in .env to receive error alerts.'
-    );
-  }
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    Sentry.init({
-      dsn,
-      tracesSampleRate: 1.0,
-      debug: false,
-      ignoreErrors: [
-        'Network request failed',
-        'Failed to fetch',
-        'Load failed',
-        /^4\d\d$/,
-      ],
-    });
+    validateEnv();
+  }
+
+  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || "";
+  if (!dsn) {
+    console.warn('[Sentry] NEXT_PUBLIC_SENTRY_DSN is not set — error monitoring is disabled.');
+    return;
+  }
+  const sentryOptions: Sentry.NodeOptions = {
+    dsn,
+    tracesSampleRate: 1.0,
+    debug: false,
+    ignoreErrors: [
+      'Network request failed',
+      'Failed to fetch',
+      'Load failed',
+      /^4\d\d$/,
+    ],
+    beforeSend(event) {
+      if (event.request?.headers) {
+        delete event.request.headers['authorization'];
+        delete event.request.headers['cookie'];
+        delete event.request.headers['set-cookie'];
+        delete event.request.headers['x-supabase-auth'];
+      }
+      return event;
+    },
+  };
+
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    Sentry.init(sentryOptions);
   }
 
   if (process.env.NEXT_RUNTIME === 'edge') {
-    Sentry.init({
-      dsn,
-      tracesSampleRate: 1.0,
-      debug: false,
-      ignoreErrors: [
-        'Network request failed',
-        'Failed to fetch',
-        'Load failed',
-        /^4\d\d$/,
-      ],
-    });
+    Sentry.init(sentryOptions);
   }
 }
 

@@ -19,10 +19,7 @@ function getTotpKey(): Buffer {
     process.env.NEXT_SUPABASE_SERVICE_ROLE_KEY ||
     process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('TOTP_ENCRYPTION_KEY must be set in production');
-    }
-    return crypto.createHash('sha256').update('insecure-dev-totp-key-change-me').digest();
+    throw new Error('TOTP_ENCRYPTION_KEY (or NID_ENCRYPTION_KEY / INVITE_SECRET / NEXT_SUPABASE_SERVICE_ROLE_KEY) must be configured in environment variables');
   }
   return crypto.createHash('sha256').update(`ems-totp:${secret}`).digest();
 }

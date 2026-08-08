@@ -21,12 +21,19 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "api.dicebear.com" },
+      { protocol: "https", hostname: "ui-avatars.com" },
     ],
   },
   // Tree-shake heavy icon/component barrels so they don't ship whole libraries
   // in the shared chunk. This noticeably trims the ~187 kB common bundle.
   experimental: {
     reactCompiler: true,
+    // Stale page data served instantly on back/forward navigation, revalidates in background
+    staleTimes: {
+      dynamic: 30,  // 30s stale time for dynamic pages
+      static: 180,  // 3min stale time for static pages
+    },
     optimizePackageImports: [
       "lucide-react",
       "recharts",
@@ -56,7 +63,7 @@ const nextConfig: NextConfig = {
     })();
     const csp = [
       "default-src 'self'",
-      `img-src 'self' data: blob: https://${supabaseHost} https://avatars.githubusercontent.com https://*.posthog.com`,
+      `img-src 'self' data: blob: https://${supabaseHost} https://avatars.githubusercontent.com https://*.posthog.com https://api.dicebear.com https://ui-avatars.com`,
       `font-src 'self' data:`,
       `connect-src 'self' https://${supabaseHost} https://*.sentry.io https://*.posthog.com wss://*.partykit.dev wss://*.partykit.io`,
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.posthog.com",
@@ -81,6 +88,19 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self)" },
         ],
       },
+      // ── Performance: aggressive caching for immutable static assets ──
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
     ];
   },
 };
@@ -100,7 +120,7 @@ export default withSentryConfig(
     project: process.env.SENTRY_PROJECT || "javascript-nextjs",
     // Only upload source maps / talk to Sentry when a real DSN is configured.
     silent: sentryEnabled ? false : true,
-    authToken: process.env.SENTRY_AUTH_TOKEN || "dummy_token_to_suppress_warning",
+    authToken: process.env.SENTRY_AUTH_TOKEN,
     widenClientFileUpload: true,
     sourcemaps: {
       // Upload maps in prod so stack traces are de-minified and actionable.

@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import { getCaller } from '@/lib/auth';
 
 export interface SinglePaymentInput {
   userId: string;
@@ -36,19 +36,16 @@ export interface PaymentAdjustmentInput {
   effectiveDate?: string;
 }
 
-async function getCallerId(): Promise<string | null> {
-  try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const dbUser = await prisma.user.findUnique({
-      where: { email: user.email! },
-      select: { id: true, role: true, isOwner: true },
-    });
-    return dbUser?.id ?? null;
-  } catch {
-    return null;
+async function requirePrivilegedCaller(): Promise<string> {
+  const caller = await getCaller();
+  if (!caller) {
+    throw new Error('Unauthorized: authentication required.');
   }
+  const isPrivileged = caller.isAdmin || caller.isHR || caller.isCEO || caller.isOwner;
+  if (!isPrivileged) {
+    throw new Error('Forbidden: only Admin, HR, or CEO may execute payment operations.');
+  }
+  return caller.id;
 }
 
 /**
@@ -56,7 +53,7 @@ async function getCallerId(): Promise<string | null> {
  */
 export async function executeSinglePaymentRecord(input: SinglePaymentInput) {
   try {
-    const callerId = await getCallerId();
+    const callerId = await requirePrivilegedCaller();
     const targetUser = await prisma.user.findUnique({
       where: { id: input.userId },
       select: { id: true, name: true, email: true, designation: true, department: true },
@@ -121,7 +118,7 @@ export async function executeSinglePaymentRecord(input: SinglePaymentInput) {
  */
 export async function executeBulkPaymentBatch(input: BulkPaymentInput) {
   try {
-    const callerId = await getCallerId();
+    const callerId = await requirePrivilegedCaller();
     let targetEmployees = [];
 
     if (!input.employeeIds || input.employeeIds.length === 0) {
@@ -211,7 +208,7 @@ export async function executeBulkPaymentBatch(input: BulkPaymentInput) {
  */
 export async function createPaymentAdjustmentRecord(input: PaymentAdjustmentInput) {
   try {
-    const callerId = await getCallerId();
+    const callerId = await requirePrivilegedCaller();
     const targetUser = await prisma.user.findUnique({
       where: { id: input.userId },
       select: { id: true, name: true, baseSalary: true },
@@ -300,6 +297,7 @@ export async function createPaymentAdjustmentRecord(input: PaymentAdjustmentInpu
  */
 export async function getPaymentRecordsLedger() {
   try {
+    await requirePrivilegedCaller();
     const records = await prisma.paymentRecord.findMany({
       include: {
         user: {
@@ -324,6 +322,7 @@ export async function getPaymentRecordsLedger() {
  */
 export async function purgeDummyPaymentRecords() {
   try {
+    await requirePrivilegedCaller();
     const deletedLegacy = await prisma.payment.deleteMany({
       where: {
         OR: [

@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Pencil, Check, X } from 'lucide-react';
+import { Pencil, Check, X, Trash2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUser } from '@/components/UserProvider';
-import { updateProfileField, updateProfileBatch } from '@/app/actions/profile';
+import { updateProfileField, updateProfileBatch, deleteOwnAccount } from '@/app/actions/profile';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/lib/toast';
 import { T } from "@/components/Translate";
@@ -654,6 +654,71 @@ function ManagerSelectRow({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+export function DeleteAccountSection({ isOwner }: { isOwner?: boolean }) {
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      const res = await deleteOwnAccount();
+      toast.success('Account Anonymized', res.message || 'Your personal data has been permanently anonymized.');
+      router.push('/login');
+      router.refresh();
+    } catch (err: any) {
+      toast.error('Deletion Failed', err?.message || 'Could not anonymize account data.');
+      setLoading(false);
+    }
+  };
+
+  if (isOwner) return null;
+
+  return (
+    <div className="mt-6 rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 font-semibold text-sm">
+        <AlertTriangle size={16} />
+        <span>Danger Zone: Account & Data Deletion</span>
+      </div>
+      <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+        Permanently anonymize all personal data (name, email, phone, bio, NID, 2FA credentials) in compliance with privacy regulations. This action cannot be undone.
+      </p>
+      {confirming ? (
+        <div className="flex items-center gap-2 pt-1">
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={loading}
+            className="gap-1.5"
+          >
+            <Trash2 size={13} />
+            {loading ? 'Anonymizing...' : 'Confirm Account Anonymization'}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setConfirming(false)}
+            disabled={loading}
+          >
+            Cancel
+          </Button>
+        </div>
+      ) : (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setConfirming(true)}
+          className="text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 border-rose-500/30 gap-1.5"
+        >
+          <Trash2 size={13} />
+          <span>Delete & Anonymize My Data</span>
+        </Button>
+      )}
     </div>
   );
 }

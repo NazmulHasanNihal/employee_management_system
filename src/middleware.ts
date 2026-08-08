@@ -36,6 +36,27 @@ export async function middleware(request: NextRequest) {
       );
     }
 
+    // CORS & Origin Protection: Reject cross-origin mutations to /api/
+    const origin = request.headers.get('origin');
+    const host = request.headers.get('host');
+    if (origin && host && request.nextUrl.pathname.startsWith('/api/')) {
+      const isMutation = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method);
+      if (isMutation) {
+        const allowedHost = process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL).host : host;
+        try {
+          const originHost = new URL(origin).host;
+          if (originHost !== host && originHost !== allowedHost) {
+            return new NextResponse(
+              JSON.stringify({ error: 'FORBIDDEN_ORIGIN', message: 'Cross-origin requests are forbidden.' }),
+              { status: 403, headers: { 'content-type': 'application/json' } }
+            );
+          }
+        } catch {
+          // Invalid origin header
+        }
+      }
+    }
+
     const code = request.nextUrl.searchParams.get('code');
     const tokenHash = request.nextUrl.searchParams.get('token_hash');
     const type = request.nextUrl.searchParams.get('type');

@@ -3,7 +3,11 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL || 'nazmulhas36@gmail.com';
+  const email = process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL;
+  if (!email) {
+    throw new Error('ADMIN_EMAIL or OWNER_EMAIL environment variable is required.');
+  }
+  const name = process.env.ADMIN_NAME || 'System Admin';
   // Read from env, or generate a random strong password (never hardcode).
   const pass = process.env.ADMIN_PASSWORD || Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
   const role = 'Admin';
@@ -24,6 +28,7 @@ async function main() {
         user_email text := ${JSON.stringify(email)};
         user_pass text := ${JSON.stringify(pass)};
         user_role text := ${JSON.stringify(role)};
+        user_name text := ${JSON.stringify(name)};
       BEGIN
         -- Insert into auth.users
         INSERT INTO auth.users (
@@ -35,7 +40,7 @@ async function main() {
           new_user_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', user_email,
           crypt(user_pass, gen_salt('bf')), 
           now(), 
-          jsonb_build_object('name', 'Md. Nazmul', 'role', user_role),
+          jsonb_build_object('name', user_name, 'role', user_role),
           '{"provider":"email","providers":["email"]}',
           now(), now(), '', '', '', ''
         );
@@ -53,7 +58,7 @@ async function main() {
           id, email, name, role, department, designation, status, "createdAt", "updatedAt"
         )
         VALUES (
-          new_user_id, user_email, 'Md. Nazmul', user_role, 'Executive', 'System Admin', 'active', now(), now()
+          new_user_id, user_email, user_name, user_role, 'Executive', 'System Admin', 'active', now(), now()
         );
 
       END $$;

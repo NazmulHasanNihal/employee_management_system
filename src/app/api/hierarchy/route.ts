@@ -46,12 +46,11 @@ export async function GET(req: Request) {
       }
     } else {
       // Managers and above: recursive downline CTE rooted at the target.
-      const result = await prisma.$queryRawUnsafe(
-        `
+      const result = await prisma.$queryRaw`
           WITH RECURSIVE employee_tree AS (
             SELECT id, name, role, department, designation, "avatarUrl", "managerId"
             FROM "User"
-            WHERE id = $1
+            WHERE id = ${targetId}
 
             UNION ALL
 
@@ -60,18 +59,15 @@ export async function GET(req: Request) {
             INNER JOIN employee_tree et ON u."managerId" = et.id
           )
           SELECT * FROM employee_tree;
-        `,
-        targetId,
-      );
+        `;
 
       users = result as { id: string; name: string; role: string; department: string | null; designation: string | null; avatarUrl: string | null; managerId: string | null }[];
     }
 
     return NextResponse.json({ users });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
     logError('Hierarchy Fetch Error:', error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load hierarchy data.' }, { status: 500 });
   }
 }
 

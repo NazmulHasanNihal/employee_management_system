@@ -15,8 +15,10 @@ const supabase = createClient(
 );
 
 async function main() {
-  const email = process.env.ADMIN_EMAIL || 'admin@system.com';
-  // Read from env, or generate a random strong password (never hardcode).
+  const email = process.env.ADMIN_EMAIL || process.env.OWNER_EMAIL;
+  if (!email) {
+    throw new Error('ADMIN_EMAIL or OWNER_EMAIL environment variable is required.');
+  }
   const password = process.env.ADMIN_PASSWORD || (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + 'A1!');
 
   console.log('Provisioning Admin User...');
