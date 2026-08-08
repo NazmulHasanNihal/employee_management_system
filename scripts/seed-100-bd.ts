@@ -69,8 +69,6 @@ type SeedUser = {
 // ─── Branches ───
 const BRANCHES = [
   { name: 'Dhaka HQ', city: 'Dhaka', address: 'Gulshan-2, Plot 15, Road 103, Dhaka 1212', timezone: 'Asia/Dhaka' },
-  { name: 'Chittagong Office', city: 'Chittagong', address: 'Agrabad C/A, Chittagong 4100', timezone: 'Asia/Dhaka' },
-  { name: 'Gazipur Plant', city: 'Gazipur', address: 'Konabari Industrial Area, Gazipur 1700', timezone: 'Asia/Dhaka' },
 ];
 
 // ─── Departments ───
@@ -90,154 +88,154 @@ const USERS: SeedUser[] = [
   // ═══════════════════════════════════════════════════════
   // LEVEL 1 — C-SUITE (4 people, report to CEO)
   // ═══════════════════════════════════════════════════════
-  { name: 'Md. Rafiqul Islam', email: 'rafiqul.islam@opshub.bd', role: 'Director', department: 'Operations', designation: 'Chief Operating Officer (COO)', branch: 'Dhaka HQ', gender: 'Male', baseSalary: 380000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000001', city: 'Dhaka', avatarBg: 'f59e0b' },
-  { name: 'Dr. Tahmina Akhter', email: 'tahmina.akhter@opshub.bd', role: 'Director', department: 'Engineering', designation: 'Chief Technology Officer (CTO)', branch: 'Dhaka HQ', gender: 'Female', baseSalary: 400000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000002', city: 'Dhaka', avatarBg: '8b5cf6' },
-  { name: 'Md. Anwar Hossain', email: 'anwar.hossain@opshub.bd', role: 'Director', department: 'Finance', designation: 'Chief Financial Officer (CFO)', branch: 'Dhaka HQ', gender: 'Male', baseSalary: 370000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000003', city: 'Dhaka', avatarBg: '10b981' },
-  { name: 'Fatema Begum', email: 'fatema.begum@opshub.bd', role: 'HR Manager', department: 'Human Resources', designation: 'Chief Human Resources Officer (CHRO)', branch: 'Dhaka HQ', gender: 'Female', baseSalary: 350000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000004', city: 'Dhaka', avatarBg: 'ec4899' },
+  { name: 'Md. Rafiqul Islam', email: 'rafiqul.islam@opshub.bd', role: 'Director', department: 'Operations', designation: 'Chief Operating Officer (COO)', branch: 'Dhaka HQ', gender: 'Male', baseSalary: 190000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000001', city: 'Dhaka', avatarBg: 'f59e0b' },
+  { name: 'Dr. Tahmina Akhter', email: 'tahmina.akhter@opshub.bd', role: 'Director', department: 'Engineering', designation: 'Chief Technology Officer (CTO)', branch: 'Dhaka HQ', gender: 'Female', baseSalary: 200000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000002', city: 'Dhaka', avatarBg: '8b5cf6' },
+  { name: 'Md. Anwar Hossain', email: 'anwar.hossain@opshub.bd', role: 'Director', department: 'Finance', designation: 'Chief Financial Officer (CFO)', branch: 'Dhaka HQ', gender: 'Male', baseSalary: 185000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000003', city: 'Dhaka', avatarBg: '10b981' },
+  { name: 'Fatema Begum', email: 'fatema.begum@opshub.bd', role: 'HR Manager', department: 'Human Resources', designation: 'Chief Human Resources Officer (CHRO)', branch: 'Dhaka HQ', gender: 'Female', baseSalary: 140000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000004', city: 'Dhaka', avatarBg: 'ec4899' },
 
   // ═══════════════════════════════════════════════════════
   // LEVEL 2 — DIRECTORS / VPs (8 people)
   // ═══════════════════════════════════════════════════════
-  { name: 'Kamrul Hasan', email: 'kamrul.hasan@opshub.bd', role: 'Director', department: 'Engineering', designation: 'VP of Engineering', branch: 'Dhaka HQ', managerEmail: 'tahmina.akhter@opshub.bd', gender: 'Male', baseSalary: 280000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000005', city: 'Dhaka', avatarBg: '7c3aed' },
-  { name: 'Sharmin Sultana', email: 'sharmin.sultana@opshub.bd', role: 'Director', department: 'Product', designation: 'VP of Product', branch: 'Dhaka HQ', managerEmail: 'tahmina.akhter@opshub.bd', gender: 'Female', baseSalary: 260000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000006', city: 'Dhaka', avatarBg: '7c3aed' },
-  { name: 'Md. Zahidul Haque', email: 'zahidul.haque@opshub.bd', role: 'Director', department: 'Sales', designation: 'Director of Sales', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 250000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000007', city: 'Dhaka', avatarBg: '059669' },
-  { name: 'Nusrat Jahan Nishi', email: 'nusrat.nishi@opshub.bd', role: 'Director', department: 'Marketing', designation: 'Director of Marketing', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Female', baseSalary: 240000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000008', city: 'Dhaka', avatarBg: '059669' },
-  { name: 'Jamal Uddin Ahmed', email: 'jamal.uddin@opshub.bd', role: 'Director', department: 'Operations', designation: 'Director of Operations', branch: 'Chittagong Office', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 230000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000009', city: 'Chittagong', avatarBg: '059669' },
-  { name: 'Ruma Akter', email: 'ruma.akter@opshub.bd', role: 'Director', department: 'Human Resources', designation: 'Director of HR', branch: 'Dhaka HQ', managerEmail: 'fatema.begum@opshub.bd', gender: 'Female', baseSalary: 220000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000010', city: 'Dhaka', avatarBg: 'db2777' },
-  { name: 'Shafiqul Islam', email: 'shafiqul.islam@opshub.bd', role: 'Director', department: 'Finance', designation: 'Director of Finance', branch: 'Dhaka HQ', managerEmail: 'anwar.hossain@opshub.bd', gender: 'Male', baseSalary: 235000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000011', city: 'Dhaka', avatarBg: '0d9488' },
-  { name: 'Syed Ashraful Haq', email: 'ashraful.haq@opshub.bd', role: 'Director', department: 'Quality Control', designation: 'Director of Quality', branch: 'Gazipur Plant', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 225000, bloodGroup: 'AB-', religion: 'Islam', phone: '+8801711000012', city: 'Gazipur', avatarBg: '059669' },
+  { name: 'Kamrul Hasan', email: 'kamrul.hasan@opshub.bd', role: 'Director', department: 'Engineering', designation: 'VP of Engineering', branch: 'Dhaka HQ', managerEmail: 'tahmina.akhter@opshub.bd', gender: 'Male', baseSalary: 140000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000005', city: 'Dhaka', avatarBg: '7c3aed' },
+  { name: 'Sharmin Sultana', email: 'sharmin.sultana@opshub.bd', role: 'Director', department: 'Product', designation: 'VP of Product', branch: 'Dhaka HQ', managerEmail: 'tahmina.akhter@opshub.bd', gender: 'Female', baseSalary: 130000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000006', city: 'Dhaka', avatarBg: '7c3aed' },
+  { name: 'Md. Zahidul Haque', email: 'zahidul.haque@opshub.bd', role: 'Director', department: 'Sales', designation: 'Director of Sales', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 125000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000007', city: 'Dhaka', avatarBg: '059669' },
+  { name: 'Nusrat Jahan Nishi', email: 'nusrat.nishi@opshub.bd', role: 'Director', department: 'Marketing', designation: 'Director of Marketing', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Female', baseSalary: 120000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000008', city: 'Dhaka', avatarBg: '059669' },
+  { name: 'Jamal Uddin Ahmed', email: 'jamal.uddin@opshub.bd', role: 'Director', department: 'Operations', designation: 'Director of Operations', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 115000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000009', city: 'Dhaka', avatarBg: '059669' },
+  { name: 'Ruma Akter', email: 'ruma.akter@opshub.bd', role: 'Director', department: 'Human Resources', designation: 'Director of HR', branch: 'Dhaka HQ', managerEmail: 'fatema.begum@opshub.bd', gender: 'Female', baseSalary: 110000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000010', city: 'Dhaka', avatarBg: 'db2777' },
+  { name: 'Shafiqul Islam', email: 'shafiqul.islam@opshub.bd', role: 'Director', department: 'Finance', designation: 'Director of Finance', branch: 'Dhaka HQ', managerEmail: 'anwar.hossain@opshub.bd', gender: 'Male', baseSalary: 117500, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000011', city: 'Dhaka', avatarBg: '0d9488' },
+  { name: 'Syed Ashraful Haq', email: 'ashraful.haq@opshub.bd', role: 'Director', department: 'Quality Control', designation: 'Director of Quality', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 112500, bloodGroup: 'AB-', religion: 'Islam', phone: '+8801711000012', city: 'Dhaka', avatarBg: '059669' },
 
   // ═══════════════════════════════════════════════════════
   // LEVEL 3 — MANAGERS (15 people)
   // ═══════════════════════════════════════════════════════
   // Engineering Managers (under VP Engineering)
-  { name: 'Tanvir Ahmed Khan', email: 'tanvir.khan@opshub.bd', role: 'Manager', department: 'Engineering', designation: 'Engineering Manager - Backend', branch: 'Dhaka HQ', managerEmail: 'kamrul.hasan@opshub.bd', gender: 'Male', baseSalary: 180000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000013', city: 'Dhaka', avatarBg: '4f46e5' },
-  { name: 'Ayesha Siddiqa', email: 'ayesha.siddiqa@opshub.bd', role: 'Manager', department: 'Engineering', designation: 'Engineering Manager - Frontend', branch: 'Dhaka HQ', managerEmail: 'kamrul.hasan@opshub.bd', gender: 'Female', baseSalary: 175000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000014', city: 'Dhaka', avatarBg: '4f46e5' },
-  { name: 'Arif Chowdhury', email: 'arif.chowdhury@opshub.bd', role: 'Manager', department: 'Engineering', designation: 'Engineering Manager - DevOps', branch: 'Dhaka HQ', managerEmail: 'kamrul.hasan@opshub.bd', gender: 'Male', baseSalary: 185000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000015', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Tanvir Ahmed Khan', email: 'tanvir.khan@opshub.bd', role: 'Manager', department: 'Engineering', designation: 'Engineering Manager - Backend', branch: 'Dhaka HQ', managerEmail: 'kamrul.hasan@opshub.bd', gender: 'Male', baseSalary: 72000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000013', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Ayesha Siddiqa', email: 'ayesha.siddiqa@opshub.bd', role: 'Manager', department: 'Engineering', designation: 'Engineering Manager - Frontend', branch: 'Dhaka HQ', managerEmail: 'kamrul.hasan@opshub.bd', gender: 'Female', baseSalary: 70000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000014', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Arif Chowdhury', email: 'arif.chowdhury@opshub.bd', role: 'Manager', department: 'Engineering', designation: 'Engineering Manager - DevOps', branch: 'Dhaka HQ', managerEmail: 'kamrul.hasan@opshub.bd', gender: 'Male', baseSalary: 74000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000015', city: 'Dhaka', avatarBg: '4f46e5' },
   // Product Manager (under VP Product)
-  { name: 'Farhana Yesmin', email: 'farhana.yesmin@opshub.bd', role: 'Manager', department: 'Product', designation: 'Product Manager', branch: 'Dhaka HQ', managerEmail: 'sharmin.sultana@opshub.bd', gender: 'Female', baseSalary: 160000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000016', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Farhana Yesmin', email: 'farhana.yesmin@opshub.bd', role: 'Manager', department: 'Product', designation: 'Product Manager', branch: 'Dhaka HQ', managerEmail: 'sharmin.sultana@opshub.bd', gender: 'Female', baseSalary: 64000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000016', city: 'Dhaka', avatarBg: '4f46e5' },
   // R&D Manager (under VP Product)
-  { name: 'Md. Saifur Rahman', email: 'saifur.rahman@opshub.bd', role: 'Manager', department: 'Research & Development', designation: 'R&D Manager', branch: 'Dhaka HQ', managerEmail: 'sharmin.sultana@opshub.bd', gender: 'Male', baseSalary: 170000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000017', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Md. Saifur Rahman', email: 'saifur.rahman@opshub.bd', role: 'Manager', department: 'Research & Development', designation: 'R&D Manager', branch: 'Dhaka HQ', managerEmail: 'sharmin.sultana@opshub.bd', gender: 'Male', baseSalary: 68000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000017', city: 'Dhaka', avatarBg: '4f46e5' },
   // Sales Managers (under Director of Sales)
-  { name: 'Kamal Hossain Bhuiyan', email: 'kamal.bhuiyan@opshub.bd', role: 'Manager', department: 'Sales', designation: 'Regional Sales Manager - North', branch: 'Dhaka HQ', managerEmail: 'zahidul.haque@opshub.bd', gender: 'Male', baseSalary: 155000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000018', city: 'Dhaka', avatarBg: '4f46e5' },
-  { name: 'Sumaiya Akter Moni', email: 'sumaiya.moni@opshub.bd', role: 'Manager', department: 'Sales', designation: 'Regional Sales Manager - South', branch: 'Chittagong Office', managerEmail: 'zahidul.haque@opshub.bd', gender: 'Female', baseSalary: 150000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000019', city: 'Chittagong', avatarBg: '4f46e5' },
+  { name: 'Kamal Hossain Bhuiyan', email: 'kamal.bhuiyan@opshub.bd', role: 'Manager', department: 'Sales', designation: 'Regional Sales Manager - North', branch: 'Dhaka HQ', managerEmail: 'zahidul.haque@opshub.bd', gender: 'Male', baseSalary: 62000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000018', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Sumaiya Akter Moni', email: 'sumaiya.moni@opshub.bd', role: 'Manager', department: 'Sales', designation: 'Regional Sales Manager - South', branch: 'Dhaka HQ', managerEmail: 'zahidul.haque@opshub.bd', gender: 'Female', baseSalary: 60000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000019', city: 'Dhaka', avatarBg: '4f46e5' },
   // Marketing Manager (under Director of Marketing)
-  { name: 'Rezaul Karim', email: 'rezaul.karim@opshub.bd', role: 'Manager', department: 'Marketing', designation: 'Marketing Manager', branch: 'Dhaka HQ', managerEmail: 'nusrat.nishi@opshub.bd', gender: 'Male', baseSalary: 145000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000020', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Rezaul Karim', email: 'rezaul.karim@opshub.bd', role: 'Manager', department: 'Marketing', designation: 'Marketing Manager', branch: 'Dhaka HQ', managerEmail: 'nusrat.nishi@opshub.bd', gender: 'Male', baseSalary: 58000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000020', city: 'Dhaka', avatarBg: '4f46e5' },
   // Operations Managers (under Director of Operations)
-  { name: 'Sirajul Islam', email: 'sirajul.islam@opshub.bd', role: 'Manager', department: 'Operations', designation: 'Factory Manager', branch: 'Gazipur Plant', managerEmail: 'jamal.uddin@opshub.bd', gender: 'Male', baseSalary: 160000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000021', city: 'Gazipur', avatarBg: '4f46e5' },
-  { name: 'Liton Sarkar', email: 'liton.sarkar@opshub.bd', role: 'Manager', department: 'Operations', designation: 'Logistics Manager', branch: 'Chittagong Office', managerEmail: 'jamal.uddin@opshub.bd', gender: 'Male', baseSalary: 140000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000022', city: 'Chittagong', avatarBg: '4f46e5' },
+  { name: 'Sirajul Islam', email: 'sirajul.islam@opshub.bd', role: 'Manager', department: 'Operations', designation: 'Factory Manager', branch: 'Dhaka HQ', managerEmail: 'jamal.uddin@opshub.bd', gender: 'Male', baseSalary: 64000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000021', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Liton Sarkar', email: 'liton.sarkar@opshub.bd', role: 'Manager', department: 'Operations', designation: 'Logistics Manager', branch: 'Dhaka HQ', managerEmail: 'jamal.uddin@opshub.bd', gender: 'Male', baseSalary: 56000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000022', city: 'Dhaka', avatarBg: '4f46e5' },
   // HR Managers (under Director of HR)
-  { name: 'Nasima Khatun', email: 'nasima.khatun@opshub.bd', role: 'Manager', department: 'Human Resources', designation: 'HR Manager - Talent', branch: 'Dhaka HQ', managerEmail: 'ruma.akter@opshub.bd', gender: 'Female', baseSalary: 135000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000023', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Nasima Khatun', email: 'nasima.khatun@opshub.bd', role: 'Manager', department: 'Human Resources', designation: 'HR Manager - Talent', branch: 'Dhaka HQ', managerEmail: 'ruma.akter@opshub.bd', gender: 'Female', baseSalary: 54000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000023', city: 'Dhaka', avatarBg: '4f46e5' },
   // Finance Manager (under Director of Finance)
-  { name: 'Imran Hossain', email: 'imran.hossain@opshub.bd', role: 'Manager', department: 'Finance', designation: 'Finance Manager', branch: 'Dhaka HQ', managerEmail: 'shafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 155000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000024', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Imran Hossain', email: 'imran.hossain@opshub.bd', role: 'Manager', department: 'Finance', designation: 'Finance Manager', branch: 'Dhaka HQ', managerEmail: 'shafiqul.islam@opshub.bd', gender: 'Male', baseSalary: 62000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000024', city: 'Dhaka', avatarBg: '4f46e5' },
   // Customer Support Manager (under COO)
-  { name: 'Rina Begum', email: 'rina.begum@opshub.bd', role: 'Manager', department: 'Customer Support', designation: 'Customer Support Manager', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Female', baseSalary: 130000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000025', city: 'Dhaka', avatarBg: '4f46e5' },
+  { name: 'Rina Begum', email: 'rina.begum@opshub.bd', role: 'Manager', department: 'Customer Support', designation: 'Customer Support Manager', branch: 'Dhaka HQ', managerEmail: 'rafiqul.islam@opshub.bd', gender: 'Female', baseSalary: 52000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000025', city: 'Dhaka', avatarBg: '4f46e5' },
   // QC Manager (under Director of Quality)
-  { name: 'Abdul Karim Howlader', email: 'abdul.karim@opshub.bd', role: 'Manager', department: 'Quality Control', designation: 'QC Manager', branch: 'Gazipur Plant', managerEmail: 'ashraful.haq@opshub.bd', gender: 'Male', baseSalary: 140000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000026', city: 'Gazipur', avatarBg: '4f46e5' },
+  { name: 'Abdul Karim Howlader', email: 'abdul.karim@opshub.bd', role: 'Manager', department: 'Quality Control', designation: 'QC Manager', branch: 'Dhaka HQ', managerEmail: 'ashraful.haq@opshub.bd', gender: 'Male', baseSalary: 56000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000026', city: 'Dhaka', avatarBg: '4f46e5' },
 
   // ═══════════════════════════════════════════════════════
   // LEVEL 4 — TEAM LEADS (20 people)
   // ═══════════════════════════════════════════════════════
   // Backend Team Leads (under Tanvir Khan)
-  { name: 'Rifat Islam', email: 'rifat.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Senior Backend Lead', branch: 'Dhaka HQ', managerEmail: 'tanvir.khan@opshub.bd', gender: 'Male', baseSalary: 120000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000027', city: 'Dhaka', avatarBg: '3b82f6' },
-  { name: 'Priya Das', email: 'priya.das@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Backend Team Lead', branch: 'Dhaka HQ', managerEmail: 'tanvir.khan@opshub.bd', gender: 'Female', baseSalary: 110000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000028', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Rifat Islam', email: 'rifat.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Senior Backend Lead', branch: 'Dhaka HQ', managerEmail: 'tanvir.khan@opshub.bd', gender: 'Male', baseSalary: 60000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000027', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Priya Das', email: 'priya.das@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Backend Team Lead', branch: 'Dhaka HQ', managerEmail: 'tanvir.khan@opshub.bd', gender: 'Female', baseSalary: 55000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000028', city: 'Dhaka', avatarBg: '3b82f6' },
   // Frontend Team Leads (under Ayesha Siddiqa)
-  { name: 'Sabbir Hossain', email: 'sabbir.hossain@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Frontend Team Lead', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Male', baseSalary: 115000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000029', city: 'Dhaka', avatarBg: '3b82f6' },
-  { name: 'Mithila Rahman', email: 'mithila.rahman@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'UI/UX Team Lead', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Female', baseSalary: 105000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000030', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Sabbir Hossain', email: 'sabbir.hossain@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Frontend Team Lead', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Male', baseSalary: 57500, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000029', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Mithila Rahman', email: 'mithila.rahman@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'UI/UX Team Lead', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Female', baseSalary: 52500, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000030', city: 'Dhaka', avatarBg: '3b82f6' },
   // DevOps Team Lead (under Arif Chowdhury)
-  { name: 'Masud Rana', email: 'masud.rana@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'DevOps Team Lead', branch: 'Dhaka HQ', managerEmail: 'arif.chowdhury@opshub.bd', gender: 'Male', baseSalary: 125000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000031', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Masud Rana', email: 'masud.rana@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'DevOps Team Lead', branch: 'Dhaka HQ', managerEmail: 'arif.chowdhury@opshub.bd', gender: 'Male', baseSalary: 62500, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000031', city: 'Dhaka', avatarBg: '3b82f6' },
   // Product Team Leads (under Farhana Yesmin)
-  { name: 'Tasneem Afrin', email: 'tasneem.afrin@opshub.bd', role: 'Employee', department: 'Product', designation: 'Associate Product Manager', branch: 'Dhaka HQ', managerEmail: 'farhana.yesmin@opshub.bd', gender: 'Female', baseSalary: 95000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000032', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Tasneem Afrin', email: 'tasneem.afrin@opshub.bd', role: 'Employee', department: 'Product', designation: 'Associate Product Manager', branch: 'Dhaka HQ', managerEmail: 'farhana.yesmin@opshub.bd', gender: 'Female', baseSalary: 47500, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000032', city: 'Dhaka', avatarBg: '3b82f6' },
   // R&D Lead (under Saifur Rahman)
-  { name: 'Jubayer Ahmed', email: 'jubayer.ahmed@opshub.bd', role: 'Employee', department: 'Research & Development', designation: 'R&D Lead', branch: 'Dhaka HQ', managerEmail: 'saifur.rahman@opshub.bd', gender: 'Male', baseSalary: 105000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000033', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Jubayer Ahmed', email: 'jubayer.ahmed@opshub.bd', role: 'Employee', department: 'Research & Development', designation: 'R&D Lead', branch: 'Dhaka HQ', managerEmail: 'saifur.rahman@opshub.bd', gender: 'Male', baseSalary: 52500, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000033', city: 'Dhaka', avatarBg: '3b82f6' },
   // Sales Team Leads
-  { name: 'Biplob Chandra Das', email: 'biplob.das@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Senior Sales Lead', branch: 'Dhaka HQ', managerEmail: 'kamal.bhuiyan@opshub.bd', gender: 'Male', baseSalary: 90000, bloodGroup: 'O+', religion: 'Hinduism', phone: '+8801711000034', city: 'Dhaka', avatarBg: '3b82f6' },
-  { name: 'Sultana Razia', email: 'sultana.razia@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Team Lead', branch: 'Chittagong Office', managerEmail: 'sumaiya.moni@opshub.bd', gender: 'Female', baseSalary: 85000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000035', city: 'Chittagong', avatarBg: '3b82f6' },
+  { name: 'Biplob Chandra Das', email: 'biplob.das@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Senior Sales Lead', branch: 'Dhaka HQ', managerEmail: 'kamal.bhuiyan@opshub.bd', gender: 'Male', baseSalary: 45000, bloodGroup: 'O+', religion: 'Hinduism', phone: '+8801711000034', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Sultana Razia', email: 'sultana.razia@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Team Lead', branch: 'Dhaka HQ', managerEmail: 'sumaiya.moni@opshub.bd', gender: 'Female', baseSalary: 42500, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000035', city: 'Dhaka', avatarBg: '3b82f6' },
   // Marketing Team Lead
-  { name: 'Fahim Shahriar', email: 'fahim.shahriar@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Digital Marketing Lead', branch: 'Dhaka HQ', managerEmail: 'rezaul.karim@opshub.bd', gender: 'Male', baseSalary: 88000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000036', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Fahim Shahriar', email: 'fahim.shahriar@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Digital Marketing Lead', branch: 'Dhaka HQ', managerEmail: 'rezaul.karim@opshub.bd', gender: 'Male', baseSalary: 44000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000036', city: 'Dhaka', avatarBg: '3b82f6' },
   // Operations Team Leads
-  { name: 'Mokbul Hossain', email: 'mokbul.hossain@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Production Lead', branch: 'Gazipur Plant', managerEmail: 'sirajul.islam@opshub.bd', gender: 'Male', baseSalary: 75000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000037', city: 'Gazipur', avatarBg: '3b82f6' },
-  { name: 'Rupom Saha', email: 'rupom.saha@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Warehouse Lead', branch: 'Chittagong Office', managerEmail: 'liton.sarkar@opshub.bd', gender: 'Male', baseSalary: 70000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000038', city: 'Chittagong', avatarBg: '3b82f6' },
+  { name: 'Mokbul Hossain', email: 'mokbul.hossain@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Production Lead', branch: 'Dhaka HQ', managerEmail: 'sirajul.islam@opshub.bd', gender: 'Male', baseSalary: 37500, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000037', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Rupom Saha', email: 'rupom.saha@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Warehouse Lead', branch: 'Dhaka HQ', managerEmail: 'liton.sarkar@opshub.bd', gender: 'Male', baseSalary: 42000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000038', city: 'Dhaka', avatarBg: '3b82f6' },
   // HR Team Lead
-  { name: 'Tania Rahman', email: 'tania.rahman@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Recruitment Lead', branch: 'Dhaka HQ', managerEmail: 'nasima.khatun@opshub.bd', gender: 'Female', baseSalary: 80000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000039', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Tania Rahman', email: 'tania.rahman@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Recruitment Lead', branch: 'Dhaka HQ', managerEmail: 'nasima.khatun@opshub.bd', gender: 'Female', baseSalary: 40000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000039', city: 'Dhaka', avatarBg: '3b82f6' },
   // Finance Team Lead
-  { name: 'Habibur Rahman', email: 'habibur.rahman@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Accounts Lead', branch: 'Dhaka HQ', managerEmail: 'imran.hossain@opshub.bd', gender: 'Male', baseSalary: 85000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000040', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Habibur Rahman', email: 'habibur.rahman@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Accounts Lead', branch: 'Dhaka HQ', managerEmail: 'imran.hossain@opshub.bd', gender: 'Male', baseSalary: 42500, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000040', city: 'Dhaka', avatarBg: '3b82f6' },
   // Customer Support Team Lead
-  { name: 'Salma Khatun', email: 'salma.khatun@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Team Lead', branch: 'Dhaka HQ', managerEmail: 'rina.begum@opshub.bd', gender: 'Female', baseSalary: 72000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000041', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Salma Khatun', email: 'salma.khatun@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Team Lead', branch: 'Dhaka HQ', managerEmail: 'rina.begum@opshub.bd', gender: 'Female', baseSalary: 36000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000041', city: 'Dhaka', avatarBg: '3b82f6' },
   // QC Team Leads
-  { name: 'Nasir Uddin', email: 'nasir.uddin@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Team Lead', branch: 'Gazipur Plant', managerEmail: 'abdul.karim@opshub.bd', gender: 'Male', baseSalary: 68000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000042', city: 'Gazipur', avatarBg: '3b82f6' },
-  { name: 'Jesmin Akter', email: 'jesmin.akter@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Inspection Lead', branch: 'Gazipur Plant', managerEmail: 'abdul.karim@opshub.bd', gender: 'Female', baseSalary: 65000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000043', city: 'Gazipur', avatarBg: '3b82f6' },
+  { name: 'Nasir Uddin', email: 'nasir.uddin@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Team Lead', branch: 'Dhaka HQ', managerEmail: 'abdul.karim@opshub.bd', gender: 'Male', baseSalary: 40800, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000042', city: 'Dhaka', avatarBg: '3b82f6' },
+  { name: 'Jesmin Akter', email: 'jesmin.akter@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Inspection Lead', branch: 'Dhaka HQ', managerEmail: 'abdul.karim@opshub.bd', gender: 'Female', baseSalary: 39000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000043', city: 'Dhaka', avatarBg: '3b82f6' },
 
   // ═══════════════════════════════════════════════════════
   // LEVEL 5 — STAFF (53 people)
   // ═══════════════════════════════════════════════════════
   // Backend Engineers (under Rifat Islam & Priya Das)
-  { name: 'Md. Sakib Al Hasan', email: 'sakib.hasan@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Senior Software Engineer', branch: 'Dhaka HQ', managerEmail: 'rifat.islam@opshub.bd', gender: 'Male', baseSalary: 95000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000044', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Nazmul Hassan', email: 'nazmul.hassan@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Software Engineer', branch: 'Dhaka HQ', managerEmail: 'rifat.islam@opshub.bd', gender: 'Male', baseSalary: 80000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000045', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Tamanna Sultana', email: 'tamanna.sultana@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Software Engineer', branch: 'Dhaka HQ', managerEmail: 'rifat.islam@opshub.bd', gender: 'Female', baseSalary: 78000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000046', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Rakibul Islam', email: 'rakibul.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Junior Software Engineer', branch: 'Dhaka HQ', managerEmail: 'priya.das@opshub.bd', gender: 'Male', baseSalary: 55000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000047', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Sadia Afrin', email: 'sadia.afrin@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Junior Software Engineer', branch: 'Dhaka HQ', managerEmail: 'priya.das@opshub.bd', gender: 'Female', baseSalary: 50000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000048', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Mehedi Hasan Rony', email: 'mehedi.rony@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Software Engineer', branch: 'Dhaka HQ', managerEmail: 'priya.das@opshub.bd', gender: 'Male', baseSalary: 72000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000049', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Md. Sakib Al Hasan', email: 'sakib.hasan@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Senior Software Engineer', branch: 'Dhaka HQ', managerEmail: 'rifat.islam@opshub.bd', gender: 'Male', baseSalary: 47500, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000044', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Nazmul Hassan', email: 'nazmul.hassan@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Software Engineer', branch: 'Dhaka HQ', managerEmail: 'rifat.islam@opshub.bd', gender: 'Male', baseSalary: 40000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000045', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Tamanna Sultana', email: 'tamanna.sultana@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Software Engineer', branch: 'Dhaka HQ', managerEmail: 'rifat.islam@opshub.bd', gender: 'Female', baseSalary: 39000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000046', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Rakibul Islam', email: 'rakibul.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Junior Software Engineer', branch: 'Dhaka HQ', managerEmail: 'priya.das@opshub.bd', gender: 'Male', baseSalary: 33000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000047', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Sadia Afrin', email: 'sadia.afrin@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Junior Software Engineer', branch: 'Dhaka HQ', managerEmail: 'priya.das@opshub.bd', gender: 'Female', baseSalary: 30000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000048', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Mehedi Hasan Rony', email: 'mehedi.rony@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Software Engineer', branch: 'Dhaka HQ', managerEmail: 'priya.das@opshub.bd', gender: 'Male', baseSalary: 36000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000049', city: 'Dhaka', avatarBg: '64748b' },
   // Frontend Engineers (under Sabbir & Mithila)
-  { name: 'Nusrat Jahan', email: 'nusrat.jahan@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Frontend Developer', branch: 'Dhaka HQ', managerEmail: 'sabbir.hossain@opshub.bd', gender: 'Female', baseSalary: 75000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000050', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Ashiqur Rahman', email: 'ashiqur.rahman@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Frontend Developer', branch: 'Dhaka HQ', managerEmail: 'sabbir.hossain@opshub.bd', gender: 'Male', baseSalary: 70000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000051', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Rabeya Khatun', email: 'rabeya.khatun@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'UI/UX Designer', branch: 'Dhaka HQ', managerEmail: 'mithila.rahman@opshub.bd', gender: 'Female', baseSalary: 68000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000052', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Jahidul Islam', email: 'jahidul.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'UI Developer', branch: 'Dhaka HQ', managerEmail: 'mithila.rahman@opshub.bd', gender: 'Male', baseSalary: 62000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000053', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Nusrat Jahan', email: 'nusrat.jahan@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Frontend Developer', branch: 'Dhaka HQ', managerEmail: 'sabbir.hossain@opshub.bd', gender: 'Female', baseSalary: 37500, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000050', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Ashiqur Rahman', email: 'ashiqur.rahman@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Frontend Developer', branch: 'Dhaka HQ', managerEmail: 'sabbir.hossain@opshub.bd', gender: 'Male', baseSalary: 42000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000051', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Rabeya Khatun', email: 'rabeya.khatun@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'UI/UX Designer', branch: 'Dhaka HQ', managerEmail: 'mithila.rahman@opshub.bd', gender: 'Female', baseSalary: 40800, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000052', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Jahidul Islam', email: 'jahidul.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'UI Developer', branch: 'Dhaka HQ', managerEmail: 'mithila.rahman@opshub.bd', gender: 'Male', baseSalary: 37200, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000053', city: 'Dhaka', avatarBg: '64748b' },
   // DevOps Engineers (under Masud Rana)
-  { name: 'Farhan Tanvir', email: 'farhan.tanvir@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'DevOps Engineer', branch: 'Dhaka HQ', managerEmail: 'masud.rana@opshub.bd', gender: 'Male', baseSalary: 90000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000054', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Monira Begum', email: 'monira.begum@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'SRE Engineer', branch: 'Dhaka HQ', managerEmail: 'masud.rana@opshub.bd', gender: 'Female', baseSalary: 85000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000055', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Farhan Tanvir', email: 'farhan.tanvir@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'DevOps Engineer', branch: 'Dhaka HQ', managerEmail: 'masud.rana@opshub.bd', gender: 'Male', baseSalary: 45000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000054', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Monira Begum', email: 'monira.begum@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'SRE Engineer', branch: 'Dhaka HQ', managerEmail: 'masud.rana@opshub.bd', gender: 'Female', baseSalary: 42500, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000055', city: 'Dhaka', avatarBg: '64748b' },
   // Product Team (under Tasneem Afrin)
-  { name: 'Shuvo Ahmed', email: 'shuvo.ahmed@opshub.bd', role: 'Employee', department: 'Product', designation: 'Product Analyst', branch: 'Dhaka HQ', managerEmail: 'tasneem.afrin@opshub.bd', gender: 'Male', baseSalary: 65000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000056', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Anika Tasnim', email: 'anika.tasnim@opshub.bd', role: 'Employee', department: 'Product', designation: 'Product Designer', branch: 'Dhaka HQ', managerEmail: 'tasneem.afrin@opshub.bd', gender: 'Female', baseSalary: 62000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000057', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Shuvo Ahmed', email: 'shuvo.ahmed@opshub.bd', role: 'Employee', department: 'Product', designation: 'Product Analyst', branch: 'Dhaka HQ', managerEmail: 'tasneem.afrin@opshub.bd', gender: 'Male', baseSalary: 39000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000056', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Anika Tasnim', email: 'anika.tasnim@opshub.bd', role: 'Employee', department: 'Product', designation: 'Product Designer', branch: 'Dhaka HQ', managerEmail: 'tasneem.afrin@opshub.bd', gender: 'Female', baseSalary: 37200, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000057', city: 'Dhaka', avatarBg: '64748b' },
   // R&D Team (under Jubayer Ahmed)
-  { name: 'Mahfuzur Rahman', email: 'mahfuzur.rahman@opshub.bd', role: 'Employee', department: 'Research & Development', designation: 'Research Engineer', branch: 'Dhaka HQ', managerEmail: 'jubayer.ahmed@opshub.bd', gender: 'Male', baseSalary: 82000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000058', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Farzana Haque', email: 'farzana.haque@opshub.bd', role: 'Employee', department: 'Research & Development', designation: 'Data Scientist', branch: 'Dhaka HQ', managerEmail: 'jubayer.ahmed@opshub.bd', gender: 'Female', baseSalary: 88000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000059', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Mahfuzur Rahman', email: 'mahfuzur.rahman@opshub.bd', role: 'Employee', department: 'Research & Development', designation: 'Research Engineer', branch: 'Dhaka HQ', managerEmail: 'jubayer.ahmed@opshub.bd', gender: 'Male', baseSalary: 41000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000058', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Farzana Haque', email: 'farzana.haque@opshub.bd', role: 'Employee', department: 'Research & Development', designation: 'Data Scientist', branch: 'Dhaka HQ', managerEmail: 'jubayer.ahmed@opshub.bd', gender: 'Female', baseSalary: 44000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000059', city: 'Dhaka', avatarBg: '64748b' },
   // Sales Team (under Biplob & Sultana)
-  { name: 'Shohag Mia', email: 'shohag.mia@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Executive', branch: 'Dhaka HQ', managerEmail: 'biplob.das@opshub.bd', gender: 'Male', baseSalary: 55000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000060', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Rafia Sultana', email: 'rafia.sultana@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Executive', branch: 'Dhaka HQ', managerEmail: 'biplob.das@opshub.bd', gender: 'Female', baseSalary: 52000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000061', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Milon Hossain', email: 'milon.hossain@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Representative', branch: 'Dhaka HQ', managerEmail: 'biplob.das@opshub.bd', gender: 'Male', baseSalary: 45000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000062', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Moushumi Akter', email: 'moushumi.akter@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Executive', branch: 'Chittagong Office', managerEmail: 'sultana.razia@opshub.bd', gender: 'Female', baseSalary: 50000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000063', city: 'Chittagong', avatarBg: '64748b' },
-  { name: 'Shakil Ahmed', email: 'shakil.ahmed@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Representative', branch: 'Chittagong Office', managerEmail: 'sultana.razia@opshub.bd', gender: 'Male', baseSalary: 42000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000064', city: 'Chittagong', avatarBg: '64748b' },
+  { name: 'Shohag Mia', email: 'shohag.mia@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Executive', branch: 'Dhaka HQ', managerEmail: 'biplob.das@opshub.bd', gender: 'Male', baseSalary: 33000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000060', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Rafia Sultana', email: 'rafia.sultana@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Executive', branch: 'Dhaka HQ', managerEmail: 'biplob.das@opshub.bd', gender: 'Female', baseSalary: 31200, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000061', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Milon Hossain', email: 'milon.hossain@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Representative', branch: 'Dhaka HQ', managerEmail: 'biplob.das@opshub.bd', gender: 'Male', baseSalary: 27000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000062', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Moushumi Akter', email: 'moushumi.akter@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Executive', branch: 'Dhaka HQ', managerEmail: 'sultana.razia@opshub.bd', gender: 'Female', baseSalary: 30000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000063', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Shakil Ahmed', email: 'shakil.ahmed@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Sales Representative', branch: 'Dhaka HQ', managerEmail: 'sultana.razia@opshub.bd', gender: 'Male', baseSalary: 25200, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000064', city: 'Dhaka', avatarBg: '64748b' },
   // Marketing Team (under Fahim)
-  { name: 'Nazmun Nahar', email: 'nazmun.nahar@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Content Specialist', branch: 'Dhaka HQ', managerEmail: 'fahim.shahriar@opshub.bd', gender: 'Female', baseSalary: 55000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000065', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Tuhin Chowdhury', email: 'tuhin.chowdhury@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Social Media Manager', branch: 'Dhaka HQ', managerEmail: 'fahim.shahriar@opshub.bd', gender: 'Male', baseSalary: 52000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000066', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Israt Jahan', email: 'israt.jahan@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'SEO Specialist', branch: 'Dhaka HQ', managerEmail: 'fahim.shahriar@opshub.bd', gender: 'Female', baseSalary: 48000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000067', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Nazmun Nahar', email: 'nazmun.nahar@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Content Specialist', branch: 'Dhaka HQ', managerEmail: 'fahim.shahriar@opshub.bd', gender: 'Female', baseSalary: 33000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000065', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Tuhin Chowdhury', email: 'tuhin.chowdhury@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Social Media Manager', branch: 'Dhaka HQ', managerEmail: 'fahim.shahriar@opshub.bd', gender: 'Male', baseSalary: 31200, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000066', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Israt Jahan', email: 'israt.jahan@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'SEO Specialist', branch: 'Dhaka HQ', managerEmail: 'fahim.shahriar@opshub.bd', gender: 'Female', baseSalary: 28800, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000067', city: 'Dhaka', avatarBg: '64748b' },
   // Operations / Factory (under Mokbul & Rupom)
-  { name: 'Jakir Hossain', email: 'jakir.hossain@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Machine Operator', branch: 'Gazipur Plant', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Male', baseSalary: 35000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000068', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Rubel Mia', email: 'rubel.mia@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Machine Operator', branch: 'Gazipur Plant', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Male', baseSalary: 33000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000069', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Mosharraf Hossain', email: 'mosharraf.hossain@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Production Worker', branch: 'Gazipur Plant', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Male', baseSalary: 28000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000070', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Kohinoor Begum', email: 'kohinoor.begum@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Production Worker', branch: 'Gazipur Plant', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Female', baseSalary: 26000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000071', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Khabir Uddin', email: 'khabir.uddin@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Store Incharge', branch: 'Chittagong Office', managerEmail: 'rupom.saha@opshub.bd', gender: 'Male', baseSalary: 40000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000072', city: 'Chittagong', avatarBg: '64748b' },
-  { name: 'Pintu Roy', email: 'pintu.roy@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Logistics Assistant', branch: 'Chittagong Office', managerEmail: 'rupom.saha@opshub.bd', gender: 'Male', baseSalary: 32000, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000073', city: 'Chittagong', avatarBg: '64748b' },
+  { name: 'Jakir Hossain', email: 'jakir.hossain@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Machine Operator', branch: 'Dhaka HQ', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Male', baseSalary: 21000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000068', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Rubel Mia', email: 'rubel.mia@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Machine Operator', branch: 'Dhaka HQ', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Male', baseSalary: 20759, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000069', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Mosharraf Hossain', email: 'mosharraf.hossain@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Production Worker', branch: 'Dhaka HQ', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Male', baseSalary: 23418, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000070', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Kohinoor Begum', email: 'kohinoor.begum@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Production Worker', branch: 'Dhaka HQ', managerEmail: 'mokbul.hossain@opshub.bd', gender: 'Female', baseSalary: 23286, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000071', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Khabir Uddin', email: 'khabir.uddin@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Store Incharge', branch: 'Dhaka HQ', managerEmail: 'rupom.saha@opshub.bd', gender: 'Male', baseSalary: 24000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000072', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Pintu Roy', email: 'pintu.roy@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Logistics Assistant', branch: 'Dhaka HQ', managerEmail: 'rupom.saha@opshub.bd', gender: 'Male', baseSalary: 22915, bloodGroup: 'A+', religion: 'Hinduism', phone: '+8801711000073', city: 'Dhaka', avatarBg: '64748b' },
   // HR Team (under Tania)
-  { name: 'Shahanaz Parvin', email: 'shahanaz.parvin@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'HR Executive', branch: 'Dhaka HQ', managerEmail: 'tania.rahman@opshub.bd', gender: 'Female', baseSalary: 55000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000074', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Md. Riaz Uddin', email: 'riaz.uddin@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Payroll Specialist', branch: 'Dhaka HQ', managerEmail: 'tania.rahman@opshub.bd', gender: 'Male', baseSalary: 52000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000075', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Rumana Islam', email: 'rumana.islam@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Training Coordinator', branch: 'Dhaka HQ', managerEmail: 'tania.rahman@opshub.bd', gender: 'Female', baseSalary: 48000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000076', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Shahanaz Parvin', email: 'shahanaz.parvin@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'HR Executive', branch: 'Dhaka HQ', managerEmail: 'tania.rahman@opshub.bd', gender: 'Female', baseSalary: 33000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000074', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Md. Riaz Uddin', email: 'riaz.uddin@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Payroll Specialist', branch: 'Dhaka HQ', managerEmail: 'tania.rahman@opshub.bd', gender: 'Male', baseSalary: 31200, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000075', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Rumana Islam', email: 'rumana.islam@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Training Coordinator', branch: 'Dhaka HQ', managerEmail: 'tania.rahman@opshub.bd', gender: 'Female', baseSalary: 28800, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000076', city: 'Dhaka', avatarBg: '64748b' },
   // Finance Team (under Habibur)
-  { name: 'Mamun Hasan', email: 'mamun.hasan@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Accountant', branch: 'Dhaka HQ', managerEmail: 'habibur.rahman@opshub.bd', gender: 'Male', baseSalary: 58000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000077', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Poly Akter', email: 'poly.akter@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Accounts Assistant', branch: 'Dhaka HQ', managerEmail: 'habibur.rahman@opshub.bd', gender: 'Female', baseSalary: 42000, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000078', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Sumon Chakraborty', email: 'sumon.chakraborty@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Tax Analyst', branch: 'Dhaka HQ', managerEmail: 'habibur.rahman@opshub.bd', gender: 'Male', baseSalary: 60000, bloodGroup: 'B+', religion: 'Hinduism', phone: '+8801711000079', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Mamun Hasan', email: 'mamun.hasan@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Accountant', branch: 'Dhaka HQ', managerEmail: 'habibur.rahman@opshub.bd', gender: 'Male', baseSalary: 34800, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000077', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Poly Akter', email: 'poly.akter@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Accounts Assistant', branch: 'Dhaka HQ', managerEmail: 'habibur.rahman@opshub.bd', gender: 'Female', baseSalary: 25200, bloodGroup: 'A-', religion: 'Islam', phone: '+8801711000078', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Sumon Chakraborty', email: 'sumon.chakraborty@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Tax Analyst', branch: 'Dhaka HQ', managerEmail: 'habibur.rahman@opshub.bd', gender: 'Male', baseSalary: 36000, bloodGroup: 'B+', religion: 'Hinduism', phone: '+8801711000079', city: 'Dhaka', avatarBg: '64748b' },
   // Customer Support Team (under Salma)
-  { name: 'Shirin Sultana', email: 'shirin.sultana@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Female', baseSalary: 38000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000080', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Selim Reza', email: 'selim.reza@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Male', baseSalary: 35000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000081', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Hasina Begum', email: 'hasina.begum@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Specialist', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Female', baseSalary: 40000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000082', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Alamin Sheikh', email: 'alamin.sheikh@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Male', baseSalary: 34000, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000083', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Shirin Sultana', email: 'shirin.sultana@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Female', baseSalary: 22800, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000080', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Selim Reza', email: 'selim.reza@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Male', baseSalary: 21000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000081', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Hasina Begum', email: 'hasina.begum@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Specialist', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Female', baseSalary: 24000, bloodGroup: 'B-', religion: 'Islam', phone: '+8801711000082', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Alamin Sheikh', email: 'alamin.sheikh@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'salma.khatun@opshub.bd', gender: 'Male', baseSalary: 20400, bloodGroup: 'O-', religion: 'Islam', phone: '+8801711000083', city: 'Dhaka', avatarBg: '64748b' },
   // QC Team (under Nasir & Jesmin)
-  { name: 'Delwar Hossain', email: 'delwar.hossain@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Inspector', branch: 'Gazipur Plant', managerEmail: 'nasir.uddin@opshub.bd', gender: 'Male', baseSalary: 38000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000084', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Morsheda Begum', email: 'morsheda.begum@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Inspector', branch: 'Gazipur Plant', managerEmail: 'nasir.uddin@opshub.bd', gender: 'Female', baseSalary: 36000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000085', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Sokhina Begum', email: 'sokhina.begum@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'Lab Technician', branch: 'Gazipur Plant', managerEmail: 'jesmin.akter@opshub.bd', gender: 'Female', baseSalary: 32000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000086', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Faruk Ahmed', email: 'faruk.ahmed@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'Quality Analyst', branch: 'Gazipur Plant', managerEmail: 'jesmin.akter@opshub.bd', gender: 'Male', baseSalary: 40000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000087', city: 'Gazipur', avatarBg: '64748b' },
+  { name: 'Delwar Hossain', email: 'delwar.hossain@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Inspector', branch: 'Dhaka HQ', managerEmail: 'nasir.uddin@opshub.bd', gender: 'Male', baseSalary: 22800, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000084', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Morsheda Begum', email: 'morsheda.begum@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'QC Inspector', branch: 'Dhaka HQ', managerEmail: 'nasir.uddin@opshub.bd', gender: 'Female', baseSalary: 21600, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000085', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Sokhina Begum', email: 'sokhina.begum@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'Lab Technician', branch: 'Dhaka HQ', managerEmail: 'jesmin.akter@opshub.bd', gender: 'Female', baseSalary: 22939, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000086', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Faruk Ahmed', email: 'faruk.ahmed@opshub.bd', role: 'Employee', department: 'Quality Control', designation: 'Quality Analyst', branch: 'Dhaka HQ', managerEmail: 'jesmin.akter@opshub.bd', gender: 'Male', baseSalary: 24000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000087', city: 'Dhaka', avatarBg: '64748b' },
   // Additional Staff across departments
-  { name: 'Raju Barua', email: 'raju.barua@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'QA Engineer', branch: 'Dhaka HQ', managerEmail: 'sabbir.hossain@opshub.bd', gender: 'Male', baseSalary: 65000, bloodGroup: 'O+', religion: 'Buddhism', phone: '+8801711000088', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Maliha Tabassum', email: 'maliha.tabassum@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'QA Engineer', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Female', baseSalary: 60000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000089', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Tariqul Islam', email: 'tariqul.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Mobile Developer', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Male', baseSalary: 75000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000090', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Shaila Pervin', email: 'shaila.pervin@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Graphic Designer', branch: 'Dhaka HQ', managerEmail: 'rezaul.karim@opshub.bd', gender: 'Female', baseSalary: 45000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000091', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Jewel Rana', email: 'jewel.rana@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Business Developer', branch: 'Dhaka HQ', managerEmail: 'kamal.bhuiyan@opshub.bd', gender: 'Male', baseSalary: 55000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000092', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Liza Akter', email: 'liza.akter@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Admin Executive', branch: 'Dhaka HQ', managerEmail: 'nasima.khatun@opshub.bd', gender: 'Female', baseSalary: 40000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000093', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Sujan Biswas', email: 'sujan.biswas@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Audit Assistant', branch: 'Dhaka HQ', managerEmail: 'imran.hossain@opshub.bd', gender: 'Male', baseSalary: 42000, bloodGroup: 'O-', religion: 'Hinduism', phone: '+8801711000094', city: 'Dhaka', avatarBg: '64748b' },
-  { name: 'Rahima Khatun', email: 'rahima.khatun@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Maintenance Helper', branch: 'Gazipur Plant', managerEmail: 'sirajul.islam@opshub.bd', gender: 'Female', baseSalary: 25000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000095', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Emon Chandra Roy', email: 'emon.roy@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Electrician', branch: 'Gazipur Plant', managerEmail: 'sirajul.islam@opshub.bd', gender: 'Male', baseSalary: 30000, bloodGroup: 'B+', religion: 'Hinduism', phone: '+8801711000096', city: 'Gazipur', avatarBg: '64748b' },
-  { name: 'Taslima Nasreen', email: 'taslima.nasreen@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'rina.begum@opshub.bd', gender: 'Female', baseSalary: 36000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000097', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Raju Barua', email: 'raju.barua@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'QA Engineer', branch: 'Dhaka HQ', managerEmail: 'sabbir.hossain@opshub.bd', gender: 'Male', baseSalary: 39000, bloodGroup: 'O+', religion: 'Buddhism', phone: '+8801711000088', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Maliha Tabassum', email: 'maliha.tabassum@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'QA Engineer', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Female', baseSalary: 36000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000089', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Tariqul Islam', email: 'tariqul.islam@opshub.bd', role: 'Employee', department: 'Engineering', designation: 'Mobile Developer', branch: 'Dhaka HQ', managerEmail: 'ayesha.siddiqa@opshub.bd', gender: 'Male', baseSalary: 37500, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000090', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Shaila Pervin', email: 'shaila.pervin@opshub.bd', role: 'Employee', department: 'Marketing', designation: 'Graphic Designer', branch: 'Dhaka HQ', managerEmail: 'rezaul.karim@opshub.bd', gender: 'Female', baseSalary: 27000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000091', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Jewel Rana', email: 'jewel.rana@opshub.bd', role: 'Employee', department: 'Sales', designation: 'Business Developer', branch: 'Dhaka HQ', managerEmail: 'kamal.bhuiyan@opshub.bd', gender: 'Male', baseSalary: 33000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000092', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Liza Akter', email: 'liza.akter@opshub.bd', role: 'Employee', department: 'Human Resources', designation: 'Admin Executive', branch: 'Dhaka HQ', managerEmail: 'nasima.khatun@opshub.bd', gender: 'Female', baseSalary: 24000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000093', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Sujan Biswas', email: 'sujan.biswas@opshub.bd', role: 'Employee', department: 'Finance', designation: 'Audit Assistant', branch: 'Dhaka HQ', managerEmail: 'imran.hossain@opshub.bd', gender: 'Male', baseSalary: 25200, bloodGroup: 'O-', religion: 'Hinduism', phone: '+8801711000094', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Rahima Khatun', email: 'rahima.khatun@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Maintenance Helper', branch: 'Dhaka HQ', managerEmail: 'sirajul.islam@opshub.bd', gender: 'Female', baseSalary: 23027, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000095', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Emon Chandra Roy', email: 'emon.roy@opshub.bd', role: 'Employee', department: 'Operations', designation: 'Electrician', branch: 'Dhaka HQ', managerEmail: 'sirajul.islam@opshub.bd', gender: 'Male', baseSalary: 21812, bloodGroup: 'B+', religion: 'Hinduism', phone: '+8801711000096', city: 'Dhaka', avatarBg: '64748b' },
+  { name: 'Taslima Nasreen', email: 'taslima.nasreen@opshub.bd', role: 'Employee', department: 'Customer Support', designation: 'Support Agent', branch: 'Dhaka HQ', managerEmail: 'rina.begum@opshub.bd', gender: 'Female', baseSalary: 21600, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000097', city: 'Dhaka', avatarBg: '64748b' },
 ];
 
 // ─── Auth user creation helper ───
@@ -526,46 +524,46 @@ async function main() {
   console.log('💻 Seeding Assets…');
   const assetCategories = ['Laptop', 'Desktop', 'Smartphone', 'Monitor', 'Peripheral'];
   
-  const getAssetDetails = (cat: string) => {
+    const getAssetDetails = (cat: string) => {
     switch (cat) {
       case 'Laptop':
         return pick([
-          { brand: 'HP', name: 'HP EliteBook 840 G8' },
-          { brand: 'HP', name: 'HP ProBook 450 G9' },
-          { brand: 'Apple', name: 'MacBook Pro 16" (M2 Max)' },
-          { brand: 'Apple', name: 'MacBook Air 13" (M2)' },
-          { brand: 'Dell', name: 'Dell Latitude 7420' },
-          { brand: 'Dell', name: 'Dell XPS 15' },
-          { brand: 'Lenovo', name: 'Lenovo ThinkPad T14' },
-          { brand: 'Lenovo', name: 'Lenovo ThinkPad X1 Carbon' },
+          { brand: 'HP', name: 'HP EliteBook 840 G8', price: 145000 },
+          { brand: 'HP', name: 'HP ProBook 450 G9', price: 95000 },
+          { brand: 'Apple', name: 'MacBook Pro 16" (M2 Max)', price: 385000 },
+          { brand: 'Apple', name: 'MacBook Air 13" (M2)', price: 135000 },
+          { brand: 'Dell', name: 'Dell Latitude 7420', price: 130000 },
+          { brand: 'Dell', name: 'Dell XPS 15', price: 250000 },
+          { brand: 'Lenovo', name: 'Lenovo ThinkPad T14', price: 140000 },
+          { brand: 'Lenovo', name: 'Lenovo ThinkPad X1 Carbon', price: 210000 },
         ]);
       case 'Desktop':
         return pick([
-          { brand: 'HP', name: 'HP EliteDesk 800 G6' },
-          { brand: 'Dell', name: 'Dell OptiPlex 7090' },
-          { brand: 'Apple', name: 'Mac Studio (M2 Max)' },
+          { brand: 'HP', name: 'HP EliteDesk 800 G6', price: 85000 },
+          { brand: 'Dell', name: 'Dell OptiPlex 7090', price: 75000 },
+          { brand: 'Apple', name: 'Mac Studio (M2 Max)', price: 275000 },
         ]);
       case 'Smartphone':
         return pick([
-          { brand: 'Apple', name: 'iPhone 14 Pro' },
-          { brand: 'Apple', name: 'iPhone 15' },
-          { brand: 'Samsung', name: 'Samsung Galaxy S23 Ultra' },
-          { brand: 'Samsung', name: 'Samsung Galaxy S23' },
-          { brand: 'Google', name: 'Google Pixel 7 Pro' },
+          { brand: 'HP', name: 'HP Elite x3', price: 65000 },
+          { brand: 'Apple', name: 'iPhone 14 Pro', price: 135000 },
+          { brand: 'Apple', name: 'iPhone 15', price: 110000 },
+          { brand: 'Samsung', name: 'Samsung Galaxy S23 Ultra', price: 155000 },
+          { brand: 'Google', name: 'Google Pixel 7 Pro', price: 95000 },
         ]);
       case 'Monitor':
         return pick([
-          { brand: 'Dell', name: 'Dell UltraSharp 27" 4K' },
-          { brand: 'HP', name: 'HP Z27q G3 QHD Display' },
-          { brand: 'LG', name: 'LG 27" UHD IPS Monitor' },
+          { brand: 'Dell', name: 'Dell UltraSharp 27" 4K', price: 75000 },
+          { brand: 'HP', name: 'HP Z27q G3 QHD Display', price: 55000 },
+          { brand: 'LG', name: 'LG 27" UHD IPS Monitor', price: 45000 },
         ]);
       case 'Peripheral':
       default:
         return pick([
-          { brand: 'Logitech', name: 'Logitech MX Master 3S Mouse' },
-          { brand: 'Logitech', name: 'Logitech MX Keys Wireless Keyboard' },
-          { brand: 'Apple', name: 'Magic Keyboard with Touch ID' },
-          { brand: 'Jabra', name: 'Jabra Evolve2 65 Headset' },
+          { brand: 'Logitech', name: 'Logitech MX Master 3S Mouse', price: 11500 },
+          { brand: 'Logitech', name: 'Logitech MX Keys Wireless Keyboard', price: 14000 },
+          { brand: 'Apple', name: 'Magic Keyboard with Touch ID', price: 18500 },
+          { brand: 'Jabra', name: 'Jabra Evolve2 65 Headset', price: 25000 },
         ]);
     }
   };
@@ -574,27 +572,36 @@ async function main() {
   for (let i = 0; i < allUserIds.length; i++) {
     const uid = allUserIds[i];
     const cat = pick(assetCategories);
-    const { brand, name } = getAssetDetails(cat);
+    const { brand, name, price } = getAssetDetails(cat);
     const tag = `OPS-AST-2026-${(i + 1).toString().padStart(3, '0')}`;
     try {
-      await prisma.asset.create({
-        data: {
+      await prisma.asset.upsert({
+        where: { assetTag: tag },
+        update: {
+          name,
+          category: cat,
+          brand,
+          purchasePrice: price,
+        },
+        create: {
           name,
           assetTag: tag,
           serialNumber: `SN-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
           category: cat,
           brand,
           condition: pick(['New', 'Excellent', 'Good']),
-          location: pick(['Dhaka HQ', 'Chittagong Office', 'Gazipur Plant']),
+          location: 'Dhaka HQ',
           status: 'Active',
-          purchasePrice: Math.floor(Math.random() * 120000) + 30000,
+          purchasePrice: price,
           purchaseDate: new Date(2025, 0, 15),
           assignedDate: new Date(2025, 1, 1),
           userId: uid,
         },
       });
       assetCount++;
-    } catch { /* skip */ }
+    } catch (err) {
+      console.error('Error creating asset:', err);
+    }
   }
   console.log(`✅ Assets: ${assetCount} created`);
 

@@ -268,7 +268,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Price ($ USD)</T></label>
+                <label className="mb-1 block text-xs font-bold uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Purchase Price (৳ BDT)</T></label>
                 <Input
                   type="number"
                   step="0.01"
@@ -404,7 +404,7 @@ export function AssetsClient({ assets, isAdmin }: AssetsClientProps) {
                     <div>
                       <p className="text-[10px] uppercase text-[var(--text-muted)]">Book Value</p>
                       <p className={`font-semibold ${dep.current === 0 ? 'text-[var(--rose)]' : 'text-[var(--text-main)]'}`}>
-                        {dep.current === null ? 'N/A' : `$${dep.current.toFixed(2)}`}
+                        {dep.current === null ? 'N/A' : `৳${dep.current.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
                       </p>
                     </div>
                   </div>

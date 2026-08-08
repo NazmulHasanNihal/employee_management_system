@@ -12,8 +12,8 @@ export default function PricingSection() {
     {
       name: "Starter",
       tagline: "Perfect for small teams & growing startups.",
-      monthlyPrice: 29,
-      annualPrice: 23,
+      monthlyPrice: 2900,
+      annualPrice: 2300,
       popular: false,
       ctaText: "Start 14-Day Free Trial",
       ctaHref: "/login?signup=true&plan=starter",
@@ -29,8 +29,8 @@ export default function PricingSection() {
     {
       name: "Pro",
       tagline: "Ideal for scaling companies needing automation.",
-      monthlyPrice: 79,
-      annualPrice: 63,
+      monthlyPrice: 7900,
+      annualPrice: 6300,
       popular: true,
       badgeText: "MOST POPULAR",
       ctaText: "Start Free Trial (Pro)",
@@ -49,8 +49,8 @@ export default function PricingSection() {
     {
       name: "Enterprise",
       tagline: "For large organizations requiring custom SLAs.",
-      monthlyPrice: 199,
-      annualPrice: 159,
+      monthlyPrice: 19900,
+      annualPrice: 15900,
       popular: false,
       ctaText: "Contact Sales",
       ctaHref: "/login?signup=true&plan=enterprise",
@@ -138,12 +138,12 @@ export default function PricingSection() {
 
                 {/* Price Box */}
                 <div className="mb-8 p-4 rounded-2xl bg-[var(--bg-hover)] border border-[var(--border-hairline)]">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-[var(--text-main)]">${price}</span>
-                    <span className="text-sm font-medium text-[var(--text-muted)]">{/* @ts-ignore */}<T>/ month</T></span>
+                  <div className="mt-6">
+                    <span className="text-4xl font-extrabold text-[var(--text-main)]">৳{price.toLocaleString('en-IN')}</span>
+                    <span className="text-[var(--text-muted)] font-medium">/mo</span>
                   </div>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">
-                    {isAnnual ? "Billed annually ($" + price * 12 + "/yr)" : "Billed monthly"}
+                  <p className="mt-2 text-xs text-[var(--text-muted)] font-medium">
+                    {isAnnual ? "Billed annually (৳" + (price * 12).toLocaleString('en-IN') + "/yr)" : "Billed monthly"}
                   </p>
                 </div>
 

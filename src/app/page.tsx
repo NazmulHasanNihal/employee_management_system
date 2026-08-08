@@ -16,25 +16,25 @@ import { T } from "@/components/Translate";
 export default function SaaSMainPage() {
   const testimonials = [
     {
-      quote: "OpsHub cut our monthly payroll processing time from 4 days to under 15 minutes. The automated festival bonus feature alone saved us from massive manual spreadsheet errors.",
+      quote: "OpsHub cut our monthly payroll processing time from 4 days to under 15 minutes. The automated BDT festival bonus feature alone saved us from massive manual spreadsheet errors.",
       author: "Sarah Jenkins",
       role: "Head of People & Culture",
       company: "Apex Innovations (120 Employees)",
       avatar: "SJ",
     },
     {
-      quote: "We replaced BambooHR and separate shift scheduling apps with OpsHub. We saved over $12,000 annually while giving our team a vastly superior mobile experience.",
+      quote: "We replaced BambooHR and separate shift scheduling apps with OpsHub. We saved over ৳1,200,000 annually while giving our team a vastly superior mobile experience.",
       author: "David Chen",
       role: "VP of Operations",
       company: "Nexus Logistics (250 Employees)",
       avatar: "DC",
     },
     {
-      quote: "The built-in DEI and compliance audit logs give our board complete peace of mind. Onboarding new staff takes less than 10 minutes now.",
-      author: "Elena Rostova",
+      quote: "The built-in DEI and compliance audit logs give our board complete peace of mind. Onboarding new staff takes less than 10 minutes now. A game changer for BD enterprises.",
+      author: "Nazmul Hasan Nihal",
       role: "Chief Executive Officer",
-      company: "Vanguard Tech",
-      avatar: "ER",
+      company: "OpsHub Enterprise",
+      avatar: "NN",
     },
   ];
 
@@ -168,7 +168,7 @@ export default function SaaSMainPage() {
                       <span>{/* @ts-ignore */}<T>Monthly Payroll</T></span>
                       <DollarSign className="w-4 h-4 text-[var(--sky)]" />
                     </div>
-                    <div className="text-2xl font-extrabold text-[var(--text-main)]">$84,500</div>
+                    <div className="text-2xl font-extrabold text-[var(--text-main)]">৳84,50,000</div>
                     <span className="text-[10px] text-[var(--emerald)] font-semibold mt-1 block">{/* @ts-ignore */}<T>1-Click Payout Ready</T></span>
                   </div>
 

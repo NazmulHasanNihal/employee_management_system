@@ -7,7 +7,7 @@ import { T } from "@/components/Translate";
 
 export default function RoiCalculator() {
   const [employees, setEmployees] = useState<number>(40);
-  const [hourlyRate, setHourlyRate] = useState<number>(40);
+  const [hourlyRate, setHourlyRate] = useState<number>(300);
 
   // Formulas
   // Estimated HR/Payroll admin hours wasted per employee per month in manual setup: ~1.2 hrs
@@ -63,24 +63,24 @@ export default function RoiCalculator() {
             <div>
               <div className="flex justify-between items-center mb-3">
                 <label className="text-sm font-bold text-[var(--text-main)] flex items-center gap-2">
-                  <span>{/* @ts-ignore */}<T>Avg HR / Admin Hourly Rate ($):</T></span>
+                  <span>{/* @ts-ignore */}<T>Avg HR / Admin Hourly Rate (৳):</T></span>
                 </label>
                 <span className="px-3.5 py-1 rounded-xl bg-[var(--sky-soft)] text-[var(--sky)] font-extrabold text-lg border border-[var(--sky)]/30">
-                  ${hourlyRate} {/* @ts-ignore */}<T>/ hr</T></span>
+                  ৳{hourlyRate} {/* @ts-ignore */}<T>/ hr</T></span>
               </div>
               <input
                 type="range"
-                min="20"
-                max="100"
-                step="5"
+                min="100"
+                max="1000"
+                step="50"
                 value={hourlyRate}
                 onChange={(e) => setHourlyRate(parseInt(e.target.value))}
                 className="w-full h-3 bg-[var(--bg-panel)] rounded-lg appearance-none cursor-pointer accent-[var(--brand)]"
               />
               <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2">
-                <span>{/* @ts-ignore */}<T>$20/hr</T></span>
-                <span>{/* @ts-ignore */}<T>$60/hr</T></span>
-                <span>{/* @ts-ignore */}<T>$100/hr</T></span>
+                <span>{/* @ts-ignore */}<T>৳100/hr</T></span>
+                <span>{/* @ts-ignore */}<T>৳500/hr</T></span>
+                <span>{/* @ts-ignore */}<T>৳1000/hr</T></span>
               </div>
             </div>
 
@@ -96,9 +96,10 @@ export default function RoiCalculator() {
             <div>
               <span className="text-xs font-bold text-[var(--sky)] uppercase tracking-widest block mb-2">
                 {/* @ts-ignore */}<T>Estimated Annual Savings</T></span>
-              <div className="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[var(--sky)] to-[var(--brand)] my-3">
-                ${annualSavings.toLocaleString()}
-              </div>
+              <div className="text-center">
+                <h3 className="text-5xl sm:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-[var(--sky-soft)] tracking-tight drop-shadow-sm">
+                ৳{annualSavings.toLocaleString('en-IN')}
+                </h3></div>
               <p className="text-xs text-[var(--text-muted)]">{/* @ts-ignore */}<T>Total yearly ROI from switching to OpsHub</T></p>
 
               <div className="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-[var(--border-hairline)]">
@@ -114,7 +115,7 @@ export default function RoiCalculator() {
                   <div className="flex items-center justify-center gap-1 text-[var(--text-muted)] text-xs mb-1">
                     <DollarSign className="w-3.5 h-3.5 text-[var(--emerald)]" />
                     {/* @ts-ignore */}<T>Monthly Value</T></div>
-                  <span className="font-bold text-[var(--text-main)] text-base">${monthlySavings.toLocaleString()}</span>
+                  <span className="font-bold text-[var(--text-main)] text-base">৳{monthlySavings.toLocaleString('en-IN')}</span>
                   <span className="text-[10px] text-[var(--text-muted)] block">{/* @ts-ignore */}<T>per month</T></span>
                 </div>
               </div>
