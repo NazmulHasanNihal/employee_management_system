@@ -265,41 +265,41 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
             <CardTitle>{/* @ts-ignore */}<T>Adjustment History</T></CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {filtered.map((adj) => (
                 <div
                   key={adj.id}
-                  className="flex flex-col justify-between gap-4 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 hover:border-[var(--brand)]/30 transition-all"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-lg border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-2.5 hover:border-[var(--brand)]/30 transition-all"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-start sm:items-center gap-4">
-                      <div className="mt-1 sm:mt-0">{typeIcon(adj.type)}</div>
-                      <div>
-                        <p className="font-semibold text-[var(--text-main)]">
-                          {adj.user?.name ?? 'Employee'} ({adj.user?.email ?? '—'})
-                        </p>
-                        <p className="text-xs text-[var(--text-muted)]">
-                          {adj.user?.department && <span>{adj.user.department} · </span>}
-                          <span className="font-semibold">{adj.type}</span> · {adj.reason}
-                        </p>
-                        {adj.notes && (
-                          <p className="text-xs text-[var(--text-muted)] mt-1 italic">{adj.notes}</p>
-                        )}
-                        <p className="text-xs text-[var(--text-muted)] mt-1">
-                          {formatCurrency(adj.oldSalary, 'BDT', 'en')} →{' '}
-                          <span className={adj.delta >= 0 ? 'font-bold text-[var(--emerald)]' : 'font-bold text-[var(--rose)]'}>
-                            {formatCurrency(adj.newSalary, 'BDT', 'en')}
-                          </span>
-                          {' '}({adj.delta >= 0 ? '+' : ''}{adj.percentage ?? 0}%){' '}
-                          · Effective {formatDate(adj.effectiveDate)}
-                          {' '}· Created {formatDate(adj.createdAt)}
-                        </p>
+                  <div className="flex items-center gap-3">
+                    <div className="scale-75">{typeIcon(adj.type)}</div>
+                    <div>
+                      <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
+                        {adj.user?.name ?? 'Employee'} 
+                        <span className="font-normal text-xs text-[var(--text-muted)] hidden sm:inline">
+                          ({adj.user?.department ?? '—'})
+                        </span>
                       </div>
+                      <div className="text-xs text-[var(--text-muted)] flex items-center gap-1.5 flex-wrap">
+                        <span className="font-medium">{adj.type}</span>
+                        <span>·</span>
+                        <span className="line-through opacity-70">{formatCurrency(adj.oldSalary, 'BDT', 'en')}</span>
+                        <span>→</span>
+                        <span className={adj.delta >= 0 ? 'font-bold text-[var(--emerald)]' : 'font-bold text-[var(--rose)]'}>
+                          {formatCurrency(adj.newSalary, 'BDT', 'en')}
+                        </span>
+                        <span>({adj.delta >= 0 ? '+' : ''}{adj.percentage ?? 0}%)</span>
+                        <span className="hidden md:inline">· Effective {formatDate(adj.effectiveDate)}</span>
+                      </div>
+                      {adj.notes && (
+                        <p className="text-[10px] text-[var(--text-muted)] mt-0.5 italic truncate max-w-[200px] sm:max-w-[400px]">{adj.notes}</p>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2 self-end sm:self-center">
-                      {statusBadge(adj.status)}
-                      {canApprove && (
-                        <div className="flex items-center gap-1">
+                  </div>
+                  <div className="flex items-center gap-2 self-end sm:self-center">
+                    {statusBadge(adj.status)}
+                    {canApprove && (
+                      <div className="flex items-center gap-1">
                           {(adj.status === 'PENDING' || adj.status === 'DRAFT') && (
                             <>
                               <Button

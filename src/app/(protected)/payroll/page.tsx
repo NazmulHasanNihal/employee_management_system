@@ -6,6 +6,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { DeltaBadge } from '@/components/ui/delta-badge';
 import { PayrollActions } from '@/components/payroll/PayrollActions';
 import { PayslipCard } from '@/components/payroll/PayslipCard';
+import { PayslipVault } from '@/components/payroll/PayslipVault';
 import { PaymentHub } from '@/components/payroll/PaymentHub';
 import PaymentSystemHub from '@/components/payroll/PaymentSystemHub';
 import { getPayrolls, getPayrollAdminStats, getPaymentsForUser, getSalesMonthTotal, type PayrollWithUser } from '@/server/queries';
@@ -143,23 +144,7 @@ export default async function PayrollPage() {
         userId={caller?.id || ''}
       />
 
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-          {/* @ts-ignore */}<T>Payslip Vault</T></h2>
-
-        {payrolls.length === 0 ? (
-          <EmptyState
-            title="No Payslips Found"
-            description="There are no payslips in the vault yet."
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {payrolls.map((pay: PayrollWithUser) => (
-              <PayslipCard key={pay.id} pay={pay} isAdmin={isAdmin} currentUser={caller} />
-            ))}
-          </div>
-        )}
-      </div>
+      <PayslipVault payrolls={payrolls} isAdmin={isAdmin} caller={caller} />
     </div>
   );
 }
