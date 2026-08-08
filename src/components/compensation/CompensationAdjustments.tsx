@@ -347,7 +347,6 @@ export function CompensationAdjustments({ adjustments, isAdmin, canApprove }: { 
                         </div>
                       )}
                     </div>
-                  </div>
 
                   {/* ── IN-PAGE INLINE REJECTION FORM ── */}
                   {rejectingId === adj.id && (
