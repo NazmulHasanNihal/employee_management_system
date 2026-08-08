@@ -264,17 +264,11 @@ function layoutTree(
           id: `e-${nodeId}-${childNodeId}`,
           source: nodeId,
           target: childNodeId,
-          type: 'smoothstep',
+          type: 'bezier',
           animated: level < 2,
           style: {
             stroke: colors.edge,
             strokeWidth: Math.max(2, 4 - level * 0.5),
-          },
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: colors.edge,
-            width: 14,
-            height: 14,
           },
         });
       }

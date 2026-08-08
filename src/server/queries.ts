@@ -1717,26 +1717,38 @@ export async function getJobs(caller: Caller | null): Promise<{ id: string; titl
   }));
 }
 
-export async function getBiasAudit(caller: Caller | null) {
-  if (!caller?.isAdmin && !caller?.isCEO) return { analysis: [], overallAvgSalary: 0 };
+export async function getBiasAudit(caller: Caller | null, threshold = 20) {
+  if (!caller?.isAdmin && !caller?.isCEO) return { dimensions: [], overallAvgSalary: 0 };
   const users = await prisma.user.findMany({
-    where: { baseSalary: { not: null }, department: { not: null } },
-    select: { department: true, baseSalary: true },
+    where: { baseSalary: { not: null } },
+    select: { department: true, gender: true, religion: true, baseSalary: true },
   });
-  const groups: Record<string, number[]> = {};
-  for (const u of users) {
-    const dept = u.department;
-    if (!dept) continue;
-    (groups[dept] ||= []).push(u.baseSalary!);
-  }
+  
   const allSalaries = users.map((u) => u.baseSalary).filter((s): s is number => s != null);
   const globalAvg = allSalaries.length ? allSalaries.reduce((a, b) => a + b, 0) / allSalaries.length : 0;
-  const analysis = Object.entries(groups).map(([dept, salaries]) => {
-    const avg = salaries.reduce((a, b) => a + b, 0) / salaries.length;
-    const deviation = globalAvg ? (avg / globalAvg - 1) * 100 : 0;
-    return { group: dept, headcount: salaries.length, avgSalary: Math.round(avg), deviation: Number(deviation.toFixed(1)), biasFlag: Math.abs(deviation) > 20 };
-  });
-  return { analysis, overallAvgSalary: Math.round(globalAvg) };
+  
+  function analyze(groupByField: 'department' | 'gender' | 'religion') {
+    const groups: Record<string, number[]> = {};
+    for (const u of users) {
+      const key = u[groupByField];
+      if (!key) continue;
+      (groups[key as string] ||= []).push(u.baseSalary!);
+    }
+    return Object.entries(groups).map(([groupName, salaries]) => {
+      const avg = salaries.reduce((a, b) => a + b, 0) / salaries.length;
+      const deviation = globalAvg ? (avg / globalAvg - 1) * 100 : 0;
+      return { group: groupName, headcount: salaries.length, avgSalary: Math.round(avg), deviation: Number(deviation.toFixed(1)), biasFlag: Math.abs(deviation) > threshold };
+    });
+  }
+
+  return { 
+    dimensions: [
+      { name: 'Department', analysis: analyze('department') },
+      { name: 'Gender', analysis: analyze('gender') },
+      { name: 'Religion', analysis: analyze('religion') },
+    ],
+    overallAvgSalary: Math.round(globalAvg) 
+  };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -2179,7 +2191,7 @@ export const queries = {
   whistleblowerReports: () => getCaller().then((c) => getWhistleblowerReports(c)),
   committeeMembers: getCommitteeMembers,
   jobs: () => getCaller().then((c) => getJobs(c)),
-  biasAudit: () => getCaller().then((c) => getBiasAudit(c)),
+  biasAudit: (threshold?: number) => getCaller().then((c) => getBiasAudit(c, threshold)),
   skills: (targetId?: string) => getCaller().then((c) => getSkills(c, targetId)),
   activePresence: getActivePresence,
   engagementRecent: getEngagementRecent,

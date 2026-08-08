@@ -108,7 +108,7 @@ export function OrgCompensationTree({
         )}
 
         <div
-          className={`group flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 p-3.5 rounded-xl border transition-all ${
+          className={`group flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 p-2 rounded-lg border transition-all ${
             isCeo
               ? 'bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border-amber-500/40 shadow-lg shadow-amber-950/20'
               : depth === 1
@@ -257,7 +257,7 @@ export function OrgCompensationTree({
             No organizational hierarchy nodes found.
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-1 h-[500px] overflow-y-auto pr-2 custom-scrollbar">
             {roots.map((root) => renderNode(root, 0))}
           </div>
         )}

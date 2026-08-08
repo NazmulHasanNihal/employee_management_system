@@ -120,7 +120,10 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
   return (
     <>
-      <Card className="group transition-all hover:border-[var(--brand)]/40 hover:shadow-lg">
+      <Card
+        className="group transition-all hover:border-[var(--brand)]/40 hover:shadow-lg cursor-pointer"
+        onClick={() => setShowModal(true)}
+      >
         <CardContent className="p-6 space-y-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -166,14 +169,14 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
           <div className="flex gap-2">
             <Button
-              onClick={() => setShowModal(true)}
+              onClick={(e) => { e.stopPropagation(); setShowModal(true); }}
               variant="outline"
               size="sm"
               className="flex-1 rounded-xl text-xs font-semibold"
             >
               <FileText size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>View Itemized Slip</T></Button>
             <Button
-              onClick={handlePrint}
+              onClick={(e) => { e.stopPropagation(); handlePrint(); }}
               variant="primary"
               size="sm"
               className="flex-1 rounded-xl text-xs font-semibold"

@@ -88,10 +88,10 @@ const USERS: SeedUser[] = [
   // ═══════════════════════════════════════════════════════
   // LEVEL 1 — C-SUITE (4 people, report to CEO)
   // ═══════════════════════════════════════════════════════
-  { name: 'Musrat Jahan Gungun', email: 'musrat.gungun@opshub.bd', role: 'Director', department: 'Operations', designation: 'Chief Operating Officer (COO)', branch: 'Dhaka HQ', gender: 'Female', baseSalary: 190000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000001', city: 'Dhaka', avatarBg: 'f59e0b' },
-  { name: 'Omar Faruk Kafi', email: 'omar.kafi@opshub.bd', role: 'Director', department: 'Engineering', designation: 'Chief Technology Officer (CTO)', branch: 'Dhaka HQ', gender: 'Male', baseSalary: 200000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000002', city: 'Dhaka', avatarBg: '8b5cf6' },
-  { name: 'Lutfar Rahman', email: 'lutfar.rahman@opshub.bd', role: 'Director', department: 'Finance', designation: 'Chief Financial Officer (CFO)', branch: 'Dhaka HQ', gender: 'Male', baseSalary: 185000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000003', city: 'Dhaka', avatarBg: '10b981' },
-  { name: 'Fatema Begum', email: 'fatema.begum@opshub.bd', role: 'HR Manager', department: 'Human Resources', designation: 'Chief Human Resources Officer (CHRO)', branch: 'Dhaka HQ', gender: 'Female', baseSalary: 140000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000004', city: 'Dhaka', avatarBg: 'ec4899' },
+  { name: 'Musrat Jahan Gungun', email: 'musrat.gungun@opshub.bd', role: 'Director', department: 'Operations', designation: 'Chief Operating Officer (COO)', branch: 'Dhaka HQ', managerEmail: OWNER_EMAIL, gender: 'Female', baseSalary: 190000, bloodGroup: 'O+', religion: 'Islam', phone: '+8801711000001', city: 'Dhaka', avatarBg: 'f59e0b' },
+  { name: 'Omar Faruk Kafi', email: 'omar.kafi@opshub.bd', role: 'Director', department: 'Engineering', designation: 'Engineering Director', branch: 'Dhaka HQ', managerEmail: 'musrat.gungun@opshub.bd', gender: 'Male', baseSalary: 200000, bloodGroup: 'A+', religion: 'Islam', phone: '+8801711000002', city: 'Dhaka', avatarBg: '8b5cf6' },
+  { name: 'Lutfar Rahman', email: 'lutfar.rahman@opshub.bd', role: 'Director', department: 'Finance', designation: 'Finance Director', branch: 'Dhaka HQ', managerEmail: 'musrat.gungun@opshub.bd', gender: 'Male', baseSalary: 185000, bloodGroup: 'B+', religion: 'Islam', phone: '+8801711000003', city: 'Dhaka', avatarBg: '10b981' },
+  { name: 'Fatema Begum', email: 'fatema.begum@opshub.bd', role: 'HR Manager', department: 'Human Resources', designation: 'Chief Human Resources Officer (CHRO)', branch: 'Dhaka HQ', managerEmail: 'musrat.gungun@opshub.bd', gender: 'Female', baseSalary: 140000, bloodGroup: 'AB+', religion: 'Islam', phone: '+8801711000004', city: 'Dhaka', avatarBg: 'ec4899' },
 
   // ═══════════════════════════════════════════════════════
   // LEVEL 2 — DIRECTORS / VPs (8 people)

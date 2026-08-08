@@ -1134,34 +1134,46 @@ export async function runQuery(
 
     // ── DEI (computed bias audit) ──
     if (path === 'dei.getBiasAudit') {
-      if (!isAdmin && !isCEO) return { analysis: [], overallAvgSalary: 0 };
-      // Group users by department and compare average baseSalary.
+      if (!isAdmin && !isCEO) return { dimensions: [], overallAvgSalary: 0 };
+      const threshold = (args as any)?.threshold || 20;
+      
       const users = await prisma.user.findMany({
-        where: mergeWhere({ baseSalary: { not: null }, department: { not: null } }, tenantWhere),
-        select: { department: true, baseSalary: true }
+        where: mergeWhere({ baseSalary: { not: null } }, tenantWhere),
+        select: { department: true, gender: true, religion: true, baseSalary: true }
       });
-      const groups: Record<string, number[]> = {};
-      for (const u of users) {
-        const dept = u.department as string;
-        if (!groups[dept]) groups[dept] = [];
-        groups[dept].push(u.baseSalary as number);
-      }
+      
       const allSalaries = users.map((u: any) => u.baseSalary as number);
-      const globalAvg = allSalaries.length
-        ? allSalaries.reduce((a, b) => a + b, 0) / allSalaries.length
-        : 0;
-      const analysis = Object.entries(groups).map(([dept, salaries]) => {
-        const avg = salaries.reduce((a, b) => a + b, 0) / salaries.length;
-        const deviation = globalAvg ? (avg / globalAvg - 1) * 100 : 0;
-        return {
-          group: dept,
-          headcount: salaries.length,
-          avgSalary: Math.round(avg),
-          deviation: Number(deviation.toFixed(1)),
-          biasFlag: Math.abs(deviation) > 20
-        };
-      });
-      return { analysis, overallAvgSalary: Math.round(globalAvg) };
+      const globalAvg = allSalaries.length ? allSalaries.reduce((a, b) => a + b, 0) / allSalaries.length : 0;
+      
+      function analyze(groupByField: 'department' | 'gender' | 'religion') {
+        const groups: Record<string, number[]> = {};
+        for (const u of users) {
+          const key = u[groupByField as keyof typeof u] as string;
+          if (!key) continue;
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(u.baseSalary as number);
+        }
+        return Object.entries(groups).map(([groupName, salaries]) => {
+          const avg = salaries.reduce((a, b) => a + b, 0) / salaries.length;
+          const deviation = globalAvg ? (avg / globalAvg - 1) * 100 : 0;
+          return {
+            group: groupName,
+            headcount: salaries.length,
+            avgSalary: Math.round(avg),
+            deviation: Number(deviation.toFixed(1)),
+            biasFlag: Math.abs(deviation) > threshold
+          };
+        });
+      }
+
+      return { 
+        dimensions: [
+          { name: 'Department', analysis: analyze('department') },
+          { name: 'Gender', analysis: analyze('gender') },
+          { name: 'Religion', analysis: analyze('religion') },
+        ],
+        overallAvgSalary: Math.round(globalAvg) 
+      };
     }
 
     // ── PROFILE (skills/documents) ──
