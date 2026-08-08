@@ -162,7 +162,7 @@ export function RunPayrollForm({ onSuccess }: RunPayrollFormProps) {
                   onChange={(e) => setSelectedEmpId(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
-                  <option value="">{/* @ts-ignore */}<T>Select Employee...</T></option>
+                  <option value="">Select Employee...</option>
                   {employees.map((emp: any) => (
 
                     <option key={emp.id} value={emp.id}>

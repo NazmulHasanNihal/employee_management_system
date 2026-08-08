@@ -178,6 +178,13 @@ export default function PaymentSystemHub({
     return matchesQuery && matchesType && matchesBatch;
   });
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalFiltered = filteredRecords.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / itemsPerPage));
+  const paginatedRecords = filteredRecords.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   // Summary Metrics
   const totalDisbursed = records.reduce((acc, r) => acc + (r.netPaidAmount || 0), 0);
   const totalSingleCount = records.filter((r) => r.batchType === 'SINGLE').length;
@@ -468,7 +475,7 @@ export default function PaymentSystemHub({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-hairline)]">
-                  {filteredRecords.map((rec) => (
+                  {paginatedRecords.map((rec) => (
                     <tr key={rec.id} className="hover:bg-[var(--bg-hover)]/40 transition-colors">
                       <td className="py-3.5 px-4">
                         <div className="font-mono font-bold text-[var(--brand)] text-[11px]">
@@ -547,6 +554,36 @@ export default function PaymentSystemHub({
                   ))}
                 </tbody>
               </table>
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between p-4 border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] rounded-b-xl">
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Showing <span className="font-bold text-[var(--text-main)]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-[var(--text-main)]">{Math.min(currentPage * itemsPerPage, totalFiltered)}</span> of <span className="font-bold text-[var(--text-main)]">{totalFiltered}</span> records
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="xs" 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-lg h-8"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-xs font-semibold px-2">Page {currentPage} of {totalPages}</span>
+                    <Button 
+                      variant="outline" 
+                      size="xs" 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="rounded-lg h-8"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -580,7 +617,7 @@ export default function PaymentSystemHub({
                   onChange={(e) => handleSingleEmpChange(e.target.value)}
                   className="w-full h-10 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
                 >
-                  <option value="">{/* @ts-ignore */}<T>Select Employee...</T></option>
+                  <option value="">Select Employee...</option>
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} ({emp.designation || 'Staff'}) — Base: ৳
@@ -878,7 +915,7 @@ export default function PaymentSystemHub({
                   onChange={(e) => handleAdjEmpChange(e.target.value)}
                   className="w-full h-10 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
                 >
-                  <option value="">{/* @ts-ignore */}<T>Select Employee...</T></option>
+                  <option value="">Select Employee...</option>
                   {employees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} ({emp.designation || 'Staff'}) — Current Base: ৳

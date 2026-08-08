@@ -126,6 +126,13 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
       event.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+  const totalEvents = filteredEvents.length;
+  const totalPages = Math.max(1, Math.ceil(totalEvents / itemsPerPage));
+  const paginatedEvents = filteredEvents.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="space-y-6 animate-fade-up max-w-7xl mx-auto">
       {/* Top Controls & CEO Access Delegation Banner */}
@@ -183,7 +190,7 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEvents.map((event: any, i: number) => {
+              {paginatedEvents.map((event: any, i: number) => {
                 const isSecureRow = verifyState === 'secure' && event.isValid;
                 return (
                   <TableRow key={event.id} className={`transition-colors ${isSecureRow ? 'bg-[var(--emerald)]/5 border-b-[var(--emerald)]/20 hover:bg-[var(--emerald)]/10' : 'border-b-[var(--border-hairline)]'}`}>
@@ -226,6 +233,36 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
             </TableBody>
           </Table>
         )}
+        
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between p-4 border-t border-[var(--border-hairline)] bg-[var(--bg-panel)] rounded-b-xl">
+            <p className="text-xs text-[var(--text-muted)]">
+              Showing <span className="font-bold text-[var(--text-main)]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-[var(--text-main)]">{Math.min(currentPage * itemsPerPage, totalEvents)}</span> of <span className="font-bold text-[var(--text-main)]">{totalEvents}</span> events
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="xs" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg h-8"
+              >
+                Previous
+              </Button>
+              <span className="text-xs font-semibold px-2">Page {currentPage} of {totalPages}</span>
+              <Button 
+                variant="outline" 
+                size="xs" 
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="rounded-lg h-8"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* CEO Audit Access Granting Modal */}
@@ -252,10 +289,10 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
                 onChange={(e) => setSelectedUserId(e.target.value)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-xs font-medium"
               >
-                <option value="">{/* @ts-ignore */}<T>Select Employee Account...</T></option>
+                <option value="">Select Employee Account...</option>
                 {employees.map((emp: any) => (
                   <option key={emp.id} value={emp.id}>
-                    {emp.name} ({emp.role} {/* @ts-ignore */}<T>&middot;</T>{emp.department})
+                    {emp.name} ({emp.role} · {emp.department})
                   </option>
                 ))}
               </select>

@@ -525,14 +525,57 @@ async function main() {
   // 10. Seed Assets
   console.log('💻 Seeding Assets…');
   const assetCategories = ['Laptop', 'Desktop', 'Smartphone', 'Monitor', 'Peripheral'];
-  const brands = ['Apple', 'Dell', 'Lenovo', 'HP', 'Samsung', 'LG', 'Logitech'];
+  
+  const getAssetDetails = (cat: string) => {
+    switch (cat) {
+      case 'Laptop':
+        return pick([
+          { brand: 'HP', name: 'HP EliteBook 840 G8' },
+          { brand: 'HP', name: 'HP ProBook 450 G9' },
+          { brand: 'Apple', name: 'MacBook Pro 16" (M2 Max)' },
+          { brand: 'Apple', name: 'MacBook Air 13" (M2)' },
+          { brand: 'Dell', name: 'Dell Latitude 7420' },
+          { brand: 'Dell', name: 'Dell XPS 15' },
+          { brand: 'Lenovo', name: 'Lenovo ThinkPad T14' },
+          { brand: 'Lenovo', name: 'Lenovo ThinkPad X1 Carbon' },
+        ]);
+      case 'Desktop':
+        return pick([
+          { brand: 'HP', name: 'HP EliteDesk 800 G6' },
+          { brand: 'Dell', name: 'Dell OptiPlex 7090' },
+          { brand: 'Apple', name: 'Mac Studio (M2 Max)' },
+        ]);
+      case 'Smartphone':
+        return pick([
+          { brand: 'Apple', name: 'iPhone 14 Pro' },
+          { brand: 'Apple', name: 'iPhone 15' },
+          { brand: 'Samsung', name: 'Samsung Galaxy S23 Ultra' },
+          { brand: 'Samsung', name: 'Samsung Galaxy S23' },
+          { brand: 'Google', name: 'Google Pixel 7 Pro' },
+        ]);
+      case 'Monitor':
+        return pick([
+          { brand: 'Dell', name: 'Dell UltraSharp 27" 4K' },
+          { brand: 'HP', name: 'HP Z27q G3 QHD Display' },
+          { brand: 'LG', name: 'LG 27" UHD IPS Monitor' },
+        ]);
+      case 'Peripheral':
+      default:
+        return pick([
+          { brand: 'Logitech', name: 'Logitech MX Master 3S Mouse' },
+          { brand: 'Logitech', name: 'Logitech MX Keys Wireless Keyboard' },
+          { brand: 'Apple', name: 'Magic Keyboard with Touch ID' },
+          { brand: 'Jabra', name: 'Jabra Evolve2 65 Headset' },
+        ]);
+    }
+  };
+
   let assetCount = 0;
   for (let i = 0; i < allUserIds.length; i++) {
     const uid = allUserIds[i];
     const cat = pick(assetCategories);
-    const brand = pick(brands);
+    const { brand, name } = getAssetDetails(cat);
     const tag = `OPS-AST-2026-${(i + 1).toString().padStart(3, '0')}`;
-    const name = cat === 'Laptop' ? `${brand} ThinkPad / MacBook` : `${brand} ${cat}`;
     try {
       await prisma.asset.create({
         data: {

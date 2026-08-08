@@ -237,6 +237,14 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
     emp.email.toLowerCase().includes(employeeQuery.toLowerCase())
   );
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const totalLogs = logs?.length || 0;
+  const totalPages = Math.max(1, Math.ceil(totalLogs / itemsPerPage));
+  const paginatedLogs = logs?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) || [];
+
+
   return (
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -412,7 +420,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {logs.map((log: any) => (
+                  {paginatedLogs.map((log: any) => (
                     <TableRow key={log.id}>
                       <TableCell>
                         {new Date(log.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
@@ -455,7 +463,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                       )}
                     </TableRow>
                   ))}
-                  {(!logs || logs.length === 0) && (
+                  {(!paginatedLogs || paginatedLogs.length === 0) && (
                     <TableRow>
                       <TableCell colSpan={isAdmin ? 9 : 5} className="py-8 text-center text-xs text-[var(--text-muted)]">
                         {/* @ts-ignore */}<T>No logs found in archive. HR/Admin can record entries using the top button.</T></TableCell>
@@ -463,6 +471,36 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   )}
                 </TableBody>
               </Table>
+              
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-xs text-[var(--text-muted)]">
+                    Showing <span className="font-bold text-[var(--text-main)]">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-[var(--text-main)]">{Math.min(currentPage * itemsPerPage, totalLogs)}</span> of <span className="font-bold text-[var(--text-main)]">{totalLogs}</span> entries
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="xs" 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="rounded-lg h-8"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-xs font-semibold px-2">Page {currentPage} of {totalPages}</span>
+                    <Button 
+                      variant="outline" 
+                      size="xs" 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="rounded-lg h-8"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -501,7 +539,7 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
                   onChange={(e) => setSelectedEmpId(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-sm font-medium"
                 >
-                  <option value="">{/* @ts-ignore */}<T>Select Employee...</T></option>
+                  <option value="">Select Employee...</option>
                   {filteredEmployees.map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} ({emp.department || emp.role} · {emp.designation || 'Staff'})
