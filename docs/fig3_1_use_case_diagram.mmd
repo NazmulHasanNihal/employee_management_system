@@ -1,0 +1,76 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px', 'primaryColor': '#1f2937', 'primaryTextColor': '#000000', 'edgeLabelBackground': '#ffffff', 'lineColor': '#000000' } } }%%
+
+graph LR
+
+    subgraph LEFT_ACTORS[" "]
+        direction TB
+        EMP[("👤 Employee")]
+        BIO[("🖐️ Biometric<br/>Device")]
+    end
+
+    subgraph LEFT_UC[" "]
+        direction TB
+        UC1[("Clock In")]
+        UC2[("Request Leave")]
+        UC3[("View Payslip")]
+        UC4[("Submit Ticket")]
+        UC5[("Hardware Sync")]
+    end
+
+    subgraph RIGHT_UC[" "]
+        direction TB
+        UC6[("Create Formulas")]
+        UC7[("Process Payroll")]
+        UC8[("Manage ATS")]
+        UC9[("Approve Leave")]
+        UC10[("Verify Hash Ledger")]
+    end
+
+    subgraph RIGHT_ACTORS[" "]
+        direction TB
+        HR[("👤 HR Admin")]
+        AUD[("👤 System<br/>Auditor")]
+    end
+
+    EMP --> UC1
+    EMP --> UC2
+    EMP --> UC3
+    EMP --> UC4
+    BIO --> UC5
+    HR --> UC6
+    HR --> UC7
+    HR --> UC8
+    HR --> UC9
+    AUD --> UC10
+
+    linkStyle 0 stroke:#000000,stroke-width:2.5px
+    linkStyle 1 stroke:#000000,stroke-width:2.5px
+    linkStyle 2 stroke:#000000,stroke-width:2.5px
+    linkStyle 3 stroke:#000000,stroke-width:2.5px
+    linkStyle 4 stroke:#000000,stroke-width:2.5px
+    linkStyle 5 stroke:#000000,stroke-width:2.5px
+    linkStyle 6 stroke:#000000,stroke-width:2.5px
+    linkStyle 7 stroke:#000000,stroke-width:2.5px
+    linkStyle 8 stroke:#000000,stroke-width:2.5px
+    linkStyle 9 stroke:#000000,stroke-width:2.5px
+
+    style LEFT_ACTORS fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#000000
+    style LEFT_UC fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#000000
+    style RIGHT_UC fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#000000
+    style RIGHT_ACTORS fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#000000
+
+    style EMP fill:#2563eb,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    style BIO fill:#2563eb,stroke:#1e40af,stroke-width:2px,color:#ffffff
+    style HR fill:#16a34a,stroke:#14532d,stroke-width:2px,color:#ffffff
+    style AUD fill:#16a34a,stroke:#14532d,stroke-width:2px,color:#ffffff
+
+    style UC1 fill:#3b82f6,stroke:#1e40af,stroke-width:1.5px,color:#ffffff
+    style UC2 fill:#3b82f6,stroke:#1e40af,stroke-width:1.5px,color:#ffffff
+    style UC3 fill:#3b82f6,stroke:#1e40af,stroke-width:1.5px,color:#ffffff
+    style UC4 fill:#3b82f6,stroke:#1e40af,stroke-width:1.5px,color:#ffffff
+    style UC5 fill:#3b82f6,stroke:#1e40af,stroke-width:1.5px,color:#ffffff
+    style UC6 fill:#22c55e,stroke:#14532d,stroke-width:1.5px,color:#ffffff
+    style UC7 fill:#22c55e,stroke:#14532d,stroke-width:1.5px,color:#ffffff
+    style UC8 fill:#22c55e,stroke:#14532d,stroke-width:1.5px,color:#ffffff
+    style UC9 fill:#22c55e,stroke:#14532d,stroke-width:1.5px,color:#ffffff
+    style UC10 fill:#22c55e,stroke:#14532d,stroke-width:1.5px,color:#ffffff

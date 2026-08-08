@@ -411,8 +411,14 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
       {/* Profile Modal */}
       {selectedEmployee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setSelectedEmployee(null)}>
-          <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setSelectedEmployee(null)}
+        >
+          <div
+            className="flex max-h-[85vh] w-full max-w-xl flex-col overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-xl custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="relative flex flex-col items-center justify-center border-b border-[var(--border-hairline)] bg-[var(--bg-hover)]/60 p-6 text-center">
               <button 
                 onClick={() => setSelectedEmployee(null)} 
@@ -697,8 +703,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
       {/* Permissions Modal */}
       {editingPermsFor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150">
+          <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-y-auto my-auto rounded-2xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl custom-scrollbar">
             <div className="border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[var(--text-main)]">
                 <ShieldAlert className="h-4 w-4 text-[var(--brand)]" /> {/* @ts-ignore */}<T>Access Control Configuration</T></h3>
@@ -740,8 +746,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
       {/* Provision Modal */}
       {isProvisionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-3xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150">
+          <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-y-auto my-auto rounded-2xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl custom-scrollbar">
             <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
               <div>
                 <h3 className="flex items-center gap-2 text-lg font-semibold uppercase tracking-wide text-[var(--text-main)]">

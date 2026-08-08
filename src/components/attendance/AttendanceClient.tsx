@@ -508,15 +508,21 @@ export function AttendanceClient({ initialLogs, adminStats, initialEmployees = [
 
       {/* HR / Admin Attendance Entry Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-5">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <div className="flex items-center gap-2">
-                <UserPlus size={20} className="text-[var(--brand)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>HR / Admin Attendance Record Entry</T></h3>
+                <UserPlus size={18} className="text-[var(--brand)]" />
+                <h3 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>HR / Admin Attendance Record Entry</T></h3>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
-                <X size={18} />
+              <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]">
+                <X size={16} />
               </button>
             </div>
 

@@ -1,0 +1,54 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px', 'primaryColor': '#1f2937', 'primaryTextColor': '#000000', 'edgeLabelBackground': '#ffffff', 'lineColor': '#4b5563' } } }%%
+
+graph LR
+
+    subgraph S1["Sprint 1 — Foundation"]
+        direction TB
+        s1a["Requirements<br/>Gathering"]
+        s1b["Database Schema<br/>Design"]
+        s1c["Next.js Frontend<br/>Foundation"]
+        s1a --> s1b --> s1c
+    end
+
+    subgraph S2["Sprint 2 — Core Services"]
+        direction TB
+        s2a["Go Microservice<br/>Setup"]
+        s2b["Authentication<br/>Implementation"]
+        s2c["Dynamic Payroll<br/>Modules"]
+        s2a --> s2b --> s2c
+    end
+
+    subgraph S3["Sprint 3 — Integration"]
+        direction TB
+        s3a["Biometric Hardware<br/>Sync"]
+        s3b["SHA-256 Ledger<br/>Integration"]
+        s3a --> s3b
+    end
+
+    subgraph S4["Sprint 4 — Delivery"]
+        direction TB
+        s4a["QA Testing"]
+        s4b["DevOps<br/>Deployment"]
+        s4c["UI Polishing"]
+        s4a --> s4b --> s4c
+    end
+
+    s1c --> s2a
+    s2c --> s3a
+    s3b --> s4a
+
+    style S1 fill:#fee2e2,stroke:#dc2626,stroke-width:3px,color:#000000
+    style S2 fill:#f3e8ff,stroke:#9333ea,stroke-width:3px,color:#000000
+    style S3 fill:#ffedd5,stroke:#ea580c,stroke-width:3px,color:#000000
+    style S4 fill:#dbeafe,stroke:#2563eb,stroke-width:3px,color:#000000
+    style s1a fill:#fecaca,stroke:#dc2626,stroke-width:1.5px,color:#000000
+    style s1b fill:#fecaca,stroke:#dc2626,stroke-width:1.5px,color:#000000
+    style s1c fill:#fecaca,stroke:#dc2626,stroke-width:1.5px,color:#000000
+    style s2a fill:#e9d5ff,stroke:#9333ea,stroke-width:1.5px,color:#000000
+    style s2b fill:#e9d5ff,stroke:#9333ea,stroke-width:1.5px,color:#000000
+    style s2c fill:#e9d5ff,stroke:#9333ea,stroke-width:1.5px,color:#000000
+    style s3a fill:#fed7aa,stroke:#ea580c,stroke-width:1.5px,color:#000000
+    style s3b fill:#fed7aa,stroke:#ea580c,stroke-width:1.5px,color:#000000
+    style s4a fill:#000000,stroke:#000000,stroke-width:2px,color:#ffffff
+    style s4b fill:#93c5fd,stroke:#2563eb,stroke-width:1.5px,color:#000000
+    style s4c fill:#93c5fd,stroke:#2563eb,stroke-width:1.5px,color:#000000

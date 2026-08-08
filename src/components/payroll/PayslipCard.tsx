@@ -287,25 +287,31 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
       {/* Interactive Modal View */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-2xl rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-6">
-            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="w-full max-w-xl max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <div className="flex items-center gap-2">
-                <Building2 size={20} className="text-[var(--brand)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Payslip Statement —</T>{pay.month} {pay.year}</h3>
+                <Building2 size={18} className="text-[var(--brand)]" />
+                <h3 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Payslip Statement —</T>{pay.month} {pay.year}</h3>
               </div>
-              <button onClick={() => setShowModal(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
+              <button onClick={() => setShowModal(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]">
                 ✕
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="space-y-0.5">
                 <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employee</T></p>
                 <p className="font-bold text-[var(--text-main)]">{pay.user?.name || currentUser?.name}</p>
                 <p className="text-[11px] text-[var(--text-muted)]">{pay.user?.designation || 'Staff'}</p>
               </div>
-              <div className="space-y-1 text-right">
+              <div className="space-y-0.5 text-right">
                 <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Disbursement Method</T></p>
                 <p className="font-bold text-[var(--emerald)]">{/* @ts-ignore */}<T>bKash / Bank ACH</T></p>
                 <p className="text-[11px] text-[var(--text-muted)]">{/* @ts-ignore */}<T>Ref: PAY-</T>{pay.id.substring(0, 8).toUpperCase()}</p>
@@ -313,44 +319,44 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             </div>
 
             {/* Earnings vs Deductions Table */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                <p className="text-xs font-bold uppercase text-[var(--brand)] border-b border-[var(--border-hairline)] pb-2">{/* @ts-ignore */}<T>Gross Earnings (+)</T></p>
-                <div className="space-y-1.5 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
+                <p className="text-[11px] font-bold uppercase text-[var(--brand)] border-b border-[var(--border-hairline)] pb-1.5">{/* @ts-ignore */}<T>Gross Earnings (+)</T></p>
+                <div className="space-y-1 text-xs">
                   <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Basic Salary (50%)</T></span><span className="font-semibold">{sym}{basicSalary.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span>{/* @ts-ignore */}<T>House Rent (HRA)</T></span><span className="font-semibold">{sym}{hra.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Medical Allowance</T></span><span className="font-semibold">{sym}{medical.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Conveyance</T></span><span className="font-semibold">{sym}{conveyance.toLocaleString()}</span></div>
                   {festivalBonus > 0 && <div className="flex justify-between text-[var(--emerald)]"><span>{/* @ts-ignore */}<T>Festival Bonus</T></span><span className="font-semibold">{sym}{festivalBonus.toLocaleString()}</span></div>}
-                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-2 font-bold text-[var(--brand)]"><span>{/* @ts-ignore */}<T>Total Earnings</T></span><span>{sym}{totalEarnings.toLocaleString()}</span></div>
+                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-1.5 font-bold text-[var(--brand)]"><span>{/* @ts-ignore */}<T>Total Earnings</T></span><span>{sym}{totalEarnings.toLocaleString()}</span></div>
                 </div>
               </div>
 
-              <div className="space-y-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
-                <p className="text-xs font-bold uppercase text-[var(--rose)] border-b border-[var(--border-hairline)] pb-2">{/* @ts-ignore */}<T>Statutory Deductions (-)</T></p>
-                <div className="space-y-1.5 text-xs">
+              <div className="space-y-1.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
+                <p className="text-[11px] font-bold uppercase text-[var(--rose)] border-b border-[var(--border-hairline)] pb-1.5">{/* @ts-ignore */}<T>Statutory Deductions (-)</T></p>
+                <div className="space-y-1 text-xs">
                   <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Provident Fund (10%)</T></span><span className="font-semibold">{sym}{pfDeduction.toLocaleString()}</span></div>
                   <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Income Tax (TDS)</T></span><span className="font-semibold">{sym}{taxDeduction.toLocaleString()}</span></div>
                   {penaltyDeduction > 0 && <div className="flex justify-between text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Lateness Fine</T></span><span className="font-semibold">{sym}{penaltyDeduction.toLocaleString()}</span></div>}
-                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-2 font-bold text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Total Deductions</T></span><span>{sym}{totalDeductions.toLocaleString()}</span></div>
+                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-1.5 font-bold text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Total Deductions</T></span><span>{sym}{totalDeductions.toLocaleString()}</span></div>
                 </div>
               </div>
             </div>
 
             {/* Net Amount Box */}
-            <div className="rounded-2xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] p-4 flex items-center justify-between">
+            <div className="rounded-xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] p-3 flex items-center justify-between">
               <div>
-                <p className="text-[10px] uppercase font-bold text-[var(--emerald)] tracking-wider">{/* @ts-ignore */}<T>Net Amount Payable</T></p>
-                <p className="text-xs italic text-[var(--text-muted)]">{wordsInTaka}</p>
+                <p className="text-[9px] uppercase font-bold text-[var(--emerald)] tracking-wider">{/* @ts-ignore */}<T>Net Amount Payable</T></p>
+                <p className="text-[11px] italic text-[var(--text-muted)]">{wordsInTaka}</p>
               </div>
-              <p className="text-2xl font-extrabold text-[var(--emerald)]">{sym} {netPayable.toLocaleString()}</p>
+              <p className="text-xl font-extrabold text-[var(--emerald)]">{sym} {netPayable.toLocaleString()}</p>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button onClick={() => setShowModal(false)} variant="outline" size="sm" className="rounded-xl">
+            <div className="flex justify-end gap-2 pt-1">
+              <Button onClick={() => setShowModal(false)} variant="outline" size="sm" className="rounded-xl h-8 text-xs">
                 {/* @ts-ignore */}<T>Close</T></Button>
-              <Button onClick={handlePrint} variant="primary" size="sm" className="rounded-xl">
-                <Printer size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>Print / Export PDF</T></Button>
+              <Button onClick={handlePrint} variant="primary" size="sm" className="rounded-xl h-8 text-xs">
+                <Printer size={13} className="mr-1.5" /> {/* @ts-ignore */}<T>Print / Export PDF</T></Button>
             </div>
           </div>
         </div>

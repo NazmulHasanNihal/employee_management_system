@@ -40,14 +40,14 @@ export default async function CompensationPage() {
   const canEditCompensation = isAdmin || isCEO || isHR;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
+    <div className="mx-auto max-w-7xl space-y-4 sm:space-y-5 animate-fade-up">
       <PageHeader
         title={t('Compensation')}
         subtitle={t('Manage salary increments, decrements, and payroll adjustments.')}
         icon={<TrendingUp className="h-5 w-5" />}
       />
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent>
             <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">

@@ -234,8 +234,14 @@ export default function PerformanceIsland({ initialObjectives, employees = [], i
 
       {/* Review Modal */}
       {isReviewModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={() => setIsReviewModalOpen(false)}>
-          <div className="w-full max-w-lg rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setIsReviewModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-md max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <h3 className="text-base font-bold text-[var(--text-main)]">Submit Performance Review</h3>
               <button onClick={() => setIsReviewModalOpen(false)} className="rounded-full p-1 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]">

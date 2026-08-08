@@ -267,14 +267,20 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
 
       {/* CEO Audit Access Granting Modal */}
       {showGrantModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-5">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setShowGrantModal(false)}
+        >
+          <div
+            className="w-full max-w-md max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
               <div className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-[var(--amber)]" />
-                <h3 className="text-base font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Delegate Audit Log Access</T></h3>
+                <Crown className="h-4 w-4 text-[var(--amber)]" />
+                <h3 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Delegate Audit Log Access</T></h3>
               </div>
-              <button onClick={() => setShowGrantModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
+              <button onClick={() => setShowGrantModal(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]">
                 ✕
               </button>
             </div>
@@ -282,12 +288,12 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
             <p className="text-xs text-[var(--text-muted)]">
               {/* @ts-ignore */}<T>As CEO / Founder, select an employee account to grant confidential Audit Log viewing permissions.</T></p>
 
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Select Account</T></label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Select Account</T></label>
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 w-full rounded-xl px-3 py-2.5 text-xs font-medium"
+                className="flex h-9 w-full rounded-xl border border-input bg-background px-3 py-1.5 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-medium"
               >
                 <option value="">Select Employee Account...</option>
                 {employees.map((emp: any) => (

@@ -420,8 +420,14 @@ export default function OnboardingClientPage() {
 
       {/* E-Signature Modal */}
       {signingDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--bg-app)] border border-[var(--border-hairline)] shadow-[var(--shadow-lg)]">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => { setSigningDoc(null); setSignatureText(''); }}
+        >
+          <div
+            className="w-full max-w-md max-h-[85vh] overflow-y-auto my-auto rounded-2xl bg-[var(--bg-app)] border border-[var(--border-hairline)] shadow-[var(--shadow-lg)] space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-hover)] p-6">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--text-main)]">
                 <FileSignature className="h-4 w-4 text-[var(--brand-strong)]" /> {/* @ts-ignore */}<T>Digital Signature Required</T></h3>

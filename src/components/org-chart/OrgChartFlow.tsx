@@ -651,11 +651,11 @@ function OrgChartFlowInner({
       {/* ── PROFILE MODAL ── */}
       {activeProfileNode && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
           onClick={() => setActiveProfileNode(null)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border bg-[var(--bg-panel)] p-6 shadow-2xl space-y-5"
+            className="w-full max-w-md max-h-[85vh] overflow-y-auto my-auto rounded-2xl border bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
             style={{ borderColor: getColors(activeProfileNode.level).border }}
             onClick={(e) => e.stopPropagation()}
           >

@@ -56,8 +56,14 @@ export function PayrollActions({ payrolls }: PayrollActionsProps) {
       </div>
 
       {showGenerate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setShowGenerate(false)}
+        >
+          <div
+            className="w-full max-w-xl max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] shadow-2xl animate-in zoom-in-95 duration-150 custom-scrollbar"
+            onClick={(e) => e.stopPropagation()}
+          >
             <RunPayrollForm onSuccess={() => setShowGenerate(false)} />
           </div>
         </div>

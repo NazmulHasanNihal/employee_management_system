@@ -51,7 +51,7 @@ export default async function PayrollPage() {
   const paymentRecords = (ledgerRes.records || []) as any;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 animate-fade-up">
+    <div className="mx-auto max-w-7xl space-y-4 sm:space-y-5 animate-fade-up">
       <PageHeader
         title={t('Payroll & Payment Simulation System')}
         subtitle={t('Real-life bank disbursement ledger, single & bulk payments, and compensation adjustments.')}
@@ -67,7 +67,7 @@ export default async function PayrollPage() {
       />
 
       {isAdmin && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardContent>
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--text-muted)]">

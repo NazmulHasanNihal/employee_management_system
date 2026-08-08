@@ -1023,78 +1023,78 @@ export default function PaymentSystemHub({
       {/* ── PRINTABLE CORPORATE PAYMENT RECEIPT / SLIP MODAL ── */}
       {selectedReceipt && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md animate-in fade-in"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-md p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
           onClick={() => setSelectedReceipt(null)}
         >
           <div
-            className="w-full max-w-xl rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 shadow-2xl space-y-5"
+            className="w-full max-w-lg max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Slip Header */}
-            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--brand)] text-white font-black text-lg">
+            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand)] text-white font-black text-base">
                   Ops
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-[var(--text-main)]">
+                  <h3 className="text-sm font-extrabold text-[var(--text-main)]">
                     Official Corporate Payment Voucher
                   </h3>
-                  <p className="text-[11px] text-[var(--text-muted)] font-mono">
+                  <p className="text-[10px] text-[var(--text-muted)] font-mono">
                     Bank Ref: {selectedReceipt.trxId}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedReceipt(null)}
-                className="rounded-xl p-2 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
+                className="rounded-xl p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-hover)]"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Slip Body */}
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-4 rounded-2xl bg-[var(--bg-hover)]/40 p-4 border border-[var(--border-hairline)]">
+            <div className="space-y-3 text-xs">
+              <div className="grid grid-cols-2 gap-3 rounded-xl bg-[var(--bg-hover)]/40 p-3 border border-[var(--border-hairline)]">
                 <div>
-                  <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Recipient Employee</span>
-                  <p className="font-bold text-sm text-[var(--text-main)]">{selectedReceipt.user.name}</p>
-                  <p className="text-[11px] text-[var(--text-muted)]">{selectedReceipt.user.designation || 'Staff'}</p>
+                  <span className="text-[9px] text-[var(--text-muted)] uppercase font-bold">Recipient Employee</span>
+                  <p className="font-bold text-xs text-[var(--text-main)]">{selectedReceipt.user.name}</p>
+                  <p className="text-[10px] text-[var(--text-muted)]">{selectedReceipt.user.designation || 'Staff'}</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Disbursement Channel</span>
-                  <p className="font-bold text-sm text-[var(--brand)]">{selectedReceipt.bankName || selectedReceipt.paymentMethod}</p>
-                  <p className="text-[11px] font-mono text-[var(--text-muted)]">{selectedReceipt.accountNumber}</p>
+                  <span className="text-[9px] text-[var(--text-muted)] uppercase font-bold">Disbursement Channel</span>
+                  <p className="font-bold text-xs text-[var(--brand)]">{selectedReceipt.bankName || selectedReceipt.paymentMethod}</p>
+                  <p className="text-[10px] font-mono text-[var(--text-muted)]">{selectedReceipt.accountNumber}</p>
                 </div>
               </div>
 
               {/* Financial Breakdown Table */}
-              <div className="rounded-2xl border border-[var(--border-hairline)] overflow-hidden divide-y divide-[var(--border-hairline)]">
-                <div className="flex justify-between px-4 py-2.5 bg-[var(--bg-hover)]/30 font-semibold">
+              <div className="rounded-xl border border-[var(--border-hairline)] overflow-hidden divide-y divide-[var(--border-hairline)]">
+                <div className="flex justify-between px-3 py-2 bg-[var(--bg-hover)]/30 font-semibold">
                   <span>Base Monthly Salary</span>
                   <span>৳{selectedReceipt.baseAmount.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between px-4 py-2.5 font-semibold text-[var(--emerald)]">
+                <div className="flex justify-between px-3 py-2 font-semibold text-[var(--emerald)]">
                   <span>Bonuses & Allowances (+)</span>
                   <span>+৳{selectedReceipt.bonuses.toLocaleString('en-IN')}</span>
                 </div>
                 {selectedReceipt.adjustments !== 0 && (
-                  <div className="flex justify-between px-4 py-2.5 font-semibold">
+                  <div className="flex justify-between px-3 py-2 font-semibold">
                     <span>Payment Adjustment ({selectedReceipt.adjustments > 0 ? '+' : '-'})</span>
                     <span>৳{selectedReceipt.adjustments.toLocaleString('en-IN')}</span>
                   </div>
                 )}
-                <div className="flex justify-between px-4 py-2.5 font-semibold text-[var(--rose)]">
+                <div className="flex justify-between px-3 py-2 font-semibold text-[var(--rose)]">
                   <span>Statutory Tax & PF Deductions (-)</span>
                   <span>-৳{selectedReceipt.deductions.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between px-4 py-3 bg-[var(--brand)]/10 font-black text-sm text-[var(--brand)]">
+                <div className="flex justify-between px-3 py-2.5 bg-[var(--brand)]/10 font-black text-xs text-[var(--brand)]">
                   <span>NET DISBURSED AMOUNT</span>
                   <span>৳{selectedReceipt.netPaidAmount.toLocaleString('en-IN')}</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+              <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)]">
                 <div>
                   Disbursed By: <strong className="text-[var(--text-main)]">{selectedReceipt.disbursedBy?.name || 'System Admin'}</strong>
                 </div>
@@ -1105,20 +1105,20 @@ export default function PaymentSystemHub({
             </div>
 
             {/* Slip Footer Actions */}
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-1">
               <Button
                 variant="outline"
                 onClick={() => setSelectedReceipt(null)}
-                className="flex-1 rounded-xl"
+                className="flex-1 rounded-xl h-8 text-xs"
               >
                 Close Slip
               </Button>
               <Button
                 variant="primary"
                 onClick={() => window.print()}
-                className="flex-1 rounded-xl flex items-center justify-center gap-2"
+                className="flex-1 rounded-xl h-8 text-xs flex items-center justify-center gap-1.5"
               >
-                <Printer size={16} />
+                <Printer size={14} />
                 <span>Print Official Slip</span>
               </Button>
             </div>
