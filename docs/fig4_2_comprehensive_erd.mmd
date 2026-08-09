@@ -1,0 +1,64 @@
+erDiagram
+    %% Employee relationships
+    Employee ||--o{ AttendanceLog : "generates"
+    Employee ||--o{ HelpdeskTicket : "submits"
+    Employee ||--o{ PayrollStructure : "assigned_to"
+
+    %% Payroll relationships
+    PayrollStructure ||--o{ PayrollHead : "contains"
+    
+    %% Other isolated or ledger tables
+    AuditLog {
+        string id PK
+        string entity_name
+        string event_type
+        string event_data
+        datetime created_at
+    }
+
+    %% Entity definitions
+    Employee {
+        string id PK
+        string name
+        string email
+        string department
+        string designation
+        string role
+        float base_salary
+    }
+
+    AttendanceLog {
+        string id PK
+        string employee_id FK
+        datetime check_in
+        datetime check_out
+        string status
+    }
+
+    HelpdeskTicket {
+        string id PK
+        string employee_id FK
+        string subject
+        string description
+        string status
+        string priority
+    }
+
+    PayrollStructure {
+        string id PK
+        string employee_id FK
+        string type
+        float base_amount
+        string status
+    }
+
+    PayrollHead {
+        string id PK
+        string structure_id FK
+        string component_name
+        float amount
+        string type "Earnings/Deductions"
+    }
+
+    %% Notes
+    %% AuditLog is completely isolated as the append-only ledger

@@ -139,7 +139,33 @@ export default function PaymentSystemHub({
     setSingleEmpId(empId);
     const emp = employees.find((e) => e.id === empId);
     if (emp && emp.baseSalary) {
-      setSingleBase(emp.baseSalary);
+      if (singleType === 'SALARY') setSingleBase(emp.baseSalary);
+      else if (singleType === 'BONUS') setSingleBonus(emp.baseSalary * 0.5);
+    }
+  };
+
+  // Selected payment type change
+  const handleSingleTypeChange = (type: string) => {
+    setSingleType(type);
+    const emp = employees.find(e => e.id === singleEmpId);
+    const base = emp?.baseSalary || 35000;
+    
+    if (type === 'SALARY') {
+      setSingleBase(base);
+      setSingleBonus(0);
+      setSingleAdjustment(0);
+    } else if (type === 'BONUS') {
+      setSingleBase(0);
+      setSingleBonus(base * 0.5);
+      setSingleAdjustment(0);
+    } else if (type === 'ALLOWANCE' || type === 'REIMBURSEMENT') {
+      setSingleBase(0);
+      setSingleBonus(0);
+      setSingleAdjustment(5000);
+    } else {
+      setSingleBase(0);
+      setSingleBonus(0);
+      setSingleAdjustment(0);
     }
   };
 
@@ -633,7 +659,7 @@ export default function PaymentSystemHub({
                 </label>
                 <select
                   value={singleType}
-                  onChange={(e) => setSingleType(e.target.value)}
+                  onChange={(e) => handleSingleTypeChange(e.target.value)}
                   className="w-full h-10 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-3 text-xs text-[var(--text-main)] outline-none focus:ring-2 focus:ring-[var(--brand)]"
                 >
                   <option value="SALARY">Monthly Base Salary</option>

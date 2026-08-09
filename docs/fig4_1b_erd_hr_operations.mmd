@@ -1,84 +1,82 @@
-%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '16px' } } }%%
-
 erDiagram
-    %% Figure 4.1b — HR Operations ERD
+    title HR Operations — Entity-Relationship Diagram
 
-    User {
-        string id PK
-        string email UK
-        string name
+    Employee {
+        int employee_id PK "Unique identifier"
+        string first_name "Employee given name"
+        string last_name "Employee family name"
+        string email "Corporate email address"
+        string department "Organizational unit"
+        date hire_date "Employment start date"
+        string job_title "Official designation"
+        string status "Active / Inactive"
     }
 
-    Attendance {
-        string id PK
-        string userId FK
-        datetime date "attendance date"
-        string status "Present | Late | Absent"
-        datetime clockIn "clock-in timestamp"
-        datetime clockOut "clock-out timestamp"
-        string shiftId FK "assigned shift"
-        int overtimeMinutes "OT beyond shift"
-        int nightMinutes "night differential"
-        int lateMinutes "after grace period"
-        int workedMinutes "total paid minutes"
-        float geoLat "GPS latitude"
-        float geoLng "GPS longitude"
-        boolean geoVerified "geo-fence pass"
+    AttendanceLog {
+        int attendance_id PK "Unique log identifier"
+        int employee_id FK "References Employee"
+        date attendance_date "Date of record"
+        time clock_in "Shift start time"
+        time clock_out "Shift end time"
+        string attendance_status "Present / Absent / Late"
+        string remarks "Optional notes"
     }
 
-    LeaveRequest {
-        string id PK
-        string userId FK
-        string type "leave category"
-        string status "Pending | Approved | Rejected"
-        datetime startDate "leave start"
-        datetime endDate "leave end"
-        int days "total days"
-        string details "reason"
+    PayrollStructure {
+        int structure_id PK "Unique structure identifier"
+        string structure_name "Payroll cycle name"
+        string description "Purpose and scope"
+        date effective_date "Activation date"
+        date end_date "Termination date"
+        string status "Active / Archived"
     }
 
-    LeaveType {
-        string id PK
-        string name UK "Casual | Earned | Sick | Festival | Maternity | Paternity"
-        string nameBn "Bangla label"
-        string category "leave category key"
-        int defaultDays "statutory entitlement"
-        boolean isPaid "paid leave flag"
-        string applicableGender "null = all"
+    PayrollHead {
+        int head_id PK "Unique head identifier"
+        int structure_id FK "References PayrollStructure"
+        string head_name "Earnings or deductions"
+        string head_type "Earning / Deduction / Contribution"
+        decimal amount_or_percentage "Fixed value or rate"
+        string calculation_method "Formula or flat rate"
+        int display_order "UI ordering priority"
     }
 
-    Shift {
-        string id PK
-        string name "shift name"
-        string startTime "HH:MM"
-        string endTime "HH:MM"
-        int graceMinutes "late threshold"
-        boolean isNightShift "night differential"
-        int breakMinutes "unpaid break"
-        int_arr recurringDays "0=Sun to 6=Sat"
-        string branchId FK
+    HelpdeskTicket {
+        int ticket_id PK "Unique ticket identifier"
+        int employee_id FK "References Employee"
+        string subject "Brief issue title"
+        string description "Detailed problem description"
+        string priority "Low / Medium / High / Critical"
+        string status "Open / In Progress / Resolved / Closed"
+        datetime created_at "Ticket creation timestamp"
+        datetime resolved_at "Resolution timestamp"
     }
 
-    ShiftAssignment {
-        string id PK
-        string shiftId FK
-        string userId FK
-        string teamId FK
-        string workNote "task for shift"
-        string roleOnShift "Supervisor | Operator"
-        datetime date "assignment date"
+    AuditLog {
+        int log_id PK "Sequential log identifier"
+        string table_name "Affected table"
+        string record_id "Affected record ID"
+        string operation "INSERT / UPDATE / DELETE"
+        string old_values "Previous state"
+        string new_values "Updated state"
+        int changed_by "User ID performing action"
+        datetime changed_at "Action timestamp"
     }
 
-    Holiday {
-        string id PK
-        datetime date UK
-        string name "English name"
-        string nameBn "Bangla name"
-        string type "Public | Religious | National | Festival"
-    }
+    Employee ||--o{ AttendanceLog : "1:N\nEmployee records attendance"
+    Employee ||--o{ HelpdeskTicket : "1:N\nEmployee submits tickets"
+    PayrollStructure ||--o{ PayrollHead : "1:N\nStructure defines payroll heads"
 
-    User ||--o{ Attendance : "records"
-    User ||--o{ LeaveRequest : "submits"
-    Shift ||--o{ Attendance : "governs"
-    Shift ||--o{ ShiftAssignment : "assigns to"
-    User ||--o{ ShiftAssignment : "assigned"
+    classDef employeeClass fill:#4F46E5,stroke:#1E1B4B,stroke-width:2px,color:#FFFFFF
+    classDef attendanceClass fill:#DC2626,stroke:#991B1B,stroke-width:2px,color:#FFFFFF
+    classDef payrollStructClass fill:#059669,stroke:#064E3B,stroke-width:2px,color:#FFFFFF
+    classDef payrollHeadClass fill:#0891B2,stroke:#164E63,stroke-width:2px,color:#FFFFFF
+    classDef helpdeskClass fill:#D97706,stroke:#92400E,stroke-width:2px,color:#FFFFFF
+    classDef auditClass fill:#374151,stroke:#111827,stroke-width:2px,color:#F9FAFB,stroke-dasharray:5 5
+
+    class Employee employeeClass
+    class AttendanceLog attendanceClass
+    class PayrollStructure payrollStructClass
+    class PayrollHead payrollHeadClass
+    class HelpdeskTicket helpdeskClass
+    class AuditLog auditClass

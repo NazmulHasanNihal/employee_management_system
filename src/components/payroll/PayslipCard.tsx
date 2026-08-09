@@ -137,9 +137,14 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
                     {pay.status}
                   </Badge>
                 </div>
-                <p className="text-xs text-[var(--text-muted)]">
-                  {/* @ts-ignore */}<T>Employee:</T><span className="font-semibold text-[var(--text-main)]">{pay.user?.name || currentUser?.name}</span>
-                </p>
+                <div className="flex flex-col space-y-0.5">
+                  <p className="text-sm font-bold text-[var(--text-main)]">
+                    {pay.user?.name || currentUser?.name}
+                  </p>
+                  <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">
+                    {pay.user?.designation || 'Staff'} • {pay.user?.department || 'Operations'}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -163,20 +168,23 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
             </div>
             <div>
               <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>PF Match</T></p>
-              <p className="font-bold text-[var(--emerald)]">{sym}{pfDeduction.toLocaleString()}</p>
+              <p className="font-bold text-[var(--text-main)]">{sym}{pfDeduction.toLocaleString()}</p>
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <Button
-              onClick={(e) => { e.stopPropagation(); setShowModal(true); }}
               variant="outline"
               size="sm"
-              className="flex-1 rounded-xl text-xs font-semibold"
+              className="flex-1 rounded-xl border-[var(--border-hairline)] text-xs font-semibold"
             >
-              <FileText size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>View Itemized Slip</T></Button>
+              <CheckCircle2 size={14} className="mr-1.5 text-[var(--emerald)]" /> {/* @ts-ignore */}<T>View Detailed Slip</T>
+            </Button>
             <Button
-              onClick={(e) => { e.stopPropagation(); handlePrint(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrint();
+              }}
               variant="primary"
               size="sm"
               className="flex-1 rounded-xl text-xs font-semibold"
@@ -285,83 +293,99 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
         </div>
       </div>
 
-      {/* Interactive Modal View */}
+      {/* Interactive Full-Screen View */}
       {showModal && (
-        <div
-          className="fixed inset-0 z-[100] flex min-h-screen items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto custom-scrollbar animate-in fade-in duration-150"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar m-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
-              <div className="flex items-center gap-3">
-                <Button onClick={() => setShowModal(false)} variant="ghost" size="sm" className="h-8 px-2 hidden sm:flex text-[var(--text-muted)] hover:text-[var(--text-main)]">
-                  <span className="text-lg leading-none mr-1">←</span> Back
-                </Button>
-                <div className="flex items-center gap-2">
-                  <Building2 size={18} className="text-[var(--brand)]" />
-                  <h3 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Payslip Statement —</T>{pay.month} {pay.year}</h3>
+        <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--bg-app)] animate-in fade-in duration-150">
+          {/* Header */}
+          <div className="flex shrink-0 items-center justify-between border-b border-[var(--border-hairline)] bg-[var(--bg-panel)] px-4 py-3 md:px-8 shadow-sm z-10">
+            <Button onClick={() => setShowModal(false)} variant="ghost" size="sm" className="h-8 px-3 text-[var(--text-main)] hover:bg-[var(--bg-hover)]">
+              <span className="text-lg leading-none mr-2">←</span> Back
+            </Button>
+            <div className="flex items-center gap-2">
+              <Building2 size={18} className="text-[var(--brand)] hidden sm:block" />
+              <h3 className="text-sm font-bold text-[var(--text-main)]">{pay.month} {pay.year} Payslip</h3>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={handlePrint} variant="primary" size="sm" className="h-8 px-4 rounded-xl">
+                <Printer size={14} className="mr-2" /> Print PDF
+              </Button>
+            </div>
+          </div>
+
+          {/* Scrollable Document Area */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 flex justify-center items-start">
+            <div className="w-full max-w-2xl rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 sm:p-8 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-white shadow-lg">
+                    <FileText size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Statement</T></h3>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{pay.month} {pay.year}</p>
+                  </div>
                 </div>
-              </div>
-              <button onClick={() => setShowModal(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]">
-                ✕
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="space-y-0.5">
-                <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Employee</T></p>
-                <p className="font-bold text-[var(--text-main)]">{pay.user?.name || currentUser?.name}</p>
-                <p className="text-[11px] text-[var(--text-muted)]">{pay.user?.designation || 'Staff'}</p>
-              </div>
-              <div className="space-y-0.5 text-right">
-                <p className="text-[10px] uppercase text-[var(--text-muted)]">{/* @ts-ignore */}<T>Disbursement Method</T></p>
-                <p className="font-bold text-[var(--emerald)]">{/* @ts-ignore */}<T>bKash / Bank ACH</T></p>
-                <p className="text-[11px] text-[var(--text-muted)]">{/* @ts-ignore */}<T>Ref: PAY-</T>{pay.id.substring(0, 8).toUpperCase()}</p>
-              </div>
-            </div>
-
-            {/* Earnings vs Deductions Table */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
-                <p className="text-[11px] font-bold uppercase text-[var(--brand)] border-b border-[var(--border-hairline)] pb-1.5">{/* @ts-ignore */}<T>Gross Earnings (+)</T></p>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Basic Salary (50%)</T></span><span className="font-semibold">{sym}{basicSalary.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>House Rent (HRA)</T></span><span className="font-semibold">{sym}{hra.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Medical Allowance</T></span><span className="font-semibold">{sym}{medical.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Conveyance</T></span><span className="font-semibold">{sym}{conveyance.toLocaleString()}</span></div>
-                  {festivalBonus > 0 && <div className="flex justify-between text-[var(--emerald)]"><span>{/* @ts-ignore */}<T>Festival Bonus</T></span><span className="font-semibold">{sym}{festivalBonus.toLocaleString()}</span></div>}
-                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-1.5 font-bold text-[var(--brand)]"><span>{/* @ts-ignore */}<T>Total Earnings</T></span><span>{sym}{totalEarnings.toLocaleString()}</span></div>
+                <div className="text-right">
+                  <Badge variant={pay.status === 'PROCESSED' || pay.status === 'Disbursed' ? 'emerald' : 'amber'} className="mb-1 text-[10px]">
+                    {pay.status}
+                  </Badge>
+                  <p className="text-[10px] font-mono text-[var(--text-muted)]">ID: PAY-{pay.id.substring(0, 8).toUpperCase()}</p>
                 </div>
               </div>
 
-              <div className="space-y-1.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
-                <p className="text-[11px] font-bold uppercase text-[var(--rose)] border-b border-[var(--border-hairline)] pb-1.5">{/* @ts-ignore */}<T>Statutory Deductions (-)</T></p>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Provident Fund (10%)</T></span><span className="font-semibold">{sym}{pfDeduction.toLocaleString()}</span></div>
-                  <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Income Tax (TDS)</T></span><span className="font-semibold">{sym}{taxDeduction.toLocaleString()}</span></div>
-                  {penaltyDeduction > 0 && <div className="flex justify-between text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Lateness Fine</T></span><span className="font-semibold">{sym}{penaltyDeduction.toLocaleString()}</span></div>}
-                  <div className="flex justify-between border-t border-[var(--border-hairline)] pt-1.5 font-bold text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Total Deductions</T></span><span>{sym}{totalDeductions.toLocaleString()}</span></div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase text-[var(--text-muted)] tracking-wider font-bold">{/* @ts-ignore */}<T>Employee Profile</T></p>
+                  <p className="font-bold text-[var(--text-main)] text-base">{pay.user?.name || currentUser?.name}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{pay.user?.designation || 'Staff'} • {pay.user?.department || 'Operations'}</p>
+                </div>
+                <div className="space-y-1 text-right">
+                  <p className="text-[10px] uppercase text-[var(--text-muted)] tracking-wider font-bold">{/* @ts-ignore */}<T>Disbursement</T></p>
+                  <p className="font-bold text-[var(--emerald)]">{/* @ts-ignore */}<T>bKash / Bank ACH</T></p>
+                  <p className="text-xs text-[var(--text-muted)]">{new Date(pay.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
-            </div>
 
-            {/* Net Amount Box */}
-            <div className="rounded-xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] p-3 flex items-center justify-between">
-              <div>
-                <p className="text-[9px] uppercase font-bold text-[var(--emerald)] tracking-wider">{/* @ts-ignore */}<T>Net Amount Payable</T></p>
-                <p className="text-[11px] italic text-[var(--text-muted)]">{wordsInTaka}</p>
+              {/* Earnings vs Deductions Table */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
+                  <p className="text-[11px] font-bold uppercase text-[var(--brand)] border-b border-[var(--border-hairline)] pb-1.5">{/* @ts-ignore */}<T>Gross Earnings (+)</T></p>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Basic Salary (50%)</T></span><span className="font-semibold">{sym}{basicSalary.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>{/* @ts-ignore */}<T>House Rent (HRA)</T></span><span className="font-semibold">{sym}{hra.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Medical Allowance</T></span><span className="font-semibold">{sym}{medical.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Conveyance</T></span><span className="font-semibold">{sym}{conveyance.toLocaleString()}</span></div>
+                    {festivalBonus > 0 && <div className="flex justify-between text-[var(--emerald)]"><span>{/* @ts-ignore */}<T>Festival Bonus</T></span><span className="font-semibold">{sym}{festivalBonus.toLocaleString()}</span></div>}
+                    <div className="flex justify-between border-t border-[var(--border-hairline)] pt-1.5 font-bold text-[var(--brand)]"><span>{/* @ts-ignore */}<T>Total Earnings</T></span><span>{sym}{totalEarnings.toLocaleString()}</span></div>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3">
+                  <p className="text-[11px] font-bold uppercase text-[var(--rose)] border-b border-[var(--border-hairline)] pb-1.5">{/* @ts-ignore */}<T>Statutory Deductions (-)</T></p>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Provident Fund (10%)</T></span><span className="font-semibold">{sym}{pfDeduction.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span>{/* @ts-ignore */}<T>Income Tax (TDS)</T></span><span className="font-semibold">{sym}{taxDeduction.toLocaleString()}</span></div>
+                    {penaltyDeduction > 0 && <div className="flex justify-between text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Lateness Fine</T></span><span className="font-semibold">{sym}{penaltyDeduction.toLocaleString()}</span></div>}
+                    <div className="flex justify-between border-t border-[var(--border-hairline)] pt-1.5 font-bold text-[var(--rose)]"><span>{/* @ts-ignore */}<T>Total Deductions</T></span><span>{sym}{totalDeductions.toLocaleString()}</span></div>
+                  </div>
+                </div>
               </div>
-              <p className="text-xl font-extrabold text-[var(--emerald)]">{sym} {netPayable.toLocaleString()}</p>
-            </div>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <Button onClick={() => setShowModal(false)} variant="outline" size="sm" className="rounded-xl h-8 text-xs">
-                {/* @ts-ignore */}<T>Close</T></Button>
-              <Button onClick={handlePrint} variant="primary" size="sm" className="rounded-xl h-8 text-xs">
-                <Printer size={13} className="mr-1.5" /> {/* @ts-ignore */}<T>Print / Export PDF</T></Button>
+              {/* Net Amount Box */}
+              <div className="rounded-xl border border-[var(--emerald)]/40 bg-[var(--emerald-soft)] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-[var(--emerald)] tracking-wider">{/* @ts-ignore */}<T>Net Amount Payable</T></p>
+                  <p className="text-[12px] italic text-[var(--text-muted)] font-medium mt-0.5">{wordsInTaka}</p>
+                </div>
+                <p className="text-2xl font-extrabold text-[var(--emerald)]">{sym} {netPayable.toLocaleString()}</p>
+              </div>
+
+              <div className="pt-4 flex justify-center">
+                <p className="text-[10px] text-[var(--text-muted)] text-center">
+                  This is a system-generated official payslip compliant with Bangladesh Labour Act 2006 (and 2013 amendments).<br/>
+                  Confidential · Enterprise Employee Management System
+                </p>
+              </div>
             </div>
           </div>
         </div>

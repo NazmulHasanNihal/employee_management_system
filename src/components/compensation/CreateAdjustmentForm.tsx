@@ -79,13 +79,19 @@ export function CreateAdjustmentForm({ onSuccess, initialUserId }: Props) {
     const old = Number(currentSalary) || 0;
 
     if (method === 'percentage') {
-      const pct = Number(percentage);
-      if (isNaN(pct) || percentage === '') return null;
+      const rawPct = Number(percentage);
+      if (isNaN(rawPct) || percentage === '') return null;
+      let pct = rawPct;
+      if (selectedType === 'INCREMENT') pct = Math.abs(rawPct);
+      else if (selectedType === 'DECREMENT') pct = -Math.abs(rawPct);
       return calculateNewSalaryFromPercentage(old, pct);
     }
     if (method === 'amount') {
-      const amt = Number(amount);
-      if (isNaN(amt) || amount === '') return null;
+      const rawAmt = Number(amount);
+      if (isNaN(rawAmt) || amount === '') return null;
+      let amt = rawAmt;
+      if (selectedType === 'INCREMENT') amt = Math.abs(rawAmt);
+      else if (selectedType === 'DECREMENT') amt = -Math.abs(rawAmt);
       return calculateNewSalaryFromAmount(old, amt);
     }
     const tgt = Number(targetSalary);
