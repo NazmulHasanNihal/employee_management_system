@@ -376,7 +376,7 @@ export default function PaymentSystemHub({
                 }`}
               >
                 <CreditCard size={16} />
-                {/* @ts-ignore */}<T>Single Payment Simulator</T>
+                {/* @ts-ignore */}<T>Single Payment</T>
               </button>
 
               <button
@@ -388,7 +388,7 @@ export default function PaymentSystemHub({
                 }`}
               >
                 <Layers size={16} />
-                {/* @ts-ignore */}<T>Bulk Payroll Simulator</T>
+                {/* @ts-ignore */}<T>Bulk Payment</T>
               </button>
 
               <button

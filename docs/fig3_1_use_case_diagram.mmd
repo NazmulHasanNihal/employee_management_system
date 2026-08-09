@@ -2,62 +2,55 @@
 
 graph LR
 
-    subgraph LEFT_ACTORS[" "]
+    subgraph LEFT["Employee & Biometric"]
         direction TB
         EMP[("👤 Employee")]
-        BIO[("🖐️ Biometric<br/>Device")]
-    end
-
-    subgraph LEFT_UC[" "]
-        direction TB
+        BIO[("🖐️ Biometric Device")]
         UC1[("Clock In")]
         UC2[("Request Leave")]
         UC3[("View Payslip")]
         UC4[("Submit Ticket")]
         UC5[("Hardware Sync")]
+        
+        EMP --> UC1
+        EMP --> UC2
+        EMP --> UC3
+        EMP --> UC4
+        BIO --> UC5
     end
 
-    subgraph RIGHT_UC[" "]
+    subgraph RIGHT["HR & Auditor"]
         direction TB
+        HR[("👤 HR Admin")]
         UC6[("Create Formulas")]
         UC7[("Process Payroll")]
         UC8[("Manage ATS")]
         UC9[("Approve Leave")]
+        AUD[("👤 System Auditor")]
         UC10[("Verify Hash Ledger")]
+        
+        HR --> UC6
+        HR --> UC7
+        HR --> UC8
+        HR --> UC9
+        AUD --> UC10
     end
 
-    subgraph RIGHT_ACTORS[" "]
-        direction TB
-        HR[("👤 HR Admin")]
-        AUD[("👤 System<br/>Auditor")]
-    end
+    LEFT ~~~ RIGHT
 
-    EMP --> UC1
-    EMP --> UC2
-    EMP --> UC3
-    EMP --> UC4
-    BIO --> UC5
-    HR --> UC6
-    HR --> UC7
-    HR --> UC8
-    HR --> UC9
-    AUD --> UC10
+    linkStyle 0 stroke:#2563eb,stroke-width:2px
+    linkStyle 1 stroke:#2563eb,stroke-width:2px
+    linkStyle 2 stroke:#2563eb,stroke-width:2px
+    linkStyle 3 stroke:#2563eb,stroke-width:2px
+    linkStyle 4 stroke:#2563eb,stroke-width:2px
+    linkStyle 5 stroke:#16a34a,stroke-width:2px
+    linkStyle 6 stroke:#16a34a,stroke-width:2px
+    linkStyle 7 stroke:#16a34a,stroke-width:2px
+    linkStyle 8 stroke:#16a34a,stroke-width:2px
+    linkStyle 9 stroke:#16a34a,stroke-width:2px
 
-    linkStyle 0 stroke:#000000,stroke-width:2.5px
-    linkStyle 1 stroke:#000000,stroke-width:2.5px
-    linkStyle 2 stroke:#000000,stroke-width:2.5px
-    linkStyle 3 stroke:#000000,stroke-width:2.5px
-    linkStyle 4 stroke:#000000,stroke-width:2.5px
-    linkStyle 5 stroke:#000000,stroke-width:2.5px
-    linkStyle 6 stroke:#000000,stroke-width:2.5px
-    linkStyle 7 stroke:#000000,stroke-width:2.5px
-    linkStyle 8 stroke:#000000,stroke-width:2.5px
-    linkStyle 9 stroke:#000000,stroke-width:2.5px
-
-    style LEFT_ACTORS fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#000000
-    style LEFT_UC fill:#eff6ff,stroke:#3b82f6,stroke-width:2px,color:#000000
-    style RIGHT_UC fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,color:#000000
-    style RIGHT_ACTORS fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#000000
+    style LEFT fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#000000
+    style RIGHT fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#000000
 
     style EMP fill:#2563eb,stroke:#1e40af,stroke-width:2px,color:#ffffff
     style BIO fill:#2563eb,stroke:#1e40af,stroke-width:2px,color:#ffffff

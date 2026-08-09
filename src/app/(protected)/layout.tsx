@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import OnboardingFlow from "@/components/OnboardingFlow";
 import { UserProvider } from "@/components/UserProvider";
+import { cookies } from "next/headers";
 
 export const dynamic = 'force-dynamic';
 
@@ -66,6 +67,26 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     });
   }
 
+  let isOwner = dbUser.isOwner;
+  let isCEO = isOwner || dbUser.role === 'CEO';
+  let isAdmin = isCEO || dbUser.role === 'Admin' || dbUser.role === 'HR Manager';
+  let isHR = dbUser.role === 'HR Manager';
+  let realUserId = dbUser.id;
+
+  const cookieStore = await cookies();
+  const impersonatedUserId = cookieStore.get("impersonated_user_id")?.value;
+
+  if (isAdmin && impersonatedUserId) {
+    const impUser = await prisma.user.findUnique({ where: { id: impersonatedUserId } });
+    if (impUser) {
+      dbUser = impUser;
+      isOwner = dbUser.isOwner;
+      isCEO = isOwner || dbUser.role === 'CEO';
+      isAdmin = isCEO || dbUser.role === 'Admin' || dbUser.role === 'HR Manager';
+      isHR = dbUser.role === 'HR Manager';
+    }
+  }
+
   const layoutUser = {
     id: dbUser.id,
     name: dbUser.name,
@@ -75,13 +96,9 @@ export default async function ProtectedLayout({ children }: { children: React.Re
     designation: dbUser.designation || 'Staff',
     avatarUrl: dbUser.avatarUrl,
     isOnboarded: dbUser.isOnboarded,
-    branchId: dbUser.branchId
+    branchId: dbUser.branchId,
+    isImpersonated: dbUser.id !== realUserId,
   };
-
-  const isOwner = dbUser.isOwner;
-  const isCEO = isOwner || dbUser.role === 'CEO';
-  const isAdmin = isCEO || dbUser.role === 'Admin' || dbUser.role === 'HR Manager';
-  const isHR = dbUser.role === 'HR Manager';
 
   const userContext = {
     user: layoutUser,

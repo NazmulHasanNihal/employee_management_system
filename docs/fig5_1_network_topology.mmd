@@ -1,0 +1,56 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '11px', 'primaryColor': '#1f2937', 'primaryTextColor': '#000000', 'edgeLabelBackground': '#ffffff', 'lineColor': '#000000' } } }%%
+
+graph LR
+
+    subgraph FRONTEND["Frontend Layer"]
+        direction TB
+        PWA[("🖥️ Client / Browser<br/>(PWA — Serwist)")]
+        NEXT[("▲ Next.js 15<br/>(Vercel Edge)")]
+    end
+
+    subgraph BACKEND["Backend / API Layer"]
+        direction TB
+        TRPC[("🔌 tRPC Router<br/>(Server Actions)")]
+    end
+
+    subgraph DATA["Data Layer"]
+        direction TB
+        PRISMA[("🔷 Prisma ORM<br/>(Type-Safe Client)")]
+        SUPABASE_DB[("🐘 Supabase PostgreSQL<br/>(Primary Database)")]
+    end
+
+    subgraph MICRO["Microservices Layer"]
+        direction TB
+        BIO[("🖐️ Biometric Hardware")]
+        GO[("🔵 Go Microservice<br/>(Computational Engine)")]
+        STORAGE[("☁️ Supabase Cloud Storage<br/>(PDF Output)")]
+    end
+
+    PWA -->|"HTTPS / JSON"| NEXT
+    NEXT -->|"Server Actions"| TRPC
+    TRPC -->|"Queries / Mutations"| PRISMA
+    PRISMA -->|"SQL / Migrations"| SUPABASE_DB
+    
+    BIO -->|"Raw Biometric Data"| GO
+    GO -->|"Push PDF Files"| STORAGE
+
+    style FRONTEND fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#000000
+    style BACKEND fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#000000
+    style DATA fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#000000
+    style MICRO fill:#fce7f3,stroke:#db2777,stroke-width:2px,color:#000000
+
+    style PWA fill:#ffffff,stroke:#2563eb,stroke-width:2px,color:#000000
+    style NEXT fill:#ffffff,stroke:#2563eb,stroke-width:2px,color:#000000
+    style TRPC fill:#ffffff,stroke:#d97706,stroke-width:2px,color:#000000
+    style PRISMA fill:#ffffff,stroke:#16a34a,stroke-width:2px,color:#000000
+    style SUPABASE_DB fill:#ffffff,stroke:#16a34a,stroke-width:2px,color:#000000
+    style BIO fill:#ffffff,stroke:#db2777,stroke-width:2px,color:#000000
+    style GO fill:#ffffff,stroke:#db2777,stroke-width:2px,color:#000000
+    style STORAGE fill:#ffffff,stroke:#db2777,stroke-width:2px,color:#000000
+
+    linkStyle 0 stroke:#2563eb,stroke-width:2.5px
+    linkStyle 1 stroke:#d97706,stroke-width:2.5px
+    linkStyle 2 stroke:#d97706,stroke-width:2.5px
+    linkStyle 3 stroke:#16a34a,stroke-width:2.5px
+    linkStyle 4 stroke:#db2777,stroke-width:2.5px
+    linkStyle 5 stroke:#db2777,stroke-width:2.5px

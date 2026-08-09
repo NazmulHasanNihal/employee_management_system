@@ -1,69 +1,73 @@
-%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '16px' } } }%%
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '12px', 'primaryColor': '#1f2937', 'primaryTextColor': '#000000', 'edgeLabelBackground': '#ffffff', 'lineColor': '#000000', 'secondaryColor': '#ffffff', 'tertiaryColor': '#ffffff' } } }%%
 
 erDiagram
-    %% Figure 4.1a — Core Identity & Access ERD
-
-    User {
-        string id PK "Supabase Auth ID"
-        string email UK "unique login"
-        string name "display name"
-        string role "Admin | Manager | HR Manager | Employee"
-        string department "department name"
-        string designation "job title"
-        string status "active | inactive"
-        boolean isOwner "system owner flag"
-        boolean isOnboarded "onboarding complete"
-        string preferredLanguage "en | bn"
-        string employmentType "Full-Time | Part-Time | Contract | Intern"
-        string nid "AES-256-GCM encrypted NID"
-        string nidMasked "display-safe mask"
-        string bloodGroup "A+ | B- | O+ etc."
-        float baseSalary "monthly base (BDT)"
-        string managerId FK "self-referencing"
-        string proxyId FK "delegation proxy"
-        string branchId FK "assigned branch"
-        datetime createdAt "auto-set"
-        datetime updatedAt "auto-updated"
+    EMPLOYEE {
+        string id PK "UUID"
+        string name "VARCHAR(255)"
+        string email "VARCHAR(255) UNIQUE"
+        string role "ENUM(Owner|Admin|HR|Manager|Employee)"
+        decimal base_salary "DECIMAL(12,2)"
+        datetime created_at "TIMESTAMP"
+    }
+    
+    ATTENDANCE_LOG {
+        string id PK "UUID"
+        string employee_id FK "UUID → EMPLOYEE(id)"
+        date date "DATE"
+        time clock_in "TIME"
+        time clock_out "TIME NULL"
+        string status "ENUM(Present|Absent|Late|HalfDay)"
+        datetime created_at "TIMESTAMP"
+    }
+    
+    PAYROLL_STRUCTURE {
+        string id PK "UUID"
+        string name "VARCHAR(255)"
+        decimal base_salary "DECIMAL(12,2)"
+        json heads "JSON"
+        datetime created_at "TIMESTAMP"
+    }
+    
+    PAYROLL_HEAD {
+        string id PK "UUID"
+        string structure_id FK "UUID → PAYROLL_STRUCTURE(id)"
+        string name "VARCHAR(255)"
+        decimal amount "DECIMAL(12,2)"
+        string type "ENUM(Allowance|Deduction|Tax|PF|Gratuity)"
+    }
+    
+    HELPDESK_TICKET {
+        string id PK "UUID"
+        string user_id FK "UUID → EMPLOYEE(id)"
+        string subject "VARCHAR(255)"
+        text description "TEXT"
+        string status "ENUM(Open|InProgress|Resolved|Closed)"
+        datetime created_at "TIMESTAMP"
+    }
+    
+    AUDIT_LOG {
+        string id PK "UUID"
+        string action "VARCHAR(255)"
+        string actor_id "UUID"
+        string target_id "UUID NULL"
+        json details "JSON"
+        string previous_hash "CHAR(64)"
+        string hash "CHAR(64)"
+        datetime timestamp "TIMESTAMP"
     }
 
-    Branch {
-        string id PK
-        string name UK "branch name"
-        string city "location city"
-        string address "full address"
-        string timezone "Asia/Dhaka default"
-    }
+    EMPLOYEE ||--o{ ATTENDANCE_LOG : "EMPLOYEE\nhas many\nATTENDANCE_LOG\n(1:N)"
+    PAYROLL_STRUCTURE ||--o{ PAYROLL_HEAD : "PAYROLL_STRUCTURE\nhas many\nPAYROLL_HEAD\n(1:N)"
+    EMPLOYEE ||--o{ HELPDESK_TICKET : "EMPLOYEE\nhas many\nHELPDESK_TICKET\n(1:N)"
 
-    Department {
-        string id PK
-        string name UK "department name"
-        float budget "allocated budget"
-        string headId "department head"
-        string branchId FK "parent branch"
-    }
-
-    Team {
-        string id PK
-        string name "team name"
-        string description "purpose"
-        string branchId FK "branch"
-        string leadId FK "team lead"
-        string_arr memberIds "user IDs"
-    }
-
-    BranchRelations {
-        string id PK
-        string branchId FK
-        string relationName "Bank | Insurance | Labour Office"
-        string contactName "contact person"
-        string phone "phone number"
-        string email "email address"
-    }
-
-    User ||--o{ User : "manages (manager)"
-    User ||--o{ User : "proxies (delegation)"
-    Branch ||--o{ User : "has members"
-    Branch ||--o{ Department : "has departments"
-    Branch ||--o{ Team : "has teams"
-    Branch ||--o{ BranchRelations : "external relations"
-    User ||--o{ Team : "leads"
+    classDef entity fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#000000
+    classDef attendance fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#000000
+    classDef payroll fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#000000
+    classDef helpdesk fill:#fce7f3,stroke:#db2777,stroke-width:2px,color:#000000
+    classDef audit fill:#f3f4f6,stroke:#4b5563,stroke-width:2px,color:#000000
+    
+    class EMPLOYEE entity
+    class ATTENDANCE_LOG attendance
+    class PAYROLL_STRUCTURE,PAYROLL_HEAD payroll
+    class HELPDESK_TICKET helpdesk
+    class AUDIT_LOG audit

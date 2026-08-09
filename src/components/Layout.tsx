@@ -28,6 +28,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/UserProvider';
 import { useTranslation } from '@/lib/translations';
 import { BranchSwitcher } from '@/components/BranchSwitcher';
+import { UserSwitcher } from '@/components/UserSwitcher';
 import { Avatar } from '@/components/ui/avatar';
 import { trpc } from '@/lib/trpc/client';
 import { navCategories } from '@/components/nav-config';
@@ -311,16 +312,15 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-2">
+            <UserSwitcher />
+            
             <button
               aria-label="Open command palette"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
               className="flex items-center gap-2 rounded-xl border border-[var(--border-hairline)] bg-[var(--bg-app)] px-2.5 sm:px-3 py-2 text-xs font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text-main)] hover:border-[var(--border-strong)]"
             >
               <Command size={14} /> <span className="hidden md:inline">{/* @ts-ignore */}<T>Command</T></span>
-            </button>
-
-
-            <button
+            </button>            <button
               aria-label="Toggle language"
               onClick={() => {
                 const next = language === 'en' ? 'bn' : 'en';

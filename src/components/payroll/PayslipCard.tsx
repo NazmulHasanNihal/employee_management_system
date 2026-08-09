@@ -187,7 +187,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
       </Card>
 
       {/* Hidden Printable Container */}
-      <div id={`printable-payslip-${pay.id}`} className="hidden">
+      <div id={`printable-payslip-${pay.id}`} className="hidden opacity-0 invisible absolute -z-50 pointer-events-none w-0 h-0 overflow-hidden" aria-hidden="true">
         <div className="payslip-box">
           <table className="header-table">
             <tr>
@@ -288,17 +288,22 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
       {/* Interactive Modal View */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150"
+          className="fixed inset-0 z-[100] flex min-h-screen items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto custom-scrollbar animate-in fade-in duration-150"
           onClick={() => setShowModal(false)}
         >
           <div
-            className="w-full max-w-xl max-h-[85vh] overflow-y-auto my-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar"
+            className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-4 sm:p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 custom-scrollbar m-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-[var(--border-hairline)] pb-3">
-              <div className="flex items-center gap-2">
-                <Building2 size={18} className="text-[var(--brand)]" />
-                <h3 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Payslip Statement —</T>{pay.month} {pay.year}</h3>
+              <div className="flex items-center gap-3">
+                <Button onClick={() => setShowModal(false)} variant="ghost" size="sm" className="h-8 px-2 hidden sm:flex text-[var(--text-muted)] hover:text-[var(--text-main)]">
+                  <span className="text-lg leading-none mr-1">←</span> Back
+                </Button>
+                <div className="flex items-center gap-2">
+                  <Building2 size={18} className="text-[var(--brand)]" />
+                  <h3 className="text-sm font-bold text-[var(--text-main)]">{/* @ts-ignore */}<T>Official Payslip Statement —</T>{pay.month} {pay.year}</h3>
+                </div>
               </div>
               <button onClick={() => setShowModal(false)} className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-hover)]">
                 ✕

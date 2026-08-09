@@ -12,6 +12,7 @@ export interface SessionUser {
   avatarUrl?: string | null;
   isOnboarded: boolean;
   branchId?: string | null;
+  isImpersonated?: boolean;
 }
 
 export interface UserContextValue {
