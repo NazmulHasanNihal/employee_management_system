@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { getCaller } from '@/lib/auth';
+import { NotificationService } from '@/lib/notifications';
 
 export interface SinglePaymentInput {
   userId: string;
@@ -95,14 +96,18 @@ export async function executeSinglePaymentRecord(input: SinglePaymentInput) {
     });
 
     // Notify employee
-    await prisma.notification.create({
-      data: {
-        userId: targetUser.id,
-        type: 'Payment',
-        message: `Payment of ৳${netPaidAmount.toLocaleString('en-IN')} (${input.paymentType || 'Salary'}) has been disbursed to your account (${input.paymentMethod || 'Bank Transfer'}). TrxID: ${trxId}`,
-        link: `/payroll`,
-        read: false,
-      },
+    await NotificationService.notifyEmployee({
+      userId: targetUser.id,
+      type: 'payroll',
+      message: `Payment of ৳${netPaidAmount.toLocaleString('en-IN')} (${input.paymentType || 'Salary'}) has been disbursed to your account (${input.paymentMethod || 'Bank Transfer'}). TrxID: ${trxId}`,
+      link: `/payroll?receiptId=${trxId}`,
+    });
+
+    // Notify Admins/HR
+    await NotificationService.notifyAdmins({
+      type: 'system',
+      message: `Admin/HR processed a single payment of ৳${netPaidAmount.toLocaleString('en-IN')} for ${targetUser.name}. TrxID: ${trxId}`,
+      link: `/payroll`,
     });
 
     revalidatePath('/payroll');
@@ -180,7 +185,7 @@ export async function executeBulkPaymentBatch(input: BulkPaymentInput) {
         userId: emp.id,
         type: 'Payment',
         message: `Monthly Payroll Payment of ৳${netPaidAmount.toLocaleString('en-IN')} for ${input.paymentMonth || 'August 2026'} has been disbursed. TrxID: ${trxId} [Batch: ${batchRef}]`,
-        link: `/payroll`,
+        link: `/payroll?receiptId=${trxId}`,
         read: false,
       });
     }
@@ -189,6 +194,13 @@ export async function executeBulkPaymentBatch(input: BulkPaymentInput) {
       prisma.paymentRecord.createMany({ data: paymentRecordsData }),
       prisma.notification.createMany({ data: notificationsData }),
     ]);
+
+    // Notify Admins/HR about the bulk operation
+    await NotificationService.notifyAdmins({
+      type: 'system',
+      message: `Admin/HR processed a bulk payroll batch (${batchRef}) for ${targetEmployees.length} employees. Total: ৳${totalDisbursed.toLocaleString('en-IN')}`,
+      link: `/payroll`,
+    });
 
     revalidatePath('/payroll');
     revalidatePath('/compensation');
@@ -297,7 +309,14 @@ export async function createPaymentAdjustmentRecord(input: PaymentAdjustmentInpu
  */
 export async function getPaymentRecordsLedger() {
   try {
-    await requirePrivilegedCaller();
+    const caller = await getCaller();
+    if (!caller) return { success: false, records: [], error: 'Unauthorized' };
+    
+    const isPrivileged = caller.isAdmin || caller.isHR || caller.isCEO || caller.isOwner;
+    if (!isPrivileged) {
+      return { success: true, records: [] }; // Employees just get empty ledger, no error
+    }
+
     const records = await prisma.paymentRecord.findMany({
       include: {
         user: {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState, useTransition, useEffect } from 'react';
 import {
   CreditCard,
   Building2,
@@ -37,7 +37,7 @@ import {
   executeBulkPaymentBatch,
   createPaymentAdjustmentRecord,
 } from '@/app/actions/payments';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export interface PaymentRecordItem {
   id: string;
@@ -94,16 +94,31 @@ export default function PaymentSystemHub({
   canDisburse?: boolean;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<'ledger' | 'single' | 'bulk' | 'adjust'>('ledger');
+
+  // Printable Payslip / Bank Receipt Modal State
+  const [selectedReceipt, setSelectedReceipt] = useState<PaymentRecordItem | null>(null);
+
+  useEffect(() => {
+    const receiptId = searchParams.get('receiptId');
+    if (receiptId && records.length > 0) {
+      const rec = records.find(r => r.trxId === receiptId);
+      if (rec) {
+        setSelectedReceipt(rec);
+        setActiveTab('ledger');
+        // Optionally clean up URL without reload to avoid re-triggering
+        window.history.replaceState(null, '', '/payroll');
+      }
+    }
+  }, [searchParams, records]);
 
   // Ledger Filter State
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('ALL');
   const [filterBatch, setFilterBatch] = useState('ALL');
 
-  // Printable Payslip / Bank Receipt Modal State
-  const [selectedReceipt, setSelectedReceipt] = useState<PaymentRecordItem | null>(null);
 
   // Single Payment Form State
   const [singleEmpId, setSingleEmpId] = useState('');

@@ -1,0 +1,30 @@
+flowchart LR
+    classDef entity fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#000000,font-family:Arial,sans-serif,font-weight:bold;
+    classDef process fill:#4D96FF,stroke:#1864AB,stroke-width:4px,color:#000000,font-family:Arial,sans-serif,font-weight:bold;
+    classDef datastore fill:#FF922B,stroke:#E8590C,stroke-width:2px,color:#000000,font-family:Arial,sans-serif,font-weight:bold;
+    classDef flow stroke:#228BE6,stroke-width:2px,color:#000000,font-family:Arial,sans-serif;
+
+    subgraph LEFT [" "]
+        direction TB
+        EMP[Employee]:::entity
+        HR[HR & Admin]:::entity
+    end
+
+    subgraph CENTER [" "]
+        direction TB
+        SYS((0.0\nEnterprise Employee\nManagement System)):::process
+    end
+
+    subgraph RIGHT [" "]
+        direction TB
+        BANK[Bank / MFS Network]:::entity
+    end
+
+    EMP -- "Personal Data\nAttendance\nLeave Requests\nHelpdesk Tickets" --> SYS
+    SYS -- "Payslips\nNotifications\nApproval Status" --> EMP
+
+    HR -- "System Configurations\nPayroll Triggers\nEmployee Approvals" --> SYS
+    SYS -- "Audit Logs\nReports\nSystem Analytics" --> HR
+
+    SYS -- "Salary Disbursement\nBatch File" --> BANK
+    BANK -- "Transaction ID\nSettlement Status" --> SYS

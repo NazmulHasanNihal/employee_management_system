@@ -1,64 +1,77 @@
 erDiagram
-    %% Employee relationships
-    Employee ||--o{ AttendanceLog : "generates"
-    Employee ||--o{ HelpdeskTicket : "submits"
-    Employee ||--o{ PayrollStructure : "assigned_to"
 
-    %% Payroll relationships
-    PayrollStructure ||--o{ PayrollHead : "contains"
-    
-    %% Other isolated or ledger tables
-    AuditLog {
-        string id PK
-        string entity_name
-        string event_type
-        string event_data
-        datetime created_at
-    }
-
-    %% Entity definitions
     Employee {
-        string id PK
-        string name
-        string email
-        string department
-        string designation
-        string role
-        float base_salary
+        string id PK "Unique employee identifier"
+        string name "Full name"
+        string email "Corporate email"
+        string department "Organizational unit"
+        string designation "Job title"
+        string role "User role"
+        float base_salary "Monthly base salary"
     }
 
     AttendanceLog {
-        string id PK
-        string employee_id FK
-        datetime check_in
-        datetime check_out
-        string status
+        string id PK "Unique attendance record"
+        string employee_id FK "References Employee"
+        datetime check_in "Shift start timestamp"
+        datetime check_out "Shift end timestamp"
+        string status "Present / Absent / Late"
     }
 
     HelpdeskTicket {
-        string id PK
-        string employee_id FK
-        string subject
-        string description
-        string status
-        string priority
+        string id PK "Unique ticket identifier"
+        string employee_id FK "References Employee"
+        string subject "Issue title"
+        string description "Problem details"
+        string status "Open / In Progress / Resolved / Closed"
+        string priority "Low / Medium / High / Critical"
     }
 
     PayrollStructure {
-        string id PK
-        string employee_id FK
-        string type
-        float base_amount
-        string status
+        string id PK "Unique structure identifier"
+        string employee_id FK "References Employee"
+        string type "Salary type"
+        float base_amount "Base salary amount"
+        string status "Active / Inactive"
     }
 
     PayrollHead {
-        string id PK
-        string structure_id FK
-        string component_name
-        float amount
-        string type "Earnings/Deductions"
+        string id PK "Unique head identifier"
+        string structure_id FK "References PayrollStructure"
+        string component_name "Salary component name"
+        float amount "Component amount"
+        string type "Earnings / Deductions"
     }
 
-    %% Notes
-    %% AuditLog is completely isolated as the append-only ledger
+    AuditLog {
+        string id PK "Sequential log identifier"
+        string entity_name "Affected table name"
+        string event_type "INSERT / UPDATE / DELETE"
+        string event_data "Change details"
+        datetime created_at "Event timestamp"
+    }
+
+    Employee ||--o{ AttendanceLog : "1 : N\nEmployee has many attendance records"
+    Employee ||--o{ HelpdeskTicket : "1 : N\nEmployee has many helpdesk tickets"
+    Employee ||--o{ PayrollStructure : "1 : N\nEmployee has one payroll structure"
+    PayrollStructure ||--o{ PayrollHead : "1 : N\nPayrollStructure has many heads"
+
+    AuditLog }o--|| Employee : "N : 1\nAuditLog tracks Employee changes"
+    AuditLog }o--|| AttendanceLog : "N : 1\nAuditLog tracks AttendanceLog changes"
+    AuditLog }o--|| HelpdeskTicket : "N : 1\nAuditLog tracks HelpdeskTicket changes"
+    AuditLog }o--|| PayrollStructure : "N : 1\nAuditLog tracks PayrollStructure changes"
+    AuditLog }o--|| PayrollHead : "N : 1\nAuditLog tracks PayrollHead changes"
+
+    classDef employeeStyle fill:#BFDBFE,stroke:#1E40AF,stroke-width:2px,color:#000000
+    classDef attendanceStyle fill:#FECACA,stroke:#991B1B,stroke-width:2px,color:#000000
+    classDef helpdeskStyle fill:#FDE68A,stroke:#92400E,stroke-width:2px,color:#000000
+    classDef payrollStructStyle fill:#A7F3D0,stroke:#065F46,stroke-width:2px,color:#000000
+    classDef payrollHeadStyle fill:#CFFAFE,stroke:#155E75,stroke-width:2px,color:#000000
+    classDef auditStyle fill:#E5E7EB,stroke:#374151,stroke-width:2px,color:#000000
+
+    class Employee employeeStyle
+    class AttendanceLog attendanceStyle
+    class HelpdeskTicket helpdeskStyle
+    class PayrollStructure payrollStructStyle
+    class PayrollHead payrollHeadStyle
+    class AuditLog auditStyle

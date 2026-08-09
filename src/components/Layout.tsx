@@ -143,10 +143,19 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
+  const { data: polledNotifications = null } = trpc.notifications.getAll.useQuery(undefined, {
+    refetchInterval: 15000,
+  });
+
   const [notifList, setNotifList] = React.useState<any[]>(() => notifications);
+  
   React.useEffect(() => {
-    setNotifList(notifications);
-  }, [notifications]);
+    if (polledNotifications) {
+      setNotifList(polledNotifications);
+    } else if (notifications) {
+      setNotifList(notifications);
+    }
+  }, [notifications, polledNotifications]);
 
   const markReadMutation = trpc.notifications.markRead.useMutation();
   const markAllReadMutation = trpc.notifications.markAllRead.useMutation();
@@ -154,12 +163,12 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
 
   const markRead = (id: string) => {
     markReadMutation.mutate({ id });
-    setNotifList((prev) => prev.filter((n) => n.id !== id));
+    setNotifList((prev) => prev.map(n => n.id === id ? { ...n, read: true } : n));
   };
 
   const markAllRead = () => {
     markAllReadMutation.mutate({});
-    setNotifList([]);
+    setNotifList((prev) => prev.map(n => ({ ...n, read: true })));
   };
 
   const handleLogout = async () => {

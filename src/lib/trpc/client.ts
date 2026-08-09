@@ -112,6 +112,7 @@ const createDummyHook = (path: string[]) => {
 
       useEffect(() => {
         let isMounted = true;
+        let intervalId: NodeJS.Timeout | null = null;
         
         if (options.enabled === false) {
           setIsLoading(false);
@@ -120,34 +121,43 @@ const createDummyHook = (path: string[]) => {
 
         // If we have initialData or fresh cached data (<15s), skip background fetch on mount
         const isFreshCache = cached && Date.now() - cached.timestamp < 15000;
+        
+        const fetchFn = () => {
+          executeServerQuery(fullPath, input)
+            .then((res) => {
+              if (isMounted) {
+                setData(res);
+                globalQueryCache.set(cacheKey, { data: res, timestamp: Date.now() });
+                setIsLoading(false);
+              }
+            })
+            .catch((err) => {
+              if (isMounted) {
+                setError(err);
+                setIsLoading(false);
+              }
+            });
+        };
+
         if (options.initialData !== undefined || isFreshCache) {
           setIsLoading(false);
-          return;
+        } else {
+          setData((prev: any) => {
+            if (prev === null) setIsLoading(true);
+            return prev;
+          });
+          fetchFn();
         }
 
-        setData((prev: any) => {
-          if (prev === null) setIsLoading(true);
-          return prev;
-        });
+        if (options.refetchInterval) {
+          intervalId = setInterval(fetchFn, options.refetchInterval);
+        }
 
-        executeServerQuery(fullPath, input)
-          .then((res) => {
-            if (isMounted) {
-              setData(res);
-              globalQueryCache.set(cacheKey, { data: res, timestamp: Date.now() });
-              setIsLoading(false);
-            }
-          })
-          .catch((err) => {
-            if (isMounted) {
-              setError(err);
-              setIsLoading(false);
-            }
-          });
         return () => {
           isMounted = false;
+          if (intervalId) clearInterval(intervalId);
         };
-      }, [fullPath, argsString, options.enabled]);
+      }, [fullPath, argsString, options.enabled, options.refetchInterval]);
 
       // Register for invalidation. Use a ref so `run` stays stable.
       const entryRef = useRef<QueryEntry | null>(null);
