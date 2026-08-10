@@ -29,6 +29,7 @@ import { T } from '@/components/Translate';
 interface EmployeeOption {
   id: string;
   name: string;
+  email?: string;
   role: string;
   designation?: string | null;
   department?: string | null;
@@ -92,7 +93,7 @@ export function Executive360Hub({ employees = [] }: { employees: EmployeeOption[
               <option value="">{/* @ts-ignore */}<T>Search or Choose Personnel...</T></option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
-                  {emp.name} ({emp.designation || emp.role || 'Staff'}) — {emp.department || 'Unassigned'}
+                  {emp.email ? `${emp.email} — ` : ''}{emp.name} ({emp.designation || emp.role || 'Staff'}) — {emp.department || 'Unassigned'}
                 </option>
               ))}
             </select>

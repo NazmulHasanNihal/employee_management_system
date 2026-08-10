@@ -154,11 +154,11 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
   const handleExportCsv = () => {
     if (list.length === 0) return;
-    const headers = ['Name', 'Email', 'Role', 'Department', 'Designation', 'Phone'];
+    const headers = ['Account Identifier (Email)', 'Name', 'Role', 'Department', 'Designation', 'Phone'];
     const csvContent = [
       headers.join(','),
       ...list.map((emp) =>
-        [emp.name, emp.email, emp.role, emp.department || '', emp.designation || '', emp.phone || '']
+        [emp.email, emp.name, emp.role, emp.department || '', emp.designation || '', emp.phone || '']
           .map((v) => `"${v}"`)
           .join(',')
       ),
@@ -227,7 +227,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
   const filteredList = filter.trim()
     ? list.filter((emp) =>
-        [emp.name, emp.email, emp.department, emp.role, emp.designation]
+        [emp.email, emp.name, emp.department, emp.role, emp.designation]
           .filter(Boolean)
           .some((f) => f!.toLowerCase().includes(filter.toLowerCase()))
       )
@@ -334,8 +334,12 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                       />
                     </div>
                     <div>
-                       <h4 className="max-w-[12rem] truncate text-fluid-lg font-semibold text-[var(--text-main)]">{emp.name}</h4>
-                       <div className="mt-0.5">
+                       <div className="flex items-center gap-1 text-xs font-mono font-bold text-[var(--brand)]">
+                         <UserCircle className="h-3.5 w-3.5 shrink-0" />
+                         <span className="truncate max-w-[12rem]">{emp.email}</span>
+                       </div>
+                       <h4 className="max-w-[12rem] truncate text-base font-semibold text-[var(--text-main)] mt-0.5">{emp.name}</h4>
+                       <div className="mt-1">
                          <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
                            {emp.designation || 'Staff'}
                          </span>
@@ -354,10 +358,6 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                   <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
                     <Briefcase className="h-3.5 w-3.5" />
                     <span className="truncate">{emp.department || 'No Department Assigned'}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
-                    <Mail className="h-3.5 w-3.5" />
-                    <span className="truncate font-mono text-xs">{emp.email}</span>
                   </div>
                   {emp.phone && (
                     <div className="flex items-center gap-3 text-sm text-[var(--text-muted)]">
@@ -445,6 +445,10 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               </div>
               
               <div className="flex flex-col items-center">
+                <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--brand)]/10 px-3 py-1 text-xs font-mono font-bold text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
+                  <UserCircle className="h-3.5 w-3.5" />
+                  <span>{selectedEmployee.email}</span>
+                </div>
                 <h3 className="text-xl font-bold text-[var(--text-main)]">{selectedEmployee.name}</h3>
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                   <span className="inline-flex items-center rounded-md bg-[var(--brand)]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--brand)] ring-1 ring-inset ring-[var(--brand)]/20">
@@ -746,9 +750,9 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
 
       {/* Provision Modal */}
       {isProvisionModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-3 sm:p-4 flex min-h-full items-center justify-center animate-in fade-in duration-150">
-          <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-y-auto my-auto rounded-2xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] shadow-xl custom-scrollbar">
-            <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--brand-soft)] p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-4 flex min-h-full items-start justify-center pt-4 sm:pt-8 animate-in fade-in duration-150">
+          <div className="flex max-h-[85vh] w-full max-w-md flex-col overflow-y-auto mt-0 mb-auto rounded-2xl border border-[var(--brand)]/30 bg-[var(--bg-panel)] bg-white dark:bg-zinc-900 shadow-2xl custom-scrollbar">
+            <div className="flex items-center justify-between border-b border-[var(--brand)]/20 bg-[var(--bg-panel)] bg-white dark:bg-zinc-900 p-4 sm:p-6 sticky top-0 z-10">
               <div>
                 <h3 className="flex items-center gap-2 text-lg font-semibold uppercase tracking-wide text-[var(--text-main)]">
                   <UserPlus className="h-5 w-5 text-[var(--brand)]" /> {/* @ts-ignore */}<T>+ Add New Employee Member</T></h3>
@@ -758,7 +762,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <form onSubmit={handleProvisionSubmit} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
+            <form onSubmit={handleProvisionSubmit} className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6 bg-white dark:bg-zinc-900">
               {provisionStatus.error && (
                 <div className="rounded-xl border border-[var(--rose)]/30 bg-[var(--rose-soft)] p-3 text-xs text-[var(--rose)]">
                   {/* @ts-ignore */}<T>ERROR:</T>{provisionStatus.error}
@@ -784,7 +788,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               )}
 
               {/* Mode Selection Tabs */}
-              <div className="space-y-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-4">
+              <div className="space-y-3 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)] p-4">
                 <label className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Creation Mode</T></label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
