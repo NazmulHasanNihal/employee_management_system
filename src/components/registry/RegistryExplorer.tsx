@@ -75,6 +75,49 @@ interface Branch {
   city: string;
 }
 
+function buildHierarchy(employees: Employee[]) {
+  const employeeMap = new Map<string, Employee>();
+  employees.forEach(emp => employeeMap.set(emp.id, emp));
+
+  const rootEmployees: Employee[] = [];
+  const childrenMap = new Map<string, Employee[]>();
+
+  employees.forEach(emp => {
+    if (emp.managerId && employeeMap.has(emp.managerId)) {
+      if (!childrenMap.has(emp.managerId)) {
+        childrenMap.set(emp.managerId, []);
+      }
+      childrenMap.get(emp.managerId)!.push(emp);
+    } else {
+      rootEmployees.push(emp);
+    }
+  });
+
+  rootEmployees.sort((a, b) => {
+    if (a.role === 'CEO' && b.role !== 'CEO') return -1;
+    if (b.role === 'CEO' && a.role !== 'CEO') return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  childrenMap.forEach(children => {
+    children.sort((a, b) => a.name.localeCompare(b.name));
+  });
+
+  const sortedList: Employee[] = [];
+  const flattenHierarchy = (emps: Employee[], depth = 0) => {
+    emps.forEach(emp => {
+      (emp as any)._hierarchyDepth = depth;
+      sortedList.push(emp);
+      if (childrenMap.has(emp.id)) {
+        flattenHierarchy(childrenMap.get(emp.id)!, depth + 1);
+      }
+    });
+  };
+
+  flattenHierarchy(rootEmployees);
+  return sortedList;
+}
+
 export default function RegistryExplorer({ employees, branches = [] }: { employees: Employee[]; branches?: Branch[] }) {
   const { user, isAdmin, isOwner } = useUser();
   const [filter, setFilter] = useState('');
@@ -233,6 +276,8 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
       )
     : list;
 
+  const hierarchicalList = buildHierarchy(filteredList);
+
   const roleVariant = (role: string): any =>
     role === 'Admin' ? 'rose' : role === 'HR Manager' ? 'brand' : 'secondary';
 
@@ -304,21 +349,23 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
             </div>
           </div>
 
-          {filteredList.length === 0 ? (
+          {hierarchicalList.length === 0 ? (
             <EmptyState
               title="No personnel found"
               description={filter ? 'Try adjusting your search.' : 'The registry is empty.'}
               icon={<Users className="h-6 w-6" />}
             />
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredList.map((emp) => {
+            <div className="flex flex-col gap-4">
+          {hierarchicalList.map((emp) => {
             const isLiveOnline = Boolean(emp.isOnline) || (Boolean(emp.lastSeen) && (new Date().getTime() - new Date(emp.lastSeen!).getTime() < 5 * 60 * 1000));
+            const depth = (emp as any)._hierarchyDepth || 0;
             return (
               <div
                 key={emp.id}
                 onClick={() => openProfile(emp)}
                 className="cursor-pointer flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
+                style={{ marginLeft: `calc(${depth} * 2rem)` }}
               >
                 <div className="mb-4 flex items-start justify-between">
                   <div className="flex items-center gap-4">
