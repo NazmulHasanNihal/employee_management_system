@@ -93,14 +93,25 @@ function buildHierarchy(employees: Employee[]) {
     }
   });
 
+  const roleRank = (role: string) => {
+    if (role === 'CEO') return 1;
+    if (role === 'CFO') return 2;
+    if (role === 'CTO') return 3;
+    return 4;
+  };
+
   rootEmployees.sort((a, b) => {
-    if (a.role === 'CEO' && b.role !== 'CEO') return -1;
-    if (b.role === 'CEO' && a.role !== 'CEO') return 1;
+    const diff = roleRank(a.role) - roleRank(b.role);
+    if (diff !== 0) return diff;
     return a.name.localeCompare(b.name);
   });
 
   childrenMap.forEach(children => {
-    children.sort((a, b) => a.name.localeCompare(b.name));
+    children.sort((a, b) => {
+      const diff = roleRank(a.role) - roleRank(b.role);
+      if (diff !== 0) return diff;
+      return a.name.localeCompare(b.name);
+    });
   });
 
   const sortedList: Employee[] = [];
