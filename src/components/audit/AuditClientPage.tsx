@@ -158,9 +158,9 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
             }`}
           >
             {verifyState === 'idle' && <><ShieldCheck size={16} className="text-[var(--text-muted)]" /> {/* @ts-ignore */}<T>Verify Ledger Integrity</T></>}
-            {verifyState === 'verifying' && <><Loader2 size={16} className="animate-spin text-[var(--brand)]" /> {/* @ts-ignore */}<T>Verifying Hash Chain...</T></>}
-            {verifyState === 'secure' && <><ShieldCheck size={16} /> {/* @ts-ignore */}<T>Mathematically Proven Immutable</T></>}
-            {verifyState === 'tampered' && <><ShieldAlert size={16} /> {/* @ts-ignore */}<T>Ledger Tampered!</T></>}
+            {verifyState === 'verifying' && <><Loader2 size={16} className="animate-spin text-[var(--brand)]" /> {/* @ts-ignore */}<T>Verifying Integrity...</T></>}
+            {verifyState === 'secure' && <><ShieldCheck size={16} /> {/* @ts-ignore */}<T>Integrity Verified</T></>}
+            {verifyState === 'tampered' && <><ShieldAlert size={16} /> {/* @ts-ignore */}<T>Tampering Detected</T></>}
           </Button>
 
           {isCEO && (
@@ -182,49 +182,49 @@ export default function AuditClientPage({ initialEvents, isCEO }: AuditClientPag
           <Table>
             <TableHeader className="bg-[var(--bg-app)] border-b border-[var(--border-hairline)]">
               <TableRow>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Timestamp</T></TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider w-[240px]">{/* @ts-ignore */}<T>Cryptographic Hash Chain</T></TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Actor</T></TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Action</T></TableHead>
-                <TableHead className="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Details</T></TableHead>
+                <TableHead className="w-[160px] text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Timestamp</T></TableHead>
+                <TableHead className="w-[300px] text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Ledger Hashes</T></TableHead>
+                <TableHead className="w-[180px] text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Actor</T></TableHead>
+                <TableHead className="w-[140px] text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Action</T></TableHead>
+                <TableHead className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{/* @ts-ignore */}<T>Details</T></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedEvents.map((event: any, i: number) => {
                 const isSecureRow = verifyState === 'secure' && event.isValid;
                 return (
-                  <TableRow key={event.id} className={`transition-colors ${isSecureRow ? 'bg-[var(--emerald)]/5 border-b-[var(--emerald)]/20 hover:bg-[var(--emerald)]/10' : 'border-b-[var(--border-hairline)]'}`}>
-                    <TableCell className="font-mono font-semibold text-xs text-[var(--text-main)] whitespace-nowrap">
-                      {new Date(event.timestamp).toLocaleString()}
+                  <TableRow key={event.id} className={`transition-colors hover:bg-[var(--bg-hover)] ${isSecureRow ? 'bg-[var(--emerald)]/5 border-b-[var(--emerald)]/20' : 'border-b-[var(--border-hairline)]'}`}>
+                    <TableCell className="font-mono text-xs text-[var(--text-main)] whitespace-nowrap">
+                      {new Date(event.timestamp).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                     </TableCell>
                     <TableCell className="font-mono text-[10px]">
                       <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center gap-1.5 opacity-60">
-                          <span className="bg-[var(--bg-app)] px-1.5 py-0.5 rounded text-[var(--text-muted)] w-8 text-center text-[9px]">{/* @ts-ignore */}<T>PREV</T></span>
-                          <span className="text-[var(--text-muted)] truncate max-w-[120px] lg:max-w-[180px]">{event.verifiedPrevHash || event.previousHash || 'genesis_hash_00000000000'}</span>
+                        <div className="flex items-center gap-2 opacity-70">
+                          <span className="bg-[var(--bg-hover)] px-2 py-0.5 rounded text-[var(--text-muted)] font-semibold text-[9px] uppercase tracking-wider">{/* @ts-ignore */}<T>Prev Hash</T></span>
+                          <span className="text-[var(--text-muted)] truncate max-w-[200px] lg:max-w-[250px]">{event.verifiedPrevHash || event.previousHash || 'genesis_hash_00000000000'}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`px-1.5 py-0.5 rounded w-8 text-center text-[9px] font-bold ${isSecureRow ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]' : 'bg-[var(--brand)]/10 text-[var(--brand)]'}`}>{/* @ts-ignore */}<T>HASH</T></span>
-                          <span className={`${isSecureRow ? 'text-[var(--emerald)]' : 'text-[var(--text-main)]'} truncate max-w-[120px] lg:max-w-[180px] font-bold`}>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider ${isSecureRow ? 'bg-[var(--emerald)]/20 text-[var(--emerald)]' : 'bg-[var(--brand)]/10 text-[var(--brand)]'}`}>{/* @ts-ignore */}<T>Event Hash</T></span>
+                          <span className={`${isSecureRow ? 'text-[var(--emerald)]' : 'text-[var(--text-main)]'} truncate max-w-[200px] lg:max-w-[250px] font-medium`}>
                             {event.verifiedHash || event.hash || event.id}
                           </span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col">
-                        <span className={`font-semibold text-xs ${isSecureRow ? 'text-[var(--emerald)]' : 'text-[var(--text-main)]'}`}>{event.actorName || event.actorId || event.user || 'System'}</span>
-                        <span className="text-[9px] uppercase tracking-wide text-[var(--text-muted)]">{event.actorRole || 'Service'}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className={`font-medium text-sm ${isSecureRow ? 'text-[var(--emerald)]' : 'text-[var(--text-main)]'}`}>{event.actorName || event.actorId || event.user || 'System Process'}</span>
+                        <span className="text-[10px] uppercase tracking-wider text-[var(--text-muted)]">{event.actorRole || 'Service Account'}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="default" className={`font-mono uppercase tracking-wider text-[9px] ${isSecureRow ? 'bg-[var(--emerald)]/20 text-[var(--emerald)] border border-[var(--emerald)]/30' : 'bg-[var(--bg-app)] text-[var(--text-main)] border border-[var(--border-hairline)]'}`}>
+                      <Badge variant="outline" className={`font-mono uppercase tracking-wider text-[10px] ${isSecureRow ? 'bg-[var(--emerald)]/10 text-[var(--emerald)] border-[var(--emerald)]/30' : 'bg-[var(--bg-panel)] text-[var(--text-main)] border-[var(--border-hairline)]'}`}>
                         {event.action}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-[var(--text-muted)] max-w-[200px]">
-                      <div className="truncate">
-                        {event.details ? (typeof event.details === 'string' ? event.details : JSON.stringify(event.details)) : (event.target || '-')}
+                    <TableCell className="text-sm text-[var(--text-muted)]">
+                      <div className="truncate max-w-[250px] lg:max-w-[400px]">
+                        {event.details ? (typeof event.details === 'string' ? event.details : JSON.stringify(event.details)) : (event.target || '—')}
                       </div>
                     </TableCell>
                   </TableRow>
