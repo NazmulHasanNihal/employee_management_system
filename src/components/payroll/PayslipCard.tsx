@@ -161,7 +161,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
           <table className="header-table">
             <tr>
               <td>
-                <div className="company-title">{/* @ts-ignore */}<T>Enterprise Resource & Relationship Systems</T></div>
+                <div className="company-title">{/* @ts-ignore */}<T>OpsHub</T></div>
                 <div className="sub-title">{/* @ts-ignore */}<T>HQ Tower, Level 12, Gulshan Avenue, Dhaka-1212, Bangladesh</T></div>
                 <div className="sub-title">{/* @ts-ignore */}<T>Tax Reg / TIN: 48920194819 | BD Labour Act Compliant</T></div>
               </td>
@@ -250,7 +250,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
           <div className="footer-note">
             {/* @ts-ignore */}<T>This is a system-generated official payslip compliant with Bangladesh Labour Act 2006 (and 2013 amendments).</T><br />
-            {/* @ts-ignore */}<T>Confidential · Enterprise Employee Management System</T></div>
+            {/* @ts-ignore */}<T>Confidential · OpsHub</T></div>
         </div>
       </div>
 
@@ -344,7 +344,7 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
               <div className="pt-4 flex justify-center">
                 <p className="text-[10px] text-[var(--text-muted)] text-center">
                   This is a system-generated official payslip compliant with Bangladesh Labour Act 2006 (and 2013 amendments).<br/>
-                  Confidential · Enterprise Employee Management System
+                  Confidential · OpsHub
                 </p>
               </div>
             </div>
