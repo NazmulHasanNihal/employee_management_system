@@ -356,7 +356,7 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
               icon={<Users className="h-6 w-6" />}
             />
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {hierarchicalList.map((emp) => {
             const isLiveOnline = Boolean(emp.isOnline) || (Boolean(emp.lastSeen) && (new Date().getTime() - new Date(emp.lastSeen!).getTime() < 5 * 60 * 1000));
             const depth = (emp as any)._hierarchyDepth || 0;
@@ -365,7 +365,6 @@ export default function RegistryExplorer({ employees, branches = [] }: { employe
                 key={emp.id}
                 onClick={() => openProfile(emp)}
                 className="cursor-pointer flex flex-col rounded-3xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-6 text-left shadow-sm transition-all hover:border-[var(--brand)]/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--brand)]/40"
-                style={{ marginLeft: `calc(${depth} * 2rem)` }}
               >
                 <div className="mb-4 flex items-start justify-between">
                   <div className="flex items-center gap-4">
