@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { prisma as db } from '@/lib/prisma';
 
 export type NotificationType = 'info' | 'leave' | 'payroll' | 'system' | 'news' | 'calendar';
 
