@@ -22,7 +22,7 @@ interface PaymentHubProps {
   userId: string;
 }
 
-const INITIAL_FUND_BALANCE = 1000000; // 10 Lakh BDT
+const INITIAL_FUND_BALANCE = 3700000; // 37 Lakh BDT
 
 const MFS_METHODS: Record<string, { label: string; tone: string; account: string; type: string }> = {
   BKASH: { label: 'bKash', tone: 'text-[#e2136e] bg-[#fde9f2] border-[#e2136e]/30', account: '+8801700000000 (Merchant)', type: 'MFS Wallet' },

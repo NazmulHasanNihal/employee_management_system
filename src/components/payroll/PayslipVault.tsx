@@ -50,7 +50,7 @@ export function PayslipVault({ payrolls, isAdmin, caller }: PayslipVaultProps) {
           description={search ? "No payslips match your search." : "There are no payslips in the vault yet."}
         />
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 h-[600px] overflow-y-auto pr-2 pb-8 custom-scrollbar">
+        <div className="space-y-2 h-[600px] overflow-y-auto pr-2 pb-8 custom-scrollbar">
           {filteredPayrolls.map((pay) => (
             <PayslipCard key={pay.id} pay={pay} isAdmin={isAdmin} currentUser={caller} />
           ))}

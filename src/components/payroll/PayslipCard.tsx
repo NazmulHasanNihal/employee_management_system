@@ -120,79 +120,40 @@ export function PayslipCard({ pay, isAdmin, currentUser }: PayslipCardProps) {
 
   return (
     <>
-      <Card
-        className="group transition-all hover:border-[var(--brand)]/40 hover:shadow-lg cursor-pointer"
+      <div
+        className="flex items-center justify-between rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-panel)] p-3 shadow-sm transition-all hover:border-[var(--brand)]/30 cursor-pointer group"
         onClick={() => setShowModal(true)}
       >
-        <CardContent className="p-6 space-y-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-strong)] shrink-0">
-                <FileText size={24} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-lg font-bold text-[var(--text-main)]">{pay.month} {pay.year}</h3>
-                  <Badge variant={pay.status === 'PROCESSED' || pay.status === 'Disbursed' ? 'emerald' : 'amber'}>
-                    {pay.status}
-                  </Badge>
-                </div>
-                <div className="flex flex-col space-y-0.5">
-                  <p className="text-sm font-bold text-[var(--text-main)]">
-                    {pay.user?.name || currentUser?.name}
-                  </p>
-                  <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider font-semibold">
-                    {pay.user?.designation || 'Staff'} • {pay.user?.department || 'Operations'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Net Payable</T></p>
-              <p className="text-xl font-extrabold text-[var(--emerald)]">
-                {sym}{netPayable.toLocaleString()}
-              </p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-strong)] shrink-0">
+            <FileText size={16} />
           </div>
-
-          {/* Quick Summary Grid */}
-          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-[var(--border-hairline)] bg-[var(--bg-hover)]/40 p-3 text-center text-xs">
-            <div>
-              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Gross Earnings</T></p>
-              <p className="font-bold text-[var(--brand)]">{sym}{totalEarnings.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>Deductions</T></p>
-              <p className="font-bold text-[var(--rose)]">{sym}{totalDeductions.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-wider text-[var(--text-muted)]">{/* @ts-ignore */}<T>PF Match</T></p>
-              <p className="font-bold text-[var(--text-main)]">{sym}{pfDeduction.toLocaleString()}</p>
-            </div>
+          <div>
+            <p className="text-sm font-bold text-[var(--text-main)] font-mono">{sym}{netPayable.toLocaleString()}</p>
+            <p className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] mt-0.5">
+              {pay.user?.name || currentUser?.name} • {pay.month} {pay.year} • Ref: PAY-{pay.id.substring(0, 8).toUpperCase()}
+            </p>
           </div>
+        </div>
 
-          <div className="flex gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 rounded-xl border-[var(--border-hairline)] text-xs font-semibold"
-            >
-              <CheckCircle2 size={14} className="mr-1.5 text-[var(--emerald)]" /> {/* @ts-ignore */}<T>View Detailed Slip</T>
-            </Button>
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePrint();
-              }}
-              variant="primary"
-              size="sm"
-              className="flex-1 rounded-xl text-xs font-semibold"
-            >
-              <Printer size={14} className="mr-1.5" /> {/* @ts-ignore */}<T>Print / Save PDF</T></Button>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex items-center gap-3">
+          <Badge variant={pay.status === 'PROCESSED' || pay.status === 'Disbursed' ? 'emerald' : 'amber'} className="text-[9px] px-2 py-0.5">
+            {pay.status}
+          </Badge>
+          <Button
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrint();
+            }}
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-[var(--brand)] opacity-50 hover:bg-[var(--brand)]/10 hover:opacity-100 hidden sm:flex"
+            title="Print / Save PDF"
+          >
+            <Printer size={14} />
+          </Button>
+        </div>
+      </div>
 
       {/* Hidden Printable Container */}
       <div id={`printable-payslip-${pay.id}`} className="hidden opacity-0 invisible absolute -z-50 pointer-events-none w-0 h-0 overflow-hidden" aria-hidden="true">
