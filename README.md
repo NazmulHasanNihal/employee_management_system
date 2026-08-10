@@ -1,180 +1,138 @@
-# Employee Management System (EMS)
+<div align="center">
+  <img src="https://via.placeholder.com/150" alt="OpsHub Logo" width="120" />
+  
+  # OpsHub — Enterprise Management System
 
-A full-featured HR / employee-management platform built with **Next.js 15 (App Router)**, **Supabase Auth + Postgres**, **Prisma**, and **Tailwind**. It covers the employee lifecycle end-to-end: onboarding, attendance, leave, payroll, performance, recruitment, compliance, benefits, and internal communications — wrapped in a polished "ledger/terminal" themed UI with offline support, a command palette, and bilingual (EN/BN) support.
+  **A modern, full-featured HR & Employee Management Platform** <br/>
+  Built to manage the complete employee lifecycle—from onboarding and attendance to payroll and compliance.
 
-> Status: functional MVP. All major modules are backed by real database handlers (Prisma). Authorization is role-based (Employee / Manager / HR Manager / Admin / CEO + an immutable system owner).
+  [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat&logo=next.js)](https://nextjs.org/)
+  [![Supabase](https://img.shields.io/badge/Supabase-Auth_%2B_DB-3ECF8E?style=flat&logo=supabase)](https://supabase.com/)
+  [![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat&logo=prisma)](https://prisma.io/)
+  [![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS_4-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
----
-
-## Stack
-
-| Layer | Tech |
-|-------|------|
-| Framework | Next.js 15 (App Router, React 19, Turbopack) |
-| Auth & DB | Supabase (Auth + Postgres) via Prisma |
-| Styling | Tailwind CSS 4, Framer Motion, shadcn-style UI primitives |
-| Realtime / presence | Supabase Realtime (broadcast channels) |
-| PDF generation | Go (Fiber) microservice (`services/go-backend`) |
-| Observability | Sentry, PostHog |
-| PWA | Serwist service worker |
-| Tests | Vitest (unit tests for RBAC, hierarchy, payroll) |
+  [**View Live Demo**](#) • [**Report Bug**](#) • [**Request Feature**](#)
+</div>
 
 ---
 
-## Getting started
+## 🌟 Overview
+OpsHub is an end-to-end Enterprise Management System designed to streamline human resources, payroll, and internal communications. Wrapped in a polished, ledger-themed UI with offline PWA support, command-palette navigation, and bilingual (English/Bengali) capabilities, it offers enterprise-grade functionality with the speed of a modern web app.
 
-### 1. Install dependencies
+---
+
+## ✨ Features
+- **Identity & Access Management:** Robust Role-Based Access Control (RBAC) with hierarchical privileges (Employee, Manager, HR, Admin, CEO). Secure Supabase authentication with email/magic-link invites.
+- **Attendance & Time Tracking:** Real-time presence tracking via Supabase Realtime broadcast channels. Clock-in/out functionality with geofencing and offline-ready service workers.
+- **Automated Payroll System:** Dynamic payroll structures, deductions, PF matching, and one-click generation of PDF payslips (compliant with local labor laws).
+- **Core HR Modules:** Centralized dashboards for leave management, assets, helpdesk ticketing, shift rosters, and performance tracking (OKRs).
+- **Compliance & Security:** NID encryption-at-rest, strict API hardening, and comprehensive audit logs.
+- **Performance Optimized:** Built on Next.js 15 App Router, React 19, and Turbopack for instantaneous navigation and data mutations.
+
+---
+
+## 🚀 Tech Stack
+
+### Frontend
+- **Framework:** Next.js 15 (App Router, React 19)
+- **Styling:** Tailwind CSS 4, Framer Motion, shadcn-style UI primitives
+- **PWA:** Serwist service worker
+- **State/Data:** tRPC-style lightweight proxy over Next.js Server Actions
+
+### Backend & Database
+- **Database:** PostgreSQL (via Supabase)
+- **ORM:** Prisma
+- **Auth & Realtime:** Supabase Auth & Realtime
+- **Microservices:** Go (Fiber) for rapid PDF generation
+
+### Tools & Testing
+- **Observability:** Sentry, PostHog
+- **Testing:** Vitest (Unit), Playwright (E2E)
+
+---
+
+## 📸 Visuals
+
+*(Replace the placeholders below with actual screenshots of your application)*
+
+<div align="center">
+  <img src="https://via.placeholder.com/800x450?text=Dashboard+Overview" alt="Dashboard Overview" width="800"/>
+  <p><i>Centralized Dashboard Overview</i></p>
+</div>
+
+<div align="center">
+  <img src="https://via.placeholder.com/800x450?text=Payroll+System+&+Payslips" alt="Payroll System" width="800"/>
+  <p><i>Payroll Vault & PDF Slip Generation</i></p>
+</div>
+
+---
+
+## 🛠️ Installation & Setup
+
+### Prerequisites
+- Node.js (v18+)
+- pnpm (recommended) or npm
+- A Supabase Project (for DB and Auth)
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/your-username/opshub-ems.git
+cd opshub-ems
+```
+
+### 2. Install dependencies
 ```bash
 pnpm install
-# or: npm install
 ```
-`postinstall` runs `prisma generate` automatically.
+*(The `postinstall` script will automatically run `prisma generate`)*
 
-### 2. Configure environment
+### 3. Configure Environment Variables
+Copy the example environment file:
 ```bash
 cp .env.example .env
 ```
-Fill in the Supabase / Postgres values (see `.env.example` for every variable and its meaning). Key ones:
-- `DATABASE_URL` / `DIRECT_URL` — Supabase pooler URLs
+Update `.env` with your Supabase credentials:
+- `DATABASE_URL` / `DIRECT_URL` (Supabase connection strings)
 - `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `NEXT_SUPABASE_SERVICE_ROLE_KEY`
-- `OWNER_EMAIL` — the email granted system-owner (CEO) privileges
+- `OWNER_EMAIL` (Sets the immutable system CEO)
 
-### 3. Sync the database
+### 4. Database Setup
+Push the schema to your development database:
 ```bash
-npx prisma db push      # create/update tables (or: prisma migrate dev)
-pnpm ts-node prisma/seed.ts   # populate demo data (clears existing data!)
+npx prisma db push
 ```
-> Recent schema changes added `AutomationRule`, `TicketReply`, and `User.lastSeen`/`isOnline`.
-> Run `prisma db push` (or a new migration) after pulling so these tables exist.
+*(Optional)* Seed the database with demo data:
+```bash
+pnpm ts-node prisma/seed.ts
+```
+> **Warning:** Seeding will clear existing data. Never run this against a production database.
 
-### Database migrations (reproducible schema — P1)
-For anything beyond a throwaway dev DB, prefer **migrations** over `db push` so schema
-changes are versioned and reproducible across environments:
-
-1. **Staging first.** Point a staging `DATABASE_URL`/`DIRECT_URL` at a staging database
-   (never mutate prod directly):
-   ```bash
-   DATABASE_URL="postgresql://.../ems_staging" DIRECT_URL="postgresql://.../ems_staging" \
-     npx prisma migrate dev --name <what_changed>
-   ```
-   This generates `prisma/migrations/<timestamp>_<what_changed>/migration.sql`, applies it,
-   and updates `prisma/migrations_lock.toml`.
-2. **Commit** the migration SQL + lock file. CI can then run `prisma migrate deploy` against
-   preview/prod (which applies pending migrations without generating new ones — safe for
-   serverless/CI where `migrate dev` cannot run interactively).
-3. **Prod apply:** `npx prisma migrate deploy` (uses `DATABASE_URL` from the environment).
-4. **Seed** only non-prod datasets; `prisma/seed.ts` clears existing data, so never run it
-   against production.
-
-> App-layer changes in this codebase (e.g. NID encryption-at-rest, statutory leave policy)
-> intentionally avoid schema migrations for now — they store derived/encrypted values in
-> existing columns. When you promote those to first-class columns, follow the flow above.
-
-### 4. Run the app
+### 5. Start the Development Server
 ```bash
 pnpm dev
 ```
-This starts the Next.js dev server (Turbopack). Open http://localhost:3000.
-Real-time presence runs over **Supabase Realtime** (no separate process) — make
-sure Realtime is enabled for your Supabase project.
+Navigate to `http://localhost:3000` to view the application.
 
-### 5. (Optional) Run the Go PDF service
+---
+
+## 🧪 Testing
+
+Run the test suites to verify role hierarchy, spoof prevention, and payroll calculations:
 ```bash
-cd services/go-backend
-go run main.go            # listens on :8080
-# expects PAYROLL_API_TOKEN + PAYROLL_CORS_ORIGIN env vars
+pnpm test          # Unit tests (Vitest)
+pnpm test:e2e      # E2E tests (Playwright)
 ```
-
-### 6. Real-time attendance presence (Supabase Realtime)
-The attendance page live-refreshes manager "Live Office Status" panels via
-**Supabase Realtime** broadcast channels (`src/lib/useRealtimePresence.ts`) — no
-separate server to run or deploy. Ensure Realtime is enabled for your Supabase
-project (Dashboard → Database → Replication). The client degrades to manual
-refresh if the channel can't connect.
 
 ---
 
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start the Next.js dev server (Turbopack) |
-| `pnpm dev:next` | Start only the Next.js dev server (Turbopack) |
-| `pnpm build` | Production build (type errors now fail the build) |
-| `pnpm start` | Run the production build |
-| `pnpm test` | Run the Vitest unit test suite |
-| `pnpm lint` | ESLint (Next.js config) |
-| `pnpm test:e2e` | Run the Playwright E2E suite |
-| `npx prisma studio` | Inspect the database |
-| `pnpm ts-node prisma/seed.ts` | Reseed demo data |
+## 🛡️ Security Best Practices
+- **Never Commit Secrets:** Ensure `.env` files are ignored. Rotate any compromised keys immediately.
+- **RBAC Enforced:** The `isCEO` privilege is derived securely from the database or owner flag, preventing designation spoofing.
+- **Migrations:** For staging/production, always prefer `prisma migrate dev` / `prisma migrate deploy` over `db push` to maintain reproducible schema states.
 
 ---
 
-## Architecture
-
-```
-src/
-  app/
-    (protected)/        # Authenticated pages (dashboard, payroll, hr, ...)
-    api/                # Route handlers (upload, audit, hierarchy, onboarding)
-    actions/db.ts       # Server actions: executeServerQuery / executeServerMutation
-  lib/
-    auth.ts             # getCaller() — single source of truth for privileges
-    hierarchy.ts        # Manager-chain rank + canModifyUser()
-    payroll.ts          # Pure payroll calculation (unit-tested)
-    prisma.ts           # Prisma client singleton
-    trpc/client.ts      # Thin proxy mapping UI calls to the server actions
-  components/           # UI components (Layout, Dashboard, domain widgets)
-prisma/
-  schema.prisma         # 30+ models across all HR domains
-  seed.ts               # Demo data
-services/go-backend/    # Go Fiber PDF microservice
-```
-
-### Data-fetching model
-The UI calls a typed `trpc.<domain>.<method>` proxy (`src/lib/trpc/client.ts`). The proxy forwards each call to a server action `executeServerQuery(path)` / `executeServerMutation(path)` in `src/app/actions/db.ts`, which dispatches on the dotted `path` string to the appropriate Prisma query/mutation. All handlers enforce RBAC via `getCaller()`.
-
-> Note: the `trpc` proxy is a lightweight shim over Next.js Server Actions — there is no separate tRPC/ConnectRPC server (the earlier proto/ConnectRPC layer was removed as dead code).
-
-### Authorization
-- `getCaller()` returns `{ isAdmin, isHR, isCEO, isOwner, ... }`.
-- **`isCEO` is derived only from `role === 'CEO'` or the DB `isOwner` flag — never from the free-text `designation` field** (which users can edit). This prevents privilege escalation.
-- The system owner (email in `OWNER_EMAIL`) is immutable and cannot be demoted or offboarded.
-
-### Authentication & onboarding flow
-- **Invite (real email):** `provisionEmployeeAccount` (invite mode) mints a signed invite token (`src/lib/invite.ts`) and calls `supabase.auth.admin.inviteUserByEmail` so the employee receives a real invite email. Supabase's email link lands at `/auth/callback` (which exchanges the `token_hash`/`code` for a session), then routes to `/`. If Supabase email transport is unavailable, the signed token is still returned to the admin as a manual copy-link (`/invite/[token]`).
-- **Auth callback:** `src/app/auth/callback/route.ts` handles OAuth, magic-link, and email-invitation redirects by exchanging the credential for a session cookie, then redirecting to `next` (default `/`).
-- **Verify-email gate:** authenticated users with an unconfirmed auth email are redirected to `/verify-email` (which can resend the confirmation) until `email_confirmed` is true. Invited users who set a password via `/api/invite/accept` get `email_confirm: true`, so they pass through immediately.
-- **Onboarding gate:** users with `isOnboarded = false` are shown `OnboardingFlow` to complete profile/NID before reaching the app shell.
-
----
-
-## Feature coverage
-
-| Module | Status |
-|--------|--------|
-| Dashboard, News/Announcements, Calendar, Team/Tasks, Org Chart | Full |
-| Attendance (clock in/out), Leave, Expenses, Assets, Helpdesk, Audit Log | Full |
-| Shifts & roster, Performance (OKRs/Reviews), Recruitment (ATS), Compliance (certs/whistleblower) | Full |
-| Benefits & Equity, DEI bias audit, Recognition (Kudos), Feedback, Documents, Profile skills, Payroll structures, Workflows (onboarding/offboarding/probation) | Full |
-
----
-
-## Security notes
-> [!WARNING]
-> **Git History & Secret Rotation:** If any secret (such as `DATABASE_URL`, `NEXT_SUPABASE_SERVICE_ROLE_KEY`, `INVITE_SECRET`, `TOTP_ENCRYPTION_KEY`, or `VAPID_PRIVATE_KEY`) was previously committed or hardcoded in git history, **rotate those secret values immediately** in your production environment and cloud providers. Old values present in git history remain exposed to anyone with repository access.
-
-- **Secrets Management:** `.env` and `.env*.local` files are strictly gitignored and must never be committed. All production secrets, passwords, and API keys are loaded via environment variables (see `.env.example`).
-- **Authorization:** every mutating server action in `src/app/actions/db.ts` enforces `isAdmin`/`isCEO` (field allow-lists strip `role`/`isOwner`/`designation` from client updates). `provisionEmployeeAccount` and `registry.*`/`payroll.createHead` are gated.
-- **API hardening:** `/api/notifications/trigger` and the Go `/api/reports/attendance-pdf` endpoint now require authentication (Bearer token / session). Unauthenticated push-to-any-user is closed.
-- **Uploads:** `/api/upload` requires auth, validates **magic bytes** (not just the extension), enforces an allowlist + 10 MB cap, and sanitizes filenames. In production, swap local `public/uploads` for Supabase Storage / S3 (serverless-incompatible as written).
-- **Privilege model:** `isCEO` is derived only from `role === 'CEO'` or the DB `isOwner` flag — never from the self-editable `designation` field — preventing escalation. The owner cannot be offboarded.
-- **Scripts:** All CLI scripts in `scripts/` read credentials strictly from environment variables (`ADMIN_EMAIL`, `OWNER_EMAIL`, `ADMIN_PASSWORD`, `DEMO_PASSWORD`) with zero hardcoded credentials or fallback tokens.
-- **Build:** `next.config.ts` fails the build on TypeScript errors; the tRPC proxy's `invalidate()` now actually refetches (no `window.location.reload()` hacks remain).
-
-## Testing
-```bash
-pnpm test
-```
-Covers: role hierarchy / privilege rules, CEO-spoof prevention, and payroll math.
+## 📄 License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
