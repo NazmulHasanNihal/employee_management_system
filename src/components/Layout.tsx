@@ -28,7 +28,6 @@ import { createClient } from '@/lib/supabase/client';
 import { useUser } from '@/components/UserProvider';
 import { useTranslation } from '@/lib/translations';
 import { BranchSwitcher } from '@/components/BranchSwitcher';
-import { UserSwitcher } from '@/components/UserSwitcher';
 import { Avatar } from '@/components/ui/avatar';
 import { trpc } from '@/lib/trpc/client';
 import { navCategories } from '@/components/nav-config';
@@ -321,8 +320,6 @@ export default function AppLayout({ children, user, notifications = [] }: { chil
           </div>
 
           <div className="flex items-center gap-1.5 md:gap-2">
-            <UserSwitcher />
-            
             <button
               aria-label="Open command palette"
               onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
